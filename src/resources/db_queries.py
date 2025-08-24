@@ -10,7 +10,6 @@ SA_CREATE_DELUXEWALLENTRIES_TABLE = "CREATE TABLE IF NOT EXISTS deluxe_wall_entr
     "    reaction_amounts INTEGER,\n" \
     "    date DATE\n" \
     ")"
-
 SA_CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (\n" \
     "    user_id INTEGER PRIMARY KEY,\n" \
     "    user_name TEXT,\n" \
@@ -21,7 +20,6 @@ SA_CREATE_USERS_TABLE = "CREATE TABLE IF NOT EXISTS users (\n" \
     "    smarts INTEGER,\n" \
     "    will INTEGER\n" \
     ")"
-
 SA_CREATE_ROLES_TABLE = "CREATE TABLE IF NOT EXISTS roles (\n" \
     "    role_id INTEGER PRIMARY KEY,\n" \
     "    role_name TEXT,\n" \
@@ -32,10 +30,78 @@ SA_CREATE_ROLES_TABLE = "CREATE TABLE IF NOT EXISTS roles (\n" \
     "    bonus_move_id INTEGER\n" \
     ")"
 
+TGOMMO_CREATE_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_creature (
+            creature_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            
+            name TEXT NOT NULL,
+            variant_name TEXT DEFAULT '',
+            dex_no INTEGER NOT NULL,
+            variant_no INTEGER NOT NULL,
+            
+            full_name TEXT NOT NULL,
+            scientific_name TEXT NOT NULL,
+            kingdom TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            
+            img_root TEXT NOT NULL,
+            encounter_rate INTEGER NOT NULL,
+            UNIQUE(dex_no, variant_no)
+        )"""
+TGOMMO_CREATE_ENVIRONMENT_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment (
+            environment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            
+            name TEXT NOT NULL,
+            variant_name TEXT DEFAULT '',
+
+            dex_no INTEGER NOT NULL,
+            variant_no INTEGER NOT NULL,
+            
+            location TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            
+            img_root TEXT NOT NULL,
+            is_night_environment BOOLEAN NOT NULL,
+            in_circulation BOOLEAN NOT NULL,
+            encounter_rate INTEGER NOT NULL,
+            UNIQUE(dex_no, variant_no)
+        )"""
+TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment_creature (
+    creature_id INTEGER NOT NULL,
+    environment_id INTEGER NOT NULL,
+    creature_name TEXT NOT NULL,
+    environment_name TEXT NOT NULL,
+    
+    spawn_rarity TEXT NOT NULL,
+    local_name TEXT DEFAULT '',
+    
+    UNIQUE(creature_id, environment_id),
+
+    PRIMARY KEY (creature_id, environment_id),
+    FOREIGN KEY (creature_id, creature_name) REFERENCES tgommo_creature (creature_id, name),
+    FOREIGN KEY (environment_id, environment_name) REFERENCES tgommo_environment (environment_id, name)
+)"""
+TGOMMO_CREATE_USER_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_creature (
+    catch_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    
+    user_id INTEGER,
+    creature_id INTEGER,
+    creature_variant_no INTEGER,
+    environment_id INTEGER,
+
+    is_mythical BOOLEAN DEFAULT 0,
+    catch_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nickname TEXT DEFAULT '',
+    
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (creature_id) REFERENCES tgommo_creature (creature_id),
+    FOREIGN KEY (creature_variant_no) REFERENCES tgommo_creature (creature_id),
+    FOREIGN KEY (environment_id) REFERENCES tgommo_environment (environment_id)
+)"""
+
 '''*******************'''
 '''   USER Queries    '''
 '''*******************'''
-SA_USERS_INSERT_NEW_RECORD = "INSERT INTO users (user_id, user_name, total_xp, level, guts, hearts, smarts, will) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"
+SA_USERS_INSERT_NEW_RECORD = """INSERT INTO users (user_id, user_name, total_xp, level, guts, hearts, smarts, will) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"""
 
 SA_USERS_SELECT_ALL = "SELECT * FROM users"
 SA_USERS_SELECT_ALL_BY_USERID = "SELECT * FROM users WHERE user_id=?"
@@ -47,15 +113,17 @@ SA_USERS_UPDATE_PLAYER_STATS = "UPDATE users SET guts=?, hearts=?,smarts=?,will=
 SA_USERS_DELETE_BY_USERID = "DELETE FROM users WHERE user_id=?"
 
 '''*******************'''
-'''Deluxe Wall Queries'''
+''' TGO MMO Queries   '''
 '''*******************'''
-SA_DELUXEWALLENTRY_INSERT_NEW_RECORD = "INSERT INTO deluxe_wall_entries (message_id, author, author_id, message_text, on_deluxe_wall, reaction_amounts, date) VALUES(?, ?, ?, ?, ?, ?, ?);"
+TGOMMO_INSERT_NEW_CREATURE = """INSERT OR IGNORE INTO tgommo_creature (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, creature_name, environment_name, spawn_rarity, local_name) VALUES(?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature (user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, ?, ?, '');"""
 
-SA_DELUXEWALLENTRY_SELECT_ALL = "SELECT * FROM deluxe_wall_entries;"
-SA_DELUXEWALLENTRY_SELECT_BY_MESSAGEID = "SELECT * FROM deluxe_wall_entries WHERE message_id=?;"
-SA_DELUXEWALLENTRY_SELECT_ONDELUXWALL_BY_MESSAGEID = "SELECT on_deluxe_wall FROM deluxe_wall_entries WHERE message_id=?;"
+TGOMMO_SELECT_CREATURE_BY_ID = """SELECT * FROM creatures WHERE creature_id = ?"""
+TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT * FROM environments WHERE environment_id = ?"""
+TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT = """SELECT c.*, ce.spawn_rarity FROM creatures c JOIN environment_creature ce ON c.creature_id = ce.creature_id WHERE ce.environment_id = ?"""
+TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM environments ORDER BY RANDOM() LIMIT 1"""
 
-SA_DELUXEWALLENTRY_UPDATE_REACTIONAMOUNT = "UPDATE deluxe_wall_entries SET reaction_amounts=? WHERE message_id=?;"
-SA_DELUXEWALLENTRY_UPDATE_ONDELUXEWALL = "UPDATE deluxe_wall_entries SET on_deluxe_wall=? WHERE message_id=?;"
-
-SA_DELUXEWALLENTRY_DELETE_BY_MESSAGEID = "DELETE FROM deluxe_wall_entries WHERE message_id=?;"
+TGOMMO_SELECT_CREATURE_ID_BY_DEX_AND_VARIANT_NO = """SELECT creature_id, name FROM tgommo_creature WHERE dex_no = ? AND variant_no = ?"""
+TGOMMO_SELECT_ENVIRONMENT_ID_BY_DEX_AND_VARIANT_NO = """SELECT environment_id, name FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""

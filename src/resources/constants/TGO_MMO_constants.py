@@ -1,10 +1,73 @@
 '''TGO MMO'''
+
+'''EMBED ICONS'''
+CREATURE_EMBED_GRASS_ICON = "https://i.pinimg.com/originals/22/13/5b/22135b26441d0e9163eb4445af0c56c2.gif"
+CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"
+
+'''EMBED LINES'''
+CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
+CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               *+500 xp*"
+CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+1500 xp*"
+CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+10000 xp*"
+CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
+CREATURE_TOTAL_XP_LINE_CENTERED = "‎                         ✨ **Total 150000 xp** ✨                        ‎ "
+
+'''CREATURE IMAGES'''
 N00_BASE_CREATURE_IMAGE_FILE = "BASE_CREATURE.png"
 N00_BASE_CREATURE_IMAGE_FILE_ENCOUNTER = "BASE_CREATURE_E.png"
 N00_BASE_CREATURE_IMAGE_FILE_FLEE = "BASE_CREATURE_F.png"
 N00_BASE_CREATURE_IMAGE_FILE_CATCH = "BASE_CREATURE_C.png"
 N00_BASE_CREATURE_IMAGE_FILE_THUMBNAIL = "BASE_CREATURE_THUMB.png"
 
+CHIPMUNK_IMAGE_FILE = "Chipmunk_O"
+DEER_IMAGE_FILE = "Deer_O"
+DOE_IMAGE_FILE = "Doe_O"
+BUCK_IMAGE_FILE = "Deer_1"
+SQUIRREL_IMAGE_FILE = "Squirrel_0"
 
-N01_CHIPMUNK_IMAGE_FILE = "01_Chipmunk_O"
-N02_DOE_IMAGE_FILE = "01_Chipmunk_O.png"
+ROBIN_IMAGE_FILE = "Robin_0"
+SPARROW_M_IMAGE_FILE = "Sparrow_0"
+SPARROW_F_IMAGE_FILE = "Sparrow_1"
+BLUEJAY_IMAGE_FILE = "BlueJay_0"
+GOLDFINCH_IMAGE_FILE = "GoldFinch_0"
+CARDINAL_M_IMAGE_FILE = "Cardinal_0"
+CARDINAL_F_IMAGE_FILE = "Cardinal_1"
+OWL_IMAGE_FILE = "Owl_0"
+MALLARD_DRAKE_IMAGE_FILE = "Mallard_0"
+MALLARD_HEN_IMAGE_FILE = "Mallard_1"
+
+RACOON_IMAGE_FILE = "Raccoon_0"
+COYOTE_IMAGE_FILE = "Coyote_0"
+BLACKBEAR_IMAGE_FILE = "BlackBear_0"
+
+'''CREATURE DEX NUMBERS'''
+DEER_DEX_NO = 1
+CHIPMUNK_DEX_NO = 4
+
+'''ENVIRONMENT DEX NUMBERS'''
+EASTERN_US_FOREST_NO = 1
+EVERGLADES_NO = 2
+
+'''CREATURE KINGDOM NAMES'''
+MAMMAL = "Mammal"
+BIRD = "Bird"
+REPTILE = "Reptile"
+AMPHIBIAN = "Amphibian"
+INSECT = "Insect"
+FISH = "Fish"
+MOLLUSK = "Mollusk"
+CRUSTACEAN = "Crustacean"
+ARACHNID = "Arachnid"
+
+'''CREATURE RARITY NAMES'''
+TGOMMO_RARITY_COMMON = "Common"
+TGOMMO_RARITY_UNCOMMON = "Uncommon"
+TGOMMO_RARITY_RARE = "Rare"
+TGOMMO_RARITY_EPIC = "Epic"
+TGOMMO_RARITY_LEGENDARY = "Legendary"
+TGOMMO_RARITY_MYTHICAL = "Mythical"
+TGOMMO_RARITY_EXOTIC = "Exotic"
+TGOMMO_RARITY_TRANSCENDANT = "Transcendant"
+TGOMMO_RARITY_EVENT = "Event"
+
+

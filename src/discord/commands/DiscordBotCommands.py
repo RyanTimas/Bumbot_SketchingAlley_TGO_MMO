@@ -32,5 +32,5 @@ def assign_general_discord_commands(discord_bot: DiscordBot):
 
     @discord_bot.discord_bot.command(name='toggle_creature_spawns', help="toggle spawning of creatures.")
     async def toggle_creature_spawns(ctx):
-        result = discord_bot.toggle_creature_spawns()  # Get result first
+        result = discord_bot.creature_spawner_handler.toggle_creature_spawner(ctx)  # Get result first
         await ctx.channel.send(result, delete_after=5)

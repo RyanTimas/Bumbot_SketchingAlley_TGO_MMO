@@ -16,6 +16,9 @@ RUN_DISCORD_BOT = config.getboolean('General', 'RUN_DISCORD_BOT', fallback=False
 RUN_TWITCH_BOT = config.getboolean('General', 'RUN_TWITCH_BOT', fallback=False)
 RUN_OBS_BOT = config.getboolean('General', 'RUN_OBS_WEBSOCKET', fallback=False)
 
+RUN_SA_DB_INIT = config.getboolean('General', 'RUN_SA_DB_INIT', fallback=False)
+RUN_TGOMMO_DB_INIT = config.getboolean('General', 'RUN_TGOMMO_DB_INIT', fallback=False)
+
 '''*****************'''
 '''Discord constants'''
 '''*****************'''

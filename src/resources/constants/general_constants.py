@@ -1,5 +1,6 @@
 import configparser
 import os
+from datetime import time
 
 # set up config
 CONFIG_NAME = 'config_local.ini'
@@ -43,6 +44,8 @@ IMAGE_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "im
 '''General Constants'''
 '''*****************'''
 DIVIDER_LINE = "──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+
+NEW_DAY_TIMESTAMP = time(0, 0)  # 00:00:00
 
 
 

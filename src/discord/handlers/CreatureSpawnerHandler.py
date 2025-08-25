@@ -1,16 +1,22 @@
 import asyncio
+import ssl
 import threading
 import time
 from copy import deepcopy
 import random
+from datetime import datetime
+
 import discord
 
 from discord.ext.commands import Bot
+from sqlalchemy.sql.functions import current_time
+
 from src.database.handlers import DatabaseHandler
 from src.discord.buttonhandlers.CatchButton import TGOMMOCatchButtonView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity
+from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity, CreatureRarity, get_rarity_by_name, COMMON
 from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
+from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TEST
 
 
@@ -21,25 +27,64 @@ class CreatureSpawnerHandler:
 
         self.are_creatures_spawning = True
 
+        self.current_environment = self.database_handler.tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=1, variant_no=1)
+        self.creature_spawn_pool = TEST_SPAWN_POOL
 
+        self.last_spawn_time = datetime.now()
+        self.is_night = False  # todo - planned for v 2.0 night update
+
+
+    # kicks off the creature spawner
     def start_creature_spawner(self):
+        # todo - randomize the environment and variant to pull from multiple environments, planned for v 3.0 environment update
+        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
         asyncio.create_task(self._creature_spawner())
 
 
+    # Toggles whether creatures are spawning or not
     def toggle_creature_spawner(self, ctx):
         self.are_creatures_spawning = not self.are_creatures_spawning
         return "creatures are now spawning" if self.are_creatures_spawning else "creatures are no longer spawning"
 
 
+    # Loads a particular environment and defines the spawn pool for that environment
+    def _define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
+        current_environment_info = self.database_handler.tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no)
+        self.current_environment = TGOEnvironment(environment_id=current_environment_info[0], name=current_environment_info[1], variant_name=current_environment_info[2], dex_no=current_environment_info[3], variant_no=current_environment_info[4], location=current_environment_info[5], description=current_environment_info[6], img_root=current_environment_info[7], is_night_environment=current_environment_info[8], in_circulation=current_environment_info[9], encounter_rate=current_environment_info[10])
+
+        # Retrieve & Define Spawn Pool
+        self.creature_spawn_pool = []
+        creature_links = self.database_handler.tgommo_database_handler.get_creatures_from_environment(environment_id=self.current_environment.environment_id)
+
+        for creature_link in creature_links:
+            local_name = creature_link[2]
+            creature_info = self.database_handler.tgommo_database_handler.get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1])
+
+            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]))
+            self.creature_spawn_pool.append(creature)
+
+
+    # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
-        while self.spawn_creature:
-            await self.spawn_creature(creature= await self.creature_picker())
+        while self.are_creatures_spawning:
+            # check if a new day has begun or if a day/night transition has occurred
+            self._handle_time_change()
+
+            try:
+                await self._spawn_creature(creature= await self._creature_picker())
+            except (ssl.SSLError, Exception) as e:
+                # Handle all errors in a single block
+                error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
+                print(f"{error_type} occurred during creature spawning- skipping to next creature")
+                # Add a short delay before retrying
+                await asyncio.sleep(5)
 
             # wait between 1 and 10 minutes before spawning another creature
-            await asyncio.sleep(random.uniform(1, 10) * 60 )  # 5 minutes
+            await asyncio.sleep(random.uniform(1, 10))  # 5 minutes
 
 
-    async def spawn_creature(self, creature: TGOCreature):
+    # Spawns a creature and sends a message to the discord channel
+    async def _spawn_creature(self, creature: TGOCreature):
         creature_embed = CreatureEmbedHandler(creature=creature).generate_spawn_embed()
 
         # Send a message to the approval queue with a button to give XP
@@ -54,8 +99,10 @@ class CreatureSpawnerHandler:
         thread.daemon = True
         thread.start()
 
+
+    # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
-        time.sleep(creature.despawn_time)
+        time.sleep(creature.despawn_time * 60)  # Convert minutes to seconds
         try:
             # Try to fetch the message to check if it still exists
             channel = self.discord_bot.get_channel(spawn_message.channel.id)
@@ -73,15 +120,35 @@ class CreatureSpawnerHandler:
             ), self.discord_bot.loop
         )
 
-    async def creature_picker(self):
-        rarity = get_rarity()
-        available_creatures = [creature for creature in TEST_SPAWN_POOL if creature.rarity == rarity]
 
-        selected_creature = deepcopy(available_creatures[random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0])
+    # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
+    def _handle_time_change(self):
+        current_time = datetime.now()
+
+        is_new_day = current_time.date() > self.last_spawn_time.date()
+        is_day_night_transition = False #todo
+
+        if is_new_day:  # New Day
+            self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
+        elif is_day_night_transition:  # todo Day/Night Transition - planned for v 2.0 night update
+            self.is_night = not self.is_night
+
+        self.last_spawn_time = current_time
+
+
+    # Picks a random creature from the spawn pool
+    async def _creature_picker(self):
+        rarity = get_rarity()
+        rarity = COMMON
+
+        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
+        selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
+
+        print(selected_index)
+        selected_creature = deepcopy(available_creatures[selected_index])
 
         if random.randint(0,10) == 1:
             selected_creature.rarity = MYTHICAL
-            selected_creature.img_path += '_S'
+            selected_creature.img_root += '_S'
 
         return selected_creature
-

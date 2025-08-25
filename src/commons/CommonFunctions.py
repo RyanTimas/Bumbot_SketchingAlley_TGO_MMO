@@ -3,7 +3,7 @@ from datetime import date
 
 import discord
 import io
-from PIL import Image
+from PIL import Image, ImageFont
 
 from src.resources.constants.general_constants import IMAGE_FOLDER_PATH
 
@@ -39,3 +39,14 @@ def to_grayscale(discord_file):
     img.save(buf, format="PNG")
     buf.seek(0)
     return discord.File(buf, filename=discord_file.filename)
+
+
+#************************************************************************************
+#-------------------------------FONT FUNCTIONS-------------------------------------
+#************************************************************************************
+def load_font(font_path, font_size):
+    try:
+        font = ImageFont.truetype(font_path, font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    return font

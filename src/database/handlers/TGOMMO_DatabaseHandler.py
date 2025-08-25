@@ -20,38 +20,41 @@ class TGOMMODatabaseHandler:
 
 
     ''' Select Queries '''
-    def get_creature(self, creature_id=0):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_ID, params=(creature_id,))
+    def get_creature_by_id(self, creature_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(creature_id,))
+        return response[0]
 
 
-    # Function to get creatures from a random environment
-    def get_creatures_from_random_environment(self, environment_id=-1):
+    def get_environment_by_id(self, environment_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(environment_id,))
+        return response[0]
+
+
+    def get_creature_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
+        return response[0]
+
+
+    def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
+        return response[0]
+
+
+    # Returns all creatures found within a particular environment
+    def get_creatures_from_environment(self, environment_id=-1):
         if environment_id == -1:
             environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())
 
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
-        # todo convert to list of Creature objects
         return response
-
-
-    def get_creature_id_by_dex_and_variant(self, dex_no, variant_no):
-        response = self.QueryHandler.execute_query(
-            TGOMMO_SELECT_CREATURE_ID_BY_DEX_AND_VARIANT_NO,
-            params=(dex_no, variant_no)
-        )
-        return response[0] if response else None
-
-    def get_environment_id_by_dex_and_variant(self, environment_dex_no, environment_variant_no):
-        response = self.QueryHandler.execute_query(
-            TGOMMO_SELECT_ENVIRONMENT_ID_BY_DEX_AND_VARIANT_NO,
-            params=(environment_dex_no, environment_variant_no)
-        )
-        return response[0] if response else None
 
     ''' Update Queries '''
     ''' Delete Queries '''
 
 
+    '''"""""""""""""""""""""""""""""'''
+    ''' Initialization Of DB Tables '''
+    '''"""""""""""""""""""""""""""""'''
     def init_tgommo_tables(self):
         # Create tables first
         self.QueryHandler.execute_query(TGOMMO_CREATE_CREATURE_TABLE)
@@ -62,11 +65,11 @@ class TGOMMODatabaseHandler:
         # Insert creature records
         creature_data = [
             #01 Deer
-            ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_FILE, 5),
-            ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_FILE, 5),
+            ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
+            ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
 
             #02 Squirrel
-            ('Squirrel', '', 1, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', MAMMAL, '', CHIPMUNK_IMAGE_FILE, 5),
+            ('Squirrel', '', 1, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', MAMMAL, '', CHIPMUNK_IMAGE_ROOT, 5),
 
             #04 Chipmunk
             ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', MAMMAL, '', 'Chipmunk', 5),
@@ -104,8 +107,8 @@ class TGOMMODatabaseHandler:
 
 
     def format_ce_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, rarity, nickname=''):
-        creature_info = self.get_creature_id_by_dex_and_variant(creature_dex_no, creature_variant_no)
-        environment_info = self.get_environment_id_by_dex_and_variant(environment_dex_no, environment_variant_no)
+        creature_info = self.get_creature_by_dex_and_variant_no(creature_dex_no, creature_variant_no)
+        environment_info = self.get_environment_by_dex_and_variant_no(environment_dex_no, environment_variant_no)
 
         return (
             creature_info[0],

@@ -23,6 +23,12 @@ MYTHICAL = CreatureRarity(name="Mythical", color=discord.Color.gold(), emojii='â
 ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL]
 
 
+def get_rarity_by_name(name: str):
+    for rarity in ALL_RARITIES:
+        if rarity.name.lower() == name.lower():
+            return rarity
+    return None
+
 def get_rarity():
     roll = random.randint(1, 100)
     # Select rarity based on defined probabilities

@@ -120,9 +120,12 @@ TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (nam
 TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, creature_name, environment_name, spawn_rarity, local_name) VALUES(?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature (user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, ?, ?, '');"""
 
-TGOMMO_SELECT_CREATURE_BY_ID = """SELECT * FROM creatures WHERE creature_id = ?"""
-TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT * FROM environments WHERE environment_id = ?"""
-TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT = """SELECT c.*, ce.spawn_rarity FROM creatures c JOIN environment_creature ce ON c.creature_id = ce.creature_id WHERE ce.environment_id = ?"""
+TGOMMO_SELECT_CREATURE_BY_ID = """SELECT creature_id, name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate FROM tgommo_creature WHERE creature_id = ?"""
+TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
+
+TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER = """SELECT creature_id, name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate FROM tgommo_creature WHERE dex_no = ? AND variant_no = ?"""
+TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
+TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT = """SELECT c.dex_no, c.variant_no, ce.local_name, ce.spawn_rarity FROM tgommo_creature c JOIN tgommo_environment_creature ce ON c.creature_id = ce.creature_id WHERE ce.environment_id = ?"""
 TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM environments ORDER BY RANDOM() LIMIT 1"""
 
 TGOMMO_SELECT_CREATURE_ID_BY_DEX_AND_VARIANT_NO = """SELECT creature_id, name FROM tgommo_creature WHERE dex_no = ? AND variant_no = ?"""

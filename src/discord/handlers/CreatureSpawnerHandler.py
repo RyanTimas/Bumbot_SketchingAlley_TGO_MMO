@@ -80,12 +80,12 @@ class CreatureSpawnerHandler:
                 await asyncio.sleep(5)
 
             # wait between 1 and 10 minutes before spawning another creature
-            await asyncio.sleep(random.uniform(1, 10))  # 5 minutes
+            await asyncio.sleep(random.uniform(1, 10) *60)
 
 
     # Spawns a creature and sends a message to the discord channel
     async def _spawn_creature(self, creature: TGOCreature):
-        creature_embed = CreatureEmbedHandler(creature=creature).generate_spawn_embed()
+        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed()
 
         # Send a message to the approval queue with a button to give XP
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(
@@ -144,7 +144,6 @@ class CreatureSpawnerHandler:
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
-        print(selected_index)
         selected_creature = deepcopy(available_creatures[selected_index])
 
         if random.randint(0,10) == 1:

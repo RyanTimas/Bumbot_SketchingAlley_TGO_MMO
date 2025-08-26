@@ -13,19 +13,21 @@ CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
 CREATURE_TOTAL_XP_LINE_CENTERED = "‎                         ✨ **Total 150000 xp** ✨                        ‎ "
 
 '''ENCOUNTER SCREEN'''
-TEXT_BOX_IMAGE = "env_textbox"
+TEXT_BOX_IMAGE = "env_textbox.png"
 
 TEXT_BOX_WIDTH = 426
 FOREGROUND_IMAGE_RESIZE_PERCENT = 0.8
 
 FONT_COLOR_BLACK = (0, 0, 0)
 FONT_COLOR_WHITE = (255, 255, 255)
+FONT_COLOR_GOLD = (241, 196, 15)
+
 
 TRANSPARENT_IMG_BG = (0, 0, 0, 0)
 
-FONT_FOREST_REGULAR_PATH = r"NationalForestPrintRegular.otf"
-FONT_FOREST_BOLD_PATH = r"NationalForestPrintBold.otf"
-CREATURE_NAME_TEXT_SIZE = 24
+FONT_FOREST_REGULAR_FILE = r"NationalForestPrintRegular.otf"
+FONT_FOREST_BOLD_FILE = r"NationalForestPrintBold.otf"
+CREATURE_NAME_TEXT_SIZE = 48
 SUPPORTING_TEXT_SIZE = 12
 
 '''CREATURE IMAGES'''

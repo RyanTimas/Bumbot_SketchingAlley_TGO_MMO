@@ -1,12 +1,15 @@
+import io
 import random
 import time
 from pickle import FALSE
 
 import discord
+from discord import File
 
-from src.commons.CommonFunctions import build_image_file, to_grayscale
+from src.commons.CommonFunctions import build_image_file, to_grayscale, get_image_path
 from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
+from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import TGOMMO_CREATURE_EMBED_GRASS_ICON, TGOMMO_CREATURE_EMBED_LOCATION_ICON, \
     CREATURE_DIVIDER_LINE, CREATURE_SUCCESSFUL_CATCH_LINE, CREATURE_FIRST_CATCH_LINE, CREATURE_FIRST_SERVER_CATCH_LINE, \
@@ -20,7 +23,12 @@ class CreatureEmbedHandler:
 
     def generate_spawn_embed(self, is_spawn_message: bool = True):
         thumbnail_img = build_image_file(self.creature.img_root + '_THUMB')
+        environment_img = build_image_file(self.environment.img_root)
+
         photo_img = build_image_file(self.creature.img_root)
+        encounter_img_handler = EncounterImageHandler(background_img_path=get_image_path(environment_img.filename), foreground_img_path=get_image_path(thumbnail_img.filename), creature_name=f'{self.creature.name}', is_mythical=self.creature.rarity == MYTHICAL)
+        encounter_img = encounter_img_handler.create_encounter_image()
+
 
         embed = discord.Embed(
             #title= f"✨A wild ***{self.creature.name.upper()}*** appears!!✨" if is_spawn_message else f"the wild ***{self.creature.name.upper()}*** has run away...",
@@ -33,16 +41,16 @@ class CreatureEmbedHandler:
             embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
             embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
 
-            embed.set_footer(text='Location | Forest (☀️ Day)', icon_url=TGOMMO_CREATURE_EMBED_LOCATION_ICON)
+            embed.set_footer(text=f'{self.environment.location} ({'🌙 Night' if self.environment.is_night_environment else '☀️ Day'})', icon_url=TGOMMO_CREATURE_EMBED_LOCATION_ICON)
             embed.timestamp = discord.utils.utcnow()
-            embed.set_image(url=f"attachment://{photo_img.filename}")
+            embed.set_image(url=f"attachment://{encounter_img.filename}")
         else:
             embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False)}", value=f'', inline=True)
             thumbnail_img = to_grayscale(thumbnail_img)
 
         embed.set_thumbnail(url=f"attachment://{thumbnail_img.filename}")
 
-        return embed, thumbnail_img, photo_img
+        return embed, thumbnail_img, encounter_img
 
     def generate_catch_embed(self, user: discord.User):
         thumbnail_img = build_image_file(self.creature.img_root + '_THUMB')

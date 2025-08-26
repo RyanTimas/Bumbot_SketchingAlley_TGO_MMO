@@ -23,7 +23,7 @@ def create_encounter_image(background_img_path, foreground_img_path):
 
     # Paste the foreground onto the background
     foreground_image_with_border = add_border_to_img(foreground)
-    final_img.paste(foreground_image_with_border, position, foreground_image_with_border)
+    final_img.paste(foreground, position, foreground)
 
     # Paste the foreground onto the background
     final_img.paste(text_box, (0,0), text_box)
@@ -42,19 +42,7 @@ def create_encounter_image(background_img_path, foreground_img_path):
     text_box_width = 426
 
     # Add text to the image
-    final_img = add_text_to_image(
-        image=final_img.copy(),
-        text=text,
-        font=load_font(font_path, font_size),
-        text_color=text_color,  # Black text
-        max_width=140,
-        x_offset=20,
-        y_offset=20
-    )
-
-    # Save the result if output path is provided
-    # if output_path:
-    #     final_img.save(output_path)
+    final_img = add_text_to_image(image=final_img.copy(),text=text,font=load_font(font_path, font_size),text_color=text_color, max_width=140, x_offset=20,y_offset=20)
 
     # Display the result
     final_img.show()
@@ -237,8 +225,8 @@ def draw_font(lines, font, outline_width, draw, padding, add_border=False, cente
 
 
 if __name__ == "__main__":
-    background_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\forest_est.png"
-    foreground_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\Robin_1_THUMB.png"
+    background_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\forest_est_1.png"
+    foreground_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\Deer_2_THUMB.png"
 
     # Optional: Save the resulting image
     output_dir = os.path.dirname(background_path)

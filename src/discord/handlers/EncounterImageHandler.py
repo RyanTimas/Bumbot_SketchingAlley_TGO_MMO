@@ -1,27 +1,24 @@
-from PIL import Image, ImageFilter, ImageDraw, ImageFont
+import io
 
-from src.commons.CommonFunctions import build_image_file, load_font
+from PIL import Image, ImageFilter, ImageDraw, ImageFont
+from discord import File
+
+from src.commons.CommonFunctions import load_font, get_image_path
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.general_constants import IMAGE_FOLDER_FONTS
 
 
 class EncounterImageHandler:
-    def __init__(self, background_img_path: str, foreground_img_path: str, text: str):
+    def __init__(self, background_img_path: str, foreground_img_path: str, creature_name: str, is_mythical: bool = False):
         self.background_img_path = background_img_path
         self.foreground_img_path = foreground_img_path
-        self.text = text
+        self.creature_name = creature_name
+        self.is_mythical = is_mythical
 
         self.background_img = Image.open(self.background_img_path)
         self.foreground_img = Image.open(self.foreground_img_path)
-        self.textbox_img = Image.open(build_image_file(TEXT_BOX_IMAGE).filename)
+        self.textbox_img = Image.open(get_image_path(TEXT_BOX_IMAGE))
 
-        self.creature_name_font_regular = load_font(font_path = build_image_file(FONT_FOREST_REGULAR_PATH).filename, font_size = CREATURE_NAME_TEXT_SIZE)
-        self.creature_name_font_bold = load_font(font_path = build_image_file(FONT_FOREST_BOLD_PATH).filename, font_size = CREATURE_NAME_TEXT_SIZE)
-        self.supporting_text_font = load_font(font_path = build_image_file(FONT_FOREST_REGULAR_PATH).filename, font_size = SUPPORTING_TEXT_SIZE)
-
-
-    def handle_image(self, image_path):
-        # Logic to handle encounter images
-        pass
 
     # handler for generating encounter image
     def create_encounter_image(self):
@@ -34,35 +31,39 @@ class EncounterImageHandler:
         # Paste the foreground onto the background
         foreground_image_with_border = self.add_outline_to_img(self.foreground_img)
         foreground_image_offset = self.get_foreground_image_offset(self.foreground_img, self.background_img)
+
         final_img.paste(foreground_image_with_border, foreground_image_offset, foreground_image_with_border)
 
+        # Paste the textbox onto the background
+        final_img.paste(self.textbox_img, (0, 0), self.textbox_img)
 
         # Add text for creature name
-        self.add_text_to_image(
-            base_img=final_img.copy(),
-            font=self.creature_name_font_regular,
-            max_width=final_img.width - (2 * 30),
-        )
+        final_img = self.add_text_to_image(base_img=final_img.copy(),max_width=TEXT_BOX_WIDTH - (120*2),)
 
         #Display the result
-        final_img.show()
+        #final_img.show()
 
-        return final_img
+        return self.convert_to_png(final_img)
 
 
     # set up text to add to encounter image
-    def add_text_to_image(self, base_img: Image, font: ImageFont, max_width:int):
+    def add_text_to_image(self, base_img: Image, max_width:int):
         draw = ImageDraw.Draw(base_img)
 
         # Split text into words
-        creature_text = self.split_lines('Creature Name', draw, font, max_width)
-        wild_text = self.split_lines('A Wild', draw, font, max_width)
-        appears_text = self.split_lines('Appears', draw, font, max_width)
+        # creature_text = self.split_lines(self.creature_name, draw, font, max_width)
+
+        main_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=CREATURE_NAME_TEXT_SIZE)
+        main_font = self.resize_text_to_fit(text=self.creature_name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
+        support_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=14)
+        support_font_2 = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=18)
 
         # Draw each line of text
-        self.place_text_on_image(lines=creature_text, font=self.creature_name_font_bold, outline_width=2, draw=draw, padding=(0, 126), add_border=True, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_BLACK, outline_color=FONT_COLOR_WHITE)
-        self.place_text_on_image(lines=wild_text, font=self.supporting_text_font, outline_width=2, draw=draw, padding=(-126, 126), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
-        self.place_text_on_image(lines=appears_text, font=self.supporting_text_font, outline_width=2, draw=draw, padding=(126, 126), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
+        self.place_text_on_image(lines=[self.creature_name], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_GOLD if self.is_mythical else FONT_COLOR_BLACK, outline_color=FONT_COLOR_BLACK if self.is_mythical else FONT_COLOR_WHITE)
+        self.place_text_on_image(lines=['A Wild'], font=support_font_2, outline_width=2, draw=draw, padding=(-140, 128), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
+        self.place_text_on_image(lines=['Appears'], font=support_font, outline_width=2, draw=draw, padding=(140, 130), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
+
+        return base_img
 
 
     # Split text into lines that fit within the text box
@@ -96,16 +97,18 @@ class EncounterImageHandler:
         return lines
 
 
-    def resize_text_to_fit(text, draw, font, max_width, min_font_size=10, font_path=None):
+    def resize_text_to_fit(self, text, draw, font, max_width, min_font_size=10):
         current_font = font
         current_font_size = font.size
+        font_path = get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS)
+
         current_text = text
 
         # Check if the text already fits
         text_width = draw.textlength(text, font=current_font)
 
         if text_width <= max_width:
-            return current_font, current_text
+            return current_font
 
         # If text doesn't fit, try reducing font size
         while text_width > max_width and current_font_size > min_font_size:
@@ -135,12 +138,21 @@ class EncounterImageHandler:
 
             current_text = truncated_text + ellipsis if truncated_text else ellipsis
 
-        return current_font, current_text
+        return current_font
+
+
+    def get_y_offset_to_center_text(self, font):
+        target_y_position = 136
+
+        # Calculate the vertical centering offset based on font size
+        font_height = font.getbbox("Ay")[3]  # Gets approximate height including descenders
+        return target_y_position - (font_height / 2)  # Center the text at the target position
 
 
     # Calculate position to center the foreground on the background And move it down by 50 pixels
     def get_foreground_image_offset(self, foreground: Image, background_img: Image):
         return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + 50
+
 
     # draw text onto the image
     def place_text_on_image(self, lines, font, outline_width, draw, padding, add_border, center_text, text_box_width, text_color, outline_color):
@@ -215,3 +227,10 @@ class EncounterImageHandler:
         return img_with_outline
 
 
+    def convert_to_png(self, image: Image):
+        with io.BytesIO() as image_binary:
+            image.save(image_binary, 'PNG')
+            image_binary.seek(0)
+            encounter_img = File(fp=image_binary, filename='encounter_image.png')
+
+        return encounter_img

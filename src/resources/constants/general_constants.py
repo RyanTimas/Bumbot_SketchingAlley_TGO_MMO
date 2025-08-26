@@ -37,7 +37,9 @@ DISCORD_SA_CHANNEL_ID_TEST = 1196630996477542570
 '''**********************'''
 '''File Paths / Locations'''
 '''**********************'''
-IMAGE_FOLDER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images")
+IMAGE_FOLDER_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "")
+IMAGE_FOLDER_IMAGES = "images"
+IMAGE_FOLDER_FONTS = "fonts"
 
 
 '''*****************'''

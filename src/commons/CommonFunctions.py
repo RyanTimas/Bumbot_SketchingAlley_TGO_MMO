@@ -5,7 +5,7 @@ import discord
 import io
 from PIL import Image, ImageFont
 
-from src.resources.constants.general_constants import IMAGE_FOLDER_PATH
+from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
@@ -14,7 +14,7 @@ from src.resources.constants.general_constants import IMAGE_FOLDER_PATH
 def build_image_file(image_name: str) -> discord.File:
     image_name += ".png"
 
-    file_path = os.path.join(os.path.join(IMAGE_FOLDER_PATH, image_name))
+    file_path = get_image_path(image_name)
     try:
         if not os.path.isfile(file_path):
             print(f"Image file '{file_path}' not found.")
@@ -23,6 +23,11 @@ def build_image_file(image_name: str) -> discord.File:
     except Exception as e:
         print(f"Error loading image file '{file_path}': {e}")
         return None
+
+
+def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) -> str:
+    path = os.path.join(os.path.join(IMAGE_FOLDER_BASE_PATH, folder_location))
+    return os.path.join(os.path.join(path, image_name))
 
 
 #************************************************************************************

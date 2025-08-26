@@ -9,7 +9,7 @@ from discord import File
 
 from src.commons.CommonFunctions import build_image_file, to_grayscale, get_image_path
 from src.database.handlers import DatabaseHandler
-from src.database.handlers.DatabaseHandler import get_db_handler
+from src.database.handlers.DatabaseHandler import get_db_handler, get_tgommo_db_handler
 from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL
@@ -98,11 +98,11 @@ class CreatureEmbedHandler:
 
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
 
-        if 0 == get_db_handler().tgommo_database_handler.get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no):
+        if 0 == get_tgommo_db_handler().get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no):
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 2500
 
-        if 0 == get_db_handler().tgommo_database_handler.get_total_server_catches_for_species(creature_id=self.creature.creature_id):
+        if 0 == get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id):
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
 

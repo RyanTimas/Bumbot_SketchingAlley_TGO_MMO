@@ -2,7 +2,7 @@ import sys
 import random
 import discord
 
-from src.database.handlers.DatabaseHandler import DatabaseHandler, get_db_handler
+from src.database.handlers.DatabaseHandler import DatabaseHandler, get_db_handler, get_tgommo_db_handler
 from src.discord import DiscordBot
 
 
@@ -53,5 +53,5 @@ def assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
     @discord_bot.discord_bot.command(name='caught_creatures', help="List all creatures caught.")
     async def caught_creatures(ctx):
-        creatures = get_db_handler().tgommo_database_handler.get_all_creatures_caught_by_user(user_id=ctx.author.id)
+        creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=ctx.author.id)
 

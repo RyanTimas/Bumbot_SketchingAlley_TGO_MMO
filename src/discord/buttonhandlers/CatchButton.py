@@ -6,7 +6,7 @@ from discord import Message
 from discord.ui import View
 
 from src.database.handlers import DatabaseHandler
-from src.database.handlers.DatabaseHandler import get_db_handler
+from src.database.handlers.DatabaseHandler import get_db_handler, get_tgommo_db_handler, get_user_db_handler
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature
@@ -42,9 +42,9 @@ class CatchButton(discord.ui.Button):
         total_xp = successful_catch_embed[3]
 
         # insert record of user catching the creature
-        get_db_handler().tgommo_database_handler.insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
+        get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
         # give user xp for catching the creature
-        get_db_handler().user_database_handler.update_xp(total_xp, interaction.user.id, interaction.user.display_name)
+        get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
         # send a message to the channel announcing the successful catch
         await interaction.channel.send(embed=successful_catch_embed[0], files=[successful_catch_embed[1]])

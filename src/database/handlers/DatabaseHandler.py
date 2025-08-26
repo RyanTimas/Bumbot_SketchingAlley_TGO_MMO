@@ -26,14 +26,14 @@ def get_db_handler():
     return _db_handler
 
 
-def get_tgommo_db_handler():
+def get_tgommo_db_handler() -> TGOMMODatabaseHandler:
     global _tgommo_db_handler
     if _tgommo_db_handler is None:
         raise RuntimeError("Database handler not initialized. Call initialize_database() first.")
     return _tgommo_db_handler
 
 
-def _user_db_handler():
+def get_user_db_handler() -> UserDatabaseHandler:
     global _user_db_handler
     if _user_db_handler is None:
         raise RuntimeError("Database handler not initialized. Call initialize_database() first.")

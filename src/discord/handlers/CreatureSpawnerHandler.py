@@ -82,7 +82,7 @@ class CreatureSpawnerHandler:
                 await asyncio.sleep(5)
 
             # wait between 1 and 10 minutes before spawning another creature
-            await asyncio.sleep(random.uniform(1, 10) )
+            await asyncio.sleep(random.uniform(1, 10) *60)
 
 
     # Spawns a creature and sends a message to the discord channel

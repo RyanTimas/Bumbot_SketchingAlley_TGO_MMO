@@ -130,7 +130,7 @@ TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM environments
 
 TGOMMO_SELECT_CREATURE_ID_BY_DEX_AND_VARIANT_NO = """SELECT creature_id, name FROM tgommo_creature WHERE dex_no = ? AND variant_no = ?"""
 TGOMMO_SELECT_ENVIRONMENT_ID_BY_DEX_AND_VARIANT_NO = """SELECT environment_id, name FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """SELECT environment_id, name FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """SELECT c.creature_id, c.name, COUNT(*) as creature_count, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_count FROM tgommo_user_creature uc JOIN tgommo_creature c ON uc.creature_id = c.creature_id WHERE uc.user_id = ? GROUP BY c.creature_id ORDER BY c.name"""
 
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ?;"""
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM_AND_VARIANT_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ? AND c.variant_no = ?;"""

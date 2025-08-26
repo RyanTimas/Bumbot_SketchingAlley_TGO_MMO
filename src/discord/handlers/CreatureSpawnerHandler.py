@@ -12,7 +12,7 @@ import discord
 from discord.ext.commands import Bot
 from sqlalchemy.sql.functions import current_time
 
-from src.database.handlers import DatabaseHandler
+from src.database.handlers.DatabaseHandler import get_db_handler
 from src.discord.buttonhandlers.CatchButton import TGOMMOCatchButtonView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity, CreatureRarity, get_rarity_by_name, COMMON
@@ -22,13 +22,12 @@ from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TEST
 
 
 class CreatureSpawnerHandler:
-    def __init__(self, discord_bot: Bot, database_handler: DatabaseHandler):
+    def __init__(self, discord_bot: Bot):
         self.discord_bot = discord_bot
-        self.database_handler = database_handler
 
         self.are_creatures_spawning = True
 
-        self.current_environment = self.database_handler.tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=1, variant_no=1)
+        self.current_environment = get_db_handler().tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=1, variant_no=1)
         self.creature_spawn_pool = TEST_SPAWN_POOL
 
         self.last_spawn_time = datetime.now()
@@ -50,16 +49,16 @@ class CreatureSpawnerHandler:
 
     # Loads a particular environment and defines the spawn pool for that environment
     def _define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        current_environment_info = self.database_handler.tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no)
+        current_environment_info = get_db_handler().tgommo_database_handler.get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no)
         self.current_environment = TGOEnvironment(environment_id=current_environment_info[0], name=current_environment_info[1], variant_name=current_environment_info[2], dex_no=current_environment_info[3], variant_no=current_environment_info[4], location=current_environment_info[5], description=current_environment_info[6], img_root=current_environment_info[7], is_night_environment=current_environment_info[8], in_circulation=current_environment_info[9], encounter_rate=current_environment_info[10])
 
         # Retrieve & Define Spawn Pool
         self.creature_spawn_pool = []
-        creature_links = self.database_handler.tgommo_database_handler.get_creatures_from_environment(environment_id=self.current_environment.environment_id)
+        creature_links = get_db_handler().tgommo_database_handler.get_creatures_from_environment(environment_id=self.current_environment.environment_id)
 
         for creature_link in creature_links:
             local_name = creature_link[2]
-            creature_info = self.database_handler.tgommo_database_handler.get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1])
+            creature_info = get_db_handler().tgommo_database_handler.get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1])
 
             creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]))
             self.creature_spawn_pool.append(creature)
@@ -72,7 +71,7 @@ class CreatureSpawnerHandler:
             self._handle_time_change()
 
             try:
-                await self._spawn_creature(creature= await self._creature_picker())
+                await self.spawn_creature(creature= await self.creature_picker())
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
@@ -86,12 +85,12 @@ class CreatureSpawnerHandler:
 
 
     # Spawns a creature and sends a message to the discord channel
-    async def _spawn_creature(self, creature: TGOCreature):
+    async def spawn_creature(self, creature: TGOCreature):
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed()
 
         # Send a message to the approval queue with a button to give XP
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(
-            view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',database_handler=self.database_handler,creature=creature, environment=self.current_environment),
+            view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
         )
@@ -139,7 +138,7 @@ class CreatureSpawnerHandler:
 
 
     # Picks a random creature from the spawn pool
-    async def _creature_picker(self):
+    async def creature_picker(self):
         rarity = get_rarity()
         rarity = COMMON
 

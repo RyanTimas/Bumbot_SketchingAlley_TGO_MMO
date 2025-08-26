@@ -1,7 +1,6 @@
 from xml.dom import UserDataHandler
 
 from src.database.handlers.QueryHandler import QueryHandler
-from src.database.handlers.User_DatabaseHandler import UserDatabaseHandler
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import *
 from src.resources.db_queries import *
@@ -60,6 +59,11 @@ class TGOMMODatabaseHandler:
 
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
         return response
+
+
+    def get_all_creatures_caught_by_user(self, user_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
+        return response[0]
 
     ''' Update Queries '''
     ''' Delete Queries '''

@@ -4,13 +4,23 @@
 TGOMMO_CREATURE_EMBED_GRASS_ICON = "https://i.pinimg.com/originals/22/13/5b/22135b26441d0e9163eb4445af0c56c2.gif"
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"
 
-'''EMBED LINES'''
+'''CATCH EMBED LINES'''
 CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
-CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               *+500 xp*"
-CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+1500 xp*"
+CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               "
+CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+2500 xp*"
 CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+10000 xp*"
+MYTHICAL_CATCH_LINE = "Mythical Creature                                         *+10000 xp*"
 CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
+# todo: user caught new form of this species +2500 xp
+# todo: user caught 10 of this species +5000 xp
+# todo: user caught 100 of this species +25000 xp
+# todo: user caught 10th instance of this species on server +5000 xp
+# todo: user caught 100th instance of this species on server +25000 xp
+# todo: user caught every species in a location +100000 xp
+# todo: when every species in a location is caught, everyone who caught a species in that location gets +5000 xp
 CREATURE_TOTAL_XP_LINE_CENTERED = "‎                         ✨ **Total 150000 xp** ✨                        ‎ "
+
+
 
 '''ENCOUNTER SCREEN'''
 TEXT_BOX_IMAGE = "env_textbox.png"

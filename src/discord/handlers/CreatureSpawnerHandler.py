@@ -2,6 +2,7 @@ import asyncio
 import ssl
 import threading
 import time
+import traceback
 from copy import deepcopy
 import random
 from datetime import datetime
@@ -75,12 +76,13 @@ class CreatureSpawnerHandler:
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
-                print(f"{error_type} occurred during creature spawning- skipping to next creature")
+                print(f"{error_type} occurred during creature spawning- skipping to next creature - {e}")
+                traceback.print_exc()
                 # Add a short delay before retrying
                 await asyncio.sleep(5)
 
             # wait between 1 and 10 minutes before spawning another creature
-            await asyncio.sleep(random.uniform(1, 10) *60)
+            await asyncio.sleep(random.uniform(1, 10) )
 
 
     # Spawns a creature and sends a message to the discord channel
@@ -89,7 +91,7 @@ class CreatureSpawnerHandler:
 
         # Send a message to the approval queue with a button to give XP
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(
-            view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',database_handler=self.database_handler,creature=creature),
+            view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',database_handler=self.database_handler,creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
         )

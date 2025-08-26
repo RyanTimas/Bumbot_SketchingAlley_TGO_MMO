@@ -4,16 +4,17 @@ from PIL import Image, ImageFilter, ImageDraw, ImageFont
 from discord import File
 
 from src.commons.CommonFunctions import load_font, get_image_path
+from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import IMAGE_FOLDER_FONTS
 
 
 class EncounterImageHandler:
-    def __init__(self, background_img_path: str, foreground_img_path: str, creature_name: str, is_mythical: bool = False):
+    def __init__(self, background_img_path: str, foreground_img_path: str, creature: TGOCreature):
         self.background_img_path = background_img_path
         self.foreground_img_path = foreground_img_path
-        self.creature_name = creature_name
-        self.is_mythical = is_mythical
+
+        self.creature = creature
 
         self.background_img = Image.open(self.background_img_path)
         self.foreground_img = Image.open(self.foreground_img_path)
@@ -54,12 +55,13 @@ class EncounterImageHandler:
         # creature_text = self.split_lines(self.creature_name, draw, font, max_width)
 
         main_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=CREATURE_NAME_TEXT_SIZE)
-        main_font = self.resize_text_to_fit(text=self.creature_name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
+        main_font = self.resize_text_to_fit(text=self.creature.name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
+
         support_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=14)
         support_font_2 = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=18)
 
         # Draw each line of text
-        self.place_text_on_image(lines=[self.creature_name], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_GOLD if self.is_mythical else FONT_COLOR_BLACK, outline_color=FONT_COLOR_BLACK if self.is_mythical else FONT_COLOR_WHITE)
+        self.place_text_on_image(lines=[self.creature.name], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.rarity.font_color, outline_color=self.creature.rarity.outline_color)
         self.place_text_on_image(lines=['A Wild'], font=support_font_2, outline_width=2, draw=draw, padding=(-140, 128), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
         self.place_text_on_image(lines=['Appears'], font=support_font, outline_width=2, draw=draw, padding=(140, 130), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
 

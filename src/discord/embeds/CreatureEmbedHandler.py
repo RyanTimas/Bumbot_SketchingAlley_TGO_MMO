@@ -2,18 +2,21 @@ import io
 import random
 import time
 from pickle import FALSE
+from random import randint
 
 import discord
 from discord import File
 
 from src.commons.CommonFunctions import build_image_file, to_grayscale, get_image_path
+from src.database.handlers import DatabaseHandler
 from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import TGOMMO_CREATURE_EMBED_GRASS_ICON, TGOMMO_CREATURE_EMBED_LOCATION_ICON, \
+from src.resources.constants.TGO_MMO_constants import TGOMMO_CREATURE_EMBED_GRASS_ICON, \
+    TGOMMO_CREATURE_EMBED_LOCATION_ICON, \
     CREATURE_DIVIDER_LINE, CREATURE_SUCCESSFUL_CATCH_LINE, CREATURE_FIRST_CATCH_LINE, CREATURE_FIRST_SERVER_CATCH_LINE, \
-    CREATURE_TOTAL_XP_LINE
+    CREATURE_TOTAL_XP_LINE, MYTHICAL_CATCH_LINE
 
 
 class CreatureEmbedHandler:
@@ -26,7 +29,7 @@ class CreatureEmbedHandler:
         environment_img = build_image_file(self.environment.img_root)
 
         photo_img = build_image_file(self.creature.img_root)
-        encounter_img_handler = EncounterImageHandler(background_img_path=get_image_path(environment_img.filename), foreground_img_path=get_image_path(thumbnail_img.filename), creature_name=f'{self.creature.name}', is_mythical=self.creature.rarity == MYTHICAL)
+        encounter_img_handler = EncounterImageHandler(background_img_path=get_image_path(environment_img.filename), foreground_img_path=get_image_path(thumbnail_img.filename), creature=self.creature)
         encounter_img = encounter_img_handler.create_encounter_image()
 
 
@@ -52,7 +55,7 @@ class CreatureEmbedHandler:
 
         return embed, thumbnail_img, encounter_img
 
-    def generate_catch_embed(self, user: discord.User):
+    def generate_catch_embed(self, interaction: discord.Interaction, database_handler: DatabaseHandler):
         thumbnail_img = build_image_file(self.creature.img_root + '_THUMB')
         photo_img = build_image_file(self.creature.img_root)
 
@@ -62,15 +65,16 @@ class CreatureEmbedHandler:
             color=discord.Color.dark_green()
         )
         embed.set_author(name = f'The {self.creature.name.upper()} was caught!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
-        embed.add_field(name=f"✨     Caught By - **{user.name.upper()}**", value=f"", inline=False)
+        embed.add_field(name=f"✨     Caught By - **{interaction.user.name.upper()}**", value=f"", inline=False)
         embed.add_field(name=f"🕒     Caught On - **{discord.utils.utcnow().strftime('%Y-%m-%d %H:%M UTC')}**\n\n\n\n", value=f"", inline=False)
 
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
-        embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE, value=f"", inline=False)
-        embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
-        embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
+
+        # calculate xp to add and add fields to embed
+        total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=interaction, database_handler=database_handler)
+
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
-        embed.add_field(name=CREATURE_TOTAL_XP_LINE, value=f"", inline=False)
+        embed.add_field(name=f"✨ **Total {total_xp} xp** ✨", value=f"", inline=False)
 
         # embed.set_image(url=f"attachment://{photo_img.filename}")
         embed.set_thumbnail(url=f"attachment://{thumbnail_img.filename}")
@@ -78,7 +82,7 @@ class CreatureEmbedHandler:
         # embed.set_footer(text ='Location | Forest (☀️ Day)', icon_url= CREATURE_EMBED_LOCATION_ICON)
         # embed.timestamp = discord.utils.utcnow()
 
-        return embed, thumbnail_img, photo_img
+        return embed, thumbnail_img, photo_img, total_xp
 
 
     def get_despawn_timestamp(self, is_countdown: bool = True):
@@ -86,3 +90,24 @@ class CreatureEmbedHandler:
         despawn_character = 'R' if is_countdown else 'F'
 
         return f"<t:{despawn_timestamp}:{despawn_character}>"
+
+
+    def calculate_catch_xp(self, catch_embed: discord.Embed, database_handler: DatabaseHandler, interaction: discord.Interaction):
+        total_xp = randint(100, 350)
+
+        catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
+
+        if 0 == database_handler.tgommo_database_handler.get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no):
+            catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
+            total_xp += 2500
+
+        if 0 == database_handler.tgommo_database_handler.get_total_server_catches_for_species(creature_id=self.creature.creature_id):
+            catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
+            total_xp += 10000
+
+        if self.creature.rarity == MYTHICAL:
+            catch_embed.add_field(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
+            total_xp += 10000
+
+
+        return total_xp, catch_embed

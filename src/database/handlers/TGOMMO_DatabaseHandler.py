@@ -18,6 +18,9 @@ class TGOMMODatabaseHandler:
     def insert_new_creature(self, params=(0,'', '', '', 0, 0, 0, 0, 0, 0, 0)):
         return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=params)
 
+    def insert_new_user_creature(self, params=(0,0,0,0,0)):
+        return self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
+
 
     ''' Select Queries '''
     def get_creature_by_id(self, creature_id=0):
@@ -38,6 +41,16 @@ class TGOMMODatabaseHandler:
     def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
         return response[0]
+
+
+    def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
+        return response[0][0]
+
+
+    def get_total_server_catches_for_species(self, creature_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
+        return response[0][0]
 
 
     # Returns all creatures found within a particular environment

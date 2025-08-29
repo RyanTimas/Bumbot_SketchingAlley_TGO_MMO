@@ -4,6 +4,7 @@ from datetime import date
 import discord
 import io
 from PIL import Image, ImageFont
+from discord import File
 
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
@@ -44,6 +45,14 @@ def to_grayscale(discord_file):
     img.save(buf, format="PNG")
     buf.seek(0)
     return discord.File(buf, filename=discord_file.filename)
+
+
+def convert_to_png(image: Image, file_name):
+     with io.BytesIO() as image_binary:
+        image.save(image_binary, 'PNG')
+        image_binary.seek(0)
+        png_img = File(fp=image_binary, filename=file_name)
+        return png_img
 
 
 #************************************************************************************

@@ -1,6 +1,7 @@
 from xml.dom import UserDataHandler
 
 from src.database.handlers.QueryHandler import QueryHandler
+from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import *
 from src.resources.db_queries import *
@@ -63,7 +64,21 @@ class TGOMMODatabaseHandler:
 
     def get_all_creatures_caught_by_user(self, user_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
+        return response
+
+    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
+
+        for rarity in ALL_RARITIES:
+            if rarity.name == response[0][0]:
+                return rarity
+        return COMMON
+
+
+    def get_ids_for_unique_creatures(self):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
         return response[0]
+
 
     ''' Update Queries '''
     ''' Delete Queries '''

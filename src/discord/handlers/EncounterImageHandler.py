@@ -3,7 +3,7 @@ import io
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
 from discord import File
 
-from src.commons.CommonFunctions import load_font, get_image_path
+from src.commons.CommonFunctions import load_font, get_image_path, convert_to_png
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import IMAGE_FOLDER_FONTS
@@ -44,7 +44,7 @@ class EncounterImageHandler:
         #Display the result
         #final_img.show()
 
-        return self.convert_to_png(final_img)
+        return convert_to_png(final_img, 'encounter_image.png')
 
 
     # set up text to add to encounter image
@@ -229,10 +229,3 @@ class EncounterImageHandler:
         return img_with_outline
 
 
-    def convert_to_png(self, image: Image):
-        with io.BytesIO() as image_binary:
-            image.save(image_binary, 'PNG')
-            image_binary.seek(0)
-            encounter_img = File(fp=image_binary, filename='encounter_image.png')
-
-        return encounter_img

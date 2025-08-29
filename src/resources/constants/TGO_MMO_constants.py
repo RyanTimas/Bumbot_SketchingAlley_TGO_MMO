@@ -1,11 +1,12 @@
 '''TGO MMO'''
 from src.resources.constants.general_constants import IMAGE_FOLDER_IMAGES
 
+
 '''EMBED ICONS'''
-TGOMMO_CREATURE_EMBED_GRASS_ICON = "https://i.pinimg.com/originals/22/13/5b/22135b26441d0e9163eb4445af0c56c2.gif"
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"
 
-'''CATCH EMBED LINES'''
+
+'''CREATURE CATCH XP LINES'''
 CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
 CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               "
 CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+2500 xp*"
@@ -22,10 +23,7 @@ CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
 CREATURE_TOTAL_XP_LINE_CENTERED = "‎                         ✨ **Total 150000 xp** ✨                        ‎ "
 
 
-
 '''ENCOUNTER SCREEN'''
-TEXT_BOX_IMAGE = "env_textbox.png"
-
 TEXT_BOX_WIDTH = 426
 FOREGROUND_IMAGE_RESIZE_PERCENT = 0.8
 
@@ -34,23 +32,8 @@ FONT_COLOR_WHITE = (255, 255, 255)
 FONT_COLOR_GOLD = (241, 196, 15)
 TRANSPARENT_IMG_BG = (0, 0, 0, 0)
 
-FONT_FOREST_REGULAR_FILE = r"NationalForestPrintRegular.otf"
-FONT_FOREST_BOLD_FILE = r"NationalForestPrintBold.otf"
 CREATURE_NAME_TEXT_SIZE = 48
 SUPPORTING_TEXT_SIZE = 12
-
-'''DEX ICON'''
-DEX_ICON_DIRECTORY_PATH = IMAGE_FOLDER_IMAGES + r"\encyclopedia_resources\dex_icons"
-
-DEX_ICON_BASE = "DexIcon"
-DEX_ICON_BACKGROUND_BASE = DEX_ICON_BASE + "_BackgroundColor"
-DEX_ICON_CREATURE_BASE = DEX_ICON_BASE + "_Creature"
-
-DEX_ICON_CREATURE_LOCKED_ICON = DEX_ICON_CREATURE_BASE + "_LockedIcon"
-DEX_ICON_SHADOW = DEX_ICON_BASE + "_BGShadow"
-DEX_ICON_STATS_BAR = DEX_ICON_BASE + "_StatsBar"
-DEX_ICON_OVERLAY = DEX_ICON_BASE + "_Overlay"
-
 
 
 '''CREATURE IMAGES'''

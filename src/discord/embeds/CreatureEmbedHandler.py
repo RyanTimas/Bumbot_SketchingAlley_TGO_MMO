@@ -14,10 +14,8 @@ from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import TGOMMO_CREATURE_EMBED_GRASS_ICON, \
-    TGOMMO_CREATURE_EMBED_LOCATION_ICON, \
-    CREATURE_DIVIDER_LINE, CREATURE_SUCCESSFUL_CATCH_LINE, CREATURE_FIRST_CATCH_LINE, CREATURE_FIRST_SERVER_CATCH_LINE, \
-    CREATURE_TOTAL_XP_LINE, MYTHICAL_CATCH_LINE
+from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON
 
 
 class CreatureEmbedHandler:

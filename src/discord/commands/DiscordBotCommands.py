@@ -7,7 +7,7 @@ import discord
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import DatabaseHandler, get_db_handler, get_tgommo_db_handler
 from src.discord import DiscordBot
-from src.discord.factories.DexIconFactory import DexIconFactory
+from src.discord.image_factories.DexIconFactory import DexIconFactory
 from src.discord.objects.CreatureRarity import COMMON
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_COMMON
 

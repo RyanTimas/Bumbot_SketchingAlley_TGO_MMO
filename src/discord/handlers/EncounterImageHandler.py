@@ -6,6 +6,7 @@ from discord import File
 from src.commons.CommonFunctions import load_font, get_image_path, convert_to_png
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import IMAGE_FOLDER_FONTS
 
 
@@ -18,7 +19,7 @@ class EncounterImageHandler:
 
         self.background_img = Image.open(self.background_img_path)
         self.foreground_img = Image.open(self.foreground_img_path)
-        self.textbox_img = Image.open(get_image_path(TEXT_BOX_IMAGE))
+        self.textbox_img = Image.open(TEXT_BOX_IMAGE)
 
 
     # handler for generating encounter image
@@ -41,9 +42,6 @@ class EncounterImageHandler:
         # Add text for creature name
         final_img = self.add_text_to_image(base_img=final_img.copy(),max_width=TEXT_BOX_WIDTH - (120*2),)
 
-        #Display the result
-        #final_img.show()
-
         return convert_to_png(final_img, 'encounter_image.png')
 
 
@@ -54,11 +52,11 @@ class EncounterImageHandler:
         # Split text into words
         # creature_text = self.split_lines(self.creature_name, draw, font, max_width)
 
-        main_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=CREATURE_NAME_TEXT_SIZE)
+        main_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, CREATURE_NAME_TEXT_SIZE)
         main_font = self.resize_text_to_fit(text=self.creature.name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
 
-        support_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=14)
-        support_font_2 = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=18)
+        support_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 14)
+        support_font_2 = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 18)
 
         # Draw each line of text
         self.place_text_on_image(lines=[self.creature.name], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.rarity.font_color, outline_color=self.creature.rarity.outline_color)
@@ -102,7 +100,6 @@ class EncounterImageHandler:
     def resize_text_to_fit(self, text, draw, font, max_width, min_font_size=10):
         current_font = font
         current_font_size = font.size
-        font_path = get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS)
 
         current_text = text
 
@@ -117,15 +114,10 @@ class EncounterImageHandler:
             current_font_size -= 1
 
             # Create a new font with smaller size
-            if font_path:
-                try:
-                    current_font = ImageFont.truetype(font_path, current_font_size)
-                except IOError:
-                    current_font = ImageFont.load_default()
-            else:
-                # If no font path is provided, we can't resize the font
-                # In this case, truncate the text instead
-                break
+            try:
+                current_font = ImageFont.truetype(font.path, current_font_size)
+            except IOError:
+                current_font = ImageFont.load_default()
 
             text_width = draw.textlength(text, font=current_font)
 

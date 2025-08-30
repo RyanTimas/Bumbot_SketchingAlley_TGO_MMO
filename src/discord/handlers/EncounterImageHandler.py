@@ -1,13 +1,11 @@
-import io
+from PIL import Image, ImageFilter, ImageDraw, ImageFont
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
-from discord import File
 
-from src.commons.CommonFunctions import load_font, get_image_path, convert_to_png
+from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import IMAGE_FOLDER_FONTS
 
 
 class EncounterImageHandler:
@@ -53,7 +51,7 @@ class EncounterImageHandler:
         # creature_text = self.split_lines(self.creature_name, draw, font, max_width)
 
         main_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, CREATURE_NAME_TEXT_SIZE)
-        main_font = self.resize_text_to_fit(text=self.creature.name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
+        main_font = resize_text_to_fit(text=self.creature.name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
 
         support_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 14)
         support_font_2 = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 18)
@@ -96,43 +94,6 @@ class EncounterImageHandler:
 
         return lines
 
-
-    def resize_text_to_fit(self, text, draw, font, max_width, min_font_size=10):
-        current_font = font
-        current_font_size = font.size
-
-        current_text = text
-
-        # Check if the text already fits
-        text_width = draw.textlength(text, font=current_font)
-
-        if text_width <= max_width:
-            return current_font
-
-        # If text doesn't fit, try reducing font size
-        while text_width > max_width and current_font_size > min_font_size:
-            current_font_size -= 1
-
-            # Create a new font with smaller size
-            try:
-                current_font = ImageFont.truetype(font.path, current_font_size)
-            except IOError:
-                current_font = ImageFont.load_default()
-
-            text_width = draw.textlength(text, font=current_font)
-
-        # If reducing font size didn't work or wasn't possible, truncate the text
-        if text_width > max_width:
-            # Truncate text with ellipsis
-            ellipsis = "..."
-            truncated_text = text
-
-            while draw.textlength(truncated_text + ellipsis, font=font) > max_width and len(truncated_text) > 0:
-                truncated_text = truncated_text[:-1]
-
-            current_text = truncated_text + ellipsis if truncated_text else ellipsis
-
-        return current_font
 
 
     def get_y_offset_to_center_text(self, font):

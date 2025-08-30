@@ -82,6 +82,45 @@ def load_font(font_path, font_size):
     return font
 
 
+def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
+        current_font = font
+        current_font_size = font.size
+
+        current_text = text
+
+        # Check if the text already fits
+        text_width = draw.textlength(text, font=current_font)
+
+        if text_width <= max_width:
+            return current_font
+
+        # If text doesn't fit, try reducing font size
+        while text_width > max_width and current_font_size > min_font_size:
+            current_font_size -= 1
+
+            # Create a new font with smaller size
+            try:
+                current_font = ImageFont.truetype(font.path, current_font_size)
+            except IOError:
+                current_font = ImageFont.load_default()
+
+            text_width = draw.textlength(text, font=current_font)
+
+        # If reducing font size didn't work or wasn't possible, truncate the text
+        if text_width > max_width:
+            # Truncate text with ellipsis
+            ellipsis = "..."
+            truncated_text = text
+
+            while draw.textlength(truncated_text + ellipsis, font=font) > max_width and len(truncated_text) > 0:
+                truncated_text = truncated_text[:-1]
+
+            current_text = truncated_text + ellipsis if truncated_text else ellipsis
+
+        return current_font
+
+
+
 #************************************************************************************
 #-------------------------------DISCORD FUNCTIONS------------------------------------
 #************************************************************************************

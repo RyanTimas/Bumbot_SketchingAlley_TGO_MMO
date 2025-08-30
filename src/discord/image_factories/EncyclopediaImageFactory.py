@@ -3,7 +3,8 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic, center_text_on_pixel
+from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic, center_text_on_pixel, \
+    resize_text_to_fit
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.DexIconFactory import DexIconFactory
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -204,14 +205,16 @@ class EncyclopediaImageFactory:
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
 
         # NAME TEXT
-        text = f"Sketching Alley" if self.is_server_page else self.user.name
+        text = f"Sketching Alley" if self.is_server_page else self.user.display_name
+        font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)
-        draw.text(pixel_location, text= text, font=name_font, color=FONT_COLOR_WHITE)
+        draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
 
         if not self.is_server_page:
             text = f"@{self.user.name}"
+            font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)
-            draw.text(pixel_location, text= text, font=tag_font, color=FONT_COLOR_WHITE)
+            draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
 
         # TOP BAR TEXT
         text = f"01 / {'0' if len(self.dex_icons) < 10 else ''} {len(self.dex_icons)}"
@@ -224,12 +227,11 @@ class EncyclopediaImageFactory:
 
         # BOTTOM BAR TEXT
         text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
+        font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=225, min_font_size=10)
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
-        draw.text(pixel_location, text=text, font=bar_font, color=FONT_COLOR_WHITE)
+        draw.text(pixel_location, text=text, font=font, color=FONT_COLOR_WHITE)
 
         return encyclopedia_img
-
-
 
 
 

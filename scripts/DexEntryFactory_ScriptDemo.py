@@ -6,19 +6,19 @@ from src.resources.constants.general_constants import IMAGE_FOLDER_IMAGES, IMAGE
 
 folder_location = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons"
 
-icon_overlay_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_Overlay.png"
-icon_shadow_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BGShadow.png"
-icon_stats_overlay_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_StatsBar.png"
+icon_overlay_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_Overlay.png"
+icon_shadow_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BGShadow.png"
+icon_stats_overlay_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_StatsBar.png"
 
 icon_stats_locked_icon_path = r"DexIcon_Critter_LockedIcon.png"
 icon_stats_critter_rabbit_icon_path = r"DexIcon_Creature_Rabbit_3_1.png"
 
-icon_stats_common_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Common.png"
-icon_stats_uncommon_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Uncommon.png"
-icon_stats_rare_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Rare.png"
-icon_stats_epic_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Epic.png"
-icon_stats_legendary_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Legendary.png"
-icon_stats_mythic_bg_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\encyclopedia_resources\dex_icons\DexIcon_BackgroundColor_Mythical.png"
+icon_stats_common_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Common.png"
+icon_stats_uncommon_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Uncommon.png"
+icon_stats_rare_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Rare.png"
+icon_stats_epic_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Epic.png"
+icon_stats_legendary_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Legendary.png"
+icon_stats_mythic_bg_path = r"/src/resources/images/encyclopedia_resources/dex_icons/DexIcon_BackgroundColor_Mythical.png"
 
 
 def dex_entry_factory_script(rarity="Common", show_stats=False, creature_name="Rabbit", dex_num = '01', creature_is_locked=True, total_catches=0, total_mythical_catches=0):
@@ -64,7 +64,7 @@ def add_text_to_image(image: Image.Image, dex_num: str, total_catches=0, total_m
 
 
 def add_stats_to_image(image: Image.Image, total_catches=0, total_mythical_catches=0, color: tuple = (0, 0, 0)):
-    font_path_bold = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\fonts\NationalForestPrintBold.otf"
+    font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
     draw = ImageDraw.Draw(image)
     stats_num_font = ImageFont.truetype(font_path_bold, 12)
 
@@ -75,7 +75,7 @@ def add_stats_to_image(image: Image.Image, total_catches=0, total_mythical_catch
 
 
 def add_dex_num_to_image(image: Image.Image, dex_num ='01'):
-    font_path_bold = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\fonts\NationalForestPrintBold.otf"
+    font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
     draw = ImageDraw.Draw(image)
 
     # draw the dex number
@@ -128,8 +128,8 @@ def format_creature_image(dex_icon: Image.Image, creature_image: Image.Image) ->
 
 
 if __name__ == "__main__":
-    background_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\forest_est_1.png"
-    foreground_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\Deer_2_THUMB.png"
+    background_path = r"/src/resources/images/forest_est_1.png"
+    foreground_path = r"/src/resources/images/Deer_2_THUMB.png"
 
     # Optional: Save the resulting image
     output_dir = os.path.dirname(background_path)

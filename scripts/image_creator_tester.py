@@ -36,7 +36,7 @@ def create_encounter_image(background_img_path, foreground_img_path):
     # Open the images
     background = Image.open(background_img_path)
     foreground = Image.open(foreground_img_path)
-    text_box = Image.open(r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\env_textbox.png")
+    text_box = Image.open(r"/src/resources/images/env_textbox.png")
 
     # Resize the foreground image to 80% of its size
     foreground = foreground.resize((int(foreground.width * 0.8), int(foreground.height * 0.8)), Image.LANCZOS)
@@ -56,8 +56,8 @@ def create_encounter_image(background_img_path, foreground_img_path):
 
     # Add text if provided
     text = 'Black Bear'
-    font_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\fonts\NationalForestPrintRegular.otf"
-    font_path_bold = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\fonts\NationalForestPrintBold.otf"
+    font_path = r"/src/resources/fonts/NationalForestPrintRegular.otf"
+    font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
     font_size = 30
     text_color = (0, 0, 0)  # Black text
     text_padding = (30, 30)  # Adjust padding as needed
@@ -125,7 +125,7 @@ def add_text_to_image(image, text, font, text_color, x_offset, y_offset, max_wid
     draw = ImageDraw.Draw(image)
 
 
-    font_path_bold = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\fonts\NationalForestPrintBold.otf"
+    font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
 
 
     main_font = load_font(font_path = font_path_bold, font_size = 30)
@@ -251,8 +251,8 @@ def draw_font(lines, font, outline_width, draw, padding, add_border=False, cente
 
 
 if __name__ == "__main__":
-    background_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\forest_est_1.png"
-    foreground_path = r"C:\Users\Ryan\PycharmProjects\3rdParty\Bumbot_SketchingAlley_TGO_MMO\src\resources\images\Deer_2_THUMB.png"
+    background_path = r"/src/resources/images/forest_est_1.png"
+    foreground_path = r"/src/resources/images/Deer_2_THUMB.png"
 
     # Optional: Save the resulting image
     output_dir = os.path.dirname(background_path)

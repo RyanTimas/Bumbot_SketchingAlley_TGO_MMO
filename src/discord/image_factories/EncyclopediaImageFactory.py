@@ -25,6 +25,9 @@ class EncyclopediaImageFactory:
         self.load_relevant_info()
 
         self.dex_icons = []
+        self.creatures = []
+        self.page_num = 1
+        self.total_pages = 1
 
 
     def load_relevant_info(self):
@@ -112,30 +115,41 @@ class EncyclopediaImageFactory:
 
 
     # return list of all dex icons for species
-    def get_dex_icons(self):
-        creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id)
+    def get_dex_icons(self, page_swap = 0):
+        if len(self.creatures) == 0:
+            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=True)
+        self.page_num += page_swap
+
         imgs = []
         raw_imgs = []
 
-        for creature in creatures:
+        starting_index = (self.page_num - 1) * 25  # Adjust calculation to start from 0
+        ending_index = min(starting_index + 25, len(self.creatures))  # Ensure we don't go past the end of the list
+
+        # Only process creatures within our page range
+        for i in range(starting_index, ending_index):
+            creature = self.creatures[i]
             creature_name = creature[1]
             variant_name = creature[2]
             dex_no = creature[3]
             variant_no = creature[4]
-            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], environment_id=1)
+            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0],
+                                                                                 environment_id=1)
             total_catches = creature[5]
             total_mythical_catches = creature[6]
 
             creature_is_locked = False if total_catches > 0 else True
 
-            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity, creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches)
+            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,
+                                      creature_is_locked=creature_is_locked, show_stats=self.verbose,
+                                      total_catches=total_catches, total_mythical_catches=total_mythical_catches)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)
-
             imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature[3]}_{variant_no}.png'))
 
-        return raw_imgs#, imgs
+        self.total_pages = (len(raw_imgs) // 25) + (1 if len(raw_imgs) % 25 > 0 else 0)
+        return raw_imgs  # imgs
 
 
     # build user's profile pic from discord id
@@ -201,10 +215,12 @@ class EncyclopediaImageFactory:
 
         encyclopedia_img.paste(bottom_bar_img, (0, 0), bottom_bar_img)
 
-        # todo: implement functionality for these in V 2.0
-        encyclopedia_img.paste(bottom_bar_back_arrow_img, (0, 0), bottom_bar_back_arrow_img)
-        encyclopedia_img.paste(bottom_bar_forward_arrow_img, (0, 0), bottom_bar_forward_arrow_img)
-        encyclopedia_img.paste(bottom_bar_environment_icon_img, (0, 0), bottom_bar_environment_icon_img)
+        if self.page_num > 1:
+            encyclopedia_img.paste(bottom_bar_back_arrow_img, (0, 0), bottom_bar_back_arrow_img)
+        if self.page_num < self.total_pages:
+            encyclopedia_img.paste(bottom_bar_forward_arrow_img, (0, 0), bottom_bar_forward_arrow_img)
+
+        # encyclopedia_img.paste(bottom_bar_environment_icon_img, (0, 0), bottom_bar_environment_icon_img)
 
         return encyclopedia_img
 
@@ -238,10 +254,10 @@ class EncyclopediaImageFactory:
         draw.text(pixel_location, text=text, font=bar_font, color=FONT_COLOR_WHITE)
 
         # BOTTOM BAR TEXT
-        text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
-        font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
-        pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
-        draw.text(pixel_location, text=text, font=font, color=FONT_COLOR_WHITE)
+        # text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
+        # font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
+        # pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
+        # draw.text(pixel_location, text=text, font=font, color=FONT_COLOR_WHITE)
 
         return encyclopedia_img
 

@@ -62,9 +62,33 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    def get_all_creatures_caught_by_user(self, user_id=0):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
-        return response
+    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False):
+        creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
+
+        if not include_variants:
+            seen_ids = {}  # Track creature IDs we've seen and their first index
+            i = 0
+            while i < len(creatures):
+                creature_dex_no = creatures[i][3]
+
+                if creature_dex_no in seen_ids:
+                    # We've seen this ID before, add counts to the first occurrence
+                    first_idx = seen_ids[creature_dex_no]
+
+                    # Add quantity ([5]) and XP ([6]) from duplicate to first occurrence
+                    creatures[first_idx] = list(creatures[first_idx])  # Convert tuple to list for modification
+                    creatures[first_idx][5] += creatures[i][5]  # Add quantity
+                    creatures[first_idx][6] += creatures[i][6]  # Add XP
+                    creatures[first_idx] = tuple(creatures[first_idx])  # Convert back to tuple
+
+                    # Remove this duplicate
+                    creatures.pop(i)
+                else:
+                    # First time seeing this ID, record its position
+                    seen_ids[creature_dex_no] = i
+                    i += 1
+
+        return creatures
 
 
     def get_total_catches_by_user(self, user_id=0):

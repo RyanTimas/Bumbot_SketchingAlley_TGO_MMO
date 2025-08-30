@@ -66,6 +66,19 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
         return response
 
+
+    def get_total_catches_by_user(self, user_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID, params=(user_id,))
+        return response[0][0]
+
+
+    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False):
+        query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER
+        params = (user_id,) if not is_server_page else ()
+
+        return self.QueryHandler.execute_query(query, params=params)[0]
+
+
     def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
 

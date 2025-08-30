@@ -19,7 +19,19 @@ class EncyclopediaImageFactory:
         self.user = user
         self.verbose = verbose
 
+        self.creatures = []
+        self.total_catches = None
+        self.distinct_catches = None
+        self.load_relevant_info()
+
         self.dex_icons = []
+
+
+    def load_relevant_info(self):
+        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page)
+
+        self.total_catches = encyclopedia_info[0]
+        self.distinct_catches = str(encyclopedia_info[1])
 
 
     def build_encyclopedia_page_image(self):
@@ -217,17 +229,17 @@ class EncyclopediaImageFactory:
             draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
 
         # TOP BAR TEXT
-        text = f"01 / {'0' if len(self.dex_icons) < 10 else ''} {len(self.dex_icons)}"
+        text = f"{'0' if len(self.distinct_catches) < 10 else ''} {self.distinct_catches} / {'0' if len(self.dex_icons) < 10 else ''} {len(self.dex_icons)}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, color=FONT_COLOR_WHITE)
 
-        text = f"{113}"
+        text = f"{self.total_catches}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
         draw.text(pixel_location, text=text, font=bar_font, color=FONT_COLOR_WHITE)
 
         # BOTTOM BAR TEXT
         text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
-        font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=225, min_font_size=10)
+        font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
         draw.text(pixel_location, text=text, font=font, color=FONT_COLOR_WHITE)
 

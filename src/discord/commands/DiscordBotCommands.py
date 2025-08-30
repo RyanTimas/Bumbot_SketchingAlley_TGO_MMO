@@ -5,6 +5,7 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
+from src.discord.buttonhandlers.EncyclopediaPageButton import EncyclopediaPageShiftView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
@@ -98,12 +99,13 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
-        encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats)
+        encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats, show_variants=False)
         encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
 
         response = generate_response(user_id=target_user.id, response="", verbose=verbose)
+        view = EncyclopediaPageShiftView(encyclopedia_image_factory=encyclopedia_img_factory, current_page=encyclopedia_img_factory.page_num, total_pages=encyclopedia_img_factory.total_pages, is_verbose=verbose, message_author=ctx.author.id)
 
-        await ctx.reply(response, files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')])
+        await ctx.reply(response, files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
 
 

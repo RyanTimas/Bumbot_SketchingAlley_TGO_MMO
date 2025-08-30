@@ -13,7 +13,7 @@ from src.resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory:
-    def __init__(self, environment: TGOEnvironment, verbose = False, is_server_page = False, user = None):
+    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, is_server_page = False, user = None):
         self.environment = environment
         self.is_server_page = is_server_page
         self.user = user
@@ -22,7 +22,7 @@ class EncyclopediaImageFactory:
         self.creatures = []
         self.total_catches = None
         self.distinct_catches = None
-        self.load_relevant_info()
+        self.show_variants = show_variants
 
         self.dex_icons = []
         self.creatures = []
@@ -31,13 +31,21 @@ class EncyclopediaImageFactory:
 
 
     def load_relevant_info(self):
-        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page)
+        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants)
 
         self.total_catches = encyclopedia_info[0]
         self.distinct_catches = str(encyclopedia_info[1])
 
 
-    def build_encyclopedia_page_image(self):
+    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None):
+        if new_page_number is not None:
+            self.page_num = new_page_number
+        if is_verbose is not None:
+            self.verbose = is_verbose
+        if show_variants is not None:
+            self.show_variants = show_variants
+            self.creatures = []
+
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCYCLOPEDIA_BG_BASE}_{self.environment.environment_id}.png")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
@@ -117,7 +125,12 @@ class EncyclopediaImageFactory:
     # return list of all dex icons for species
     def get_dex_icons(self, page_swap = 0):
         if len(self.creatures) == 0:
-            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=True)
+            self.load_relevant_info()
+            self.page_num = 1
+
+            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants)
+            # self.creatures.extend([self.creatures[0]] * 23)
+
         self.page_num += page_swap
 
         imgs = []
@@ -133,23 +146,24 @@ class EncyclopediaImageFactory:
             variant_name = creature[2]
             dex_no = creature[3]
             variant_no = creature[4]
-            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0],
-                                                                                 environment_id=1)
+            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0],environment_id=1)
             total_catches = creature[5]
             total_mythical_catches = creature[6]
 
             creature_is_locked = False if total_catches > 0 else True
 
-            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,
-                                      creature_is_locked=creature_is_locked, show_stats=self.verbose,
-                                      total_catches=total_catches, total_mythical_catches=total_mythical_catches)
+            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)
             imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature[3]}_{variant_no}.png'))
 
-        self.total_pages = (len(raw_imgs) // 25) + (1 if len(raw_imgs) % 25 > 0 else 0)
-        return raw_imgs  # imgs
+
+        # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
+        if self.total_pages != (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0):
+            self.total_pages = (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0)
+
+        return raw_imgs  #, imgs
 
 
     # build user's profile pic from discord id
@@ -245,7 +259,7 @@ class EncyclopediaImageFactory:
             draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
 
         # TOP BAR TEXT
-        text = f"{'0' if len(self.distinct_catches) < 10 else ''} {self.distinct_catches} / {'0' if len(self.dex_icons) < 10 else ''} {len(self.dex_icons)}"
+        text = f"{'0' if len(self.distinct_catches) < 10 else ''} {self.distinct_catches} / {'0' if len(self.creatures) < 10 else ''} {len(self.creatures)}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, color=FONT_COLOR_WHITE)
 
@@ -262,4 +276,9 @@ class EncyclopediaImageFactory:
         return encyclopedia_img
 
 
+    def get_total_pages(self):
+        return self.total_pages
 
+
+    def get_current_page(self):
+        return self.page_num

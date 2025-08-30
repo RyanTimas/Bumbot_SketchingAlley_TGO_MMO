@@ -96,8 +96,13 @@ class TGOMMODatabaseHandler:
         return response[0][0]
 
 
-    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False):
-        query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER
+    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False):
+
+        if include_variants:
+            query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
+        else:
+            query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_DEX_NUM if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM
+
         params = (user_id,) if not is_server_page else ()
 
         return self.QueryHandler.execute_query(query, params=params)[0]

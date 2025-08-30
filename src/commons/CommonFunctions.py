@@ -3,9 +3,10 @@ from datetime import date
 
 import discord
 import io
-from PIL import Image, ImageFont
+from PIL import Image, ImageFont, ImageDraw
 from discord import File
 
+from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
@@ -55,6 +56,21 @@ def convert_to_png(image: Image, file_name):
         return png_img
 
 
+def add_text_to_image(image: Image.Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):
+    draw = ImageDraw.Draw(image)
+    draw.text(position, text= text, font=font, fill=color, anchor="mm")
+    return image
+
+def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
+    text_bbox = font.getbbox(text)
+
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+
+    x = center_pixel_location[0] - text_width / 2
+    y = center_pixel_location[1] - text_height / 2
+    return (x, y)
+
 #************************************************************************************
 #-------------------------------FONT FUNCTIONS-------------------------------------
 #************************************************************************************
@@ -64,3 +80,11 @@ def load_font(font_path, font_size):
     except IOError:
         font = ImageFont.load_default()
     return font
+
+
+#************************************************************************************
+#-------------------------------DISCORD FUNCTIONS------------------------------------
+#************************************************************************************
+def get_user_discord_profile_pic(user = None):
+    avatar_url = user.display_avatar.url if hasattr(user,'display_avatar') else user.avatar.url if user.avatar else user.default_avatar.url
+    return avatar_url

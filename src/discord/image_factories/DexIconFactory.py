@@ -31,8 +31,8 @@ class DexIconFactory:
         dex_icon_img.paste(shadow_img, (0, 0), shadow_img)
 
         # Paste the creature icon onto the final image
-        creature_img_path = DEX_ICON_CREATURE_LOCKED_ICON_IMAGE if self.creature_is_locked else DEX_ICON_CREATURE_BASE + f"_{self.creature_name}_{self.dex_no}_{self.variant_no}"
-        creature_img = Image.open(get_image_path(image_name=f"{creature_img_path}.png", folder_location=IMAGE_FOLDER_DEX_ICON_PATH))
+        creature_img_path = DEX_ICON_CREATURE_LOCKED_ICON_IMAGE if self.creature_is_locked else DEX_ICON_CREATURE_BASE + f"_{self.creature_name}_{self.dex_no}_{self.variant_no}" + IMAGE_FILE_EXTENSION
+        creature_img = Image.open(get_image_path(image_name=f"{creature_img_path}", folder_location=IMAGE_FOLDER_DEX_ICON_PATH))
         dex_icon_img.paste(creature_img, (0, 0), creature_img)
 
         if self.show_stats:

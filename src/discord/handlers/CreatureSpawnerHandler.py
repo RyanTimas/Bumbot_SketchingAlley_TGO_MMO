@@ -112,7 +112,7 @@ class CreatureSpawnerHandler:
             print('Message was already deleted, do nothing')
             return
 
-        creature_embed = CreatureEmbedHandler(creature=creature).generate_spawn_embed(is_spawn_message=False)
+        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed(is_spawn_message=False)
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
         asyncio.run_coroutine_threadsafe(
             self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(

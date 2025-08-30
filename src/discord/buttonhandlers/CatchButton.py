@@ -38,7 +38,7 @@ class CatchButton(discord.ui.Button):
             self.caught = True
 
         # generate the successful catch embed
-        successful_catch_embed = CreatureEmbedHandler(self.creature).generate_catch_embed(interaction=interaction)
+        successful_catch_embed = CreatureEmbedHandler(self.creature, self.environment).generate_catch_embed(interaction=interaction)
         total_xp = successful_catch_embed[3]
 
         # insert record of user catching the creature

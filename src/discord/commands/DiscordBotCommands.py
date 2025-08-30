@@ -1,15 +1,11 @@
 import sys
-import random
-from importlib.metadata import files
 
 import discord
 
-from src.commons.CommonFunctions import convert_to_png
-from src.database.handlers.DatabaseHandler import DatabaseHandler, get_db_handler, get_tgommo_db_handler
+from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
-from src.discord.image_factories.DexIconFactory import DexIconFactory
-from src.discord.objects.CreatureRarity import COMMON
-from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_COMMON
+from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
 def initialize_discord_commands(discord_bot: DiscordBot):
@@ -42,26 +38,12 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
 
     @discord_bot.discord_bot.command(name='get_user_profile_pic', help="Display a user's profile picture by user ID.")
     async def get_user_profile_pic(ctx, user_id: str = None):
-        if user_id is None:
-            # If no user ID provided, use the command author
-            target = ctx.author
-        else:
-            try:
-                # Convert string ID to integer
-                user_id = int(user_id)
-                # Fetch the user from the ID
-                target = ctx.guild.get_member(user_id)
-            except (ValueError, discord.NotFound, discord.HTTPException):
-                await ctx.reply("Invalid user ID or user not found.")
-                return
-
-        # Get the avatar URL (note: fetch_user returns a User, not Member, so display_avatar might not be available)
-        avatar_url = target.display_avatar.url if hasattr(target,
-                                                          'display_avatar') else target.avatar.url if target.avatar else target.default_avatar.url
+        target_user = ctx.guild.get_member(ctx.author.id if user_id is None else int(user_id))
+        profile_pic_url = get_user_discord_profile_pic(target_user)
 
         # Create an embed with the avatar
-        embed = discord.Embed(title=f"{target.name}'s Avatar")
-        embed.set_image(url=avatar_url)
+        embed = discord.Embed(title=f"{target_user.name}'s Avatar")
+        embed.set_image(url=profile_pic_url)
 
         await ctx.reply(embed=embed)
 
@@ -88,33 +70,54 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         time_of_day = "Night" if discord_bot.creature_spawner_handler.is_night_time else "Day"
         await ctx.channel.send(f"Current Environment: {env.name} ({time_of_day})", delete_after=10)
 
+
     @discord_bot.discord_bot.command(name='caught_creatures', help="List all creatures caught. Use 'verbose' for detailed stats.")
-    async def caught_creatures(ctx, option: str = None):
-        verbose = option == "verbose"
+    async def caught_creatures(ctx, param1: str = None, param2: str = None):
+        # Initialize defaults
+        verbose = False
+        is_server_stats = False
+        target_user_id = None
 
-        dex_icons, response = get_dex_icons(ctx.author.id, f"**{ctx.author.display_name}'s Caught Creatures:**\n", verbose)
-        await ctx.reply(response, files=dex_icons if len(dex_icons) > 0 else None)
+        # Process first parameter
+        if param1:
+            if param1.lower() == "verbose":
+                verbose = True
+            elif param1.lower() == "server":
+                is_server_stats = True
+            elif param1.isdigit():
+                target_user_id = int(param1)
+
+        # Process second parameter
+        if param2:
+            if param2.lower() == "verbose":
+                verbose = True
+            elif param2.lower() == "server":
+                is_server_stats = True
+            elif param2.isdigit():
+                target_user_id = int(param2)
+
+        target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
+
+        encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats)
+        encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
+
+        response = generate_response(user_id=target_user.id, response="", verbose=verbose)
+
+        await ctx.reply(response, files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')])
 
 
-def get_dex_icons(user_id, response="", verbose=False):
+
+def generate_response(user_id, response="", verbose=False):
     creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=user_id)
-    imgs = []
 
     for creature in creatures:
         creature_name = creature[1]
         variant_name = creature[2]
         dex_no = creature[3]
         variant_no = creature[4]
-        rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], environment_id=1)
         total_catches = creature[5]
-        total_mythical_catches = creature[6]
 
         creature_is_locked = False if total_catches > 0 else True
-
-        dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity, creature_is_locked=creature_is_locked, show_stats=verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches)
-        dex_icon_img = dex_icon.generate_dex_entry_image()
-
-        imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature[3]}_{variant_no}.png'))
 
         if not creature_is_locked:
             response += f"#{dex_no}"
@@ -132,7 +135,7 @@ def get_dex_icons(user_id, response="", verbose=False):
 
             response += "\n"
 
-    return imgs, response
+    return response
 
 
 

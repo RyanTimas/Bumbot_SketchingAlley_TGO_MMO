@@ -5,6 +5,32 @@ from PIL import Image, ImageDraw, ImageOps
 import os
 import numpy as np
 
+from src.commons.CommonFunctions import get_user_discord_profile_pic
+from src.resources.constants.file_paths import *
+
+
+def create_encyclopedia_image(user):
+    # generate encyclopedia page
+    encyclopedia_img = Image.open(f"{ENCYCLOPEDIA_BG_BASE}_1.png")
+
+    # get user's profile pic
+    profile_pic = Image.open(get_user_discord_profile_pic(user)).convert("RGBA")
+    # Resize profile pic to half the size
+    width, height = profile_pic.size
+    profile_pic = profile_pic.resize((width // 2, height // 2), Image.LANCZOS)
+    encyclopedia_img.paste(profile_pic, (0, 0), profile_pic)
+
+    # Paste the shadow onto the final image
+    textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
+    encyclopedia_img.paste(textbox_shadow_img, (0, 0), textbox_shadow_img)
+
+    # Paste the general overlay onto the final image
+    overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
+    encyclopedia_img.paste(overlay_img, (0, 0), overlay_img)
+
+    # Display the result
+    encyclopedia_img.show()
+
 
 def create_encounter_image(background_img_path, foreground_img_path):
     # Open the images
@@ -233,4 +259,6 @@ if __name__ == "__main__":
     output_path = os.path.join(output_dir, "combined_image.png")
 
     # Overlay the images and display the result
-    create_encounter_image(background_path, foreground_path)
+    create_encyclopedia_image()
+
+    # create_encounter_image(background_path, foreground_path)

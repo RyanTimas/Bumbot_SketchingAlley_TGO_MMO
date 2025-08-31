@@ -62,7 +62,7 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False):
+    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, include_mythics=False):
         creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
 
         if not include_variants:
@@ -75,10 +75,17 @@ class TGOMMODatabaseHandler:
                     # We've seen this ID before, add counts to the first occurrence
                     first_idx = seen_ids[creature_dex_no]
 
-                    # Add quantity ([5]) and XP ([6]) from duplicate to first occurrence
                     creatures[first_idx] = list(creatures[first_idx])  # Convert tuple to list for modification
-                    creatures[first_idx][5] += creatures[i][5]  # Add quantity
-                    creatures[first_idx][6] += creatures[i][6]  # Add XP
+
+                    catch_signifier = 6 if include_mythics else 5
+                    if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 7:
+                        creatures[first_idx].append([])
+                        for creature in creatures:
+                            if creature[3] == creature_dex_no and creature[catch_signifier] > 0:
+                                creatures[first_idx][7].append(creature[4])
+
+                    creatures[first_idx][5] += creatures[i][5]
+                    creatures[first_idx][6] += creatures[i][6]
                     creatures[first_idx] = tuple(creatures[first_idx])  # Convert back to tuple
 
                     # Remove this duplicate

@@ -8,16 +8,17 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.DexIconFactory import DexIconFactory
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, FONT_COLOR_BLACK
 from src.resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory:
-    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, is_server_page = False, user = None):
+    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, show_mythics = False, is_server_page = False, user = None):
         self.environment = environment
         self.is_server_page = is_server_page
         self.user = user
         self.verbose = verbose
+        self.show_mythics = show_mythics
 
         self.creatures = []
         self.total_catches = None
@@ -37,13 +38,13 @@ class EncyclopediaImageFactory:
         self.distinct_catches = str(encyclopedia_info[1])
 
 
-    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None):
-        if new_page_number is not None:
-            self.page_num = new_page_number
-        if is_verbose is not None:
-            self.verbose = is_verbose
-        if show_variants is not None:
-            self.show_variants = show_variants
+    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None):
+        # set new values in case button was clicked
+        self.page_num = new_page_number if new_page_number is not None else self.page_num
+        self.verbose = is_verbose if is_verbose is not None else self.verbose
+        self.show_variants = show_variants if show_variants is not None else self.show_variants
+        self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
+        if show_variants is not None or show_mythics is not None:
             self.creatures = []
 
         # construct base layers, start with environment bg
@@ -72,6 +73,10 @@ class EncyclopediaImageFactory:
 
 
     def build_dex_section(self, encyclopedia_img: Image.Image):
+        if self.show_mythics:
+            mythical_overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_SHINY_IMAGE)
+            encyclopedia_img.paste(mythical_overlay_img, (0, 0), mythical_overlay_img)
+
         # generate dex icons
         self.dex_icons = self.get_dex_icons()
         icons_grid = self.create_dex_icons_grid(self.dex_icons)
@@ -128,7 +133,7 @@ class EncyclopediaImageFactory:
             self.load_relevant_info()
             self.page_num = 1
 
-            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants)
+            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants, include_mythics=self.show_mythics)
             # self.creatures.extend([self.creatures[0]] * 23)
 
         self.page_num += page_swap
@@ -145,14 +150,14 @@ class EncyclopediaImageFactory:
             creature_name = creature[1]
             variant_name = creature[2]
             dex_no = creature[3]
-            variant_no = creature[4]
+            variant_no = creature[4] if len(creature) == 7 else  creature[7][0]
             rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0],environment_id=1)
             total_catches = creature[5]
             total_mythical_catches = creature[6]
 
-            creature_is_locked = False if total_catches > 0 else True
+            creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
 
-            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches)
+            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)
@@ -178,6 +183,7 @@ class EncyclopediaImageFactory:
         # profile_pic = self.add_blur_mask_to_image(profile_pic)
 
         return profile_pic
+
 
     # adds a gaussian blur mask to the edges of an image
     def add_blur_mask_to_image(self, image: Image.Image):
@@ -210,7 +216,7 @@ class EncyclopediaImageFactory:
 
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image.Image):
-        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE)
+        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
         top_bar_camera_img = Image.open(ENCYCLOPEDIA_TOP_BAR_CAMERA_ICON_IMAGE)
         top_bar_encounter_img = Image.open(ENCYCLOPEDIA_TOP_BAR_ENCOUNTER_ICON_IMAGE)
 
@@ -222,7 +228,7 @@ class EncyclopediaImageFactory:
 
 
     def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image.Image):
-        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE)
+        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)
@@ -250,28 +256,29 @@ class EncyclopediaImageFactory:
         text = f"Sketching Alley" if self.is_server_page else self.user.display_name
         font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)
-        draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
+        draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
         if not self.is_server_page:
             text = f"@{self.user.name}"
             font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)
-            draw.text(pixel_location, text= text, font=font, color=FONT_COLOR_WHITE)
+            draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
         # TOP BAR TEXT
+        bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
         text = f"{'0' if len(self.distinct_catches) < 10 else ''} {self.distinct_catches} / {'0' if len(self.creatures) < 10 else ''} {len(self.creatures)}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
-        draw.text(pixel_location, text= text, font=bar_font, color=FONT_COLOR_WHITE)
+        draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 
         text = f"{self.total_catches}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
-        draw.text(pixel_location, text=text, font=bar_font, color=FONT_COLOR_WHITE)
+        draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
         # BOTTOM BAR TEXT
         # text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
         # font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
         # pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
-        # draw.text(pixel_location, text=text, font=font, color=FONT_COLOR_WHITE)
+        # draw.text(pixel_location, text=text, font=font, color=bar_font_color)
 
         return encyclopedia_img
 

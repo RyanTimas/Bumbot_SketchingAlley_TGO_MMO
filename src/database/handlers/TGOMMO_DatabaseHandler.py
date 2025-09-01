@@ -77,12 +77,15 @@ class TGOMMODatabaseHandler:
 
                     creatures[first_idx] = list(creatures[first_idx])  # Convert tuple to list for modification
 
+                    # logic to handle when a user has one variant but not the 0th variant
                     catch_signifier = 6 if include_mythics else 5
                     if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 7:
                         creatures[first_idx].append([])
                         for creature in creatures:
                             if creature[3] == creature_dex_no and creature[catch_signifier] > 0:
                                 creatures[first_idx][7].append(creature[4])
+                        if len(creatures[first_idx][7]) == 0:
+                            creatures[first_idx].pop(7)
 
                     creatures[first_idx][5] += creatures[i][5]
                     creatures[first_idx][6] += creatures[i][6]

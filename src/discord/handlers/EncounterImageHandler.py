@@ -23,7 +23,7 @@ class EncounterImageHandler:
     # handler for generating encounter image
     def create_encounter_image(self):
         # Resize the foreground image to 80% of its size
-        self.foreground_img = self.foreground_img.resize((int(self.foreground_img.width * FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.foreground_img.height * FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
+        self.foreground_img = self.foreground_img.resize((int(self.foreground_img.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.foreground_img.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
 
         # Create a copy of the background
         final_img = self.background_img.copy()
@@ -106,7 +106,7 @@ class EncounterImageHandler:
 
     # Calculate position to center the foreground on the background And move it down by 50 pixels
     def get_foreground_image_offset(self, foreground: Image, background_img: Image):
-        return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + 50
+        return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + ENCOUNTER_SCREEN_FOREGROUND_IMAGE_Y_OFFSET
 
 
     # draw text onto the image

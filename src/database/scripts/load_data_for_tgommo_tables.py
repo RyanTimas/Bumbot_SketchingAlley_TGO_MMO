@@ -13,15 +13,29 @@ c.execute("""
     INSERT INTO tgommo_creature
     (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
     VALUES
-    ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', 'Mammal', '', 'Deer', 5);
-)""")
+    ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', 'Mammal', '', 'Deer', 5);)""")
 conn.commit()
 c.execute("""
     INSERT INTO tgommo_creature
     (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
     VALUES
-    ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', 'Mammal', '', 'Deer', 5);
-)""")
+    ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', 'Mammal', '', 'Deer', 5);)""")
+conn.commit()
+
+# 02 - Squirrel
+c.execute("""
+    INSERT INTO tgommo_creature
+    (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
+    VALUES
+    ('Squirrel', '', 2, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', 'Mammal', '', 'Squirrel', 15);)""")
+conn.commit()
+
+# 02 - Rabbit
+c.execute("""
+    INSERT INTO tgommo_creature
+    (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
+    VALUES
+    ('Rabbit', '', 3, 1, 'Eastern Cottontail', 'Sylvilagus floridanus', 'Mammal', '', 'Rabbit', 10);)""")
 conn.commit()
 
 # 04 - Chipmunk
@@ -29,7 +43,24 @@ c.execute("""
     INSERT INTO tgommo_creature
     (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
     VALUES
-    ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', 'Mammal', '', 'Chipmunk', 10);
+    ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', 'Mammal', '', 'Chipmunk', 10);)""")
+conn.commit()
+
+# 05 - Raccoon
+c.execute("""
+    INSERT INTO tgommo_creature
+    (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
+    VALUES
+    ('Bear', '', 23, 1, 'Black Bear', 'Ursus americanus', 'Mammal', '', 'Raccoon', 10);)""")
+conn.commit()
+
+
+# 23 - Bear
+c.execute("""
+    INSERT INTO tgommo_creature
+    (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate)
+    VALUES
+    ('Raccoon', '', 5, 1, 'Raccoon', 'Procyon lotor', 'Mammal', '', 'Raccoon', 10);
 )""")
 conn.commit()
 

@@ -140,7 +140,6 @@ class CreatureSpawnerHandler:
     # Picks a random creature from the spawn pool
     async def creature_picker(self):
         rarity = get_rarity()
-        rarity = COMMON
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0

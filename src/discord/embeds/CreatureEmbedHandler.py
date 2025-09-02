@@ -27,7 +27,6 @@ class CreatureEmbedHandler:
         thumbnail_img = build_image_file(self.creature.img_root + '_THUMB')
         environment_img = build_image_file(self.environment.img_root)
 
-        photo_img = build_image_file(self.creature.img_root)
         encounter_img_handler = EncounterImageHandler(background_img_path=get_image_path(environment_img.filename), foreground_img_path=get_image_path(thumbnail_img.filename), creature=self.creature)
         encounter_img = encounter_img_handler.create_encounter_image()
 

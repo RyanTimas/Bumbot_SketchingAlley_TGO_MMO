@@ -35,7 +35,7 @@ class EncyclopediaImageFactory:
         encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants)
 
         self.total_catches = encyclopedia_info[0]
-        self.distinct_catches = str(encyclopedia_info[1])
+        self.distinct_catches = encyclopedia_info[1]
 
 
     def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None):
@@ -150,14 +150,15 @@ class EncyclopediaImageFactory:
             creature_name = creature[1]
             variant_name = creature[2]
             dex_no = creature[3]
-            variant_no = creature[4] if len(creature) == 7 else  creature[7][0]
-            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0],environment_id=1)
+            variant_no = creature[4] if len(creature) == 8 else  creature[8][0]
+            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], environment_id=1)
             total_catches = creature[5]
             total_mythical_catches = creature[6]
+            img_root = creature[7]
 
             creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
 
-            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics)
+            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics, img_root=img_root)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)
@@ -266,7 +267,7 @@ class EncyclopediaImageFactory:
 
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
-        text = f"{'0' if len(self.distinct_catches) < 10 else ''} {self.distinct_catches} / {'0' if len(self.creatures) < 10 else ''} {len(self.creatures)}"
+        text = f"{'0' if self.distinct_catches < 10 else ''} {self.distinct_catches} / {'0' if len(self.creatures) < 10 else ''} {len(self.creatures)}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 

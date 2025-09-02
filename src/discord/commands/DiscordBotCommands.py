@@ -1,5 +1,7 @@
+import asyncio
 import sys
 
+import aiohttp
 import discord
 
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
@@ -7,6 +9,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaPageButton import EncyclopediaPageShiftView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.objects.CreatureRarity import MYTHICAL
 
 
 def initialize_discord_commands(discord_bot: DiscordBot):
@@ -134,8 +137,30 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         response = generate_response(user_id=target_user.id, response="", verbose=verbose)
         view = EncyclopediaPageShiftView(encyclopedia_image_factory=encyclopedia_img_factory, current_page=encyclopedia_img_factory.page_num, total_pages=encyclopedia_img_factory.total_pages, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
 
-        await ctx.reply(response, files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
+        await ctx.reply('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
+
+    @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.")
+    async def spawn_every_creature(ctx, param1: str = None):
+        available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
+
+        for creature in available_creatures:
+            if param1 and param1.lower() == 'mythical':
+                creature.img_root += '_S'
+                creature.rarity = MYTHICAL
+
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
+                    await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
+                    break  # Success, exit retry loop
+                except (discord.errors.HTTPException, aiohttp.ClientOSError) as e:
+                    if attempt < max_retries - 1:
+                        print(f"Network error when spawning {creature.name}: {e}. Retrying...")
+                        await asyncio.sleep(2)  # Wait before retrying
+                    else:
+                        await ctx.channel.send(f"Failed to spawn {creature.name} after {max_retries} attempts.",delete_after=5)
 
 
 def generate_response(user_id, response="", verbose=False):

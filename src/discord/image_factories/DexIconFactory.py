@@ -9,11 +9,12 @@ from src.resources.constants.general_constants import *
 
 
 class DexIconFactory:
-    def __init__(self, creature_name = '', dex_no = 1, variant_no=1, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False, total_catches=0, total_mythical_catches=0, show_mythics=False):
+    def __init__(self, creature_name = '', dex_no = 1, variant_no=1, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False, total_catches=0, total_mythical_catches=0, show_mythics=False, img_root=''):
         self.creature_name = creature_name
         self.rarity = rarity
         self.dex_no = f'{"0" if dex_no <10 else ""}{dex_no}'
         self.variant_no = variant_no
+        self.img_root = img_root
 
         self.creature_is_locked = creature_is_locked
         self.show_stats = False if creature_is_locked else show_stats
@@ -32,7 +33,7 @@ class DexIconFactory:
         dex_icon_img.paste(shadow_img, (0, 0), shadow_img)
 
         # Paste the creature icon onto the final image
-        creature_img_path = DEX_ICON_CREATURE_LOCKED_ICON_IMAGE if self.creature_is_locked else DEX_ICON_CREATURE_BASE + f"_{self.creature_name}_{self.dex_no}_{self.variant_no}" + f"{"_S" if self.show_mythics else ""}" + IMAGE_FILE_EXTENSION
+        creature_img_path = DEX_ICON_CREATURE_LOCKED_ICON_IMAGE if self.creature_is_locked else DEX_ICON_CREATURE_BASE + f"_{self.img_root}_{self.dex_no}_{self.variant_no}" + f"{"_S" if self.show_mythics else ""}" + IMAGE_FILE_EXTENSION
         creature_img = Image.open(get_image_path(image_name=f"{creature_img_path}", folder_location=IMAGE_FOLDER_DEX_ICON_PATH))
         dex_icon_img.paste(creature_img, (0, 0), creature_img)
 

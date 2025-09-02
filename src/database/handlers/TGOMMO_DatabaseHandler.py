@@ -79,13 +79,13 @@ class TGOMMODatabaseHandler:
 
                     # logic to handle when a user has one variant but not the 0th variant
                     catch_signifier = 6 if include_mythics else 5
-                    if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 7:
+                    if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 8:
                         creatures[first_idx].append([])
                         for creature in creatures:
                             if creature[3] == creature_dex_no and creature[catch_signifier] > 0:
-                                creatures[first_idx][7].append(creature[4])
-                        if len(creatures[first_idx][7]) == 0:
-                            creatures[first_idx].pop(7)
+                                creatures[first_idx][8].append(creature[4])
+                        if len(creatures[first_idx][8]) == 0:
+                            creatures[first_idx].pop(8)
 
                     creatures[first_idx][5] += creatures[i][5]
                     creatures[first_idx][6] += creatures[i][6]
@@ -157,6 +157,20 @@ class TGOMMODatabaseHandler:
             ('Raccoon', '', 5, 1, 'Raccoon', 'Procyon lotor', MAMMAL, '', RACOON_IMAGE_ROOT, 5),
             ('Robin', '', 6, 1, 'American Robin', 'Turdus migratorius', BIRD, '', ROBIN_IMAGE_ROOT, 5),
 
+            ('Sparrow', 'Male', 7, 1, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
+            ('Sparrow', 'Female', 7, 2, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
+
+            ('Blue Jay', '', 8, 1, 'Blue Jay', 'Cyanocitta cristata', BIRD, '', BLUEJAY_IMAGE_ROOT, 5),
+            ('Goldfinch', '', 9, 1, 'American Goldfinch', 'Spinus tristis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
+            ('Cardinal', 'Male', 10, 1, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
+            ('Cardinal', 'Female', 10, 2, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5),
+
+            ('Monarch', 'Caterpillar', 11, 1, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
+            ('Monarch', 'Chrysalis', 11, 2, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
+            ('Monarch', 'Butterfly', 11, 3, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
+
+            ('Turtle', '', 14, 1, 'Box Turtle', 'Terrapene carolina carolina', REPTILE, '', TURTLE_IMAGE_ROOT, 5),
+            ('Opossum', '', 20, 1, 'Virginia Opossum', 'Didelphis virginiana', MAMMAL, '', OPOSSUM_IMAGE_ROOT, 5),
             ('Fox', '', 21, 1, 'Red Fox', 'Vulpes vulpes', MAMMAL, '', REDFOX_IMAGE_ROOT, 5),
 
             ('Bear', '', 23, 1, 'Black Bear', 'Ursus americanus', MAMMAL, '', BLACKBEAR_IMAGE_ROOT, 5),
@@ -191,8 +205,22 @@ class TGOMMODatabaseHandler:
             self.format_ce_link_params(RABBIT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
             self.format_ce_link_params(CHIPMUNK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
             self.format_ce_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
 
+            self.format_ce_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_ce_link_params(SPARROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_ce_link_params(SPARROW_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_ce_link_params(BLUEJAY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(GOLDFINCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(CARDINAL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(CARDINAL_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+
+            self.format_ce_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_ce_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+
+            self.format_ce_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+
+            self.format_ce_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
             self.format_ce_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
 
             self.format_ce_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),

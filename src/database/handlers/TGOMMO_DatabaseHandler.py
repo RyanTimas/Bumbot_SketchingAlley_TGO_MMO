@@ -62,8 +62,8 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, include_mythics=False):
-        creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(user_id,))
+    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False):
+        creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(() if is_server_page else (user_id,)))
 
         if not include_variants:
             seen_ids = {}  # Track creature IDs we've seen and their first index
@@ -106,14 +106,13 @@ class TGOMMODatabaseHandler:
         return response[0][0]
 
 
-    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False):
-
+    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False):
         if include_variants:
             query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
         else:
             query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_DEX_NUM if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM
 
-        params = (user_id,) if not is_server_page else ()
+        params = (user_id, include_mythics) if not is_server_page else (include_mythics,)
 
         return self.QueryHandler.execute_query(query, params=params)[0]
 
@@ -159,7 +158,6 @@ class TGOMMODatabaseHandler:
 
             ('Sparrow', 'Male', 7, 1, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
             ('Sparrow', 'Female', 7, 2, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
-
             ('Blue Jay', '', 8, 1, 'Blue Jay', 'Cyanocitta cristata', BIRD, '', BLUEJAY_IMAGE_ROOT, 5),
             ('Goldfinch', '', 9, 1, 'American Goldfinch', 'Spinus tristis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
             ('Cardinal', 'Male', 10, 1, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
@@ -168,14 +166,25 @@ class TGOMMODatabaseHandler:
             ('Monarch', 'Caterpillar', 11, 1, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
             ('Monarch', 'Chrysalis', 11, 2, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
             ('Monarch', 'Butterfly', 11, 3, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
+            ('Mantis', '', 12, 1, 'Praying Mantis', 'Stagmomantis carolina', INSECT, '', MANTIS_IMAGE_ROOT, 5),
 
+            ('Snake', '', 13, 1, 'Eastern Garter Snake', 'Thamnophis sirtalis sirtalis', REPTILE, '', GARTERSNAKE_IMAGE_ROOT, 5),
             ('Turtle', '', 14, 1, 'Box Turtle', 'Terrapene carolina carolina', REPTILE, '', TURTLE_IMAGE_ROOT, 5),
+            ('Toad', '', 15, 1, 'American Toad', 'Anaxyrus americanus', AMPHIBIAN, '', TOAD_IMAGE_ROOT, 5),
+
+            ('Duck', 'Drake', 16, 1, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
+            ('Duck', 'Hen', 16, 2, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
+            ('Turkey', '', 17, 1, 'Wild Turkey', 'Meleagris gallopavo', BIRD, '', TURKEY_IMAGE_ROOT, 5),
+            ('Owl', '', 18, 1, 'Great Horned Owl', 'Bubo virginianus', BIRD, '', OWL_IMAGE_ROOT, 5),
+            ('Eagle', '', 19, 1, 'Bald Eagle', 'Haliaeetus leucocephalus', BIRD, '', EAGLE_IMAGE_ROOT, 5),
+
             ('Opossum', '', 20, 1, 'Virginia Opossum', 'Didelphis virginiana', MAMMAL, '', OPOSSUM_IMAGE_ROOT, 5),
             ('Fox', '', 21, 1, 'Red Fox', 'Vulpes vulpes', MAMMAL, '', REDFOX_IMAGE_ROOT, 5),
-
+            ('Bobcat', '', 22, 1, 'Bobcat', 'Lynx rufus', MAMMAL, '', BOBCAT_IMAGE_ROOT, 5),
             ('Bear', '', 23, 1, 'Black Bear', 'Ursus americanus', MAMMAL, '', BLACKBEAR_IMAGE_ROOT, 5),
             ('Moose', 'Cow', 24, 1, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
             ('Moose', 'Bull', 24, 2, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
+            ('Wolf', '', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5),
         ]
 
         # Insert environment records
@@ -217,15 +226,25 @@ class TGOMMODatabaseHandler:
             self.format_ce_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
             self.format_ce_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
             self.format_ce_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_ce_link_params(MANTIS_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
 
+            self.format_ce_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
             self.format_ce_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_ce_link_params(TOAD_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+
+            self.format_ce_link_params(DUCK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(DUCK_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_ce_link_params(TURKEY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_ce_link_params(EAGLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
+            self.format_ce_link_params(OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
 
             self.format_ce_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
             self.format_ce_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-
+            self.format_ce_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
             self.format_ce_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
             self.format_ce_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
             self.format_ce_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_ce_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
         ]
 
         for ec_link in environment_creature_data:

@@ -8,7 +8,7 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.DexIconFactory import DexIconFactory
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, FONT_COLOR_BLACK
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY
 from src.resources.constants.file_paths import *
 
 
@@ -32,7 +32,7 @@ class EncyclopediaImageFactory:
 
 
     def load_relevant_info(self):
-        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants)
+        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants, include_mythics=self.show_mythics)
 
         self.total_catches = encyclopedia_info[0]
         self.distinct_catches = encyclopedia_info[1]
@@ -132,9 +132,7 @@ class EncyclopediaImageFactory:
         if len(self.creatures) == 0:
             self.load_relevant_info()
             self.page_num = 1
-
-            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants, include_mythics=self.show_mythics)
-            # self.creatures.extend([self.creatures[0]] * 23)
+            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants, is_server_page=self.is_server_page, include_mythics=self.show_mythics)
 
         self.page_num += page_swap
 
@@ -230,16 +228,14 @@ class EncyclopediaImageFactory:
 
     def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image.Image):
         bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE)
-        bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE)
-        bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE)
+        bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
+        bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)
 
         encyclopedia_img.paste(bottom_bar_img, (0, 0), bottom_bar_img)
 
-        if self.page_num > 1:
-            encyclopedia_img.paste(bottom_bar_back_arrow_img, (0, 0), bottom_bar_back_arrow_img)
-        if self.page_num < self.total_pages:
-            encyclopedia_img.paste(bottom_bar_forward_arrow_img, (0, 0), bottom_bar_forward_arrow_img)
+        encyclopedia_img.paste(bottom_bar_back_arrow_img, (0, 0), bottom_bar_back_arrow_img)
+        encyclopedia_img.paste(bottom_bar_forward_arrow_img, (0, 0), bottom_bar_forward_arrow_img)
 
         # encyclopedia_img.paste(bottom_bar_environment_icon_img, (0, 0), bottom_bar_environment_icon_img)
 

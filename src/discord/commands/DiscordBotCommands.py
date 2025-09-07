@@ -7,7 +7,8 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
-from src.discord.buttonhandlers.EncyclopediaPageButton import EncyclopediaPageShiftView
+from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
+from src.discord.deprecated.EncyclopediaPageButton import EncyclopediaPageShiftView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
 
@@ -134,8 +135,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats, show_variants=show_variants, show_mythics=show_mythics)
         encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
 
-        response = generate_response(user_id=target_user.id, response="", verbose=verbose)
-        view = EncyclopediaPageShiftView(encyclopedia_image_factory=encyclopedia_img_factory, current_page=encyclopedia_img_factory.page_num, total_pages=encyclopedia_img_factory.total_pages, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
+        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
 
         await ctx.reply('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
@@ -161,38 +161,6 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
                         await asyncio.sleep(2)  # Wait before retrying
                     else:
                         await ctx.channel.send(f"Failed to spawn {creature.name} after {max_retries} attempts.",delete_after=5)
-
-
-def generate_response(user_id, response="", verbose=False):
-    creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=user_id)
-
-    for creature in creatures:
-        creature_name = creature[1]
-        variant_name = creature[2]
-        dex_no = creature[3]
-        variant_no = creature[4]
-        total_catches = creature[5]
-
-        creature_is_locked = False if total_catches > 0 else True
-
-        if not creature_is_locked:
-            response += f"#{dex_no}"
-            if variant_name != '':
-                letter = chr(64 + int(variant_no)) if 1 <= int(variant_no) <= 26 else f"#{dex_no}"
-                response += f"{letter}"
-            else:
-                response += f"‎"
-            response += f"\t {creature_name}"
-            response += f" ({variant_name})" if variant_name != '' else ""
-            response += f" Total Caught: {total_catches}"
-
-            for i in range(total_catches // 10):
-                response += "⭐"
-
-            response += "\n"
-
-    return response
-
 
 
 

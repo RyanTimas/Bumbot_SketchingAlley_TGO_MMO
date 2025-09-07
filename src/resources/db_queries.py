@@ -134,6 +134,7 @@ TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """SELECT c.creature_id, c.name, c.
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
 
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ?;"""
+TGOMMO_GET_SERVER_MYTHICAL_COUNT = '''SELECT COUNT(*) FROM  tgommo_user_creature WHERE is_mythical = 1'''
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM_AND_VARIANT_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ? AND c.variant_no = ?;"""
 TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id = ?;"""
 TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE user_id = ?;"""

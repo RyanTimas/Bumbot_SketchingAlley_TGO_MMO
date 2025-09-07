@@ -1,9 +1,14 @@
+import asyncio
+import functools
+
+import aiohttp
 import discord
 from anyio import current_time
 from discord import Message
 from discord.ui import View
 
 from src.commons.CommonFunctions import convert_to_png
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
@@ -23,7 +28,7 @@ class EncyclopediaPageButton(discord.ui.Button):
             label = "Show Variants"
             style = discord.ButtonStyle.green if not show_variants else discord.ButtonStyle.gray
         elif button_type == 'show_mythics':
-            label = "Show Mythics"
+            label = "✨ Show Mythics"
             style = discord.ButtonStyle.blurple if not show_mythics else discord.ButtonStyle.gray
 
         super().__init__(label=label, style=style, disabled=is_disabled, row=row)
@@ -64,6 +69,7 @@ class EncyclopediaPageButton(discord.ui.Button):
         new_view.add_item(EncyclopediaPageButton(button_type= 'shift',          current_page=self.current_page, total_pages=self.total_pages, is_next=False,  is_verbose=self.is_verbose,         show_variants= self.show_variants,        show_mythics= self.show_mythics,    is_disabled=self.current_page == 1, encyclopedia_image_factory=self.encyclopedia_image_factory, message_author=self.message_author, row=1))
         new_view.add_item(EncyclopediaPageButton(button_type= 'verbose',        current_page=self.current_page, total_pages=self.total_pages, is_next=False,  is_verbose= not self.is_verbose,    show_variants= self.show_variants,        show_mythics= self.show_mythics,    is_disabled=False, encyclopedia_image_factory=self.encyclopedia_image_factory, message_author=self.message_author))
         new_view.add_item(EncyclopediaPageButton(button_type= 'show_variant',   current_page=self.current_page, total_pages=self.total_pages, is_next=False,  is_verbose= self.is_verbose,        show_variants= not self.show_variants,    show_mythics= self.show_mythics,    is_disabled=False, encyclopedia_image_factory=self.encyclopedia_image_factory, message_author=self.message_author))
+
         new_view.add_item(EncyclopediaPageButton(button_type= 'show_mythics',   current_page=self.current_page, total_pages=self.total_pages, is_next=False,  is_verbose= self.is_verbose,        show_variants= self.show_variants,        show_mythics= not self.show_mythics,    is_disabled=False, encyclopedia_image_factory=self.encyclopedia_image_factory, message_author=self.message_author))
         new_view.add_item(EncyclopediaPageButton(button_type= 'shift',          current_page=self.current_page, total_pages=self.total_pages, is_next=True,   is_verbose=self.is_verbose,         show_variants= self.show_variants,        show_mythics= self.show_mythics,    is_disabled= self.current_page == self.total_pages, encyclopedia_image_factory=self.encyclopedia_image_factory, message_author=self.message_author, row=1))
 
@@ -76,11 +82,15 @@ class EncyclopediaPageShiftView(View):
     def __init__(self, encyclopedia_image_factory:EncyclopediaImageFactory, current_page:int, total_pages:int, is_verbose:bool, show_variants:bool=False, show_mythics:bool=False, message_author: int = 0):
         super().__init__(timeout=None)
 
-        print(f"Init View current pages - {current_page} \n total pages- {total_pages} \n is_verbose- {is_verbose} \n show_variants- {show_variants}")
+        mythics_unlocked = get_tgommo_db_handler().get_server_mythical_count() > 0
+
 
         # Add Buttons to View:   order -> previous page button, verbose button, next page button
         self.add_item(EncyclopediaPageButton(button_type= 'shift',          current_page=current_page, total_pages=total_pages, is_next=False,  is_verbose=  is_verbose,    show_variants=  show_variants,      show_mythics= show_mythics,         is_disabled=current_page == 1,              encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author, row=1))
         self.add_item(EncyclopediaPageButton(button_type= 'verbose',        current_page=current_page, total_pages=total_pages, is_next=False,  is_verbose= not is_verbose, show_variants=  show_variants,      show_mythics= show_mythics,         is_disabled=False,                          encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author))
         self.add_item(EncyclopediaPageButton(button_type= 'show_variant',   current_page=current_page, total_pages=total_pages, is_next=False,  is_verbose=  is_verbose,    show_variants= not show_variants,   show_mythics= show_mythics,         is_disabled=False,                          encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author))
-        self.add_item(EncyclopediaPageButton(button_type= 'show_mythics',   current_page=current_page, total_pages=total_pages, is_next=False,  is_verbose=  is_verbose,    show_variants=  show_variants,      show_mythics= not show_mythics,     is_disabled=False,                          encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author))
+
+        if mythics_unlocked:
+            self.add_item(EncyclopediaPageButton(button_type= 'show_mythics',   current_page=current_page, total_pages=total_pages, is_next=False,  is_verbose=  is_verbose,    show_variants=  show_variants,      show_mythics= not show_mythics,     is_disabled=False,                          encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author))
+
         self.add_item(EncyclopediaPageButton(button_type= 'shift',          current_page=current_page, total_pages=total_pages, is_next=True,   is_verbose=  is_verbose,    show_variants=  show_variants,      show_mythics= show_mythics,         is_disabled=current_page == total_pages,    encyclopedia_image_factory=encyclopedia_image_factory, message_author=message_author, row=1))

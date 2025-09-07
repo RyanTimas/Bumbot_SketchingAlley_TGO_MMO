@@ -62,6 +62,12 @@ class TGOMMODatabaseHandler:
         return response
 
 
+    # Check if mythics have been unlocked on the server yet
+    def get_server_mythical_count(self):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_SERVER_MYTHICAL_COUNT, params=())
+        return response[0][0]
+
+
     def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False):
         creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(() if is_server_page else (user_id,)))
 

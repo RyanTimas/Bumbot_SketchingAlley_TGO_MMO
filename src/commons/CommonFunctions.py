@@ -1,6 +1,9 @@
+import asyncio
+import functools
 import os
 from datetime import date
 
+import aiohttp
 import discord
 import io
 from PIL import Image, ImageFont, ImageDraw
@@ -127,3 +130,59 @@ def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
 def get_user_discord_profile_pic(user = None):
     avatar_url = user.display_avatar.url if hasattr(user,'display_avatar') else user.avatar.url if user.avatar else user.default_avatar.url
     return avatar_url
+
+
+#*********************
+# DISCORD VIEW HELPERS
+#*********************
+async def check_if_user_can_interact_with_view(interaction, interaction_lock, message_author):
+    # Check if we're already processing an interaction
+    if interaction_lock.locked():
+        await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
+        return False
+
+    if interaction.user.id != message_author:
+        await interaction.response.send_message("Only the user who used this command may interact with this screen.", ephemeral=True)
+        return False
+
+    return True
+
+
+# Placeholder button that does nothing when clicked
+def create_dummy_label_button(label_text, row=1):
+    button = discord.ui.Button(
+        label=f"{label_text}",
+        style=discord.ButtonStyle.gray,
+        row=row
+    )
+    button.callback = dummy_callback()
+    return button
+def dummy_callback():
+    async def callback(interaction):
+        # Just acknowledge the interaction to prevent the "interaction failed" message
+        # Without doing anything else
+        await interaction.response.defer(ephemeral=True, thinking=False)
+    return callback
+
+
+# Retry decorator for handling SSL errors
+def retry_on_ssl_error(max_retries=3, delay=1):
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            retries = 0
+            while retries < max_retries:
+                try:
+                    return await func(*args, **kwargs)
+                except discord.errors.InteractionResponded:
+                    # Interaction already responded to, so don't retry
+                    return
+                except aiohttp.client_exceptions.ClientOSError as e:
+                    if "SSL" in str(e) and retries < max_retries - 1:
+                        retries += 1
+                        await asyncio.sleep(delay)
+                    else:
+                        # If we've exhausted retries or it's not an SSL error, re-raise
+                        raise
+        return wrapper
+    return decorator

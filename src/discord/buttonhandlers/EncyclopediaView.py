@@ -1,30 +1,13 @@
 import asyncio
-import functools
-
-import aiohttp
 import discord
-from anyio import current_time
-from discord import Message
-from discord.ui import View
-
 from src.commons.CommonFunctions import convert_to_png
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
-
-
-import asyncio
-import functools
-
-import aiohttp
-import discord
-
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
 class EncyclopediaView(discord.ui.View):
-    def __init__(self, message_author: int, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False):
+    def __init__(self, message_author, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.encyclopedia_image_factory = encyclopedia_image_factory
@@ -59,6 +42,8 @@ class EncyclopediaView(discord.ui.View):
         # Update button states
         self.update_button_states()
 
+
+    # create buttons
     def create_close_button(self):
         button = discord.ui.Button(
             label="close",
@@ -103,19 +88,14 @@ class EncyclopediaView(discord.ui.View):
         button.callback = self.toggle_callback(button_type)
         return button
 
+
+    # handle button behavior
     def nav_callback(self, is_next):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if self.interaction_lock.locked():
-                await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
                 return
 
-            if interaction.user.id != self.message_author:
-                await interaction.response.send_message("Only the user who used this command may interact with this screen.", ephemeral=True)
-                return
-
-            # Acquire lock to prevent concurrent actions
             async with self.interaction_lock:
                 await interaction.response.defer()
 
@@ -136,14 +116,7 @@ class EncyclopediaView(discord.ui.View):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             # Check if we're already processing an interaction
-            if self.interaction_lock.locked():
-                return
-
-            if interaction.user.id != self.message_author:
-                await interaction.response.send_message(
-                    "Only the user who used this command may interact with this screen.",
-                    ephemeral=True
-                )
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
                 return
 
             # Acquire lock to prevent concurrent actions
@@ -174,15 +147,7 @@ class EncyclopediaView(discord.ui.View):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             # Check if we're already processing an interaction
-            if self.interaction_lock.locked():
-                await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
-                return
-
-            if interaction.user.id != self.message_author:
-                await interaction.response.send_message(
-                    "Only the user who used this command may interact with this screen.",
-                    ephemeral=True
-                )
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
                 return
 
             # For delete operation, we need a shorter lock
@@ -191,6 +156,7 @@ class EncyclopediaView(discord.ui.View):
                 await interaction.message.delete()
 
         return callback
+
 
     def update_button_states(self):
         # Update navigation buttons
@@ -204,25 +170,3 @@ class EncyclopediaView(discord.ui.View):
         self.verbose_button.style = discord.ButtonStyle.green if self.is_verbose else discord.ButtonStyle.gray
         self.variants_button.style = discord.ButtonStyle.green if self.show_variants else discord.ButtonStyle.gray
         self.mythics_button.style = discord.ButtonStyle.blurple if self.show_mythics else discord.ButtonStyle.gray
-
-# Retry decorator for handling SSL errors
-def retry_on_ssl_error(max_retries=3, delay=1):
-    def decorator(func):
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
-            retries = 0
-            while retries < max_retries:
-                try:
-                    return await func(*args, **kwargs)
-                except discord.errors.InteractionResponded:
-                    # Interaction already responded to, so don't retry
-                    return
-                except aiohttp.client_exceptions.ClientOSError as e:
-                    if "SSL" in str(e) and retries < max_retries - 1:
-                        retries += 1
-                        await asyncio.sleep(delay)
-                    else:
-                        # If we've exhausted retries or it's not an SSL error, re-raise
-                        raise
-        return wrapper
-    return decorator

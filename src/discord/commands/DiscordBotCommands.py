@@ -5,10 +5,9 @@ import aiohttp
 import discord
 
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
-from src.discord.deprecated.EncyclopediaPageButton import EncyclopediaPageShiftView
+from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
 
@@ -138,6 +137,15 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
 
         await ctx.reply('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
+
+
+    @discord_bot.discord_bot.command(name='tgommo-help', help="Brings up the Menu for TGOMMO.")
+    async def tgommo_help(ctx):
+        view = TGOMMOMenuView(message_author=ctx.author, discord_bot=discord_bot)
+        await ctx.message.delete()  # Delete the command message
+
+        title_text = f'{ctx.author.mention} Welcome to the Creature Catcher Help Menu!'
+        await ctx.send(title_text, files=[], view=view)
 
 
     @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.")

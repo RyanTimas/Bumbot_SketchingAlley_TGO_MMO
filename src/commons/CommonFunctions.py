@@ -64,6 +64,7 @@ def add_text_to_image(image: Image.Image, font, text: str = "", position= (0,0),
     draw.text(position, text= text, font=font, fill=color, anchor="mm")
     return image
 
+
 def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
     text_bbox = font.getbbox(text)
 
@@ -123,7 +124,6 @@ def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
         return current_font
 
 
-
 #************************************************************************************
 #-------------------------------DISCORD FUNCTIONS------------------------------------
 #************************************************************************************
@@ -157,12 +157,27 @@ def create_dummy_label_button(label_text, row=1):
     )
     button.callback = dummy_callback()
     return button
+
+
 def dummy_callback():
     async def callback(interaction):
         # Just acknowledge the interaction to prevent the "interaction failed" message
         # Without doing anything else
         await interaction.response.defer(ephemeral=True, thinking=False)
     return callback
+
+
+# Creates an invisible button that serves as a spacer
+def create_spacer_button(row=0):
+    button = discord.ui.Button(
+        label="\u200b",  # Zero-width space character
+        style=discord.ButtonStyle.gray,
+        disabled=True,
+        row=row
+    )
+    # Make the button almost invisible
+    button.callback = dummy_callback()
+    return button
 
 
 # Retry decorator for handling SSL errors

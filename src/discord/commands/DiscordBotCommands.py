@@ -36,7 +36,7 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
     @discord_bot.discord_bot.command(name='bumbot')
     async def bumbot(ctx):
         if "!bumbot online" in ctx.message.content.lower():
-            await ctx.message.reply("Project: Creature Catcher - Online ✔", delete_after=5)
+            await ctx.message.reply("TGO MMO - Online ✔", delete_after=5)
             await ctx.message.delete(delay=5)
             return True
 
@@ -75,8 +75,8 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.channel.send(f"Current Environment: {env.name} ({time_of_day})", delete_after=10)
 
 
-    @discord_bot.discord_bot.command(name='caught_creatures', help="List all creatures caught. Use 'verbose' for detailed stats.")
-    async def caught_creatures(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
+    @discord_bot.discord_bot.command(name='encyclopedia', help="List all creatures caught. Use 'verbose' for detailed stats.")
+    async def encyclopedia(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
         # Initialize defaults
         verbose = False
         is_server_stats = False
@@ -136,15 +136,16 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
 
+        await ctx.message.delete()
         await ctx.reply('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
 
-    @discord_bot.discord_bot.command(name='tgommo-help', help="Brings up the Menu for TGOMMO.")
+    @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")
     async def tgommo_help(ctx):
         view = TGOMMOMenuView(message_author=ctx.author, discord_bot=discord_bot)
-        await ctx.message.delete()  # Delete the command message
-
         title_text = f'{ctx.author.mention} Welcome to the Creature Catcher Help Menu!'
+
+        await ctx.message.delete()
         await ctx.send(title_text, files=[], view=view)
 
 

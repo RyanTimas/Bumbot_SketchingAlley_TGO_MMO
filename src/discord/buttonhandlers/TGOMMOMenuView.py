@@ -1,6 +1,7 @@
 import asyncio
 
 import discord
+from PIL import Image
 
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, \
@@ -10,6 +11,7 @@ from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.file_paths import *
 
 
 class TGOMMOMenuView(discord.ui.View):
@@ -115,10 +117,36 @@ class TGOMMOMenuView(discord.ui.View):
 
 
     # Handle Encyclopedia Buttons - opens encyclopedia view
+    def create_welcome_button(self):
+        button = discord.ui.Button(
+            label="What is TGO MMO?",
+            style=discord.ButtonStyle.red,
+            row=0
+        )
+        button.callback = self.welcome_callback()
+        return button
+
+    def welcome_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                return
+
+        return callback
+
+
+
     def create_help_button(self):
         button = discord.ui.Button(
             label="Help",
-            style=discord.ButtonStyle.gray,
+            style=discord.ButtonStyle.red,
             row=0
         )
         button.callback = self.help_callback()
@@ -135,26 +163,42 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                mythics_unlocked = get_tgommo_db_handler().get_server_mythical_count() > 0
-                help_text_header = (
-                    TGOMMO_HELP_MENU_TITLE
-                )
-                help_text_buttons = (
-                    TGOMMO_HELP_MENU_BUTTON_DESCRIPTION
-                    + TGOMMO_HELP_MENU_BUTTON_OPTIONS
-                )
-                help_text_commands = (
-                    TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_1
-                    + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_1
-                    + TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_2
-                    + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_2 if mythics_unlocked else ""
+                # Load help images
+                welcome_img = Image.open(HELP_IMAGE_WELCOME_CARD)
+                button_img = Image.open(HELP_IMAGE_BUTTON_CARD)
+                command_img_1 = Image.open(HELP_IMAGE_COMMAND_CARD_1)
+                command_img_2 = Image.open(HELP_IMAGE_COMMAND_CARD_2)
+                if get_tgommo_db_handler().get_server_mythical_count() > 0:
+                    command_img_2_mythic_addon = Image.open(HELP_IMAGE_COMMAND_CARD_2_MYTHIC_ADDON)
+                    command_img_2.paste(command_img_2_mythic_addon, (0, 0), command_img_2_mythic_addon)
 
-                    + TGOMMO_HELP_MENU_FOOTER
-                )
+                # Send help images
+                await interaction.followup.send(files=[convert_to_png(welcome_img, f'welcome_img.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(button_img, f'welcome_img.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(command_img_1, f'welcome_img.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(command_img_2, f'welcome_img.png')], ephemeral=True)
 
-                await interaction.followup.send(help_text_header, ephemeral=True)
-                await interaction.followup.send(help_text_buttons, ephemeral=True)
-                await interaction.followup.send(help_text_commands, ephemeral=True)
+                # Send help text messages (unused)
+                # mythics_unlocked = get_tgommo_db_handler().get_server_mythical_count() > 0
+                # help_text_header = (
+                #     TGOMMO_HELP_MENU_TITLE
+                # )
+                # help_text_buttons = (
+                #     TGOMMO_HELP_MENU_BUTTON_DESCRIPTION
+                #     + TGOMMO_HELP_MENU_BUTTON_OPTIONS
+                # )
+                # help_text_commands = (
+                #     TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_1
+                #     + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_1
+                #     + TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_2
+                #     + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_2 if mythics_unlocked else ""
+                #
+                #     + TGOMMO_HELP_MENU_FOOTER
+                # )
+                #
+                # await interaction.followup.send(help_text_header, ephemeral=True)
+                # await interaction.followup.send(help_text_buttons, ephemeral=True)
+                # await interaction.followup.send(help_text_commands, ephemeral=True)
 
         return callback
 

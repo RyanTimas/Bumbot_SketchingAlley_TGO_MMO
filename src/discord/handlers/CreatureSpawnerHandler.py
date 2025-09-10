@@ -18,7 +18,7 @@ from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity, CreatureRarity, get_rarity_by_name, COMMON
 from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TEST
+from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TEST, DISCORD_SA_CHANNEL_ID_TGOMMO
 
 
 class CreatureSpawnerHandler:
@@ -89,7 +89,7 @@ class CreatureSpawnerHandler:
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed()
 
         # Send a message to the approval queue with a button to give XP
-        spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(
+        spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
             view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
@@ -115,7 +115,7 @@ class CreatureSpawnerHandler:
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed(is_spawn_message=False)
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
         asyncio.run_coroutine_threadsafe(
-            self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TEST).send(
+            self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
                 files=[creature_embed[1]],
                 embed=creature_embed[0]
             ), self.discord_bot.loop

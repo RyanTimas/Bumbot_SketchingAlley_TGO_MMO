@@ -34,7 +34,7 @@ class QueryHandler:
         else:
             self.cursor.execute(query)
 
-        return_value = self.cursor.fetchall() if query.strip().upper().startswith("SELECT") else self.conn.commit()
+        return_value = self.cursor.fetchall()
         self.close_db()
 
         return return_value

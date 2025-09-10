@@ -19,7 +19,8 @@ class TGOMMODatabaseHandler:
         return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=params)
 
     def insert_new_user_creature(self, params=(0,0,0,0,0)):
-        return self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
+        return_value = self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
+        return return_value[0][0]
 
 
     ''' Select Queries '''
@@ -52,7 +53,6 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
         return response[0][0]
 
-
     # Returns all creatures found within a particular environment
     def get_creatures_from_environment(self, environment_id=-1):
         if environment_id == -1:
@@ -61,12 +61,10 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
         return response
 
-
     # Check if mythics have been unlocked on the server yet
     def get_server_mythical_count(self):
         response = self.QueryHandler.execute_query(TGOMMO_GET_SERVER_MYTHICAL_COUNT, params=())
         return response[0][0]
-
 
     def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False):
         creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(() if is_server_page else (user_id,)))
@@ -106,11 +104,9 @@ class TGOMMODatabaseHandler:
 
         return creatures
 
-
     def get_total_catches_by_user(self, user_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID, params=(user_id,))
         return response[0][0]
-
 
     def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False):
         if include_variants:
@@ -121,7 +117,6 @@ class TGOMMODatabaseHandler:
         params = (user_id, include_mythics) if not is_server_page else (include_mythics,)
 
         return self.QueryHandler.execute_query(query, params=params)[0]
-
 
     def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
@@ -138,6 +133,10 @@ class TGOMMODatabaseHandler:
 
 
     ''' Update Queries '''
+    def update_creature_nickname(self, creature_id, nickname):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
+        return response
+
     ''' Delete Queries '''
 
 

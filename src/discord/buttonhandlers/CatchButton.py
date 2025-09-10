@@ -1,12 +1,11 @@
 import asyncio
-from datetime import datetime
 
 import discord
 from discord import Message
 from discord.ui import View
 
-from src.database.handlers import DatabaseHandler
-from src.database.handlers.DatabaseHandler import get_db_handler, get_tgommo_db_handler, get_user_db_handler
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
+from src.discord.buttonhandlers.CreatureNicknameView import CreatureNicknameView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature
@@ -41,22 +40,26 @@ class CatchButton(discord.ui.Button):
         successful_catch_embed = CreatureEmbedHandler(self.creature, self.environment).generate_catch_embed(interaction=interaction)
         total_xp = successful_catch_embed[3]
 
-        # insert record of user catching the creature
-        get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
-        # give user xp for catching the creature
+        # insert record of user catching the creature & give user xp for catching the creature
+        catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
         get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
         # send a message to the channel announcing the successful catch
         await interaction.channel.send(embed=successful_catch_embed[0], files=[successful_catch_embed[1]])
 
         # send a personal message to user confirming the catch
-        await interaction.response.send_message(f"Success!! you've successfully caught {self.creature.name}", ephemeral=True)
+        await self.handle_successful_catch_response(interaction, catch_id)
 
         # delete the original spawn message so nobody else can catch it
         try:
             await interaction.message.delete()
         except discord.errors.NotFound:
             print('Message was already deleted, do nothing')
+
+
+    async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
+        nickname_view = CreatureNicknameView(interaction=interaction, creature_id=catch_id)
+        await interaction.response.send_message(f"Success!! you've successfully caught {self.creature.name}", view=nickname_view, ephemeral=True)
 
 
 class TGOMMOCatchButtonView(View):

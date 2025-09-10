@@ -101,6 +101,22 @@ class CreatureSpawnerHandler:
         thread.start()
 
 
+    # Picks a random creature from the spawn pool
+    async def creature_picker(self):
+        rarity = get_rarity()
+
+        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
+        selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
+
+        selected_creature = deepcopy(available_creatures[selected_index])
+
+        if random.randint(0,10) == 1:
+            selected_creature.rarity = MYTHICAL
+            selected_creature.img_root += '_S'
+
+        return selected_creature
+
+
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
         time.sleep(creature.despawn_time * 60)  # Convert minutes to seconds
@@ -136,18 +152,3 @@ class CreatureSpawnerHandler:
 
         self.last_spawn_time = current_time
 
-
-    # Picks a random creature from the spawn pool
-    async def creature_picker(self):
-        rarity = get_rarity()
-
-        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
-        selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
-
-        selected_creature = deepcopy(available_creatures[selected_index])
-
-        if random.randint(0,10) == 1:
-            selected_creature.rarity = MYTHICAL
-            selected_creature.img_root += '_S'
-
-        return selected_creature

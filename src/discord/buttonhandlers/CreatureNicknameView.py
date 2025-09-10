@@ -3,9 +3,6 @@ from discord.ui import Button, Modal, TextInput
 
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord import DiscordBot
-from src.discord.handlers import CreatureNicknameHandler
-
 
 class NicknameModal(Modal):
     def __init__(self, creature_id):

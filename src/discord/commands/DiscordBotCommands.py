@@ -134,10 +134,10 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats, show_variants=show_variants, show_mythics=show_mythics)
         encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
 
-        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author.id)
+        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author)
 
         await ctx.message.delete()
-        await ctx.reply('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
+        await ctx.send('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
 
     @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")

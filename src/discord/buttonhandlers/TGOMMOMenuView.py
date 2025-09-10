@@ -5,9 +5,11 @@ import discord
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, \
     create_dummy_label_button
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.resources.constants.TGO_MMO_constants import *
 
 
 class TGOMMOMenuView(discord.ui.View):
@@ -27,19 +29,19 @@ class TGOMMOMenuView(discord.ui.View):
         # Add a button to open input modal
 
         # Initialize view buttons
-
         self.help_button = self.create_help_button()
-        self.add_item(create_dummy_label_button(label_text="Open Encyclopedia Page: ", row=1))
+
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
 
-        self.close_button = self.create_close_button()
+        self.close_button = self.create_close_button(row=3)
 
-        # Add buttons to view
+        # Create view layout
         self.add_item(self.help_button)
 
-        self.add_item(self.open_server_encyclopedia_button)
+        self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
         self.add_item(self.open_user_encyclopedia_button)
+        self.add_item(self.open_server_encyclopedia_button)
 
         self.add_item(self.close_button)
 
@@ -50,8 +52,8 @@ class TGOMMOMenuView(discord.ui.View):
     # Handle Encyclopedia Buttons - opens encyclopedia view
     def create_encyclopedia_button(self, button_type, row=1):
         labels = {
-            "user_encyclopedia": "User Encyclopedia",
-            "server_encyclopedia": "Server Encyclopedia",
+            "user_encyclopedia": "User",
+            "server_encyclopedia": "Server",
         }
         styles = {
             "user_encyclopedia": discord.ButtonStyle.blurple,
@@ -115,12 +117,13 @@ class TGOMMOMenuView(discord.ui.View):
     # Handle Encyclopedia Buttons - opens encyclopedia view
     def create_help_button(self):
         button = discord.ui.Button(
-            label="help",
-            style=discord.ButtonStyle.red,
+            label="Help",
+            style=discord.ButtonStyle.gray,
             row=0
         )
         button.callback = self.help_callback()
         return button
+
     def help_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -132,25 +135,36 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                help_text = (
-                    "**TGOMMO Menu Help**\n\n"
-                    "• **User Encyclopedia**: View your personal encyclopedia of caught creatures.\n"
-                    "• **Server Encyclopedia**: View the server-wide encyclopedia of all creatures caught by members.\n"
-                    "• **Close**: Close this menu.\n\n"
-                    "Use the buttons above to navigate through the options. Only you can interact with this menu."
+                mythics_unlocked = get_tgommo_db_handler().get_server_mythical_count() > 0
+                help_text_header = (
+                    TGOMMO_HELP_MENU_TITLE
+                )
+                help_text_buttons = (
+                    TGOMMO_HELP_MENU_BUTTON_DESCRIPTION
+                    + TGOMMO_HELP_MENU_BUTTON_OPTIONS
+                )
+                help_text_commands = (
+                    TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_1
+                    + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_1
+                    + TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_2
+                    + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_2 if mythics_unlocked else ""
+
+                    + TGOMMO_HELP_MENU_FOOTER
                 )
 
-                await interaction.followup.send(help_text, ephemeral=True)
+                await interaction.followup.send(help_text_header, ephemeral=True)
+                await interaction.followup.send(help_text_buttons, ephemeral=True)
+                await interaction.followup.send(help_text_commands, ephemeral=True)
 
         return callback
 
 
     # Handle Close Button
-    def create_close_button(self):
+    def create_close_button(self, row=2):
         button = discord.ui.Button(
-            label="close",
+            label="✘",
             style=discord.ButtonStyle.red,
-            row=2  # Place in third row
+            row=row,
         )
         button.callback = self.close_callback()
         return button

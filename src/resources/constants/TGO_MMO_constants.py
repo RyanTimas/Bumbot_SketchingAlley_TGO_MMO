@@ -1,6 +1,7 @@
 '''TGO MMO'''
 from src.resources.constants.general_constants import IMAGE_FOLDER_IMAGES
 
+MYTHICAL_SPAWN_CHANCE = 250  # 1 in 250 chance of a mythical spawning
 
 '''EMBED ICONS'''
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"

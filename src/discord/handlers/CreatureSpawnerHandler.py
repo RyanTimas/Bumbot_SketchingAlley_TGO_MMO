@@ -15,6 +15,7 @@ from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
+from src.resources.constants.TGO_MMO_constants import MYTHICAL_SPAWN_CHANCE
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
 
 
@@ -70,13 +71,8 @@ class CreatureSpawnerHandler:
 
             try:
                 await self.spawn_creature(creature= creature)
+                await self.duplicate_creature_spawner(creature=creature)
 
-                # 12% chance to spawn a duplicate of common and uncommon creatures
-                spawn_duplicate = await flip_coin(total_iterations=3) and creature.rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
-                while spawn_duplicate:
-                    # 6% chance to spawn more duplicates
-                    await self.spawn_creature(creature=deepcopy(creature))
-                    spawn_duplicate = await flip_coin(total_iterations=4)
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
@@ -104,6 +100,26 @@ class CreatureSpawnerHandler:
         thread.daemon = True
         thread.start()
 
+    # Spawns a duplicate creature to give illusion of a swarm
+    async def duplicate_creature_spawner(self, creature: TGOCreature):
+        critter_chain_multiplier = 1
+
+        # 12% chance to spawn a duplicate
+        spawn_duplicate = await flip_coin(total_iterations=3) and creature.rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
+        while spawn_duplicate:
+            # 6% chance to spawn more duplicates
+            duplicate_creature = deepcopy(creature)
+
+            critter_chain_multiplier += 1
+            if random.randint(0, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
+                duplicate_creature.rarity = MYTHICAL
+                duplicate_creature.img_root += '_S'
+
+            await self.spawn_creature(duplicate_creature)
+
+            # 6% chance to spawn more duplicates
+            spawn_duplicate = await flip_coin(total_iterations=4)
+        return
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self):
@@ -114,7 +130,7 @@ class CreatureSpawnerHandler:
 
         selected_creature = deepcopy(available_creatures[selected_index])
 
-        if random.randint(0,250) == 1:
+        if random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
             selected_creature.rarity = MYTHICAL
             selected_creature.img_root += '_S'
 

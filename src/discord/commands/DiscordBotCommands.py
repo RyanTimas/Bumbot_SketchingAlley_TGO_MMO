@@ -54,7 +54,7 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
 
 
 def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
-    @discord_bot.discord_bot.command(name='current_environment', help="Display the current environment.")
+    @discord_bot.discord_bot.command(name='current_environment', help="Display the current environment.", hidden=True)
     async def current_environment(ctx):
         avatar_url = ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url
 
@@ -137,7 +137,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.send(title_text, files=[], view=view)
 
     # MOD COMMANDS
-    @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.")
+    @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.", hidden=True)
     async def spawn_creature(ctx):
         if ctx.author.id not in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
@@ -147,7 +147,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
         await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
 
-    @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.")
+    @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.", hidden=True)
     async def spawn_every_creature(ctx, param1: str = None):
         if ctx.author.id in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)

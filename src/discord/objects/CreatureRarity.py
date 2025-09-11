@@ -39,9 +39,9 @@ def get_rarity():
         selected_rarity = LEGENDARY
     elif roll <= 133:  # 1% chance for EPIC (rolls 34-133)
         selected_rarity = EPIC
-    elif roll <= 833:  # 7% chance for RARE (rolls 134-833)
+    elif roll <= 533:  # 4% chance for RARE (rolls 134-533)
         selected_rarity = RARE
-    elif roll <= 3833:  # 30% chance for UNCOMMON (rolls 834-3833)
+    elif roll <= 3833:  # 33% chance for UNCOMMON (rolls 534-3833)
         selected_rarity = UNCOMMON
     else:  # 61.67% chance for COMMON (rolls 3834-10000)
         selected_rarity = COMMON

@@ -72,7 +72,7 @@ class CreatureSpawnerHandler:
                 await self.spawn_creature(creature= creature)
 
                 # 12% chance to spawn a duplicate of common and uncommon creatures
-                spawn_duplicate = await flip_coin(total_iterations=3) and creature.rarity in (COMMON, UNCOMMON, RARE)
+                spawn_duplicate = await flip_coin(total_iterations=3) and creature.rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
                 while spawn_duplicate:
                     # 6% chance to spawn more duplicates
                     await self.spawn_creature(creature=deepcopy(creature))

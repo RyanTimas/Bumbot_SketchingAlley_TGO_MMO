@@ -139,7 +139,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
     # MOD COMMANDS
     @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.")
     async def spawn_creature(ctx):
-        if ctx.author.id in USER_WHITELIST:
+        if ctx.author.id not in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
             return
 

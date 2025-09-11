@@ -31,7 +31,7 @@ class CatchButton(discord.ui.Button):
         async with self._lock:
             # Check if creature was already caught
             if self.caught:
-                await interaction.response.send_message("Someone else already caught this creature!", ephemeral=True)
+                await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                 return
             # Mark as caught immediately to prevent others from catching
             self.caught = True
@@ -59,7 +59,7 @@ class CatchButton(discord.ui.Button):
 
     async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
         nickname_view = CreatureNicknameView(interaction=interaction, creature_id=catch_id)
-        await interaction.response.send_message(f"Success!! you've successfully caught {self.creature.name}", view=nickname_view, ephemeral=True)
+        await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
 
 
 class TGOMMOCatchButtonView(View):

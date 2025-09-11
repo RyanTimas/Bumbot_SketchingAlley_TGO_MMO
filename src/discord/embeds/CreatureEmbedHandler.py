@@ -43,7 +43,7 @@ class CreatureEmbedHandler:
             embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
 
             # embed.set_footer(text=f'{self.environment.location} ({'🌙 Night' if self.environment.is_night_environment else '☀️ Day'})', icon_url=TGOMMO_CREATURE_EMBED_LOCATION_ICON)
-            embed.set_footer(text=f' | ', icon_url=TGOMMO_CREATURE_EMBED_CLOCK_ICON)
+            embed.set_footer(text=f' - ', icon_url=TGOMMO_CREATURE_EMBED_CLOCK_ICON)
             embed.timestamp = discord.utils.utcnow()
             embed.set_image(url=f"attachment://{encounter_img.filename}")
         else:

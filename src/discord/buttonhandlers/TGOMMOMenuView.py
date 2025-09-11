@@ -32,6 +32,7 @@ class TGOMMOMenuView(discord.ui.View):
 
         # Initialize view buttons
         self.help_button = self.create_help_button()
+        self.welcome_button = self.create_welcome_button()
 
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
@@ -39,6 +40,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.close_button = self.create_close_button(row=3)
 
         # Create view layout
+        self.add_item(self.welcome_button)
         self.add_item(self.help_button)
 
         self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
@@ -59,7 +61,7 @@ class TGOMMOMenuView(discord.ui.View):
         }
         styles = {
             "user_encyclopedia": discord.ButtonStyle.blurple,
-            "server_encyclopedia": discord.ButtonStyle.green,
+            "server_encyclopedia": discord.ButtonStyle.blurple,
         }
         emojis = {
             "user_encyclopedia": None,
@@ -116,11 +118,10 @@ class TGOMMOMenuView(discord.ui.View):
         return callback
 
 
-    # Handle Encyclopedia Buttons - opens encyclopedia view
     def create_welcome_button(self):
         button = discord.ui.Button(
             label="What is TGO MMO?",
-            style=discord.ButtonStyle.red,
+            style=discord.ButtonStyle.green,
             row=0
         )
         button.callback = self.welcome_callback()
@@ -137,15 +138,24 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                return
+                welcome_img_1 = Image.open(HELP_IMAGE_WELCOME_CARD_INTRO)
+                welcome_img_2 = Image.open(HELP_IMAGE_WELCOME_CARD_HOW_TO_PLAY)
+                welcome_img_3 = Image.open(HELP_IMAGE_WELCOME_CARD_RARITY_SYSTEM)
+                welcome_img_4 = Image.open(HELP_IMAGE_WELCOME_CARD_FUTURE_UPDATES)
+
+                # Send help images
+                await interaction.followup.send(files=[convert_to_png(welcome_img_1, f'welcome_img_1.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(welcome_img_2, f'welcome_img_2.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(welcome_img_3, f'welcome_img_3.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(welcome_img_4, f'welcome_img_4.png')], ephemeral=True)
 
         return callback
 
 
     def create_help_button(self):
         button = discord.ui.Button(
-            label="Help",
-            style=discord.ButtonStyle.red,
+            label="Help & Commands",
+            style=discord.ButtonStyle.green,
             row=0
         )
         button.callback = self.help_callback()

@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import os
+import random
 from datetime import date
 
 import aiohttp
@@ -201,3 +202,12 @@ def retry_on_ssl_error(max_retries=3, delay=1):
                         raise
         return wrapper
     return decorator
+
+
+#************************************************************************************
+#-------------------------------GENERAL FUNCTIONS------------------------------------
+#************************************************************************************
+async def flip_coin(iteration: int=1, total_iterations: int=1):
+    if random.random() > 0.5:
+        return await flip_coin(iteration=iteration + 1, total_iterations=total_iterations) if iteration < total_iterations else True
+    return False

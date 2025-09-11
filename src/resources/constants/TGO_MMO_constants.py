@@ -4,6 +4,7 @@ from src.resources.constants.general_constants import IMAGE_FOLDER_IMAGES
 
 '''EMBED ICONS'''
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"
+TGOMMO_CREATURE_EMBED_CLOCK_ICON = "https://cdn-icons-png.flaticon.com/512/4305/4305432.png"
 
 
 '''CREATURE CATCH XP LINES'''

@@ -10,6 +10,7 @@ from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
 from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
+from src.resources.constants.general_constants import USER_WHITELIST
 
 
 def initialize_discord_commands(discord_bot: DiscordBot):
@@ -53,19 +54,6 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
 
 
 def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
-    @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.")
-    async def spawn_creature(ctx):
-        creature = await discord_bot.creature_spawner_handler.creature_picker()
-        await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
-        await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
-
-
-    @discord_bot.discord_bot.command(name='toggle_creature_spawns', help="toggle spawning of creatures.")
-    async def toggle_creature_spawns(ctx):
-        result = discord_bot.creature_spawner_handler.toggle_creature_spawner(ctx)  # Get result first
-        await ctx.channel.send(result, delete_after=5)
-
-
     @discord_bot.discord_bot.command(name='current_environment', help="Display the current environment.")
     async def current_environment(ctx):
         avatar_url = ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url
@@ -148,9 +136,23 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.message.delete()
         await ctx.send(title_text, files=[], view=view)
 
+    # MOD COMMANDS
+    @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.")
+    async def spawn_creature(ctx):
+        if ctx.author.id in USER_WHITELIST:
+            await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
+            return
+
+        creature = await discord_bot.creature_spawner_handler.creature_picker()
+        await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
+        await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
 
     @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.")
     async def spawn_every_creature(ctx, param1: str = None):
+        if ctx.author.id in USER_WHITELIST:
+            await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
+            return
+
         available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
 
         for creature in available_creatures:
@@ -170,6 +172,16 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
                         await asyncio.sleep(2)  # Wait before retrying
                     else:
                         await ctx.channel.send(f"Failed to spawn {creature.name} after {max_retries} attempts.",delete_after=5)
+
+
+    @discord_bot.discord_bot.command(name='toggle_creature_spawns', help="toggle spawning of creatures.")
+    async def toggle_creature_spawns(ctx):
+        if ctx.author.id in USER_WHITELIST:
+            await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
+            return
+
+        result = discord_bot.creature_spawner_handler.toggle_creature_spawner(ctx)  # Get result first
+        await ctx.channel.send(result, delete_after=5)
 
 
 

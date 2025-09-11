@@ -4,21 +4,18 @@ import threading
 import time
 import traceback
 from copy import deepcopy
-import random
 from datetime import datetime
 
-import discord
-
 from discord.ext.commands import Bot
-from sqlalchemy.sql.functions import current_time
 
-from src.database.handlers.DatabaseHandler import get_db_handler, get_tgommo_db_handler
+from src.commons.CommonFunctions import flip_coin
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.buttonhandlers.CatchButton import TGOMMOCatchButtonView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity, CreatureRarity, get_rarity_by_name, COMMON
+from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TEST, DISCORD_SA_CHANNEL_ID_TGOMMO
+from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
 
 
 class CreatureSpawnerHandler:
@@ -69,19 +66,26 @@ class CreatureSpawnerHandler:
         while self.are_creatures_spawning:
             # check if a new day has begun or if a day/night transition has occurred
             self._handle_time_change()
+            creature = await self.creature_picker()
 
             try:
-                await self.spawn_creature(creature= await self.creature_picker())
+                await self.spawn_creature(creature= creature)
+
+                # 12% chance to spawn a duplicate of common and uncommon creatures
+                spawn_duplicate = await flip_coin(total_iterations=3) and creature.rarity in (COMMON, UNCOMMON, RARE)
+                while spawn_duplicate:
+                    # 6% chance to spawn more duplicates
+                    await self.spawn_creature(creature=deepcopy(creature))
+                    spawn_duplicate = await flip_coin(total_iterations=4)
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
                 print(f"{error_type} occurred during creature spawning- skipping to next creature - {e}")
                 traceback.print_exc()
-                # Add a short delay before retrying
                 await asyncio.sleep(5)
 
-            # wait between 1 and 10 minutes before spawning another creature
-            await asyncio.sleep(random.uniform(1, 10) *60)
+            # wait between 8 and 12 minutes before spawning another creature - will spawn 120 - 180 creatures a day
+            await asyncio.sleep(random.uniform(8, 12) *60)
 
 
     # Spawns a creature and sends a message to the discord channel
@@ -110,7 +114,7 @@ class CreatureSpawnerHandler:
 
         selected_creature = deepcopy(available_creatures[selected_index])
 
-        if random.randint(0,10) == 1:
+        if random.randint(0,250) == 1:
             selected_creature.rarity = MYTHICAL
             selected_creature.img_root += '_S'
 

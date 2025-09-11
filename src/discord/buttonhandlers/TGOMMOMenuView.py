@@ -142,7 +142,6 @@ class TGOMMOMenuView(discord.ui.View):
         return callback
 
 
-
     def create_help_button(self):
         button = discord.ui.Button(
             label="Help",

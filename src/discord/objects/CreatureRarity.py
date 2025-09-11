@@ -33,17 +33,17 @@ def get_rarity_by_name(name: str):
     return None
 
 def get_rarity():
-    roll = random.randint(1, 100)
+    roll = random.randint(1, 10000)
     # Select rarity based on defined probabilities
-    if roll <= 1:  # 1% chance
+    if roll <= 33:  # 0.33% chance for LEGENDARY
         selected_rarity = LEGENDARY
-    elif roll <= 6:  # 5% chance (rolls 2-6)
+    elif roll <= 133:  # 1% chance for EPIC (rolls 34-133)
         selected_rarity = EPIC
-    elif roll <= 21:  # 15% chance (rolls 7-21)
+    elif roll <= 833:  # 7% chance for RARE (rolls 134-833)
         selected_rarity = RARE
-    elif roll <= 46:  # 25% chance (rolls 22-46)
+    elif roll <= 3833:  # 30% chance for UNCOMMON (rolls 834-3833)
         selected_rarity = UNCOMMON
-    else:  # 54% chance (rolls 47-100)
+    else:  # 61.67% chance for COMMON (rolls 3834-10000)
         selected_rarity = COMMON
 
     return selected_rarity

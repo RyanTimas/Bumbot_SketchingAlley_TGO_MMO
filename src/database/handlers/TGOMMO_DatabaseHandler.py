@@ -22,15 +22,21 @@ class TGOMMODatabaseHandler:
         return_value = self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
         return return_value[0][0]
 
+    def insert_new_user_profile(self, params=(0, '', 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0, 1, 0)):
+        return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
+
 
     ''' Select Queries '''
     def get_creature_by_id(self, creature_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(creature_id,))
         return response[0]
 
-
     def get_environment_by_id(self, environment_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(environment_id,))
+        return response[0]
+
+    def get_user_profile_by_user_id(self, user_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
         return response[0]
 
 
@@ -38,16 +44,13 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
         return response[0]
 
-
     def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
         return response[0]
 
-
     def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
         return response[0][0]
-
 
     def get_total_server_catches_for_species(self, creature_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
@@ -131,11 +134,40 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
         return response[0]
 
+    def get_creatures_for_player_profile(self, params=(-1,-1,-1,-1,-1,-1)):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
+        return response[0]
+
 
     ''' Update Queries '''
     def update_creature_nickname(self, creature_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
         return response
+
+    def update_user_profile_nickname(self, user_id, nickname):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_NICKNAME, params=(nickname, user_id))
+        return response
+
+    def update_user_profile_creature(self, user_id, creature_id, creature_number):
+        # check to make sure creature is not already featured on user profile
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id))
+
+        # Check if creature is already in any slot
+        for slot in (10, 11, 12, 13, 14, 15):
+            if response[0][slot] == creature_id:
+                return False
+
+        query_map = (
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_1,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_2,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_3,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_4,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_5,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_6
+        )
+
+        response = self.QueryHandler.execute_query(query_map[creature_number], params=(creature_id, user_id))
+        return True if response else False
 
     ''' Delete Queries '''
 

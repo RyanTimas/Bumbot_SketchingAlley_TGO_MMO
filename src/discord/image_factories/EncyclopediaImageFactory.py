@@ -184,36 +184,6 @@ class EncyclopediaImageFactory:
         return profile_pic
 
 
-    # adds a gaussian blur mask to the edges of an image
-    def add_blur_mask_to_image(self, image: Image.Image):
-        # Create an alpha mask based on the image's alpha channel
-        r, g, b, a = image.split()
-
-        # Create a mask with padding from the edges
-        mask = Image.new('L', image.size, 0)
-        draw = ImageDraw.Draw(mask)
-
-        # Draw a slightly smaller rectangle with padding from the edges
-        padding = 20  # Adjust this value to control feather width
-        draw.rectangle((
-            padding,
-            padding,
-            image.width - padding,
-            image.height - padding
-        ), fill=255)
-
-        # Apply feathering (blur the mask edges)
-        mask = mask.filter(ImageFilter.GaussianBlur(radius=15))
-
-        # Combine the original alpha with our feathered mask
-        new_a = ImageChops.multiply(a, mask)
-
-        # Apply the new alpha channel
-        image.putalpha(new_a)
-
-        return image
-
-
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image.Image):
         top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
         top_bar_camera_img = Image.open(ENCYCLOPEDIA_TOP_BAR_CAMERA_ICON_IMAGE)

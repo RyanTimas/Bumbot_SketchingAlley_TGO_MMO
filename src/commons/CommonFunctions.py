@@ -7,7 +7,7 @@ from datetime import date
 import aiohttp
 import discord
 import io
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File
 
 from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK
@@ -75,6 +75,36 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     x = center_pixel_location[0] - text_width / 2
     y = center_pixel_location[1] - text_height / 2
     return (x, y)
+
+
+# adds a gaussian blur mask to the edges of an image
+def add_blur_mask_to_image(self, image: Image.Image):
+        # Create an alpha mask based on the image's alpha channel
+        r, g, b, a = image.split()
+
+        # Create a mask with padding from the edges
+        mask = Image.new('L', image.size, 0)
+        draw = ImageDraw.Draw(mask)
+
+        # Draw a slightly smaller rectangle with padding from the edges
+        padding = 20  # Adjust this value to control feather width
+        draw.rectangle((
+            padding,
+            padding,
+            image.width - padding,
+            image.height - padding
+        ), fill=255)
+
+        # Apply feathering (blur the mask edges)
+        mask = mask.filter(ImageFilter.GaussianBlur(radius=15))
+
+        # Combine the original alpha with our feathered mask
+        new_a = ImageChops.multiply(a, mask)
+
+        # Apply the new alpha channel
+        image.putalpha(new_a)
+
+        return image
 
 #************************************************************************************
 #-------------------------------FONT FUNCTIONS-------------------------------------

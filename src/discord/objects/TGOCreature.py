@@ -5,11 +5,12 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity):
+    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity, nickname: str = ''):
         self.creature_id = creature_id
 
         self.name = name
         self.variant_name = variant_name
+        self.nickname = nickname
 
         self.dex_no = dex_no
         self.variant_no = variant_no

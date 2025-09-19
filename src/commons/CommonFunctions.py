@@ -10,7 +10,7 @@ import io
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File
 
-from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK
+from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK, FONT_COLOR_WHITE
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
@@ -75,6 +75,21 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     x = center_pixel_location[0] - text_width / 2
     y = center_pixel_location[1] - text_height / 2
     return (x, y)
+
+
+# puts a colored border around an input image
+def add_border_to_image(base_image: Image.Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
+    image_draw = ImageDraw.Draw(base_image)
+
+    # Draw border - the color #006891 with alpha
+    for offset_x in range(-1 * border_size, border_size + 1):
+        for offset_y in range(-1 * border_size, border_size + 1):
+            if abs(offset_x) == border_size or abs(offset_y) == border_size:  # Only draw the border edge
+                image_draw.text((border_size + offset_x, border_size + offset_y), text, font=font, fill=border_color)
+
+    # Draw text on top
+    image_draw.text((border_size, border_size), text, font=font, fill=font_color)
+    return base_image
 
 
 # adds a gaussian blur mask to the edges of an image

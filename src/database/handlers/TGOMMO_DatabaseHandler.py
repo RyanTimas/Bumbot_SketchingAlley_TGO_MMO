@@ -136,7 +136,7 @@ class TGOMMODatabaseHandler:
 
     def get_creatures_for_player_profile(self, params=(-1,-1,-1,-1,-1,-1)):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
-        return response[0]
+        return response
 
 
     ''' Update Queries '''

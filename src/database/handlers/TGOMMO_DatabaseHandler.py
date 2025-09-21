@@ -22,8 +22,11 @@ class TGOMMODatabaseHandler:
         return_value = self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
         return return_value[0][0]
 
-    def insert_new_user_profile(self, params=(0, '', 0, 0, 0, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0, 1, 0)):
-        return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
+    def insert_new_user_profile(self, user_id=-1, nickname = ''):
+        params = (user_id, nickname, 1, 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0)
+
+        self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
+        return self.get_user_profile_by_user_id(user_id=user_id)
 
 
     ''' Select Queries '''

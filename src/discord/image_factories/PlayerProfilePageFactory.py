@@ -13,8 +13,9 @@ from src.resources.constants.file_paths import *
 
 
 class PlayerProfilePageFactory:
-    def __init__(self, user_id: int, tab_is_open: bool = False, open_tab: str = False):
+    def __init__(self, user_id, target_user, tab_is_open: bool = False, open_tab: str = 'Team'):
         self.user_id = user_id
+        self.target_user = target_user
 
         self.player: TGOPlayer = None
         self.creature_team = []
@@ -28,7 +29,8 @@ class PlayerProfilePageFactory:
 
 
     def _load_relevant_info(self):
-        player_info = get_tgommo_db_handler().get_user_profile_by_user_id(self.user_id)
+        player_info = get_tgommo_db_handler().insert_new_user_profile(user_id=self.target_user.id, nickname=self.target_user.name)
+
         self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar_id=player_info[3], background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
 
         creature_team_info = get_tgommo_db_handler().get_creatures_for_player_profile((self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6))
@@ -41,7 +43,11 @@ class PlayerProfilePageFactory:
             self.creature_team.append(creature)
 
 
-    def build_player_profile_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None):
+    def build_player_profile_page_image(self, new_page_number = None, tab_is_open = None, open_tab = None):
+        # self.new_page_number = self.new_page_number if new_page_number is None else new_page_number
+        self.tab_is_open = self.tab_is_open if tab_is_open is None else tab_is_open
+        self.open_tab = self.open_tab if open_tab is None else open_tab
+
         # set new values in case button was clicked
         player_profile_image = Image.open(f"{PLAYER_PROFILE_BACKGROUND_BASE}_{self.player.background_id}{IMAGE_FILE_EXTENSION}")
         dirt_patches_image = Image.open(PLAYER_PROFILE_DIRT_PATCHES_IMAGE)
@@ -57,7 +63,8 @@ class PlayerProfilePageFactory:
         player_profile_image = self._place_creatures_on_image(player_profile_img=player_profile_image)
         player_profile_image = self.place_username_on_image(player_profile_img=player_profile_image)
 
-        player_profile_image = self.build_side_panel_content(player_profile_img=player_profile_image)
+        if self.tab_is_open:
+            player_profile_image = self.build_side_panel_content(player_profile_img=player_profile_image)
 
         return player_profile_image
 

@@ -7,6 +7,7 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
+from src.discord.buttonhandlers.PlayerProfileView import PlayerProfileView
 from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
@@ -139,30 +140,24 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             if param1.lower() == "open":
                 tab_is_open = True
 
-                if param2.isdigit():
+                if not param2.isdigit():
                     open_tab = param2
                 else:
-                    return await ctx.followup.send("Please specify a valid tab to open (e.g., 'Team', 'Biomes', 'Encyclopedia').", delete_after=10)
+                    return await ctx.followup.send("Please specify a valid tab to open (e.g., 'Team', 'Biomes', 'Collections').", delete_after=10)
             elif param1.isdigit():
                 target_user_id = int(param1)
         if param3:
             open_tab = param3
 
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
-        target_user_id = ctx.author.id if target_user_id is None else target_user_id
 
-        player_profile_img_factory = PlayerProfilePageFactory(user_id = target_user_id, tab_is_open=tab_is_open, open_tab=open_tab)
-        player_profile_img = player_profile_img_factory.build_player_profile_page_image()
-        player_profile_img.show()
+        player_profile_image_factory = PlayerProfilePageFactory(user_id=ctx.author.id,target_user = target_user, tab_is_open=tab_is_open, open_tab=open_tab)
+        player_profile_img = player_profile_image_factory.build_player_profile_page_image()
+
+        view = PlayerProfileView(user_id=ctx.author.id,player_profile_image_factory=player_profile_image_factory,tab_is_open=False,open_tab=open_tab)
 
         await ctx.message.delete()
-        await ctx.send('', files=[convert_to_png(player_profile_img, f'encyclopedia_test.png')])
-
-
-        # view = EncyclopediaView(encyclopedia_image_factory=tab_is_open, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author)
-
-        # await ctx.message.delete()
-        # await ctx.send('', files=[convert_to_png(player_profile_img, f'encyclopedia_test.png')], view=view)
+        await ctx.send('', files=[convert_to_png(player_profile_img, f'player_profile.png')], view=view)
 
 
     @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")

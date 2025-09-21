@@ -10,7 +10,7 @@ from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import flip_coin
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.buttonhandlers.CatchButton import TGOMMOCatchButtonView
+from src.discord.buttonhandlers.EncounterView import TGOMMOEncounterView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
@@ -90,7 +90,7 @@ class CreatureSpawnerHandler:
 
         # Send a message to the approval queue with a button to give XP
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
-            view=TGOMMOCatchButtonView(discord_bot=self.discord_bot, message=f'Catch',creature=creature, environment=self.current_environment),
+            view=TGOMMOEncounterView(discord_bot=self.discord_bot, message=f'Catch', creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
         )

@@ -25,7 +25,6 @@ class CatchButton(discord.ui.Button):
         self.caught = False  # Track if creature has been caught
 
 
-
     async def callback(self, interaction: discord.Interaction):
         # Use lock to ensure only one user can catch at a time
         async with self._lock:
@@ -62,7 +61,7 @@ class CatchButton(discord.ui.Button):
         await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
 
 
-class TGOMMOCatchButtonView(View):
+class TGOMMOEncounterView(View):
     def __init__(self, discord_bot, message, creature:TGOCreature, environment:TGOEnvironment):
         super().__init__(timeout=None)
         self.add_item(CatchButton(discord_bot=discord_bot, message=message, creature=creature, environment=environment))

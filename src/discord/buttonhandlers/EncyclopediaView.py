@@ -46,7 +46,7 @@ class EncyclopediaView(discord.ui.View):
     # create buttons
     def create_close_button(self):
         button = discord.ui.Button(
-            label="close",
+            label="✘",
             style=discord.ButtonStyle.red,
             row=2  # Place in third row
         )

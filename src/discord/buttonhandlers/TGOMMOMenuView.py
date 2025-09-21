@@ -9,7 +9,9 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
+from src.discord.buttonhandlers.PlayerProfileView import PlayerProfileView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
@@ -36,6 +38,7 @@ class TGOMMOMenuView(discord.ui.View):
 
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
+        self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab="Team", row=2)
 
         self.close_button = self.create_close_button(row=3)
 
@@ -46,6 +49,8 @@ class TGOMMOMenuView(discord.ui.View):
         self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
         self.add_item(self.open_user_encyclopedia_button)
         self.add_item(self.open_server_encyclopedia_button)
+
+        self.add_item(self.open_player_profile_button)
 
         self.add_item(self.close_button)
 
@@ -110,6 +115,53 @@ class TGOMMOMenuView(discord.ui.View):
                 self.update_button_states()
 
                 new_encyclopedia_page = encyclopedia_img_factory.build_encyclopedia_page_image()
+                file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
+
+                # Send updated view
+                await interaction.message.edit(attachments=[file], view=view)
+
+        return callback
+
+
+    # Handle Player Profile Buttons - opens encyclopedia view
+    def create_player_profile_button(self, tab_is_open=False, open_tab="Team", row=1):
+        button = discord.ui.Button(
+            label="Player Profile",
+            style=discord.ButtonStyle.blurple,
+            row=row
+        )
+        button.callback = self.player_profile_callback(tab_is_open=tab_is_open, open_tab=open_tab)
+        return button
+
+    def player_profile_callback(self, tab_is_open=False, open_tab='Team'):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                player_profile_img_factory = PlayerProfilePageFactory(
+                    user_id=self.message_author.id,
+                    target_user=self.message_author,
+                    tab_is_open=tab_is_open,
+                    open_tab=open_tab
+                )
+
+                view = PlayerProfileView(
+                    user_id=self.message_author.id,
+                    player_profile_image_factory=player_profile_img_factory,
+                    tab_is_open=tab_is_open,
+                    open_tab=open_tab
+                )
+
+                # Update button states
+                self.update_button_states()
+
+                new_encyclopedia_page = player_profile_img_factory.build_player_profile_page_image()
                 file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
 
                 # Send updated view

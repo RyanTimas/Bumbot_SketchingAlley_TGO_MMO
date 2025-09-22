@@ -256,3 +256,13 @@ async def flip_coin(iteration: int=1, total_iterations: int=1):
     if random.random() > 0.5:
         return await flip_coin(iteration=iteration + 1, total_iterations=total_iterations) if iteration < total_iterations else True
     return False
+
+def pad_text(text, desired_length):
+    if len(text) < desired_length:
+        # Fill with non-breaking space (‎) characters to reach exactly 18
+        return text + "‎" * (desired_length - len(text))
+    elif len(text) > desired_length:
+        # Truncate if longer than 18
+        return text[:desired_length]
+    else:
+        return text

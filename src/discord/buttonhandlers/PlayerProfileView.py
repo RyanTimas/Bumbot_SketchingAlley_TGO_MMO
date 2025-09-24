@@ -1,10 +1,13 @@
 import asyncio
-from webbrowser import open_new_tab
 
 import discord
+from discord.ui import Modal, TextInput
+
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.buttonhandlers.CreatureNicknameView import NicknameModal
+from src.discord.buttonhandlers.player_view.UpdatePlayerProfileView import UpdatePlayerProfileView
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
 
 
@@ -21,17 +24,19 @@ class PlayerProfileView(discord.ui.View):
 
         # Initialize the buttons once
         self.panel_toggle_button = self.create_panel_toggle_button()
-        # self.prev_button = self.create_navigation_button(is_next=False)
-        # self.next_button = self.create_navigation_button(is_next=True)
+        self.update_player_profile_button = self.update_player_profile_button(row=1)
         self.close_button = self.create_close_button()
 
         # Add buttons to view
+        # row 1
         self.add_item(self.panel_toggle_button)
-        # self.add_item(self.prev_button)
-        # self.add_item(self.next_button)
+        # row 2
+        self.add_item(self.update_player_profile_button)
+        # row 3
         self.add_item(self.close_button)
 
-        # Update button states
+        # Add modals to call on
+        self.changeUserNicknameModal = NicknameModal(-1)
         # self.update_button_states()
 
 
@@ -41,7 +46,6 @@ class PlayerProfileView(discord.ui.View):
         self.panel_toggle_button.emoji = "➡️" if self.tab_is_open else "⬅️"
 
 
-    # create buttons
     def create_panel_toggle_button(self):
         button = discord.ui.Button(
             label="Close Panel" if self.tab_is_open else "Open Panel",
@@ -51,18 +55,6 @@ class PlayerProfileView(discord.ui.View):
         )
         button.callback = self.panel_toggle_callback()
         return button
-
-    def create_close_button(self):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=2  # Place in third row
-        )
-        button.callback = self.close_callback()
-        return button
-
-
-    # handle button behavior
     def panel_toggle_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -83,6 +75,15 @@ class PlayerProfileView(discord.ui.View):
 
         return callback
 
+
+    def create_close_button(self):
+        button = discord.ui.Button(
+            label="✘",
+            style=discord.ButtonStyle.red,
+            row=2  # Place in third row
+        )
+        button.callback = self.close_callback()
+        return button
     def close_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -97,3 +98,26 @@ class PlayerProfileView(discord.ui.View):
 
         return callback
 
+
+    def update_player_profile_button(self, row = 2):
+        button = discord.ui.Button(
+            label="Update Player Profile",
+            style=discord.ButtonStyle.green,
+            row=row,  # Place in second row
+        )
+        button.callback = self.update_player_profile_callback()
+        return button
+    def update_player_profile_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.user_id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
+                await interaction.followup.send("Are you sure you want to change your display creatures? *(Note: This changes YOUR display creatures)*", ephemeral=True, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=player))
+        return callback

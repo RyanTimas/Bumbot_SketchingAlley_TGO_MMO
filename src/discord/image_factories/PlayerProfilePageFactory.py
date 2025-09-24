@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
-from sqlalchemy.testing.suite.test_reflection import users
 
-from src.commons.CommonFunctions import center_text_on_pixel, resize_text_to_fit, add_border_to_image
+from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image, pad_text
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
@@ -189,3 +188,41 @@ class PlayerProfilePageFactory:
         environments_tab = PlayerProfileSidePanelTabFactory(tab_type="Environments", player=self.player, content_image_path=content_image_path, background_image_path=background_image_path, image_color_path=image_color_path, tab_title=tab_title, tab_subtitle=tab_subtitle, tab_footer=tab_footer)
 
         return player_profile_img
+
+
+async def build_user_creature_collection(author, ctx):
+    creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(author.id)
+
+    page_num = 0
+    pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
+
+    # add an entry for each creature in collection
+    for creature_index, creature in enumerate(creature_collection):
+        current_page = pages[page_num]
+
+        catch_id = creature[0]
+        creature_id = creature[1]
+        creature_name = f'{creature[2]}{f' -  {creature[3]}' if creature[3] != '' else ''}'
+        spawn_rarity = creature[5]
+        is_mythical = creature[6]
+        nickname = f'**__{creature[4]}❗__**' if creature[4] != '' else creature[2] + ('✨' if is_mythical else '')
+
+        newlines = f'{'\n' if creature_id != creature_collection[creature_index - 1][1] else ''}\n'
+        new_entry = f"{newlines}{creature_index + 1}.  \t\t [{catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
+
+        if len(current_page) + len(new_entry) > 1900:
+            page_num += 1
+            pages.append('')
+
+        pages[page_num] += new_entry
+
+    # create page images for user to see
+    for page_index, page in enumerate(pages):
+        text = "\n".join([
+            f"# {author.name}'s Creature Collection ({page_index + 1}/{len(pages)}):",
+        ])
+
+        text += f'{page}'
+        await ctx.message.reply(text)
+    # await ctx.response.send_message("Someone else already caught this creature...", ephemeral=True)
+

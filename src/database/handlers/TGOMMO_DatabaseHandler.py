@@ -1,7 +1,8 @@
-from xml.dom import UserDataHandler
-
 from src.database.handlers.QueryHandler import QueryHandler
 from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON
+from src.discord.objects.TGOCreature import TGOCreature
+from src.discord.objects.TGOEnvironment import TGOEnvironment
+from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import *
 from src.resources.db_queries import *
@@ -38,8 +39,12 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(environment_id,))
         return response[0]
 
-    def get_user_profile_by_user_id(self, user_id=0):
+    def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
+
+        if convert_to_object:
+            player_details = response[0]
+            return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar_id=player_details[3], background_id=player_details[4], creature_slot_id_1=player_details[10], creature_slot_id_2=player_details[11], creature_slot_id_3=player_details[12], creature_slot_id_4=player_details[13],  creature_slot_id_5=player_details[14],creature_slot_id_6=player_details[15],currency=player_details[5], available_catches=player_details[6],rod_level=player_details[7], rod_amount=player_details[8], trap_level=player_details[9],trap_amount=player_details[16])
         return response[0]
 
 
@@ -47,8 +52,12 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
         return response[0]
 
-    def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
+    def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
+
+        if convert_to_object:
+            environment_details = response[0]
+            return TGOEnvironment(environment_id=environment_details[0], name=environment_details[1], variant_name=environment_details[2], dex_no=environment_details[3], variant_no=environment_details[4], location=environment_details[5], description=environment_details[6], img_root=environment_details[7], is_night_environment=environment_details[8], in_circulation=environment_details[9], encounter_rate=environment_details[10])
         return response[0]
 
     def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
@@ -133,6 +142,11 @@ class TGOMMODatabaseHandler:
         return COMMON
 
 
+    def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_CREATURE_COLLECTION_BY_USER, params=(user_id,))
+        return response
+
+
     def get_ids_for_unique_creatures(self):
         response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
         return response[0]
@@ -147,7 +161,11 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
         return response
 
-    def update_user_profile_nickname(self, user_id, nickname):
+    def update_user_profile(self, params=( '', 1, 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0, -1)):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE, params=params)
+        return response
+
+    def update_user_profile_display_name(self, user_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_NICKNAME, params=(nickname, user_id))
         return response
 
@@ -184,6 +202,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
 
         # Insert creature records
         creature_data = [
@@ -248,50 +267,50 @@ class TGOMMODatabaseHandler:
         # Link creatures to environments
         environment_creature_data = [
             # Forest - Day Spawns
-            self.format_ce_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(DEER_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(RABBIT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(CHIPMUNK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(RABBIT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(CHIPMUNK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
 
-            self.format_ce_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(SPARROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(SPARROW_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(BLUEJAY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(GOLDFINCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(CARDINAL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(CARDINAL_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SPARROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SPARROW_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(BLUEJAY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(GOLDFINCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
 
-            self.format_ce_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_ce_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_ce_link_params(MANTIS_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(MANTIS_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
 
-            self.format_ce_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_ce_link_params(TOAD_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(TOAD_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
 
-            self.format_ce_link_params(DUCK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(DUCK_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(TURKEY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_ce_link_params(EAGLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
-            self.format_ce_link_params(OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(DUCK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(DUCK_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(TURKEY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(EAGLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
 
-            self.format_ce_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_ce_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_ce_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_ce_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
-            self.format_ce_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
-            self.format_ce_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
-            self.format_ce_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_creature_environment_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_creature_environment_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_creature_environment_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
         ]
 
         for ec_link in environment_creature_data:
             self.QueryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
 
 
-    def format_ce_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, rarity, nickname=''):
+    def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, rarity, nickname=''):
         creature_info = self.get_creature_by_dex_and_variant_no(creature_dex_no, creature_variant_no)
         environment_info = self.get_environment_by_dex_and_variant_no(environment_dex_no, environment_variant_no)
 

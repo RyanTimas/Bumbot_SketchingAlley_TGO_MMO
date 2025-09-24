@@ -119,6 +119,7 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
     trap_level INTEGER DEFAULT 1,
     trap_amount INTEGER DEFAULT 0,
     
+    UNIQUE(user_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )"""
 
@@ -161,6 +162,9 @@ TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM = """SELECT COUNT(*) F
 TGOMMO_GET_SERVER_MYTHICAL_COUNT = '''SELECT COUNT(*) FROM  tgommo_user_creature WHERE is_mythical = 1'''
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM_AND_VARIANT_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ? AND c.variant_no = ?;"""
 TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id = ?;"""
+TGOMMO_GET_CREATURE_COLLECTION_BY_USER = """SELECT uc.catch_id, uc.creature_id, COALESCE(NULLIF(ec.local_name, ''), c.name) AS display_name, c.variant_name, uc.nickname, ec.spawn_rarity, uc.is_mythical FROM tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON ec.creature_id = uc.creature_id  LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id  WHERE uc.user_id = ?  ORDER BY c.dex_no, c.variant_no"""
+TGOMMO_GET_CREATURE_COLLECTION_BY_USER_AND_ENVIRONMENT = """SELECT uc.catch_id, uc.creature_id, COALESCE(NULLIF(ec.local_name, ''), c.name) AS display_name, c.variant_name, uc.nickname, ec.spawn_rarity, uc.is_mythical FROM tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON ec.creature_id = uc.creature_id  LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id  WHERE uc.user_id = ?  AND uc.environment_id = ? ORDER BY c.dex_no"""
+
 TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE user_id = ?;"""
 TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID = """select spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
 TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES = """select creature_id from tgommo_creature where variant_no = 1;"""
@@ -173,6 +177,7 @@ TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM = """SELECT COUNT(*), CO
 '''UPDATE QUERIES'''
 TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID = """UPDATE tgommo_user_creature SET nickname = ? WHERE catch_id = ?;"""
 
+TGOMMO_UPDATE_USER_PROFILE = """UPDATE tgommo_user_profile SET nickname=?, avatar_id=?, background_id=?, creature_slot_id_1=?, creature_slot_id_2=?, creature_slot_id_3=?, creature_slot_id_4=?, creature_slot_id_5=?, creature_slot_id_6=?, currency=?, available_catch_attempts=?, rod_level=?, rod_amount=?, trap_level=?, trap_amount=? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_NICKNAME = """UPDATE tgommo_user_profile SET nickname = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_1 = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_2 = """UPDATE tgommo_user_profile SET creature_slot_id_2 = ? WHERE user_id = ?;"""

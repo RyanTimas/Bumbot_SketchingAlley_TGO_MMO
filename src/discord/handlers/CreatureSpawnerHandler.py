@@ -25,8 +25,9 @@ class CreatureSpawnerHandler:
 
         self.are_creatures_spawning = True
 
-        self.current_environment = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=1, variant_no=1)
-        self.creature_spawn_pool = TEST_SPAWN_POOL
+        self.current_environment = None
+        self.creature_spawn_pool = None
+        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
 
         self.last_spawn_time = datetime.now()
         self.is_night = False  # todo - planned for v 2.0 night update
@@ -47,8 +48,7 @@ class CreatureSpawnerHandler:
 
     # Loads a particular environment and defines the spawn pool for that environment
     def _define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        current_environment_info = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no)
-        self.current_environment = TGOEnvironment(environment_id=current_environment_info[0], name=current_environment_info[1], variant_name=current_environment_info[2], dex_no=current_environment_info[3], variant_no=current_environment_info[4], location=current_environment_info[5], description=current_environment_info[6], img_root=current_environment_info[7], is_night_environment=current_environment_info[8], in_circulation=current_environment_info[9], encounter_rate=current_environment_info[10])
+        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no, convert_to_object=True)
 
         # Retrieve & Define Spawn Pool
         self.creature_spawn_pool = []

@@ -1,10 +1,7 @@
-import asyncio
-
 import discord
-from discord.ext.commands import param
 from discord.ui import Modal, TextInput, Button, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonFunctions import retry_on_ssl_error, pad_text
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
@@ -37,11 +34,11 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.trap_level = player.trap_level
         self.trap_amount = player.trap_amount
 
-
         # LOAD VIEW COMPONENTS
         # buttons
         update_profile_button = self.create_update_profile_button(row=3)
-        save_changes_button = self.create_save_changes_button(row=3)
+        display_creatures_button = self.display_creature_collection_button(row=3)
+        save_changes_button = self.create_save_changes_button(row=4)
 
         # text inputs
         self.display_name_input = TextInput(label="DisplayName", placeholder="Set your display name", max_length=20, required=False)
@@ -64,7 +61,10 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.add_item(background_picker_dropdown)        # row 2
 
         self.add_item(update_profile_button)                    # row 3
-        self.add_item(save_changes_button)                    # row 3
+        self.add_item(display_creatures_button)               # row 3
+
+        self.add_item(save_changes_button)                    # row 4
+
 
 
     # CREATE BUTTONS
@@ -86,6 +86,15 @@ class UpdatePlayerProfileView(discord.ui.View):
         get_tgommo_db_handler().update_user_profile(params=params)
 
         await interaction.response.send_message("Changes successfully saved!", ephemeral=True)
+
+    def display_creature_collection_button(self, row=0):
+        button = Button(label="See Creature Storage", style=discord.ButtonStyle.blurple, row=row)
+        button.callback = self.display_creature_collection_callback
+        return button
+    @retry_on_ssl_error(max_retries=3, delay=1)
+    async def display_creature_collection_callback(self, interaction: discord.Interaction):
+        await self.build_user_creature_collection(interaction)
+
 
     # CREATE MODALS
     def create_user_details_modal(self):
@@ -125,7 +134,6 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.avatar_id = int(interaction.data["values"][0])
         await interaction.response.send_message(f"Successfully set avatar to {self.avatar_id}", ephemeral=True)
 
-
     def create_background_picker_dropdown(self, row=1):
         options = [discord.SelectOption(label=f"Background {i}", value=str(i)) for i in range(1, 2)]
         dropdown = Select(placeholder="Choose Background Style", options=options, min_values=1, max_values=1, row=row)
@@ -136,14 +144,42 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.background_id = int(interaction.data["values"][0])
         await interaction.response.send_message(f"Successfully set avatar to {self.background_id}", ephemeral=True)
 
-    def create_creature_picker_dropdown(self):
-        get_tgommo_db_handler().get_creature_collection_by_user(self.user_id)
 
+    # SUPPORT FUNCTIONS
+    async def build_user_creature_collection(self, interaction: discord.Interaction):
+        creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(self.user_id)
 
-        options = [discord.SelectOption(label=f"Background {i}", value=str(i)) for i in range(1, 2)]
-        dropdown = Select(placeholder="Choose Background Style", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.avatar_dropdown_callback
-        return dropdown
-    async def creature_picker_dropdown_callback(self, interaction: discord.Interaction):
-        self.background_id = int(interaction.data["values"][0])
-        await interaction.response.send_message(f"Successfully set avatar to {self.background_id}", ephemeral=True)
+        page_num = 0
+        pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
+
+        # add an entry for each creature in collection
+        for creature_index, creature in enumerate(creature_collection):
+            current_page = pages[page_num]
+
+            catch_id = creature[0]
+            creature_id = creature[1]
+            creature_name = f'{creature[2]}{f' -  {creature[3]}' if creature[3] != '' else ''}'
+            spawn_rarity = creature[5]
+            is_mythical = creature[6]
+            nickname = f'**__{creature[4]}❗__**' if creature[4] != '' else creature[2] + ('✨' if is_mythical else '')
+
+            newlines = f'{'\n' if creature_id != creature_collection[creature_index - 1][1] else ''}\n'
+            new_entry = f"{newlines}{creature_index + 1}.  \t\t [{catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
+
+            if len(current_page) + len(new_entry) > 1900:
+                page_num += 1
+                pages.append('')
+
+            pages[page_num] += new_entry
+
+        # Send the first page as the response
+        text = f"\n# {self.display_name}'s Creature Collection (1/{len(pages)}):\n{pages[0]}"
+        await interaction.response.send_message(text, ephemeral=True)
+
+        # create page images for user to see
+        for page_index, page in enumerate(pages):
+            if page_index == 0:
+                continue
+
+            text = f"\n# {self.display_name}'s Creature Collection ({page_index + 1}/{len(pages)}):\n{page}"
+            await interaction.followup.send(text, ephemeral=True)

@@ -30,13 +30,22 @@ class TGOMMODatabaseHandler:
         return self.get_user_profile_by_user_id(user_id=user_id)
 
 
-    ''' Select Queries '''
-    def get_creature_by_id(self, creature_id=0):
+    ''' SELECT QUERIES '''
+    ''' Get Objects By IDs Queries'''
+    def get_creature_by_id(self, creature_id=0, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(creature_id,))
+
+        if convert_to_object:
+            creature_details = response[0]
+            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
         return response[0]
 
-    def get_environment_by_id(self, environment_id=0):
+    def get_environment_by_id(self, environment_id=0, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(environment_id,))
+
+        if convert_to_object:
+            environment_details = response[0]
+            return TGOEnvironment(environment_id=environment_details[0], name=environment_details[1], variant_name=environment_details[2], dex_no=environment_details[3], variant_no=environment_details[4], location=environment_details[5], description=environment_details[6], img_root=environment_details[7], is_night_environment=environment_details[8], in_circulation=environment_details[9], encounter_rate=environment_details[10])
         return response[0]
 
     def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False):
@@ -48,8 +57,13 @@ class TGOMMODatabaseHandler:
         return response[0]
 
 
-    def get_creature_by_dex_and_variant_no(self, dex_no=0, variant_no=1):
+    ''' Get Objects By Dex No Queries'''
+    def get_creature_by_dex_and_variant_no(self, dex_no=0, variant_no=1, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
+
+        if convert_to_object:
+            creature_details = response[0]
+            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
         return response[0]
 
     def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1, convert_to_object=False):
@@ -60,26 +74,15 @@ class TGOMMODatabaseHandler:
             return TGOEnvironment(environment_id=environment_details[0], name=environment_details[1], variant_name=environment_details[2], dex_no=environment_details[3], variant_no=environment_details[4], location=environment_details[5], description=environment_details[6], img_root=environment_details[7], is_night_environment=environment_details[8], in_circulation=environment_details[9], encounter_rate=environment_details[10])
         return response[0]
 
-    def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
-        return response[0][0]
 
-    def get_total_server_catches_for_species(self, creature_id=0):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
-        return response[0][0]
-
+    ''' Other Get Object Queries '''
     # Returns all creatures found within a particular environment
-    def get_creatures_from_environment(self, environment_id=-1):
+    def get_creatures_from_environment(self, environment_id=-1, convert_to_object=False):
         if environment_id == -1:
             environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())
 
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
         return response
-
-    # Check if mythics have been unlocked on the server yet
-    def get_server_mythical_count(self):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_SERVER_MYTHICAL_COUNT, params=())
-        return response[0][0]
 
     def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False):
         creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(() if is_server_page else (user_id,)))
@@ -119,10 +122,44 @@ class TGOMMODatabaseHandler:
 
         return creatures
 
+    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
+
+        for rarity in ALL_RARITIES:
+            if rarity.name == response[0][0]:
+                return rarity
+        return COMMON
+
+    # Get all display creatures for a player profile page
+    def get_creatures_for_player_profile(self, params=(-1,-1,-1,-1,-1,-1)):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
+        return response
+
+    # Get all creatures a user has caught
+    def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_CREATURE_COLLECTION_BY_USER, params=(user_id,))
+        return response
+
+
+    ''' Encyclopedia & Statistics Queries '''
+    def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
+        return response[0][0]
+
+    def get_total_server_catches_for_species(self, creature_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
+        return response[0][0]
+
+    # Check if mythics have been unlocked on the server yet
+    def get_server_mythical_count(self):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_SERVER_MYTHICAL_COUNT, params=())
+        return response[0][0]
+
     def get_total_catches_by_user(self, user_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID, params=(user_id,))
         return response[0][0]
 
+    # Gets encyclopedia page info for a user or server page
     def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False):
         if include_variants:
             query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
@@ -133,27 +170,9 @@ class TGOMMODatabaseHandler:
 
         return self.QueryHandler.execute_query(query, params=params)[0]
 
-    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
-
-        for rarity in ALL_RARITIES:
-            if rarity.name == response[0][0]:
-                return rarity
-        return COMMON
-
-
-    def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_CREATURE_COLLECTION_BY_USER, params=(user_id,))
-        return response
-
-
     def get_ids_for_unique_creatures(self):
         response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
         return response[0]
-
-    def get_creatures_for_player_profile(self, params=(-1,-1,-1,-1,-1,-1)):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
-        return response
 
 
     ''' Update Queries '''

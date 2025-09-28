@@ -53,7 +53,7 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             player_details = response[0]
-            return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar_id=player_details[3], background_id=player_details[4], creature_slot_id_1=player_details[10], creature_slot_id_2=player_details[11], creature_slot_id_3=player_details[12], creature_slot_id_4=player_details[13],  creature_slot_id_5=player_details[14],creature_slot_id_6=player_details[15],currency=player_details[5], available_catches=player_details[6],rod_level=player_details[7], rod_amount=player_details[8], trap_level=player_details[9],trap_amount=player_details[16])
+            return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar_id=player_details[3], background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
         return response[0]
 
 
@@ -208,6 +208,10 @@ class TGOMMODatabaseHandler:
 
         response = self.QueryHandler.execute_query(query_map[creature_number], params=(creature_id, user_id))
         return True if response else False
+
+    def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_DISPLAY_CREATURES, params=params)
+        return response
 
     ''' Delete Queries '''
 

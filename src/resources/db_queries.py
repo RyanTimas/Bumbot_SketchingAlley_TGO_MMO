@@ -192,12 +192,14 @@ TGOMMO_UPDATE_USER_PROFILE_CREATURE_4 = """UPDATE tgommo_user_profile SET creatu
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_5 = """UPDATE tgommo_user_profile SET creature_slot_id_5 = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_6 = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE user_id = ?;"""
 
-TGOMMO_UPDATE_USER_PROFILE_CURRENCY = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE currency = ?;"""
-TGOMMO_UPDATE_USER_PROFILE_AVAILABLE_CATCH_ATTEMPTS = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE available_catch_attempts = ?;"""
-TGOMMO_UPDATE_USER_PROFILE_ROD_LEVEL = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE rod_level = ?;"""
-TGOMMO_UPDATE_USER_PROFILE_ROD_AMOUNT = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE rod_amount = ?;"""
-TGOMMO_UPDATE_USER_PROFILE_TRAP_LEVEL = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE trap_level = ?;"""
-TGOMMO_UPDATE_USER_PROFILE_TRAP_AMOUNT = """UPDATE tgommo_user_profile SET creature_slot_id_6 = ? WHERE trap_amount = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_CURRENCY = """UPDATE tgommo_user_profile SET currency = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_AVAILABLE_CATCH_ATTEMPTS = """UPDATE tgommo_user_profile SET available_catch_attempts = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_ROD_LEVEL = """UPDATE tgommo_user_profile SET rod_level = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_ROD_AMOUNT = """UPDATE tgommo_user_profile SET rod_amount = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_TRAP_LEVEL = """UPDATE tgommo_user_profile SET trap_level = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_TRAP_AMOUNT = """UPDATE tgommo_user_profile SET trap_amount = ? WHERE user_id = ?;"""
+
+TGOMMO_UPDATE_USER_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ?, creature_slot_id_2 = ?, creature_slot_id_3 = ?, creature_slot_id_4 = ?, creature_slot_id_5 = ?,creature_slot_id_6 = ? WHERE user_id = ?;"""
 
 '''INSERT QUERIES'''
 TGOMMO_INSERT_NEW_CREATURE = """INSERT OR IGNORE INTO tgommo_creature (name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""

@@ -1,7 +1,6 @@
 import asyncio
 
 import discord
-from discord.ui import Modal, TextInput
 
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view

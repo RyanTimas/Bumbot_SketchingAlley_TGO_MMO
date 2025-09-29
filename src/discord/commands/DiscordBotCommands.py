@@ -7,7 +7,7 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
-from src.discord.buttonhandlers.PlayerProfileView import PlayerProfileView
+from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
 from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection

@@ -9,10 +9,9 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
-from src.discord.buttonhandlers.PlayerProfileView import PlayerProfileView
+from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
-from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 

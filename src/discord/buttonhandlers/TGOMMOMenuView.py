@@ -107,7 +107,8 @@ class TGOMMOMenuView(discord.ui.View):
                     is_verbose=is_verbose,
                     show_variants=show_variants,
                     show_mythics=show_mythics,
-                    message_author=self.message_author
+                    message_author=self.message_author,
+                    original_view=self
                 )
 
                 # Update button states
@@ -154,7 +155,8 @@ class TGOMMOMenuView(discord.ui.View):
                     user_id=self.message_author.id,
                     player_profile_image_factory=player_profile_img_factory,
                     tab_is_open=tab_is_open,
-                    open_tab=open_tab
+                    open_tab=open_tab,
+                    original_view=self
                 )
 
                 # Update button states

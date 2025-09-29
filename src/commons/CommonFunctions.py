@@ -250,6 +250,52 @@ def retry_on_ssl_error(max_retries=3, delay=1):
 
 
 #************************************************************************************
+#-------------------------------BUTTON FUNCTIONS------------------------------------
+#************************************************************************************
+def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None):
+    button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
+    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id,)
+    return button
+def go_back_callback(original_view, interaction_lock=None, message_author_id=None):
+    @retry_on_ssl_error(max_retries=3, delay=1)
+    async def callback(interaction):
+        # Check if we're already processing an interaction
+        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
+            return
+
+    # Acquire lock to prevent concurrent actions
+        async with interaction_lock:
+            await interaction.response.defer()
+
+    # Go back to the previous view or state
+        await interaction.message.edit(attachments=[], view=original_view)
+    return callback
+
+def create_close_button(interaction_lock, message_author_id, row=2):
+    button = discord.ui.Button(
+        label="✘",
+        style=discord.ButtonStyle.red,
+        row=row  # Place in third row
+    )
+    button.callback = close_callback(interaction_lock, message_author_id)
+    return button
+def close_callback(interaction_lock, message_author):
+    @retry_on_ssl_error(max_retries=3, delay=1)
+    async def callback(interaction):
+        # Check if we're already processing an interaction
+        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author.id):
+            return
+
+        # For delete operation, we need a shorter lock
+        async with interaction_lock:
+            # Delete the message
+            await interaction.message.delete()
+
+    return callback
+
+
+
+#************************************************************************************
 #-------------------------------GENERAL FUNCTIONS------------------------------------
 #************************************************************************************
 async def flip_coin(iteration: int=1, total_iterations: int=1):

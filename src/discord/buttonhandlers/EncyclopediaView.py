@@ -1,19 +1,20 @@
 import asyncio
 import discord
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, create_go_back_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
 class EncyclopediaView(discord.ui.View):
-    def __init__(self, message_author, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False):
+    def __init__(self, message_author, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False, original_view=None):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.encyclopedia_image_factory = encyclopedia_image_factory
         self.is_verbose = is_verbose
         self.show_variants = show_variants
         self.show_mythics = show_mythics
+        self.original_view = original_view
         # Add a lock to prevent concurrent button interactions
         self.interaction_lock = asyncio.Lock()
 
@@ -26,6 +27,7 @@ class EncyclopediaView(discord.ui.View):
         self.next_button = self.create_navigation_button(is_next=True)
 
         self.close_button = self.create_close_button()
+        self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
 
         # Add buttons to view
         self.add_item(self.prev_button)
@@ -38,21 +40,13 @@ class EncyclopediaView(discord.ui.View):
         self.add_item(self.next_button)
 
         self.add_item(self.close_button)
+        self.add_item(self.go_back_button)
 
         # Update button states
         self.update_button_states()
 
 
     # create buttons
-    def create_close_button(self):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=2  # Place in third row
-        )
-        button.callback = self.close_callback()
-        return button
-
     def create_navigation_button(self, is_next):
         button = discord.ui.Button(
             label="To Next Page➡️" if is_next else "⬅️To Previous Page",
@@ -61,6 +55,28 @@ class EncyclopediaView(discord.ui.View):
         )
         button.callback = self.nav_callback(is_next)
         return button
+    def nav_callback(self, is_next):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                # Update page number
+                new_page = self.encyclopedia_image_factory.page_num + (1 if is_next else -1)
+                new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=new_page)
+
+                # Update state and button appearance
+                self.update_button_states()
+
+                # Send updated view
+                file = convert_to_png(new_image, f'encyclopedia_page.png')
+                await interaction.message.edit(attachments=[file], view=self)
+
+        return callback
+
 
     def create_toggle_button(self, button_type):
         labels = {
@@ -87,31 +103,6 @@ class EncyclopediaView(discord.ui.View):
         )
         button.callback = self.toggle_callback(button_type)
         return button
-
-
-    # handle button behavior
-    def nav_callback(self, is_next):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                # Update page number
-                new_page = self.encyclopedia_image_factory.page_num + (1 if is_next else -1)
-                new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=new_page)
-
-                # Update state and button appearance
-                self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'encyclopedia_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
-
-        return callback
-
     def toggle_callback(self, button_type):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -143,6 +134,14 @@ class EncyclopediaView(discord.ui.View):
 
         return callback
 
+    def create_close_button(self):
+        button = discord.ui.Button(
+            label="✘",
+            style=discord.ButtonStyle.red,
+            row=2  # Place in third row
+        )
+        button.callback = self.close_callback()
+        return button
     def close_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -158,6 +157,7 @@ class EncyclopediaView(discord.ui.View):
         return callback
 
 
+    # handle button behavior
     def update_button_states(self):
         # Update navigation buttons
         current_page = self.encyclopedia_image_factory.page_num

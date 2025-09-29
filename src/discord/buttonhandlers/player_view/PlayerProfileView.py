@@ -2,7 +2,7 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, create_go_back_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.buttonhandlers.player_view.UpdatePlayerProfileView import UpdatePlayerProfileView
@@ -10,12 +10,13 @@ from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePa
 
 
 class PlayerProfileView(discord.ui.View):
-    def __init__(self, user_id, player_profile_image_factory: PlayerProfilePageFactory, tab_is_open=False, open_tab='Team'):
+    def __init__(self, user_id, player_profile_image_factory: PlayerProfilePageFactory, tab_is_open=False, open_tab='Team', original_view=None):
         super().__init__(timeout=None)
         self.user_id = user_id
         self.player_profile_image_factory = player_profile_image_factory
         self.tab_is_open = tab_is_open
         self.open_tab = open_tab
+        self.original_view = original_view
 
         # Add a lock to prevent concurrent button interactions
         self.interaction_lock = asyncio.Lock()
@@ -23,7 +24,10 @@ class PlayerProfileView(discord.ui.View):
         # Initialize the buttons once
         self.panel_toggle_button = self.create_panel_toggle_button()
         self.update_player_profile_button = self.update_player_profile_button(row=1)
+
         self.close_button = self.create_close_button()
+        self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.user_id)
+
 
         # Add buttons to view
         # row 1
@@ -32,6 +36,8 @@ class PlayerProfileView(discord.ui.View):
         self.add_item(self.update_player_profile_button)
         # row 3
         self.add_item(self.close_button)
+        self.add_item(self.go_back_button)
+
 
 
     def update_button_states(self):

@@ -33,7 +33,7 @@ class TGOMMODatabaseHandler:
     ''' SELECT QUERIES '''
     ''' Get Objects By IDs Queries'''
     def get_creature_by_id(self, creature_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER, params=(creature_id,))
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_ID, params=(creature_id,))
 
         if convert_to_object:
             creature_details = response[0]
@@ -54,6 +54,17 @@ class TGOMMODatabaseHandler:
         if convert_to_object:
             player_details = response[0]
             return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar_id=player_details[3], background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
+        return response[0]
+
+    def get_creature_by_catch_id(self, creature_id=0, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_CATCH_ID, params=(creature_id,))
+
+        if not response:
+            return None
+
+        if convert_to_object:
+            creature_details = response[0]
+            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
         return response[0]
 
 
@@ -211,6 +222,19 @@ class TGOMMODatabaseHandler:
 
     def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_DISPLAY_CREATURES, params=params)
+        return response
+
+    def update_creature_display_index(self, user_id, creature_id, display_index):
+        queries = [
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_1,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_2,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_3,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_4,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_5,
+            TGOMMO_UPDATE_USER_PROFILE_CREATURE_6
+        ]
+
+        response = self.QueryHandler.execute_query(queries[display_index], params=(creature_id, user_id))
         return response
 
     ''' Delete Queries '''

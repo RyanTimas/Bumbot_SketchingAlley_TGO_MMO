@@ -6,7 +6,6 @@ from discord.ui import Modal, TextInput
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.buttonhandlers.CreatureNicknameView import NicknameModal
 from src.discord.buttonhandlers.player_view.UpdatePlayerProfileView import UpdatePlayerProfileView
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
 
@@ -34,10 +33,6 @@ class PlayerProfileView(discord.ui.View):
         self.add_item(self.update_player_profile_button)
         # row 3
         self.add_item(self.close_button)
-
-        # Add modals to call on
-        self.changeUserNicknameModal = NicknameModal(-1)
-        # self.update_button_states()
 
 
     def update_button_states(self):

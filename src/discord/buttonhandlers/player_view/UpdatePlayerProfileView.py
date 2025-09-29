@@ -195,7 +195,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         # check for non-integer or negative creature IDs
         has_invalid_ids, invalid_slots = self.check_for_invalid_creature_ids()
         if has_invalid_ids:
-            invalid_positions = '\n-'.join(str(pos[1]) for pos in invalid_slots)
+            invalid_positions = ', '.join(str(pos[1]) for pos in invalid_slots)
             warnings.append(f"* Invalid creature IDs found at positions:\t{invalid_positions}")
 
             # await interaction.response.send_message(f"⚠️WARNING: \n Invalid creature IDs found at positions: \n> {invalid_positions}.\n These positions were reset to empty.",ephemeral=True)
@@ -216,7 +216,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         has_unowned_creatures, violations = self.check_creature_id_in_collection()
         if has_unowned_creatures:
             print('yep unowned')
-            violation_positions = '\n-'.join(str(pos[1]) for pos in violations)
+            violation_positions = ', '.join(str(pos[1]) for pos in violations)
             warnings.append(f"* You do not own the creatures in the following display positions:\t{violation_positions}")
 
             # await interaction.response.send_message(f"⚠️WARNING: \n You do not own the creatures in the following display positions: \n> {violation_positions}.\n These positions were not set.", ephemeral=True)

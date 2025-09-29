@@ -5,7 +5,7 @@ from discord import Message
 from discord.ui import View
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
-from src.discord.buttonhandlers.CreatureCaughtView import CreatureCaughtView
+from src.discord.buttonhandlers.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature

@@ -10,11 +10,10 @@ from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import flip_coin
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.buttonhandlers.EncounterView import TGOMMOEncounterView
+from src.discord.buttonhandlers.creature_enounter.EncounterView import TGOMMOEncounterView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
-from src.discord.objects.TGOCreature import TGOCreature, TEST_SPAWN_POOL
-from src.discord.objects.TGOEnvironment import TGOEnvironment
+from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import MYTHICAL_SPAWN_CHANCE
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
 

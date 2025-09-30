@@ -68,6 +68,8 @@ TGOMMO_CREATE_ENVIRONMENT_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environme
 TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment_creature (
     creature_id INTEGER NOT NULL,
     environment_id INTEGER NOT NULL,
+    spawn_time string NOT NULL,
+    
     creature_name TEXT NOT NULL,
     environment_name TEXT NOT NULL,
     
@@ -158,7 +160,7 @@ TGOMMO_SELECT_CREATURE_BY_CATCH_ID = """SELECT uc.nickname, ec.creature_name, ec
 TGOMMO_GET_CREATURE_COLLECTION_BY_USER = """SELECT uc.catch_id, uc.creature_id, COALESCE(NULLIF(ec.local_name, ''), c.name) AS display_name, c.variant_name, uc.nickname, ec.spawn_rarity, uc.is_mythical FROM tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON ec.creature_id = uc.creature_id  LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id  WHERE uc.user_id = ?  ORDER BY c.dex_no, c.variant_no"""
 TGOMMO_GET_CREATURE_COLLECTION_BY_USER_AND_ENVIRONMENT = """SELECT uc.catch_id, uc.creature_id, COALESCE(NULLIF(ec.local_name, ''), c.name) AS display_name, c.variant_name, uc.nickname, ec.spawn_rarity, uc.is_mythical FROM tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON ec.creature_id = uc.creature_id  LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id  WHERE uc.user_id = ?  AND uc.environment_id = ? ORDER BY c.dex_no"""
 
-TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM environments ORDER BY RANDOM() LIMIT 1"""
+TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM tgommo_environment WHERE in_circulation = 1 ORDER BY RANDOM() LIMIT 1"""
 TGOMMO_SELECT_DISPLAY_CREATURES_FOR_PLAYER_PROFILE_PAGE = """SELECT c.creature_id,uc.nickname, ec.creature_name, ec.local_name, c.variant_name,c.dex_no,c.variant_no,c.full_name,c.scientific_name,c.kingdom,c.description,c.img_root,c.encounter_rate,ec.spawn_rarity,uc.is_mythical from tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id  LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id AND uc.creature_variant_no = c.variant_no WHERE uc.catch_id IN (?, ?, ?, ?, ?, ?);"""
 
 ''' Encyclopedia & Statistics Queries '''
@@ -173,6 +175,7 @@ TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID = """SELECT COUN
 
 TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE user_id = ?;"""
 TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID = """select spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
+TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_DEX_NO = """select spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
 TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES = """select creature_id from tgommo_creature where variant_no = 1;"""
 TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES_IN_ENVIRONMENT = """select ec.creature_id from tgommo_environment_creature ec join tgommo_creature c WHERE c.creature_id = ec.creature_id and ec.environment_id = ? and c.variant_no = 1;"""
 TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID = """SELECT COUNT(*), COUNT(DISTINCT creature_id) FROM tgommo_user_creature WHERE user_id =? and is_mythical=?;"""
@@ -206,6 +209,6 @@ TGOMMO_INSERT_NEW_CREATURE = """INSERT OR IGNORE INTO tgommo_creature (name, var
 TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
-TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, creature_name, environment_name, spawn_rarity, local_name) VALUES(?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, creature_name, environment_name, spawn_rarity, local_name) VALUES(?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
 

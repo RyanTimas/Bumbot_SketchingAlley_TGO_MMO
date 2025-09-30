@@ -48,7 +48,7 @@ class EncyclopediaImageFactory:
             self.creatures = []
 
         # construct base layers, start with environment bg
-        encyclopedia_img = Image.open(f"{ENCYCLOPEDIA_BG_BASE}_{self.environment.environment_id}.png")
+        encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
         corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_page else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)

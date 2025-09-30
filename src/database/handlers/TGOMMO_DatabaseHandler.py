@@ -40,8 +40,11 @@ class TGOMMODatabaseHandler:
             return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
         return response[0]
 
-    def get_environment_by_id(self, environment_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(environment_id,))
+    def get_environment_by_id(self, environment_id=-1, convert_to_object=False):
+        if environment_id == -1:
+            environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())[0][0]
+
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_ID, params=(environment_id,))
 
         if convert_to_object:
             environment_details = response[0]
@@ -90,7 +93,7 @@ class TGOMMODatabaseHandler:
     # Returns all creatures found within a particular environment
     def get_creatures_from_environment(self, environment_id=-1, convert_to_object=False):
         if environment_id == -1:
-            environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())
+            environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())[0][0]
 
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
         return response
@@ -253,37 +256,32 @@ class TGOMMODatabaseHandler:
 
         # Insert creature records
         creature_data = [
+            # WAVE 1
             ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
             ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
-
             ('Squirrel', '', 2, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', MAMMAL, '', SQUIRREL_IMAGE_ROOT, 5),
             ('Rabbit', '', 3, 1, 'Eastern Cottontail', 'Sylvilagus floridanus', MAMMAL, '', RABBIT_IMAGE_ROOT, 5),
             ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', MAMMAL, '', CHIPMUNK_IMAGE_ROOT, 5),
             ('Raccoon', '', 5, 1, 'Raccoon', 'Procyon lotor', MAMMAL, '', RACOON_IMAGE_ROOT, 5),
             ('Robin', '', 6, 1, 'American Robin', 'Turdus migratorius', BIRD, '', ROBIN_IMAGE_ROOT, 5),
-
             ('Sparrow', 'Male', 7, 1, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
             ('Sparrow', 'Female', 7, 2, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
             ('Blue Jay', '', 8, 1, 'Blue Jay', 'Cyanocitta cristata', BIRD, '', BLUEJAY_IMAGE_ROOT, 5),
             ('Goldfinch', '', 9, 1, 'American Goldfinch', 'Spinus tristis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
             ('Cardinal', 'Male', 10, 1, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5),
             ('Cardinal', 'Female', 10, 2, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5),
-
             ('Monarch', 'Caterpillar', 11, 1, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
             ('Monarch', 'Chrysalis', 11, 2, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
             ('Monarch', 'Butterfly', 11, 3, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
             ('Mantis', '', 12, 1, 'Praying Mantis', 'Stagmomantis carolina', INSECT, '', MANTIS_IMAGE_ROOT, 5),
-
             ('Snake', '', 13, 1, 'Eastern Garter Snake', 'Thamnophis sirtalis sirtalis', REPTILE, '', GARTERSNAKE_IMAGE_ROOT, 5),
             ('Turtle', '', 14, 1, 'Box Turtle', 'Terrapene carolina carolina', REPTILE, '', TURTLE_IMAGE_ROOT, 5),
             ('Toad', '', 15, 1, 'American Toad', 'Anaxyrus americanus', AMPHIBIAN, '', TOAD_IMAGE_ROOT, 5),
-
             ('Duck', 'Drake', 16, 1, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
             ('Duck', 'Hen', 16, 2, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
             ('Turkey', '', 17, 1, 'Wild Turkey', 'Meleagris gallopavo', BIRD, '', TURKEY_IMAGE_ROOT, 5),
             ('Owl', '', 18, 1, 'Great Horned Owl', 'Bubo virginianus', BIRD, '', OWL_IMAGE_ROOT, 5),
             ('Eagle', '', 19, 1, 'Bald Eagle', 'Haliaeetus leucocephalus', BIRD, '', EAGLE_IMAGE_ROOT, 5),
-
             ('Opossum', '', 20, 1, 'Virginia Opossum', 'Didelphis virginiana', MAMMAL, '', OPOSSUM_IMAGE_ROOT, 5),
             ('Fox', '', 21, 1, 'Red Fox', 'Vulpes vulpes', MAMMAL, '', REDFOX_IMAGE_ROOT, 5),
             ('Bobcat', '', 22, 1, 'Bobcat', 'Lynx rufus', MAMMAL, '', BOBCAT_IMAGE_ROOT, 5),
@@ -291,6 +289,9 @@ class TGOMMODatabaseHandler:
             ('Moose', 'Cow', 24, 1, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
             ('Moose', 'Bull', 24, 2, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
             ('Wolf', '', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5),
+
+            # WAVE 2
+            ('Mouse', '', 26, 1, 'Field Mouse', 'Apodemus', MAMMAL, '', MOUSE_IMAGE_ROOT, 5),
         ]
 
         # Insert environment records
@@ -314,58 +315,58 @@ class TGOMMODatabaseHandler:
         # Link creatures to environments
         environment_creature_data = [
             # Forest - Day Spawns
-            self.format_creature_environment_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(DEER_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(RABBIT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(CHIPMUNK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(RABBIT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(CHIPMUNK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SPARROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(SPARROW_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(BLUEJAY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(GOLDFINCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(MANTIS_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(TOAD_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(DUCK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(DUCK_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(TURKEY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(EAGLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, ''),
+            self.format_creature_environment_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_RARE, ''),
+            self.format_creature_environment_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_EPIC, ''),
+            self.format_creature_environment_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_creature_environment_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_LEGENDARY, ''),
+            self.format_creature_environment_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_LEGENDARY, ''),
 
-            self.format_creature_environment_link_params(ROBIN_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(SPARROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(SPARROW_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(BLUEJAY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(GOLDFINCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(CARDINAL_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-
-            self.format_creature_environment_link_params(MONARCH_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_COMMON, ''),
-            self.format_creature_environment_link_params(MONARCH_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(MONARCH_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_creature_environment_link_params(MANTIS_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-
-            self.format_creature_environment_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_creature_environment_link_params(TOAD_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-
-            self.format_creature_environment_link_params(DUCK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(DUCK_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(TURKEY_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_creature_environment_link_params(EAGLE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
-            self.format_creature_environment_link_params(OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
-
-            self.format_creature_environment_link_params(OPOSSUM_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_UNCOMMON, ''),
-            self.format_creature_environment_link_params(REDFOX_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_creature_environment_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_RARE, ''),
-            self.format_creature_environment_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_EPIC, ''),
-            self.format_creature_environment_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
-            self.format_creature_environment_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
-            self.format_creature_environment_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, TGOMMO_RARITY_LEGENDARY, ''),
+            # Forest - Night Spawns
+            self.format_creature_environment_link_params(MOUSE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, ''),
+            self.format_creature_environment_link_params(RACCOON_DEX_NO, 1, EASTERN_US_FOREST_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, ''),
         ]
 
         for ec_link in environment_creature_data:
             self.QueryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
 
 
-    def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, rarity, nickname=''):
+    def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name=''):
         creature_info = self.get_creature_by_dex_and_variant_no(creature_dex_no, creature_variant_no)
         environment_info = self.get_environment_by_dex_and_variant_no(environment_dex_no, environment_variant_no)
 
         return (
             creature_info[0],
             environment_info[0],
+            spawn_time,
             creature_info[1],
             environment_info[1],
             rarity,
-            nickname
+            local_name
         )

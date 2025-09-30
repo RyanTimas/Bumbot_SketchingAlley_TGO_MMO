@@ -37,7 +37,7 @@ class CatchButton(discord.ui.Button):
 
         # generate the successful catch embed
         successful_catch_embed = CreatureEmbedHandler(self.creature, self.environment).generate_catch_embed(interaction=interaction)
-        total_xp = successful_catch_embed[3]
+        total_xp = successful_catch_embed[2]
 
         # insert record of user catching the creature & give user xp for catching the creature
         catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))

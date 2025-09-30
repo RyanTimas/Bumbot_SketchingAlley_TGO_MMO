@@ -4,42 +4,43 @@ from PIL import Image, ImageFilter, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.TGOCreature import TGOCreature
+from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
 class EncounterImageHandler:
-    def __init__(self, background_img_path: str, foreground_img_path: str, creature: TGOCreature):
-        self.background_img_path = background_img_path
-        self.foreground_img_path = foreground_img_path
-
+    def __init__(self, creature: TGOCreature, environment: TGOEnvironment = None, time_of_day: str = DAY):
         self.creature = creature
-
-        self.background_img = Image.open(self.background_img_path)
-        self.foreground_img = Image.open(self.foreground_img_path)
-        self.textbox_img = Image.open(TEXT_BOX_IMAGE)
-
+        self.environment = environment
+        self.time_of_day = time_of_day
 
     # handler for generating encounter image
     def create_encounter_image(self):
-        # Resize the foreground image to 80% of its size
-        self.foreground_img = self.foreground_img.resize((int(self.foreground_img.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.foreground_img.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
+        foreground_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+        final_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{IMAGE_FILE_EXTENSION}")
 
-        # Create a copy of the background
-        final_img = self.background_img.copy()
+        textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
+        camera_overlay_img = Image.open(ENCOUNTER_SCREEN_CAMERA_OVERLAY_IMAGE)
+        glow = Image.open(ENCOUNTER_SCREEN_NIGHT_GLOW_IMAGE)
+
+        # Resize the foreground image to 80% of its size
+        foreground_img = foreground_img.resize((int(foreground_img.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(foreground_img.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
 
         # Paste the foreground onto the background
-        foreground_image_with_border = self.add_outline_to_img(self.foreground_img)
-        foreground_image_offset = self.get_foreground_image_offset(self.foreground_img, self.background_img)
-
+        foreground_image_with_border = self.add_outline_to_img(foreground_img)
+        foreground_image_offset = self.get_foreground_image_offset(foreground_img, final_img)
         final_img.paste(foreground_image_with_border, foreground_image_offset, foreground_image_with_border)
 
+        if self.environment.is_night_environment:
+            final_img.paste(glow, (0, 0), glow)
+
         # Paste the textbox onto the background
-        final_img.paste(self.textbox_img, (0, 0), self.textbox_img)
+        final_img.paste(camera_overlay_img, (0, 0), camera_overlay_img)
+        final_img.paste(textbox_img, (0, 0), textbox_img)
 
         # Add text for creature name
         final_img = self.add_text_to_image(base_img=final_img.copy(),max_width=TEXT_BOX_WIDTH - (120*2),)
-
         return convert_to_png(final_img, 'encounter_image.png')
 
 

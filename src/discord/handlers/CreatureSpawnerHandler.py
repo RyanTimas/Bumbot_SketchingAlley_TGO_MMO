@@ -5,6 +5,8 @@ import time
 import traceback
 from copy import deepcopy
 from datetime import datetime
+import datetime
+import pytz
 
 from discord.ext.commands import Bot
 
@@ -26,16 +28,15 @@ class CreatureSpawnerHandler:
 
         self.current_environment = None
         self.creature_spawn_pool = None
-        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
 
-        self.last_spawn_time = datetime.now()
-        self.is_night = False  # todo - planned for v 2.0 night update
+        self.timezone = pytz.timezone('US/Eastern')
+        self.last_spawn_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
+        self.is_day = 7 <= self.last_spawn_time.hour < 19
 
 
     # kicks off the creature spawner
     def start_creature_spawner(self):
-        # todo - randomize the environment and variant to pull from multiple environments, planned for v 3.0 environment update
-        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
+        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
         asyncio.create_task(self._creature_spawner())
 
 
@@ -47,7 +48,8 @@ class CreatureSpawnerHandler:
 
     # Loads a particular environment and defines the spawn pool for that environment
     def _define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_id, variant_no=variant_no, convert_to_object=True)
+        dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
+        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=dex_no, variant_no=variant_no, convert_to_object=True)
 
         # Retrieve & Define Spawn Pool
         self.creature_spawn_pool = []
@@ -87,7 +89,6 @@ class CreatureSpawnerHandler:
     async def spawn_creature(self, creature: TGOCreature):
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed()
 
-        # Send a message to the approval queue with a button to give XP
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
             view=TGOMMOEncounterView(discord_bot=self.discord_bot, message=f'Catch', creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
@@ -159,15 +160,23 @@ class CreatureSpawnerHandler:
 
     # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
     def _handle_time_change(self):
-        current_time = datetime.now()
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
 
         is_new_day = current_time.date() > self.last_spawn_time.date()
-        is_day_night_transition = False #todo
 
-        if is_new_day:  # New Day
-            self._define_environment_and_spawn_pool(environment_id=1, variant_no=1)
-        elif is_day_night_transition:  # todo Day/Night Transition - planned for v 2.0 night update
-            self.is_night = not self.is_night
+        old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
+        new_time_of_day = 'day' if 7 <= current_time.hour < 19 else 'night'
+        is_day_night_transition = old_time_of_day != new_time_of_day
+
+        if is_new_day or is_day_night_transition:
+            # todo: implement in V 3.0
+            # if is_new_day:
+            #     self.current_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=-1,convert_to_object=True)
+
+            if is_day_night_transition:
+                self.is_day = not self.is_day
+                self.current_environment.variant_no = 1 if self.is_day else 2
+
+            self._define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=self.current_environment.variant_no)
 
         self.last_spawn_time = current_time
-

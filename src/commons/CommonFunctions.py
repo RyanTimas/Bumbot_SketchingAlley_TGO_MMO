@@ -2,7 +2,6 @@ import asyncio
 import functools
 import os
 import random
-from datetime import date
 
 import aiohttp
 import discord
@@ -39,7 +38,7 @@ def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) 
 #************************************************************************************
 #-------------------------------IMAGE FUNCTIONS-------------------------------------
 #************************************************************************************
-def to_grayscale(discord_file):
+def to_grayscale(discord_file, file_name=None) -> discord.File:
     discord_file.fp.seek(0)
     img = Image.open(discord_file.fp)
     if img.mode in ("RGBA", "LA"):
@@ -49,7 +48,7 @@ def to_grayscale(discord_file):
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
-    return discord.File(buf, filename=discord_file.filename)
+    return discord.File(buf, filename=file_name if file_name else discord_file.filename)
 
 
 def convert_to_png(image: Image, file_name):

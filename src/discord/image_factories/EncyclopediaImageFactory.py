@@ -13,12 +13,14 @@ from src.resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory:
-    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, show_mythics = False, is_server_page = False, user = None):
+    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, show_mythics = False, is_server_page = False, user = None, show_only_night_spawns = False, show_only_day_spawns = False):
         self.environment = environment
         self.is_server_page = is_server_page
         self.user = user
         self.verbose = verbose
         self.show_mythics = show_mythics
+        self.show_only_night_spawns = show_only_night_spawns
+        self.show_only_day_spawns = show_only_day_spawns
 
         self.creatures = []
         self.total_catches = None
@@ -38,13 +40,16 @@ class EncyclopediaImageFactory:
         self.distinct_catches = encyclopedia_info[1]
 
 
-    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None):
+    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None, show_only_night_spawns = None, show_only_day_spawns = None):
         # set new values in case button was clicked
         self.page_num = new_page_number if new_page_number is not None else self.page_num
         self.verbose = is_verbose if is_verbose is not None else self.verbose
         self.show_variants = show_variants if show_variants is not None else self.show_variants
         self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
-        if show_variants is not None or show_mythics is not None:
+        self.show_only_night_spawns = show_only_night_spawns if show_only_night_spawns is not None else self.show_only_night_spawns
+        self.show_only_day_spawns = show_only_day_spawns if show_only_day_spawns is not None else self.show_only_day_spawns
+
+        if show_variants is not None or show_mythics is not None or show_only_day_spawns is not None or show_only_night_spawns is not None:
             self.creatures = []
 
         # construct base layers, start with environment bg
@@ -132,7 +137,9 @@ class EncyclopediaImageFactory:
         if len(self.creatures) == 0:
             self.load_relevant_info()
             self.page_num = 1
-            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_by_user(user_id=self.user.id, include_variants=self.show_variants, is_server_page=self.is_server_page, include_mythics=self.show_mythics)
+
+            environment_variant_no = 1 if self.show_only_day_spawns else (2 if self.show_only_night_spawns else -1)
+            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_for_encyclopedia(user_id=self.user.id, include_variants=self.show_variants, is_server_page=self.is_server_page, include_mythics=self.show_mythics, environment_id=self.environment.dex_no, environment_variant_no=environment_variant_no)
 
         self.page_num += page_swap
 
@@ -144,12 +151,15 @@ class EncyclopediaImageFactory:
 
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
+            if self.show_only_night_spawns and self.creatures[i][8]:
+                continue
+
             creature = self.creatures[i]
             creature_name = creature[1]
             variant_name = creature[2]
             dex_no = creature[3]
             variant_no = creature[4] if len(creature) == 8 else  creature[8][0]
-            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], environment_id=1)
+            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], dex_no=self.environment.dex_no)
             total_catches = creature[5]
             total_mythical_catches = creature[6]
             img_root = creature[7]

@@ -5,6 +5,11 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 
+verbose_keyword = "verbose"
+variants_keyword = "variants"
+mythics_keyword = "mythics"
+night_spawns_keyword = "night_spawns"
+day_spawns_keyword = "day_spawns"
 
 class EncyclopediaView(discord.ui.View):
     def __init__(self, message_author, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False, original_view=None):
@@ -19,9 +24,9 @@ class EncyclopediaView(discord.ui.View):
         self.interaction_lock = asyncio.Lock()
 
         # Initialize the buttons once
-        self.verbose_button = self.create_toggle_button("verbose")
-        self.variants_button = self.create_toggle_button("variants")
-        self.mythics_button = self.create_toggle_button("mythics")
+        self.verbose_button = self.create_toggle_button(verbose_keyword)
+        self.variants_button = self.create_toggle_button(variants_keyword)
+        self.mythics_button = self.create_toggle_button(mythics_keyword)
 
         self.prev_button = self.create_navigation_button(is_next=False)
         self.next_button = self.create_navigation_button(is_next=True)
@@ -80,19 +85,26 @@ class EncyclopediaView(discord.ui.View):
 
     def create_toggle_button(self, button_type):
         labels = {
-            "verbose": "Show Detailed View",
-            "variants": "Show Variants",
-            "mythics": "Show Mythics"
+            verbose_keyword: "Show Detailed View",
+            variants_keyword: "Show Variants",
+            mythics_keyword: "Show Mythics",
+            night_spawns_keyword: "Show Night Spawns",
+            day_spawns_keyword: "Show Day Spawns",
         }
         styles = {
-            "verbose": discord.ButtonStyle.green,
-            "variants": discord.ButtonStyle.green,
-            "mythics": discord.ButtonStyle.green
+            verbose_keyword: discord.ButtonStyle.green,
+            variants_keyword: discord.ButtonStyle.green,
+            mythics_keyword: discord.ButtonStyle.green,
+            night_spawns_keyword: discord.ButtonStyle.green,
+            day_spawns_keyword: discord.ButtonStyle.green
         }
         emojis = {
-            "verbose": None,
-            "variants": None,
-            "mythics": "✨"
+            verbose_keyword: None,
+            variants_keyword: None,
+            mythics_keyword: "✨",
+            night_spawns_keyword: "🌙",
+            day_spawns_keyword: "☀️"
+
         }
 
         button = discord.ui.Button(
@@ -115,13 +127,13 @@ class EncyclopediaView(discord.ui.View):
                 await interaction.response.defer()
 
                 # Toggle the appropriate state
-                if button_type == "verbose":
+                if button_type == verbose_keyword:
                     self.is_verbose = not self.is_verbose
                     new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(is_verbose=self.is_verbose)
-                elif button_type == "variants":
+                elif button_type == variants_keyword:
                     self.show_variants = not self.show_variants
                     new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(show_variants=self.show_variants)
-                elif button_type == "mythics":
+                elif button_type == mythics_keyword:
                     self.show_mythics = not self.show_mythics
                     new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(show_mythics=self.show_mythics)
 

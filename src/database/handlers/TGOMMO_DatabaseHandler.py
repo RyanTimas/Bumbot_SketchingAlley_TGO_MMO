@@ -98,8 +98,19 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
         return response
 
-    def get_all_creatures_caught_by_user(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False):
-        creatures = self.QueryHandler.execute_query(TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER, params=(() if is_server_page else (user_id,)))
+    def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0):
+        # determine whether we should grab creatures for a specific environment or all environments
+        if environment_variant_no > 0:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM_AND_VARIANT_NO
+            params = (user_id, environment_id, environment_variant_no) if not is_server_page else (environment_id, environment_variant_no)
+        elif environment_id > 0:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO if is_server_page else TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM
+            params = (user_id, environment_id) if not is_server_page else (environment_id,)
+        else:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER
+            params = (user_id,) if not is_server_page else ()
+
+        creatures = self.QueryHandler.execute_query(query, params=params)
 
         if not include_variants:
             seen_ids = {}  # Track creature IDs we've seen and their first index
@@ -136,8 +147,10 @@ class TGOMMODatabaseHandler:
 
         return creatures
 
-    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=0):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID, params=(creature_id, environment_id,))
+    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=None, dex_no=None):
+        query = TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID if environment_id is not None else TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_DEX_NO
+        params = (creature_id, environment_id) if environment_id is not None else (creature_id, dex_no)
+        response = self.QueryHandler.execute_query(query, params=params)
 
         for rarity in ALL_RARITIES:
             if rarity.name == response[0][0]:
@@ -291,7 +304,7 @@ class TGOMMODatabaseHandler:
             ('Wolf', '', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5),
 
             # WAVE 2
-            ('Mouse', '', 26, 1, 'Field Mouse', 'Apodemus', MAMMAL, '', MOUSE_IMAGE_ROOT, 5),
+            ('Mouse', '', 27, 1, 'Field Mouse', 'Apodemus', MAMMAL, '', MOUSE_IMAGE_ROOT, 5),
         ]
 
         # Insert environment records
@@ -307,9 +320,11 @@ class TGOMMODatabaseHandler:
             ('Everglades', 'Night', 2, 2, 'Florida', '', 'everglades', True, True, 5),
         ]
 
-        for creature in creature_data:
+        for index, creature in enumerate(creature_data):
+            creature = (index + 1,) + creature
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)
-        for environment in environment_data:
+        for index, environment in enumerate(environment_data):
+            environment = (index + 1,) + environment
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_ENVIRONMENT, params=environment)
 
         # Link creatures to environments

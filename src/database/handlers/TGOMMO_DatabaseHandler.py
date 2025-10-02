@@ -101,10 +101,10 @@ class TGOMMODatabaseHandler:
     def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0):
         # determine whether we should grab creatures for a specific environment or all environments
         if environment_variant_no > 0:
-            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM_AND_VARIANT_NO
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO
             params = (user_id, environment_id, environment_variant_no) if not is_server_page else (environment_id, environment_variant_no)
         elif environment_id > 0:
-            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO if is_server_page else TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM
             params = (user_id, environment_id) if not is_server_page else (environment_id,)
         else:
             query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER

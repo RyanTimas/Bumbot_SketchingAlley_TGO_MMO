@@ -151,9 +151,6 @@ class EncyclopediaImageFactory:
 
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
-            if self.show_only_night_spawns and self.creatures[i][8]:
-                continue
-
             creature = self.creatures[i]
             creature_name = creature[1]
             variant_name = creature[2]

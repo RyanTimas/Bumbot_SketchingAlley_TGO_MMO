@@ -111,11 +111,12 @@ class TGOMMOMenuView(discord.ui.View):
                     original_view=self
                 )
 
-                # Update button states
-                self.update_button_states()
-
                 new_encyclopedia_page = encyclopedia_img_factory.build_encyclopedia_page_image()
                 file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
+
+                # Update button states
+                self.update_button_states()
+                view.update_button_states()
 
                 # Send updated view
                 await interaction.message.edit(attachments=[file], view=view)

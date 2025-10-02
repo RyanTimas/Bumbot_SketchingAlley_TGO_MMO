@@ -140,6 +140,7 @@ class UpdatePlayerProfileView(discord.ui.View):
     async def avatar_dropdown_callback(self, interaction: discord.Interaction):
         # Access the selected value from the interaction
         self.avatar_id = int(interaction.data["values"][0])
+        await interaction.response.defer()
 
     def create_background_picker_dropdown(self, row=1):
         options = [discord.SelectOption(label=f"Background {i}", value=str(i)) for i in range(1, 2)]

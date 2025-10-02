@@ -36,7 +36,7 @@ def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) 
 
 
 #************************************************************************************
-#-------------------------------IMAGE FUNCTIONS-------------------------------------
+#-------------------------------IMAGE FUNCTIONS----------------------------------------------
 #************************************************************************************
 def to_grayscale(discord_file, file_name=None) -> discord.File:
     discord_file.fp.seek(0)
@@ -193,38 +193,6 @@ async def check_if_user_can_interact_with_view(interaction, interaction_lock, me
     return True
 
 
-# Placeholder button that does nothing when clicked
-def create_dummy_label_button(label_text, row=1):
-    button = discord.ui.Button(
-        label=f"{label_text}",
-        style=discord.ButtonStyle.gray,
-        row=row
-    )
-    button.callback = dummy_callback()
-    return button
-
-
-def dummy_callback():
-    async def callback(interaction):
-        # Just acknowledge the interaction to prevent the "interaction failed" message
-        # Without doing anything else
-        await interaction.response.defer(ephemeral=True, thinking=False)
-    return callback
-
-
-# Creates an invisible button that serves as a spacer
-def create_spacer_button(row=0):
-    button = discord.ui.Button(
-        label="\u200b",  # Zero-width space character
-        style=discord.ButtonStyle.gray,
-        disabled=True,
-        row=row
-    )
-    # Make the button almost invisible
-    button.callback = dummy_callback()
-    return button
-
-
 # Retry decorator for handling SSL errors
 def retry_on_ssl_error(max_retries=3, delay=1):
     def decorator(func):
@@ -251,6 +219,7 @@ def retry_on_ssl_error(max_retries=3, delay=1):
 #************************************************************************************
 #-------------------------------BUTTON FUNCTIONS------------------------------------
 #************************************************************************************
+# Button that goes back to parent view when clicked
 def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None):
     button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
     button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id,)
@@ -270,6 +239,7 @@ def go_back_callback(original_view, interaction_lock=None, message_author_id=Non
         await interaction.message.edit(attachments=[], view=original_view)
     return callback
 
+# Button that deletes message when clicked
 def create_close_button(interaction_lock, message_author_id, row=2):
     button = discord.ui.Button(
         label="✘",
@@ -292,7 +262,33 @@ def close_callback(interaction_lock, message_author):
 
     return callback
 
+# Placeholder button that does nothing when clicked
+def create_dummy_label_button(label_text, row=1):
+    button = discord.ui.Button(
+        label=f"{label_text}",
+        style=discord.ButtonStyle.gray,
+        row=row
+    )
+    button.callback = dummy_callback()
+    return button
+def dummy_callback():
+    async def callback(interaction):
+        # Just acknowledge the interaction to prevent the "interaction failed" message
+        # Without doing anything else
+        await interaction.response.defer(ephemeral=True, thinking=False)
+    return callback
 
+# Creates an invisible button that serves as a spacer
+def create_spacer_button(row=0):
+    button = discord.ui.Button(
+        label="\u200b",  # Zero-width space character
+        style=discord.ButtonStyle.gray,
+        disabled=True,
+        row=row
+    )
+    # Make the button almost invisible
+    button.callback = dummy_callback()
+    return button
 
 #************************************************************************************
 #-------------------------------GENERAL FUNCTIONS------------------------------------
@@ -311,3 +307,7 @@ def pad_text(text, desired_length):
         return text[:desired_length]
     else:
         return text
+
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))

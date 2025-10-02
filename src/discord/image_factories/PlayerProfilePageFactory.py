@@ -72,7 +72,7 @@ class PlayerProfilePageFactory:
         for i in range(len(self.creature_team)):
             creature: TGOCreature = self.creature_team[i]
 
-            creature_image = Image.open(f"{IMAGE_FOLDER_IMAGES_PATH}\\{creature.img_root}{'_S' if creature.rarity is MYTHICAL else ''}_THUMB{IMAGE_FILE_EXTENSION}")
+            creature_image = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{creature.img_root}{'_S' if creature.rarity is MYTHICAL else ''}_THUMB{IMAGE_FILE_EXTENSION}")
             creature_image = creature_image.resize((int(creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
 
             x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[i][0] - (creature_image.width // 2)

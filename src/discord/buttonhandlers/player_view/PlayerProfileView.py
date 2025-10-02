@@ -36,7 +36,8 @@ class PlayerProfileView(discord.ui.View):
         self.add_item(self.update_player_profile_button)
         # row 3
         self.add_item(self.close_button)
-        self.add_item(self.go_back_button)
+        if self.original_view is not None:
+            self.add_item(self.go_back_button)
 
 
 

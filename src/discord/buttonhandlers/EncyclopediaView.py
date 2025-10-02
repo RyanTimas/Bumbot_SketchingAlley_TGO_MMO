@@ -66,9 +66,9 @@ class EncyclopediaView(discord.ui.View):
         self.add_item(self.night_only_button)
 
         self.add_item(self.close_button)
-        self.add_item(self.go_back_button)
+        if self.original_view is not None:
+            self.add_item(self.go_back_button)
 
-        # Update button states
         self.update_button_states()
 
 

@@ -30,7 +30,7 @@ class CatchButton(discord.ui.Button):
         async with self._lock:
             # Check if creature was already caught
             if self.caught:
-                await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
+                await interaction.send_message("Someone else already caught this creature...", ephemeral=True)
                 return
             # Mark as caught immediately to prevent others from catching
             self.caught = True

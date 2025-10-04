@@ -16,7 +16,7 @@ from src.discord.buttonhandlers.creature_enounter.EncounterView import TGOMMOEnc
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import MYTHICAL_SPAWN_CHANCE
+from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
 
 
@@ -88,8 +88,6 @@ class CreatureSpawnerHandler:
     # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
         while self.are_creatures_spawning:
-            # check if a new day has begun or if a day/night transition has occurred
-            self._handle_time_change()
             creature = await self.creature_picker()
 
             try:
@@ -104,7 +102,7 @@ class CreatureSpawnerHandler:
                 await asyncio.sleep(5)
 
             # wait between 8 and 12 minutes before spawning another creature - will spawn 120 - 180 creatures a day
-            await asyncio.sleep(random.uniform(8, 12) *60)
+            await asyncio.sleep(random.uniform(3, 5) *60)
 
             # check if a new day has begun or if a day/night transition has occurred
             self._handle_time_change()
@@ -148,7 +146,8 @@ class CreatureSpawnerHandler:
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self):
-        rarity = get_rarity()
+        # FOR LAUNCH, SET COMMON CRITTERS TO BE WAY MORE COMMON BUT MAKE SPAWN MORE FREQUENTLY, only a 25% chance to pull an actual roll
+        rarity = get_rarity() if (await flip_coin(total_iterations=2) or self.time_of_day in (DUSK, DAWN)) else COMMON
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0

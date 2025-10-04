@@ -1,7 +1,9 @@
+import datetime
 import time
 from random import randint
 
 import discord
+import pytz
 from PIL import Image
 
 from src.commons.CommonFunctions import build_image_file, to_grayscale, convert_to_png
@@ -16,10 +18,10 @@ from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON,
 
 
 class CreatureEmbedHandler:
-    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None):
+    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None, time_of_day=None):
         self.creature = creature
         self.environment = environment
-        self.time_of_day = NIGHT if self.environment.is_night_environment else DAY
+        self.time_of_day = time_of_day
 
 
     def generate_spawn_embed(self, is_spawn_message: bool = True):
@@ -36,8 +38,8 @@ class CreatureEmbedHandler:
             embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
             embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
 
-            # embed.set_footer(text=f'{self.environment.location} ({'🌙 Night' if self.environment.is_night_environment else '☀️ Day'})', icon_url=TGOMMO_CREATURE_EMBED_LOCATION_ICON)
-            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
+            if self.time_of_day:
+                embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
             embed.timestamp = discord.utils.utcnow()
             embed.set_image(url=f"attachment://{encounter_img.filename}")
         else:
@@ -68,8 +70,6 @@ class CreatureEmbedHandler:
 
         thumbnail_png = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
-
-        embed.set_footer(text =f"{"☀️ Day" if self.environment.is_night_environment else "🌙 Night"}")
         embed.timestamp = discord.utils.utcnow()
 
         return embed, thumbnail_png, total_xp
@@ -78,7 +78,6 @@ class CreatureEmbedHandler:
     def get_despawn_timestamp(self, is_countdown: bool = True):
         despawn_timestamp = int(time.time()) + self.creature.despawn_time * 60
         despawn_character = 'R' if is_countdown else 'F'
-
         return f"<t:{despawn_timestamp}:{despawn_character}>"
 
 
@@ -90,14 +89,11 @@ class CreatureEmbedHandler:
         if 0 == get_tgommo_db_handler().get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no):
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 2500
-
         if 0 == get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id):
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
-
         if self.creature.rarity == MYTHICAL:
             catch_embed.add_field(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
-
 
         return total_xp, catch_embed

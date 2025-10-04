@@ -28,14 +28,15 @@ class CreatureSpawnerHandler:
 
         self.current_environment = None
         self.creature_spawn_pool = None
-
-        self.timezone = pytz.timezone('US/Eastern')
-        self.last_spawn_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
-        self.is_day = 7 <= self.last_spawn_time.hour < 19
+        self.timezone = None
+        self.last_spawn_time = None
+        self.is_day = None
+        self.time_of_day = None
 
 
     # kicks off the creature spawner
     def start_creature_spawner(self):
+        self.define_time_of_day()
         self._define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
         asyncio.create_task(self._creature_spawner())
 
@@ -62,6 +63,27 @@ class CreatureSpawnerHandler:
             creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]))
             self.creature_spawn_pool.append(creature)
 
+    def define_time_of_day(self):
+        # TODO: WILL PULL TIMEZONE FROM ENVIRONMENT IN FUTURE
+        self.timezone = pytz.timezone('US/Eastern')
+
+        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(self.timezone)
+        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(self.timezone)
+        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(self.timezone)
+        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(self.timezone)
+        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(self.timezone)
+        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(self.timezone)
+
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
+
+        self.last_spawn_time = current_time
+        self.is_day = (7 <= current_time.hour < 19)
+
+        if current_time.hour in (6, 7, 18, 19):
+            self.time_of_day = DAWN if current_time.hour in (6, 7) else DUSK
+        else:
+            self.time_of_day = DAY if self.is_day else NIGHT
+
 
     # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
@@ -84,10 +106,13 @@ class CreatureSpawnerHandler:
             # wait between 8 and 12 minutes before spawning another creature - will spawn 120 - 180 creatures a day
             await asyncio.sleep(random.uniform(8, 12) *60)
 
+            # check if a new day has begun or if a day/night transition has occurred
+            self._handle_time_change()
+
 
     # Spawns a creature and sends a message to the discord channel
     async def spawn_creature(self, creature: TGOCreature):
-        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed()
+        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day).generate_spawn_embed()
 
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
             view=TGOMMOEncounterView(discord_bot=self.discord_bot, message=f'Catch', creature=creature, environment=self.current_environment),
@@ -170,13 +195,9 @@ class CreatureSpawnerHandler:
 
         if is_new_day or is_day_night_transition:
             # todo: implement in V 3.0
-            # if is_new_day:
-            #     self.current_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=-1,convert_to_object=True)
-
             if is_day_night_transition:
                 self.is_day = not self.is_day
-                self.current_environment.variant_no = 1 if self.is_day else 2
 
-            self._define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=self.current_environment.variant_no)
+            self._define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=1 if self.is_day else 2)
 
         self.last_spawn_time = current_time

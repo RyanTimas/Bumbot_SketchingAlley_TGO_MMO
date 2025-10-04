@@ -1,3 +1,5 @@
+import random
+
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
@@ -18,11 +20,13 @@ class EncounterImageHandler:
     # handler for generating encounter image
     def create_encounter_image(self):
         foreground_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
-        final_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{IMAGE_FILE_EXTENSION}")
+
+        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) else f'_{self.time_of_day}'
+        final_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}{IMAGE_FILE_EXTENSION}")
 
         textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
         camera_overlay_img = Image.open(ENCOUNTER_SCREEN_CAMERA_OVERLAY_IMAGE)
-        glow = Image.open(ENCOUNTER_SCREEN_NIGHT_GLOW_IMAGE)
+        glow = self.get_glow_overlay()
 
         # Resize the foreground image to 80% of its size
         foreground_img = foreground_img.resize((int(foreground_img.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(foreground_img.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
@@ -32,7 +36,7 @@ class EncounterImageHandler:
         foreground_image_offset = self.get_foreground_image_offset(foreground_img, final_img)
         final_img.paste(foreground_image_with_border, foreground_image_offset, foreground_image_with_border)
 
-        if self.environment.is_night_environment:
+        if glow:
             final_img.paste(glow, (0, 0), glow)
 
         # Paste the textbox onto the background
@@ -42,6 +46,26 @@ class EncounterImageHandler:
         # Add text for creature name
         final_img = self.add_text_to_image(base_img=final_img.copy(),max_width=TEXT_BOX_WIDTH - (120*2),)
         return convert_to_png(final_img, 'encounter_image.png')
+
+    def get_glow_overlay(self):
+        glow_combos = {
+            DAY: (None, None),
+            DAWN: (ENCOUNTER_SCREEN_MORNING_GLOW_IMAGE, ENCOUNTER_SCREEN_MORNING_RAYS_IMAGE),
+            DUSK: (ENCOUNTER_SCREEN_EVENING_GLOW_IMAGE, ENCOUNTER_SCREEN_EVENING_RAYS_IMAGE),
+            NIGHT: (ENCOUNTER_SCREEN_NIGHT_GLOW_IMAGE, None),
+        }
+
+        glow_path = glow_combos[self.time_of_day][0]
+        rays_path = glow_combos[self.time_of_day][1]
+
+        if glow_path:
+            glow = Image.open(glow_path)
+            if rays_path:
+                rays = Image.open(rays_path)
+                rays = Image.blend(Image.new('RGBA', rays.size, (0, 0, 0, 0)), rays, random.uniform(0.8 if self.environment.environment_id == 1 else 0.9, 0.95))
+                glow.paste(rays, (0, 0), rays)
+            return glow
+        return None
 
 
     # set up text to add to encounter image
@@ -94,7 +118,6 @@ class EncounterImageHandler:
             lines.append(' '.join(current_line))
 
         return lines
-
 
 
     def get_y_offset_to_center_text(self, font):
@@ -181,5 +204,7 @@ class EncounterImageHandler:
         img_with_outline.paste(base_img, (0, 0), base_img)
 
         return img_with_outline
+
+
 
 

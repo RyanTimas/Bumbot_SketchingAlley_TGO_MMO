@@ -5,6 +5,8 @@ MYTHICAL_SPAWN_CHANCE = 250  # 1 in 250 chance of a mythical spawning
 
 DAY = "Day"
 NIGHT = "Night"
+DUSK = "dusk"
+DAWN = "dawn"
 
 
 '''EMBED ICONS'''

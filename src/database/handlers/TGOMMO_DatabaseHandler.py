@@ -187,15 +187,29 @@ class TGOMMODatabaseHandler:
         return response[0][0]
 
     # Gets encyclopedia page info for a user or server page
-    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False):
+    def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False, environment:TGOEnvironment = None,  time_of_day=DAY):
+        # GET TOTAL FOR CREATURES THAT CAN BE CAUGHT
         if include_variants:
-            query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
+            creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
         else:
-            query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_DEX_NUM if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM
+            creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_DEX_NUM if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM
 
-        params = (user_id, include_mythics) if not is_server_page else (include_mythics,)
+        creature_count_params = (user_id, include_mythics) if not is_server_page else (include_mythics,)
+        max_creatures_total = self.QueryHandler.execute_query(creature_count_query, params=creature_count_params)[0][0]
 
-        return self.QueryHandler.execute_query(query, params=params)[0]
+        # GET TOTAL FOR CREATURES CAUGHT
+        # build query
+        collected_creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_USER_BASE if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER__BASE
+        collected_creature_count_query += " AND e.variant_no=?" if time_of_day != BOTH else ""
+        collected_creature_count_query += " AND c.variant_no = 1" if not include_variants else ""
+
+        #build params
+        collected_creature_count_params = (user_id, include_mythics, environment.dex_no) if not is_server_page else (include_mythics, environment.dex_no)
+        if time_of_day != BOTH:
+            collected_creature_count_params += (1 if time_of_day == DAY else 2,)
+
+        caught_unique_creatures_total = self.QueryHandler.execute_query(f"{collected_creature_count_query};", params=collected_creature_count_params)[0][0]
+        return (max_creatures_total, caught_unique_creatures_total)
 
     def get_ids_for_unique_creatures(self):
         response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())

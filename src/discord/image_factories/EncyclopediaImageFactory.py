@@ -8,7 +8,7 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.DexIconFactory import DexIconFactory
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
 from src.resources.constants.file_paths import *
 
 
@@ -34,7 +34,8 @@ class EncyclopediaImageFactory:
 
 
     def load_relevant_info(self):
-        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants, include_mythics=self.show_mythics)
+        time_of_day = NIGHT if self.show_only_night_spawns else (DAY if self.show_only_day_spawns else BOTH)
+        encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=self.user.id, is_server_page=self.is_server_page, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=time_of_day)
 
         self.total_catches = encyclopedia_info[0]
         self.distinct_catches = encyclopedia_info[1]

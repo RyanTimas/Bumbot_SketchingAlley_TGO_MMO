@@ -7,6 +7,7 @@ DAY = "Day"
 NIGHT = "Night"
 DUSK = "dusk"
 DAWN = "dawn"
+BOTH = "both"
 
 
 '''EMBED ICONS'''

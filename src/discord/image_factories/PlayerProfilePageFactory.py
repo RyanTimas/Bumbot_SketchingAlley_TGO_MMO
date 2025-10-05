@@ -18,7 +18,7 @@ class PlayerProfilePageFactory:
 
         self.player: TGOPlayer = None
         self.creature_team = []
-        self._load_relevant_info()
+        self.load_player_info()
 
         self.tab_is_open = tab_is_open
         self.open_tab = open_tab
@@ -27,11 +27,12 @@ class PlayerProfilePageFactory:
         self.right_button_enabled = False
 
 
-    def _load_relevant_info(self):
+    def load_player_info(self):
         player_info = get_tgommo_db_handler().insert_new_user_profile(user_id=self.target_user.id, nickname=self.target_user.name)
 
         self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar_id=player_info[3], background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
 
+        self.creature_team = []
         creature_team_info = get_tgommo_db_handler().get_creatures_for_player_profile((self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6))
         for creature_info in creature_team_info:
             creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]

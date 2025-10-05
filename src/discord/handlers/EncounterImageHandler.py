@@ -15,7 +15,7 @@ class EncounterImageHandler:
     def __init__(self, creature: TGOCreature, environment: TGOEnvironment = None, time_of_day: str = DAY):
         self.creature = creature
         self.environment = environment
-        self.time_of_day = time_of_day
+        self.time_of_day = time_of_day if time_of_day else DAY
 
     # handler for generating encounter image
     def create_encounter_image(self):

@@ -120,5 +120,5 @@ class PlayerProfileView(discord.ui.View):
                 await interaction.response.defer()
 
                 player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
-                await interaction.followup.send("Are you sure you want to change your display creatures? *(Note: This changes YOUR display creatures)*", ephemeral=True, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=player))
+                await interaction.followup.send("Are you sure you want to change your display creatures? *(Note: This changes YOUR display creatures)*", ephemeral=True, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=player, player_profile_image_factory=self.player_profile_image_factory, original_view=self, original_message=interaction.message))
         return callback

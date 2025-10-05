@@ -1,13 +1,13 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, pad_text
+from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class UpdatePlayerProfileView(discord.ui.View):
-    def __init__(self, interaction: discord.Interaction, user_id: int, player: TGOPlayer):
+    def __init__(self, interaction: discord.Interaction, user_id: int, player: TGOPlayer, player_profile_image_factory=None, original_view=None, original_message=None):
         super().__init__(timeout=None)
 
         # LOAD VARIABLES
@@ -28,6 +28,10 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.creature_id_6 = player.creature_slot_id_6 if player.creature_slot_id_6 != -1 else ''
 
         self.user_creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(self.user_id)
+
+        self.player_profile_image_factory = player_profile_image_factory
+        self.original_view = original_view
+        self.original_message = original_message
 
         self.currency = player.currency
         self.available_catches = player.available_catches
@@ -98,6 +102,12 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         params = (self.display_name,self.avatar_id,self.background_id,self.creature_id_1,self.creature_id_2,self.creature_id_3,self.creature_id_4,self.creature_id_5,self.creature_id_6, self.currency,self.available_catches, self.rod_level, self.rod_amount,self.trap_level,self.trap_amount, self.user_id)
         get_tgommo_db_handler().update_user_profile(params=params)
+
+        self.player_profile_image_factory.load_player_info()
+        new_image = self.player_profile_image_factory.build_player_profile_page_image(tab_is_open=False)
+        new_png = convert_to_png(new_image, f'player_profile_page.png')
+
+        await self.original_message.edit(attachments=[new_png], view=self.original_view)
 
         await interaction.response.send_message("Changes successfully saved!", ephemeral=True)
 

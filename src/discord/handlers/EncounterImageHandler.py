@@ -21,7 +21,7 @@ class EncounterImageHandler:
     def create_encounter_image(self):
         foreground_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
 
-        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) else f'_{self.time_of_day}'
+        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
         final_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}{IMAGE_FILE_EXTENSION}")
 
         textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
@@ -60,6 +60,7 @@ class EncounterImageHandler:
 
         if glow_path:
             glow = Image.open(glow_path)
+            glow = Image.blend(Image.new('RGBA', glow.size, (0, 0, 0, 0)), glow, 0.6 if self.time_of_day == NIGHT else random.uniform(0.75, 0.85))
             if rays_path:
                 rays = Image.open(rays_path)
                 rays = Image.blend(Image.new('RGBA', rays.size, (0, 0, 0, 0)), rays, random.uniform(0.8 if self.environment.environment_id == 1 else 0.9, 0.95))

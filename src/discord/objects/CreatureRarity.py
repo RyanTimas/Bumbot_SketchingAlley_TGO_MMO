@@ -16,10 +16,10 @@ class CreatureRarity:
 
 # Define global rarity constants
 COMMON = CreatureRarity(name="Common", color=discord.Color.light_gray(), emojii='⬜',font_color=(153, 170, 181), outline_color=FONT_COLOR_BLACK)
-UNCOMMON = CreatureRarity(name="Uncommon", color=discord.Color.green(), emojii='🟩', font_color=(67, 181, 129), outline_color=FONT_COLOR_WHITE)
-RARE = CreatureRarity(name="Rare", color=discord.Color.blue(), emojii='🟦', font_color=(88, 101, 242), outline_color=FONT_COLOR_BLACK)
-EPIC = CreatureRarity(name="Epic", color=discord.Color.purple(), emojii='🟪', font_color=(114, 137, 218), outline_color=FONT_COLOR_WHITE)
-LEGENDARY = CreatureRarity(name="Legendary", color=discord.Color.yellow(), emojii='🟨', font_color=(250, 204, 20), outline_color=FONT_COLOR_GOLD)
+UNCOMMON = CreatureRarity(name="Uncommon", color=discord.Color.green(), emojii='🟩', font_color=(87, 242, 135), outline_color=FONT_COLOR_BLACK)
+RARE = CreatureRarity(name="Rare", color=discord.Color.blue(), emojii='🟦', font_color=(52, 152, 219), outline_color=FONT_COLOR_BLACK)
+EPIC = CreatureRarity(name="Epic", color=discord.Color.purple(), emojii='🟪', font_color=(155, 89, 182), outline_color=FONT_COLOR_BLACK)
+LEGENDARY = CreatureRarity(name="Legendary", color=discord.Color.yellow(), emojii='🟨', font_color=(250, 204, 20), outline_color=FONT_COLOR_BLACK)
 MYTHICAL = CreatureRarity(name="Mythical", color=discord.Color.gold(), emojii='⭐', font_color=(255, 215, 0), outline_color=(235, 233, 210))
 
 # List of all rarities for easy iteration

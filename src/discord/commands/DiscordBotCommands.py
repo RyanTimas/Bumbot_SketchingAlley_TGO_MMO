@@ -185,15 +185,29 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
 
     @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.", hidden=True)
-    async def spawn_every_creature(ctx, param1: str = None):
+    async def spawn_every_creature(ctx, param1: str = None, param2: str = None, param3: str = None):
         if ctx.author.id not in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
             return
 
+        is_mythical = "mythical" in [param1.lower() if param1 else "", param3.lower() if param3 else ""]
+        environment_id = 1
+        variant_no = 1
+
+        if param1.isdigit():
+            environment_id = int(param1)
+            if param2 and param2.isdigit():
+                variant_no = int(param2)
+        elif param2.isdigit():
+            environment_id = int(param2)
+            if param3 and param3.isdigit():
+                variant_no = int(param3)
+
+        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_id=environment_id, variant_no=variant_no)
         available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
 
         for creature in available_creatures:
-            if param1 and param1.lower() == 'mythical':
+            if is_mythical:
                 creature.img_root += '_S'
                 creature.rarity = MYTHICAL
 

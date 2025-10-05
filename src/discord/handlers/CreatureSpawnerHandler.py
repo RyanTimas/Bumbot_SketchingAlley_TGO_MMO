@@ -37,7 +37,7 @@ class CreatureSpawnerHandler:
     # kicks off the creature spawner
     def start_creature_spawner(self):
         self.define_time_of_day()
-        self._define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
+        self.define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
         asyncio.create_task(self._creature_spawner())
 
 
@@ -48,7 +48,7 @@ class CreatureSpawnerHandler:
 
 
     # Loads a particular environment and defines the spawn pool for that environment
-    def _define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
+    def define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
         dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
         self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=dex_no, variant_no=variant_no, convert_to_object=True)
 
@@ -197,6 +197,6 @@ class CreatureSpawnerHandler:
             if is_day_night_transition:
                 self.is_day = not self.is_day
 
-            self._define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=1 if self.is_day else 2)
+            self.define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=1 if self.is_day else 2)
 
         self.last_spawn_time = current_time

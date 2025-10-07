@@ -280,10 +280,12 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
 
         # Clear existing records
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
 
         # Insert creature records
         creature_data = [
@@ -364,6 +366,20 @@ class TGOMMODatabaseHandler:
             ('Everglades', 'Night', 2, 2, 'Florida', '', 'everglades', True, True, 5),
         ]
 
+        # insert collection records
+        collections_data = [
+            (f"{MAMMAL}s", "", TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL, TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{MAMMAL}_1",  1),
+            (f"{BIRD}s", "", TGOMMO_COLLECTION_QUERY_BIRD_TOTAL, TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{REPTILE}s", "", TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL, TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{AMPHIBIAN}s", "", TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_2",  1),
+            (f"{BUG}s", "", TGOMMO_COLLECTION_QUERY_BUG_TOTAL, TGOMMO_COLLECTION_QUERY_BUG_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{BUG}_1",  1),
+
+            (f"{VARIANTS}", "", TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL, TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_2", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_3", 1),
+        ]
+
+        for index, collection in enumerate(collections_data):
+            collection = (index + 1,) + collection
+            self.QueryHandler.execute_query(TGOMMO_INSERT_COLLECTION, params=collection)
         for index, creature in enumerate(creature_data):
             creature = (index + 1,) + creature
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)

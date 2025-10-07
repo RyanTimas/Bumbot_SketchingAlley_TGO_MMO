@@ -125,6 +125,20 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )"""
 
+TGOMMO_CREATE_COLLECTION_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_collection (
+            collection_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            image_path TEXT NOT NULL,
+            background_color_path TEXT NOT NULL,
+            total_count_query TEXT NOT NULL,
+            caught_count_query TEXT NOT NULL,
+            completion_reward_1 TEXT NOT NULL DEFAULT '',
+            completion_reward_2 TEXT NOT NULL DEFAULT '',
+            completion_reward_3 TEXT NOT NULL DEFAULT '',
+            is_active BOOLEAN NOT NULL DEFAULT 1
+        )"""
+
 '''*******************'''
 '''   USER Queries    '''
 '''*******************'''
@@ -193,6 +207,40 @@ TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_USER_BASE = """SELECT
 TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER__BASE = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id LEFT JOIN tgommo_creature c ON c.creature_id  = uc.creature_id  WHERE user_id =? AND uc.is_mythical=? AND e.dex_no =?"""
 TGOMMO_GET_MAX_VARIANT_NUMBER_FOR_CREATURES = """SELECT COUNT(DISTINCT(variant_no)) FROM tgommo_creature"""
 
+""" Collection Queries """
+TGOMMO_GET_ALL_ACTIVE_COLLECTIONS = """SELECT collection_id, title, description, image_path, background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3 FROM tgommo_collection WHERE is_active = 1;"""
+TGOMMO_GET_COLLECTION_BY_ID = """SELECT collection_id, title, description, image_path , background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3 FROM tgommo_collection WHERE collection_id = ? AND is_active = 1;"""
+
+'''Environment Collection Queries'''
+TGOMMO_COLLECTION_QUERY_ALL_CREATURES_TOTAL = """SELECT COUNT(DISTINCT ec.creature_id) FROM tgommo_environment_creature ec LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id ;"""
+TGOMMO_COLLECTION_QUERY_ALL_CREATURES_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment e ON uc.environment_id = e.environment_id WHERE user_id=?;"""
+
+TGOMMO_COLLECTION_QUERY_US_EAST_TOTAL = """SELECT COUNT(DISTINCT ec.creature_id) FROM tgommo_environment_creature ec LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no =1;"""
+TGOMMO_COLLECTION_QUERY_US_EAST_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment e ON uc.environment_id = e.environment_id WHERE e.dex_no =1 AND user_id=?;"""
+
+'''Property Collection Queries'''
+TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL = """SELECT Count(Distinct uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "MAMMAL";"""
+TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT = """SELECT * FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "MAMMAL" AND uc.user_id = ?;"""
+
+TGOMMO_COLLECTION_QUERY_BIRD_TOTAL = """SELECT Count(Distinct uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "BIRD";"""
+TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT = """SELECT * FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "BIRD" AND uc.user_id = ?;"""
+
+TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL = """SELECT Count(Distinct uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "REPTILE";"""
+TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT = """SELECT * FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "REPTILE" AND uc.user_id = ?;"""
+
+TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL = """SELECT Count(Distinct uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "AMPHIBIAN";"""
+TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT = """SELECT * FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "AMPHIBIAN" AND uc.user_id = ?;"""
+
+TGOMMO_COLLECTION_QUERY_BUG_TOTAL = """SELECT Count(Distinct uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "BUG";"""
+TGOMMO_COLLECTION_QUERY_BUG_CAUGHT = """SELECT * FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom = "BUG" AND uc.user_id = ?;"""
+
+TGOMMO_COLLECTION_QUERY_MYTHICAL_TOTAL = """SELECT COUNT(DISTINCT creature_id) FROM tgommo_environment_creature ec;"""
+TGOMMO_COLLECTION_QUERY_MYTHICAL_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc WHERE uc.is_mythical=1 AND user_id=?;"""
+
+TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL = """SELECT COUNT(DISTINCT c.creature_id) FROM tgommo_creature c WHERE variant_no != 1;"""
+TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc WHERE uc.creature_variant_no!=1 AND user_id=?;"""
+
+
 '''UPDATE QUERIES'''
 TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID = """UPDATE tgommo_user_creature SET nickname = ? WHERE catch_id = ?;"""
 
@@ -222,7 +270,10 @@ TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (u
 TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, creature_name, environment_name, spawn_rarity, local_name) VALUES(?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
 
+TGOMMO_INSERT_COLLECTION = """INSERT OR IGNORE INTO tgommo_collection (collection_id, title, description, image_path, background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3, is_active) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+
 '''DELETE QUERIES'''
 TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES = "DELETE FROM tgommo_creature;"
 TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENTS = "DELETE FROM tgommo_environment;"
 TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES = "DELETE FROM tgommo_environment_creature;"
+TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS = "DELETE FROM tgommo_collection;"

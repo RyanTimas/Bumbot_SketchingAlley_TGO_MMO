@@ -13,7 +13,7 @@ from src.resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory:
-    def __init__(self, environment: TGOEnvironment, verbose = False, show_variants = False, show_mythics = False, is_server_page = False, user = None, show_only_night_spawns = False, show_only_day_spawns = False):
+    def __init__(self, environment: TGOEnvironment, creatures= None, verbose= False, show_variants= False, show_mythics= False, is_server_page= False, user= None, show_only_night_spawns= False, show_only_day_spawns= False):
         self.environment = environment
         self.is_server_page = is_server_page
         self.user = user
@@ -22,13 +22,12 @@ class EncyclopediaImageFactory:
         self.show_only_night_spawns = show_only_night_spawns
         self.show_only_day_spawns = show_only_day_spawns
 
-        self.creatures = []
+        self.creatures = creatures if creatures else []
         self.total_catches = None
         self.distinct_catches = None
         self.show_variants = show_variants
 
         self.dex_icons = []
-        self.creatures = []
         self.page_num = 1
         self.total_pages = 1
 
@@ -41,7 +40,7 @@ class EncyclopediaImageFactory:
         self.distinct_catches = encyclopedia_info[1]
 
 
-    def build_encyclopedia_page_image(self, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None, show_only_night_spawns = None, show_only_day_spawns = None):
+    def build_encyclopedia_page_image(self, creatures=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics = None, show_only_night_spawns = None, show_only_day_spawns = None):
         # set new values in case button was clicked
         self.page_num = new_page_number if new_page_number is not None else self.page_num
         self.verbose = is_verbose if is_verbose is not None else self.verbose

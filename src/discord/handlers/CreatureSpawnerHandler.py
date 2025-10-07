@@ -102,7 +102,7 @@ class CreatureSpawnerHandler:
                 await asyncio.sleep(5)
 
             # wait between 8 and 12 minutes before spawning another creature - will spawn 288 - 480 creatures a day
-            await asyncio.sleep(random.uniform(3, 5))
+            await asyncio.sleep(random.uniform(3, 5) * 60)
 
             # check if a new day has begun or if a day/night transition has occurred
             self._handle_time_change()

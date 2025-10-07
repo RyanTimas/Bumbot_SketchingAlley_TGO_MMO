@@ -3,12 +3,16 @@ IS_EVENT = False
 EVENT_IDS = []
 MYTHICAL_SPAWN_CHANCE = 250  # 1 in 250 chance of a mythical spawning
 
+'''TIME OF DAY'''
 DAY = "Day"
 NIGHT = "Night"
 DUSK = "dusk"
 DAWN = "dawn"
 BOTH = "both"
 
+"""COLLECTIONS KEYWORDS"""
+VARIANTS = "Variants"
+MYTHICAL = "Mythical"
 
 '''EMBED ICONS'''
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"
@@ -50,6 +54,9 @@ SUPPORTING_TEXT_SIZE = 12
 
 
 '''PLAYER PROFILE SCREEN'''
+PLAYER_PROFILE_AVATAR_PREFIX = "Avatar_"
+PLAYER_PROFILE_BACKGROUND_PREFIX = "Background_"
+
 PLAYER_PROFILE_CREATURE_RESIZE_PERCENT = 0.5
 PLAYER_PROFILE_CREATURE_COORDINATES = [
     (183, 444), (1097, 444),    # middle row
@@ -181,6 +188,7 @@ BIRD = "Bird"
 REPTILE = "Reptile"
 AMPHIBIAN = "Amphibian"
 INSECT = "Insect"
+BUG = "Bug"
 FISH = "Fish"
 MOLLUSK = "Mollusk"
 CRUSTACEAN = "Crustacean"

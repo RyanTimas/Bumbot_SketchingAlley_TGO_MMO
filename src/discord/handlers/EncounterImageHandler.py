@@ -60,7 +60,7 @@ class EncounterImageHandler:
 
         if glow_path:
             glow = Image.open(glow_path)
-            glow = Image.blend(Image.new('RGBA', glow.size, (0, 0, 0, 0)), glow, 0.6 if self.time_of_day == NIGHT else random.uniform(0.75, 0.85))
+            glow = Image.blend(Image.new('RGBA', glow.size, (0, 0, 0, 0)), glow, 0.6 if self.time_of_day == NIGHT else random.uniform(0.4, 0.7))
             if rays_path:
                 rays = Image.open(rays_path)
                 rays = Image.blend(Image.new('RGBA', rays.size, (0, 0, 0, 0)), rays, random.uniform(0.8 if self.environment.environment_id == 1 else 0.9, 0.95))

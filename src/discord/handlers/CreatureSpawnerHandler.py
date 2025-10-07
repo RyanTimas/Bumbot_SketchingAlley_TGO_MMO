@@ -101,8 +101,8 @@ class CreatureSpawnerHandler:
                 traceback.print_exc()
                 await asyncio.sleep(5)
 
-            # wait between 8 and 12 minutes before spawning another creature - will spawn 120 - 180 creatures a day
-            await asyncio.sleep(random.uniform(3, 5) *60)
+            # wait between 8 and 12 minutes before spawning another creature - will spawn 288 - 480 creatures a day
+            await asyncio.sleep(random.uniform(3, 5))
 
             # check if a new day has begun or if a day/night transition has occurred
             self._handle_time_change()
@@ -191,6 +191,11 @@ class CreatureSpawnerHandler:
         old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
         new_time_of_day = 'day' if 7 <= current_time.hour < 19 else 'night'
         is_day_night_transition = old_time_of_day != new_time_of_day
+
+        if current_time.hour in (6, 7, 18, 19):
+            self.time_of_day = DAWN if current_time.hour in (6, 7) else DUSK
+        else:
+            self.time_of_day = DAY if self.is_day else NIGHT
 
         if is_new_day or is_day_night_transition:
             # todo: implement in V 3.0

@@ -3,7 +3,6 @@ import time
 from random import randint
 
 import discord
-import pytz
 from PIL import Image
 
 from src.commons.CommonFunctions import build_image_file, to_grayscale, convert_to_png
@@ -82,14 +81,17 @@ class CreatureEmbedHandler:
 
 
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
-        total_xp = randint(100, 350)
+        total_xp = randint(10, 50)
+
+        total_user_catches = get_tgommo_db_handler().get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no)
+        total_server_catches = get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id)
 
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
 
-        if 0 == get_tgommo_db_handler().get_total_user_catches_for_species(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no):
+        if 0 == total_user_catches:
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 2500
-        if 0 == get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id):
+        if 0 == total_server_catches:
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
         if self.creature.rarity == MYTHICAL:

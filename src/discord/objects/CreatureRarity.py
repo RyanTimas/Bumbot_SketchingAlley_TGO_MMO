@@ -15,7 +15,7 @@ class CreatureRarity:
 
 
 # Define global rarity constants
-COMMON = CreatureRarity(name="Common", color=discord.Color.light_gray(), emojii='⬜',font_color=(153, 170, 181), outline_color=FONT_COLOR_BLACK)
+COMMON = CreatureRarity(name="Common", color=discord.Color.light_gray(), emojii='⬜',font_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_BLACK)
 UNCOMMON = CreatureRarity(name="Uncommon", color=discord.Color.green(), emojii='🟩', font_color=(87, 242, 135), outline_color=FONT_COLOR_BLACK)
 RARE = CreatureRarity(name="Rare", color=discord.Color.blue(), emojii='🟦', font_color=(52, 152, 219), outline_color=FONT_COLOR_BLACK)
 EPIC = CreatureRarity(name="Epic", color=discord.Color.purple(), emojii='🟪', font_color=(155, 89, 182), outline_color=FONT_COLOR_BLACK)

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_86aedc22aa80f174e6c72a6c09534a4a {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="
+    position: fixed; 
+    bottom: 50px; 
+    left: 50px; 
+    width: 280px; 
+    height: 220px; 
+    background-color: white; 
+    border: 2px solid grey; 
+    z-index: 9999; 
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+">
+    <h4 style="margin-top: 0; text-align: center;">Sighting Likelihood Legend</h4>
+    <p><i class="fa fa-paw" style="color: red;"></i> Panther: High (3.5%+)</p>
+    <p><i class="fa fa-paw" style="color: orange;"></i> Panther: Medium (2.0-3.4%)</p>
+    <p><i class="fa fa-paw" style="color: beige;"></i> Panther: Low (<2.0%)</p>
+    <p style="color: darkgreen;">Bobcat: High (18%+)</p>
+    <p style="color: green;">Bobcat: Medium (12-17%)</p>
+    <p style="color: lightgreen;">Bobcat: Low (<12%)</p>
+    <p style="color: darkblue;">Bear: High (15%+)</p>
+    <p style="color: blue;">Bear: Medium (10-14%)</p>
+    <p style="color: lightblue;">Bear: Low (<10%)</p>
+</div>
+    
+<h3 align="center" style="font-size:20px; position: fixed; 
+top: 10px; left: 50%; transform: translateX(-50%); 
+background-color: white; padding: 5px 10px; 
+border: 2px solid grey; z-index: 9999; border-radius: 5px;">
+Florida Wildlife Sighting Likelihood
+</h3>
+    
+            <div class="folium-map" id="map_86aedc22aa80f174e6c72a6c09534a4a" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_86aedc22aa80f174e6c72a6c09534a4a = L.map(
+                "map_86aedc22aa80f174e6c72a6c09534a4a",
+                {
+                    center: [26.2, -81.4],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 9,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_0bb6501092f380f46929200d04b8c66c = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_0bb6501092f380f46929200d04b8c66c.addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var marker_3398356db7788974634253d356f715ab = L.marker(
+                [26.091, -81.468],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_34abdeb7eb3302d047f15a7d98d194e5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_166fa2af94d4442a897334814f515004 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_976f3ee5f79ee548dbfbef72ad32496a = $(`<div id="html_976f3ee5f79ee548dbfbef72ad32496a" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">SR-29 (FPNWR Border)</h4>         <p style="margin: 2px 0; font-size: 12px;">Best overall location for panther sightings. Borders Florida Panther National Wildlife Refuge.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: red;">                 <b>Panther:</b> 4.5% likelihood             </p>             <p style="margin: 2px 0; color: darkgreen;">                 <b>Bobcat:</b> 18% likelihood             </p>             <p style="margin: 2px 0; color: darkblue;">                 <b>Bear:</b> 15% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_166fa2af94d4442a897334814f515004.setContent(html_976f3ee5f79ee548dbfbef72ad32496a);
+            
+        
+
+        marker_3398356db7788974634253d356f715ab.bindPopup(popup_166fa2af94d4442a897334814f515004)
+        ;
+
+        
+    
+    
+            marker_3398356db7788974634253d356f715ab.bindTooltip(
+                `<div>
+                     SR-29 (FPNWR Border) (Panther: 4.5%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_3398356db7788974634253d356f715ab.setIcon(icon_34abdeb7eb3302d047f15a7d98d194e5);
+            
+    
+            var marker_5715414071a72b06b648731462c6e191 = L.marker(
+                [25.789, -80.9896],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_513154e59f70ceb7152d1ce8bbf0a064 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_043ae71bf602531458ff950a2fc7d13c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_bf9ff514c1f559549bccea13eee447c8 = $(`<div id="html_bf9ff514c1f559549bccea13eee447c8" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Loop Road (Big Cypress)</h4>         <p style="margin: 2px 0; font-size: 12px;">Remote area with excellent habitat diversity. High likelihood for all three species.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: red;">                 <b>Panther:</b> 4.0% likelihood             </p>             <p style="margin: 2px 0; color: darkgreen;">                 <b>Bobcat:</b> 20% likelihood             </p>             <p style="margin: 2px 0; color: darkblue;">                 <b>Bear:</b> 18% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_043ae71bf602531458ff950a2fc7d13c.setContent(html_bf9ff514c1f559549bccea13eee447c8);
+            
+        
+
+        marker_5715414071a72b06b648731462c6e191.bindPopup(popup_043ae71bf602531458ff950a2fc7d13c)
+        ;
+
+        
+    
+    
+            marker_5715414071a72b06b648731462c6e191.bindTooltip(
+                `<div>
+                     Loop Road (Big Cypress) (Panther: 4.0%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_5715414071a72b06b648731462c6e191.setIcon(icon_513154e59f70ceb7152d1ce8bbf0a064);
+            
+    
+            var marker_111cc9b3d88ad594c394bfae58bec94d = L.marker(
+                [26.1833, -81.3833],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_fe9835c01ef423e6b6a5b4780cb499cc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_31d7556d1af93958e577d37effa23a3f = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_cfcb3207bc2f73dc90af0bc04d4c0209 = $(`<div id="html_cfcb3207bc2f73dc90af0bc04d4c0209" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">I-75 Crossings</h4>         <p style="margin: 2px 0; font-size: 12px;">Wildlife underpasses with fencing. Best viewed from safe pull-offs on I-75.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: red;">                 <b>Panther:</b> 3.5% likelihood             </p>             <p style="margin: 2px 0; color: lightgreen;">                 <b>Bobcat:</b> 8% likelihood             </p>             <p style="margin: 2px 0; color: lightblue;">                 <b>Bear:</b> 5% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_31d7556d1af93958e577d37effa23a3f.setContent(html_cfcb3207bc2f73dc90af0bc04d4c0209);
+            
+        
+
+        marker_111cc9b3d88ad594c394bfae58bec94d.bindPopup(popup_31d7556d1af93958e577d37effa23a3f)
+        ;
+
+        
+    
+    
+            marker_111cc9b3d88ad594c394bfae58bec94d.bindTooltip(
+                `<div>
+                     I-75 Crossings (Panther: 3.5%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_111cc9b3d88ad594c394bfae58bec94d.setIcon(icon_fe9835c01ef423e6b6a5b4780cb499cc);
+            
+    
+            var marker_53527e447f812630256d11bca266ac85 = L.marker(
+                [26.0333, -80.9667],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_1722a4580431200860f45de870473b69 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_0e2ab376e400291b922bf910983b9dab = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_fa1bcaafbc43974dfdaea72c87c938d4 = $(`<div id="html_fa1bcaafbc43974dfdaea72c87c938d4" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Seminole Lands (Guided)</h4>         <p style="margin: 2px 0; font-size: 12px;">Requires special permission or guided tour. Excellent habitat with minimal human disturbance.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: orange;">                 <b>Panther:</b> 3.0% likelihood             </p>             <p style="margin: 2px 0; color: darkgreen;">                 <b>Bobcat:</b> 22% likelihood             </p>             <p style="margin: 2px 0; color: darkblue;">                 <b>Bear:</b> 20% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_0e2ab376e400291b922bf910983b9dab.setContent(html_fa1bcaafbc43974dfdaea72c87c938d4);
+            
+        
+
+        marker_53527e447f812630256d11bca266ac85.bindPopup(popup_0e2ab376e400291b922bf910983b9dab)
+        ;
+
+        
+    
+    
+            marker_53527e447f812630256d11bca266ac85.bindTooltip(
+                `<div>
+                     Seminole Lands (Guided) (Panther: 3.0%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_53527e447f812630256d11bca266ac85.setIcon(icon_1722a4580431200860f45de870473b69);
+            
+    
+            var marker_c279d52b47d0b3cdc2aeb4f6664033ae = L.marker(
+                [25.9833, -81.1833],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_61c3ec8d34d4f336a89468b3671c8e54 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3135984d59dd773a9b2e7a190d23cd53 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_83d23ce0aae141cd91b9a8bbc9c267a7 = $(`<div id="html_83d23ce0aae141cd91b9a8bbc9c267a7" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Bear Island (Big Cypress)</h4>         <p style="margin: 2px 0; font-size: 12px;">Open prairies and pinelands with good sight lines. Popular for wildlife viewing.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: orange;">                 <b>Panther:</b> 2.5% likelihood             </p>             <p style="margin: 2px 0; color: green;">                 <b>Bobcat:</b> 15% likelihood             </p>             <p style="margin: 2px 0; color: darkblue;">                 <b>Bear:</b> 16% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_3135984d59dd773a9b2e7a190d23cd53.setContent(html_83d23ce0aae141cd91b9a8bbc9c267a7);
+            
+        
+
+        marker_c279d52b47d0b3cdc2aeb4f6664033ae.bindPopup(popup_3135984d59dd773a9b2e7a190d23cd53)
+        ;
+
+        
+    
+    
+            marker_c279d52b47d0b3cdc2aeb4f6664033ae.bindTooltip(
+                `<div>
+                     Bear Island (Big Cypress) (Panther: 2.5%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_c279d52b47d0b3cdc2aeb4f6664033ae.setIcon(icon_61c3ec8d34d4f336a89468b3671c8e54);
+            
+    
+            var marker_042c8d4d6e3a5728d4e5dde295b14d5f = L.marker(
+                [25.9895, -81.4855],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_85f83e3e80c23848bf447d78c686ac5f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1ef1e0bebbffc1b5c38f7ab0825aa15b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_e53a7d0e38faec1a31dd3588bf0cb1d3 = $(`<div id="html_e53a7d0e38faec1a31dd3588bf0cb1d3" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Fakahatchee Main Rd</h4>         <p style="margin: 2px 0; font-size: 12px;">Similar habitat to Jane's Scenic Drive but with slightly better visibility.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: orange;">                 <b>Panther:</b> 2.0% likelihood             </p>             <p style="margin: 2px 0; color: darkgreen;">                 <b>Bobcat:</b> 18% likelihood             </p>             <p style="margin: 2px 0; color: blue;">                 <b>Bear:</b> 12% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_1ef1e0bebbffc1b5c38f7ab0825aa15b.setContent(html_e53a7d0e38faec1a31dd3588bf0cb1d3);
+            
+        
+
+        marker_042c8d4d6e3a5728d4e5dde295b14d5f.bindPopup(popup_1ef1e0bebbffc1b5c38f7ab0825aa15b)
+        ;
+
+        
+    
+    
+            marker_042c8d4d6e3a5728d4e5dde295b14d5f.bindTooltip(
+                `<div>
+                     Fakahatchee Main Rd (Panther: 2.0%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_042c8d4d6e3a5728d4e5dde295b14d5f.setIcon(icon_85f83e3e80c23848bf447d78c686ac5f);
+            
+    
+            var marker_b7e9446003224482db346947b4096a72 = L.marker(
+                [26.0833, -81.5333],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_69d845c9bbf843df1625f5651162c9aa = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "beige",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2c16cad8fc045beb3272d5f1971c8e2f = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_1ca6f61123c979ae2d7b60645153e931 = $(`<div id="html_1ca6f61123c979ae2d7b60645153e931" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Picayune Strand SF</h4>         <p style="margin: 2px 0; font-size: 12px;">Restored area becoming excellent habitat. Dispersal zone for young panthers.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: beige;">                 <b>Panther:</b> 1.5% likelihood             </p>             <p style="margin: 2px 0; color: green;">                 <b>Bobcat:</b> 16% likelihood             </p>             <p style="margin: 2px 0; color: blue;">                 <b>Bear:</b> 14% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_2c16cad8fc045beb3272d5f1971c8e2f.setContent(html_1ca6f61123c979ae2d7b60645153e931);
+            
+        
+
+        marker_b7e9446003224482db346947b4096a72.bindPopup(popup_2c16cad8fc045beb3272d5f1971c8e2f)
+        ;
+
+        
+    
+    
+            marker_b7e9446003224482db346947b4096a72.bindTooltip(
+                `<div>
+                     Picayune Strand SF (Panther: 1.5%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b7e9446003224482db346947b4096a72.setIcon(icon_69d845c9bbf843df1625f5651162c9aa);
+            
+    
+            var marker_3917b5f5d0d2eb7156bf768df0257e40 = L.marker(
+                [26.4167, -81.6],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_b86757320eb5f3ce87a543e8f156c5b3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "beige",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_e68fbc98ec454d60b0218a61ad4abe72 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_e10054ed6f59c6b7bf904a91a6bcad5e = $(`<div id="html_e10054ed6f59c6b7bf904a91a6bcad5e" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Corkscrew Boardwalk</h4>         <p style="margin: 2px 0; font-size: 12px;">Fixed boardwalk with many visitors. More likely to see tracks than actual panthers.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: beige;">                 <b>Panther:</b> 1.0% likelihood             </p>             <p style="margin: 2px 0; color: green;">                 <b>Bobcat:</b> 12% likelihood             </p>             <p style="margin: 2px 0; color: lightblue;">                 <b>Bear:</b> 8% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_e68fbc98ec454d60b0218a61ad4abe72.setContent(html_e10054ed6f59c6b7bf904a91a6bcad5e);
+            
+        
+
+        marker_3917b5f5d0d2eb7156bf768df0257e40.bindPopup(popup_e68fbc98ec454d60b0218a61ad4abe72)
+        ;
+
+        
+    
+    
+            marker_3917b5f5d0d2eb7156bf768df0257e40.bindTooltip(
+                `<div>
+                     Corkscrew Boardwalk (Panther: 1.0%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_3917b5f5d0d2eb7156bf768df0257e40.setIcon(icon_b86757320eb5f3ce87a543e8f156c5b3);
+            
+    
+            var marker_4923ea8281413c51e634e4f9de7595a7 = L.marker(
+                [26.8333, -81.9333],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_9aea39d8f0bfbbc47dd106aed2e452b7 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "beige",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a110cd155ec093b7f389b83f5c9861ce = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_3483c8e850505430bc7b1c8b38deb626 = $(`<div id="html_3483c8e850505430bc7b1c8b38deb626" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Babcock Ranch Tour</h4>         <p style="margin: 2px 0; font-size: 12px;">Northern periphery of panther range. Better for other wildlife like bison and birds.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: beige;">                 <b>Panther:</b> 0.5% likelihood             </p>             <p style="margin: 2px 0; color: lightgreen;">                 <b>Bobcat:</b> 10% likelihood             </p>             <p style="margin: 2px 0; color: lightblue;">                 <b>Bear:</b> 9% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_a110cd155ec093b7f389b83f5c9861ce.setContent(html_3483c8e850505430bc7b1c8b38deb626);
+            
+        
+
+        marker_4923ea8281413c51e634e4f9de7595a7.bindPopup(popup_a110cd155ec093b7f389b83f5c9861ce)
+        ;
+
+        
+    
+    
+            marker_4923ea8281413c51e634e4f9de7595a7.bindTooltip(
+                `<div>
+                     Babcock Ranch Tour (Panther: 0.5%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_4923ea8281413c51e634e4f9de7595a7.setIcon(icon_9aea39d8f0bfbbc47dd106aed2e452b7);
+            
+    
+            var marker_599e438db4ee1d7a4020a212b302e2a9 = L.marker(
+                [27.2333, -82.3167],
+                {
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+        
+    
+            var icon_5d093b8c4713f377c0ea69f572c2782d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "beige",
+  "iconColor": "white",
+  "icon": "paw",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_4266e5891e1728426bb06757aa85e57b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c0e3518a7a1b574a077b81eccb1339f0 = $(`<div id="html_c0e3518a7a1b574a077b81eccb1339f0" style="width: 100.0%; height: 100.0%;">     <div style="width: 250px;">         <h4 style="margin-bottom: 5px;">Myakka River State Park</h4>         <p style="margin: 2px 0; font-size: 12px;">Only area with known panthers outside South Florida. Very low population density.</p>         <div style="background-color: #f0f0f0; padding: 5px; margin-top: 5px; border-radius: 3px;">             <p style="margin: 2px 0; color: beige;">                 <b>Panther:</b> 0.25% likelihood             </p>             <p style="margin: 2px 0; color: green;">                 <b>Bobcat:</b> 14% likelihood             </p>             <p style="margin: 2px 0; color: blue;">                 <b>Bear:</b> 10% likelihood             </p>         </div>     </div>     </div>`)[0];
+                popup_4266e5891e1728426bb06757aa85e57b.setContent(html_c0e3518a7a1b574a077b81eccb1339f0);
+            
+        
+
+        marker_599e438db4ee1d7a4020a212b302e2a9.bindPopup(popup_4266e5891e1728426bb06757aa85e57b)
+        ;
+
+        
+    
+    
+            marker_599e438db4ee1d7a4020a212b302e2a9.bindTooltip(
+                `<div>
+                     Myakka River State Park (Panther: 0.25%)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_599e438db4ee1d7a4020a212b302e2a9.setIcon(icon_5d093b8c4713f377c0ea69f572c2782d);
+            
+    
+            var layer_control_e73aa157a6175649e5e8895f8b8ffdcd_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_0bb6501092f380f46929200d04b8c66c,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_e73aa157a6175649e5e8895f8b8ffdcd = L.control.layers(
+                layer_control_e73aa157a6175649e5e8895f8b8ffdcd_layers.base_layers,
+                layer_control_e73aa157a6175649e5e8895f8b8ffdcd_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_86aedc22aa80f174e6c72a6c09534a4a);
+
+        
+</script>
+</html>

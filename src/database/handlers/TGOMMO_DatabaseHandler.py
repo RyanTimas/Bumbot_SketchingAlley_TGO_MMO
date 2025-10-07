@@ -16,6 +16,10 @@ class TGOMMODatabaseHandler:
             self.init_tgommo_tables()
 
 
+    def execute_query(self, query, params=()):
+        return self.QueryHandler.execute_query(query, params=params)
+
+
     ''' Insert Queries '''
     def insert_new_creature(self, params=(0,'', '', '', 0, 0, 0, 0, 0, 0, 0)):
         return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=params)
@@ -223,7 +227,7 @@ class TGOMMODatabaseHandler:
         if convert_to_object:
             collections = []
             for collection_data in response:
-                collection = TGOCollection(collection_id=collection_data[0], title=collection_data[1], description=collection_data[2], image_path=collection_data[3], background_color_path=collection_data[4], total_count_query=collection_data[5], caught_count_query=collection_data[6], completion_reward_1=collection_data[7], completion_reward_2=collection_data[8], completion_reward_3=collection_data[9], is_active=collection_data[10])
+                collection = TGOCollection(collection_id=collection_data[0], title=collection_data[1], description=collection_data[2], image_path=collection_data[3], background_color_path=collection_data[4],  total_count_query=collection_data[5], caught_count_query=collection_data[6], completion_reward_1=collection_data[7], completion_reward_2=collection_data[8], completion_reward_3=collection_data[9], is_active=collection_data[10])
                 collections.append(collection)
             return collections
 
@@ -382,13 +386,13 @@ class TGOMMODatabaseHandler:
 
         # insert collection records
         collections_data = [
-            (f"{MAMMAL}s", "", TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL, TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{MAMMAL}_1",  1),
-            (f"{BIRD}s", "", TGOMMO_COLLECTION_QUERY_BIRD_TOTAL, TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
-            (f"{REPTILE}s", "", TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL, TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
-            (f"{AMPHIBIAN}s", "", TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_2",  1),
-            (f"{BUG}s", "", TGOMMO_COLLECTION_QUERY_BUG_TOTAL, TGOMMO_COLLECTION_QUERY_BUG_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{BUG}_1",  1),
+            (f"{MAMMAL}s", "", f"{DEER_IMAGE_ROOT}_1", MAMMAL, TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL, TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT,  f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{MAMMAL}_1",  1),
+            (f"{BIRD}s", "", f"{BLUEJAY_IMAGE_ROOT}_1", BIRD, TGOMMO_COLLECTION_QUERY_BIRD_TOTAL, TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{REPTILE}s", "", f"{TURTLE_IMAGE_ROOT}_1", REPTILE, TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL, TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{AMPHIBIAN}s", "", f"{TOAD_IMAGE_ROOT}_1", AMPHIBIAN, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_2",  1),
+            (f"{BUG}s", "", f"{MANTIS_IMAGE_ROOT}_1", BUG, TGOMMO_COLLECTION_QUERY_BUG_TOTAL, TGOMMO_COLLECTION_QUERY_BUG_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{BUG}_1",  1),
 
-            (f"{VARIANTS}", "", TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL, TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT, "PLACEHOLDER", "PLACEHOLDER", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_2", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_3", 1),
+            (f"{VARIANTS}", "", f"{DEER_IMAGE_ROOT}_2", MAMMAL, TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL, TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_2", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_3", 1),
         ]
 
         for index, collection in enumerate(collections_data):

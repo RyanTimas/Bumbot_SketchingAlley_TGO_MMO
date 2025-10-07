@@ -10,9 +10,12 @@ from src.resources.constants.TGO_MMO_constants import PLAYER_PROFILE_CREATURE_RE
     PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
 
+TEAM = "Team"
+COLLECTIONS = "Collections"
+ENVIRONMENTS = "Environments"
 
 class PlayerProfilePageFactory:
-    def __init__(self, user_id, target_user, tab_is_open: bool = False, open_tab: str = 'Team'):
+    def __init__(self, user_id, target_user, tab_is_open: bool = False, open_tab: str = TEAM):
         self.user_id = user_id
         self.target_user = target_user
 
@@ -118,17 +121,17 @@ class PlayerProfilePageFactory:
         side_drawer_border_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_IMAGE}")
         side_drawer_background_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_BACKGROUND_IMAGE}")
 
-        if self.open_tab == "Team":
+        if self.open_tab == TEAM:
             side_drawer_background_image = self._build_team_tab(side_drawer_background_image)
 
             side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TEAM_OVERLAY_IMAGE}")
             side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
-        elif self.open_tab == "Collections":
-            side_drawer_background_image = self._build_collections_tab(side_drawer_background_image)
+        elif self.open_tab == COLLECTIONS:
+            side_drawer_background_image = self.build_collections_tab(side_drawer_background_image)
 
             side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_OVERLAY_IMAGE}")
             side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
-        elif self.open_tab == "Environments":
+        elif self.open_tab == ENVIRONMENTS:
             side_drawer_background_image = self._build_environments_tab(side_drawer_background_image)
 
             side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_BIOMES_OVERLAY_IMAGE}")
@@ -146,7 +149,7 @@ class PlayerProfilePageFactory:
         return player_profile_img
 
 
-    def _build_team_tab(self, background_img: Image.Image = None):
+    def _build_team_tab(self, background_img: Image.Image):
         current_offset = (1097,70)
 
         for i in range(len(self.creature_team)):
@@ -156,7 +159,7 @@ class PlayerProfilePageFactory:
             creature_img_path = DEX_ICON_CREATURE_BASE + f"_{creature.img_root}" + f"{"_S" if creature.rarity == MYTHICAL else ""}" + IMAGE_FILE_EXTENSION
             image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.rarity.name}{IMAGE_FILE_EXTENSION}'
 
-            team_tab = PlayerProfileSidePanelTabFactory(tab_type="Team", player=self.player, content_image_path=creature_img_path, background_image_path=None,image_color_path=image_color_path, tab_title=title,tab_subtitle=creature.full_name, tab_footer='')
+            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, content_image_path=creature_img_path, background_image_path=None,image_color_path=image_color_path, tab_title=title,tab_subtitle=creature.full_name, tab_footer='')
             team_tab_image = team_tab.create_tab()
 
             background_img.paste(team_tab_image, current_offset, team_tab_image)
@@ -164,19 +167,31 @@ class PlayerProfilePageFactory:
 
         return background_img
 
-    def _build_collections_tab(self, player_: Image.Image):
+    def build_collections_tab(self, background_img: Image.Image):
         current_offset = (1097,70)
 
-        content_image_path = ""
-        background_image_path = ""
-        image_color_path = ""
-        tab_title = ""
-        tab_subtitle = ""
-        tab_footer = ""
+        active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
 
-        collections_tab = PlayerProfileSidePanelTabFactory(tab_type="Collections", player=self.player,content_image_path=content_image_path,background_image_path=background_image_path,image_color_path=image_color_path, tab_title=tab_title,tab_subtitle=tab_subtitle, tab_footer=tab_footer)
+        for collection in active_collections:
+            collection.image_path = f'{DEX_ICON_CREATURE_BASE}_{collection.image_path}{IMAGE_FILE_EXTENSION}'
+            collection.background_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{collection.background_color_path}{IMAGE_FILE_EXTENSION}'
 
-        return collections_tab
+            caught_number = get_tgommo_db_handler().execute_query(collection.caught_count_query, params=(self.player.user_id,))[0][0]
+            total_number = get_tgommo_db_handler().execute_query(collection.total_count_query, params=())[0][0]
+            subtitle = f"{caught_number}/{total_number}"
+
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player,content_image_path=collection.image_path,background_image_path=None,image_color_path=collection.background_color_path, tab_title=collection.title,tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab_image = collections_tab.create_tab()
+
+            if caught_number == total_number:
+                first_star_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE}_1{IMAGE_FILE_EXTENSION}")
+                collections_tab_image.paste(first_star_image, (0, 0), first_star_image)
+
+            background_img.paste(collections_tab_image, current_offset, collections_tab_image)
+            current_offset = (current_offset[0], current_offset[1] + collections_tab_image.height + 17)
+
+        return background_img
+
 
     def _build_environments_tab(self, player_profile_img: Image.Image):
         content_image_path=""

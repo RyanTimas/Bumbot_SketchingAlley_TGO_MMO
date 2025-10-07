@@ -11,7 +11,7 @@ from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
 from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory
+from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
 from src.resources.constants.file_paths import *
 
 
@@ -37,7 +37,7 @@ class TGOMMOMenuView(discord.ui.View):
 
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
-        self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab="Team", row=2)
+        self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
 
         self.close_button = self.create_close_button(row=3)
 
@@ -125,7 +125,7 @@ class TGOMMOMenuView(discord.ui.View):
 
 
     # Handle Player Profile Buttons - opens encyclopedia view
-    def create_player_profile_button(self, tab_is_open=False, open_tab="Team", row=1):
+    def create_player_profile_button(self, tab_is_open=False, open_tab=TEAM, row=1):
         button = discord.ui.Button(
             label="Player Profile",
             style=discord.ButtonStyle.blurple,
@@ -134,7 +134,7 @@ class TGOMMOMenuView(discord.ui.View):
         button.callback = self.player_profile_callback(tab_is_open=tab_is_open, open_tab=open_tab)
         return button
 
-    def player_profile_callback(self, tab_is_open=False, open_tab='Team'):
+    def player_profile_callback(self, tab_is_open=False, open_tab=TEAM):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             # Check if we're already processing an interaction
@@ -163,7 +163,7 @@ class TGOMMOMenuView(discord.ui.View):
                 # Update button states
                 self.update_button_states()
 
-                new_encyclopedia_page = player_profile_img_factory.build_player_profile_page_image()
+                new_encyclopedia_page = player_profile_img_factory.build_player_profile_page_image(open_tab=TEAM)
                 file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
 
                 # Send updated view

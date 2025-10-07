@@ -74,8 +74,13 @@ class PlayerProfileSidePanelTabFactory:
 
     def place_stars_on_tab(self, tab_image: Image.Image):
         remove_variants_suffix = ' c.variant_no=1;'
-        caught_number = get_tgommo_db_handler().execute_query(self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.caught_count_query)}{remove_variants_suffix}", params=(self.player.user_id,))[0][0]
-        total_number = get_tgommo_db_handler().execute_query(self.collection.total_count_query[:-1] + f"{get_query_connector(self.collection.total_count_query)}{remove_variants_suffix}", params=())[0][0]
+
+        caught_query = self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.caught_count_query)}{remove_variants_suffix}" if 'variant_no' not in self.collection.caught_count_query else self.collection.caught_count_query
+        total_query = self.collection.total_count_query[:-1] + f"{get_query_connector(self.collection.total_count_query)}{remove_variants_suffix}" if 'variant_no' not in self.collection.total_count_query else self.collection.total_count_query
+
+        caught_number = get_tgommo_db_handler().execute_query(caught_query, params=(self.player.user_id,))[0][0]
+        total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
+
         filter_mythics_suffix = ' uc.is_mythical=1;'
 
         caught_number_mythics = get_tgommo_db_handler().execute_query(self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.total_count_query)}{filter_mythics_suffix}", params=(self.player.user_id,))[0][0]

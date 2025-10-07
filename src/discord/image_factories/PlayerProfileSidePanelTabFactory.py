@@ -1,14 +1,18 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, center_text_on_pixel
+from src.commons.CommonFunctions import resize_text_to_fit, center_text_on_pixel, get_query_connector
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects import TGOPlayer
+from src.discord.objects.TGOCollection import TGOCollection
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
 from src.resources.constants.file_paths import *
 
 
 class PlayerProfileSidePanelTabFactory:
-    def __init__(self, tab_type: str, player: TGOPlayer, content_image_path: str = None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
+    def __init__(self, tab_type: str, player: TGOPlayer, collection: TGOCollection = None, content_image_path: str = None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
         self.player = player
+        self.collection = collection
+
         self.tab_type = tab_type
 
         self.content_image_path = content_image_path
@@ -39,10 +43,9 @@ class PlayerProfileSidePanelTabFactory:
 
         if self.tab_type == 'Biomes' or self.tab_type == 'Collections':
             tab_image.paste(tab_empty_stars_image, (0, 0), tab_empty_stars_image)
-            #todo: handle stars
+            self.place_stars_on_tab(tab_image=tab_image)
 
         tab_image = self.place_text_on_tab(tab_image=tab_image)
-
         return tab_image
 
     def place_text_on_tab(self, tab_image: Image.Image):
@@ -66,5 +69,28 @@ class PlayerProfileSidePanelTabFactory:
             font = resize_text_to_fit(text=self.tab_footer, draw=draw, font=base_font, max_width=100, min_font_size=10)
             pixel_location = center_text_on_pixel(text=self.tab_footer, font=font, center_pixel_location=(130, 72))
             draw.text(pixel_location, text=self.tab_footer, font=font, fill=FONT_COLOR_BLACK)
+
+        return tab_image
+
+    def place_stars_on_tab(self, tab_image: Image.Image):
+        remove_variants_suffix = ' c.variant_no=1;'
+        caught_number = get_tgommo_db_handler().execute_query(self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.caught_count_query)}{remove_variants_suffix}", params=(self.player.user_id,))[0][0]
+        total_number = get_tgommo_db_handler().execute_query(self.collection.total_count_query[:-1] + f"{get_query_connector(self.collection.total_count_query)}{remove_variants_suffix}", params=())[0][0]
+        filter_mythics_suffix = ' uc.is_mythical=1;'
+
+        caught_number_mythics = get_tgommo_db_handler().execute_query(self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.total_count_query)}{filter_mythics_suffix}", params=(self.player.user_id,))[0][0]
+
+        caught_number_variants = get_tgommo_db_handler().execute_query(self.collection.caught_count_query, params=(self.player.user_id,))[0][0]
+        total_number_variants = get_tgommo_db_handler().execute_query(self.collection.total_count_query, params=())[0][0]
+
+        if caught_number == total_number:
+            first_star_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE}_1{IMAGE_FILE_EXTENSION}")
+            tab_image.paste(first_star_image, (0, 0), first_star_image)
+        if caught_number_variants == total_number_variants:
+            second_star_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE}_2{IMAGE_FILE_EXTENSION}")
+            tab_image.paste(second_star_image, (0, 0), second_star_image)
+        if caught_number_mythics == total_number:
+            third_star_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE}_3{IMAGE_FILE_EXTENSION}")
+            tab_image.paste(third_star_image, (0, 0), third_star_image)
 
         return tab_image

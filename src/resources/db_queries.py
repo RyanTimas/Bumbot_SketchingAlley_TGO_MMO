@@ -234,12 +234,11 @@ TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_
 TGOMMO_COLLECTION_QUERY_BUG_TOTAL = """SELECT Count(Distinct ec.creature_id) FROM tgommo_environment_creature ec LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id WHERE c.kingdom IN ("Insect", "Arachnid");"""
 TGOMMO_COLLECTION_QUERY_BUG_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE c.kingdom IN ("Insect", "Arachnid") AND uc.user_id = ?;"""
 
-TGOMMO_COLLECTION_QUERY_MYTHICAL_TOTAL = """SELECT COUNT(DISTINCT creature_id) FROM tgommo_environment_creature ec;"""
-TGOMMO_COLLECTION_QUERY_MYTHICAL_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc WHERE uc.is_mythical=1 AND user_id=?;"""
+TGOMMO_COLLECTION_QUERY_MYTHICAL_TOTAL = """SELECT COUNT(DISTINCT creature_id) FROM tgommo_environment_creature ec LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id;"""
+TGOMMO_COLLECTION_QUERY_MYTHICAL_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc  LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.is_mythical=1 AND user_id=?;"""
 
 TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL = """SELECT COUNT(DISTINCT c.creature_id) FROM tgommo_creature c WHERE variant_no != 1;"""
-TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc WHERE uc.creature_variant_no!=1 AND user_id=?;"""
-
+TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.creature_variant_no!=1 AND user_id=?;"""
 
 '''UPDATE QUERIES'''
 TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID = """UPDATE tgommo_user_creature SET nickname = ? WHERE catch_id = ?;"""

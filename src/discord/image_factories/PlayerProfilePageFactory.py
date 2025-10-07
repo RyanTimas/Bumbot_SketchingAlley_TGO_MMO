@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image, pad_text
+from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image, pad_text, get_query_connector
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
@@ -176,16 +176,17 @@ class PlayerProfilePageFactory:
             collection.image_path = f'{DEX_ICON_CREATURE_BASE}_{collection.image_path}{IMAGE_FILE_EXTENSION}'
             collection.background_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{collection.background_color_path}{IMAGE_FILE_EXTENSION}'
 
-            caught_number = get_tgommo_db_handler().execute_query(collection.caught_count_query, params=(self.player.user_id,))[0][0]
-            total_number = get_tgommo_db_handler().execute_query(collection.total_count_query, params=())[0][0]
+            remove_variants_suffix = f' c.variant_no=1;'
+
+            caught_query = collection.caught_count_query[:-1] + f"{get_query_connector(collection.caught_count_query)}{remove_variants_suffix}" if 'variant_no' not in collection.caught_count_query else collection.caught_count_query
+            total_query = collection.total_count_query[:-1] + f"{get_query_connector(collection.total_count_query)}{remove_variants_suffix}" if 'variant_no' not in collection.total_count_query else collection.total_count_query
+
+            caught_number = get_tgommo_db_handler().execute_query(caught_query, params=(self.player.user_id,))[0][0]
+            total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
             subtitle = f"{caught_number}/{total_number}"
 
-            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player,content_image_path=collection.image_path,background_image_path=None,image_color_path=collection.background_color_path, tab_title=collection.title,tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, content_image_path=collection.image_path,background_image_path=None,image_color_path=collection.background_color_path, tab_title=collection.title,tab_subtitle=subtitle, tab_footer="todo")
             collections_tab_image = collections_tab.create_tab()
-
-            if caught_number == total_number:
-                first_star_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE}_1{IMAGE_FILE_EXTENSION}")
-                collections_tab_image.paste(first_star_image, (0, 0), first_star_image)
 
             background_img.paste(collections_tab_image, current_offset, collections_tab_image)
             current_offset = (current_offset[0], current_offset[1] + collections_tab_image.height + 17)

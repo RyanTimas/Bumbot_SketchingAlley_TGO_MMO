@@ -5,6 +5,7 @@ import aiohttp
 import discord
 
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
 from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
@@ -53,6 +54,13 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
         embed.set_image(url=profile_pic_url)
 
         await ctx.reply(embed=embed)
+
+    @discord_bot.discord_bot.command(name='bumbot-test')
+    async def bumbot_test(ctx):
+        get_tgommo_db_handler().get_active_collections(convert_to_object=True)
+
+        await ctx.message.delete()
+        return True
 
 
 def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):

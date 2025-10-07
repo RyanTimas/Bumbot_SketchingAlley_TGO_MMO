@@ -208,7 +208,7 @@ TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER__BASE = """SEL
 TGOMMO_GET_MAX_VARIANT_NUMBER_FOR_CREATURES = """SELECT COUNT(DISTINCT(variant_no)) FROM tgommo_creature"""
 
 """ Collection Queries """
-TGOMMO_GET_ALL_ACTIVE_COLLECTIONS = """SELECT collection_id, title, description, image_path, background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3 FROM tgommo_collection WHERE is_active = 1;"""
+TGOMMO_GET_ALL_ACTIVE_COLLECTIONS = """SELECT collection_id, title, description, image_path, background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3, is_active FROM tgommo_collection WHERE is_active = 1;"""
 TGOMMO_GET_COLLECTION_BY_ID = """SELECT collection_id, title, description, image_path , background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3 FROM tgommo_collection WHERE collection_id = ? AND is_active = 1;"""
 
 '''Environment Collection Queries'''

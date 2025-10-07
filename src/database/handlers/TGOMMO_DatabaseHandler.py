@@ -1,5 +1,6 @@
 from src.database.handlers.QueryHandler import QueryHandler
 from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON
+from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
@@ -214,6 +215,19 @@ class TGOMMODatabaseHandler:
     def get_ids_for_unique_creatures(self):
         response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
         return response[0]
+
+    """ Player Profile Collection Queries """
+    def get_active_collections(self, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_ALL_ACTIVE_COLLECTIONS, params=())
+
+        if convert_to_object:
+            collections = []
+            for collection_data in response:
+                collection = TGOCollection(collection_id=collection_data[0], title=collection_data[1], description=collection_data[2], image_path=collection_data[3], background_color_path=collection_data[4], total_count_query=collection_data[5], caught_count_query=collection_data[6], completion_reward_1=collection_data[7], completion_reward_2=collection_data[8], completion_reward_3=collection_data[9], is_active=collection_data[10])
+                collections.append(collection)
+            return collections
+
+        return response
 
 
     ''' Update Queries '''

@@ -299,9 +299,9 @@ def get_query_connector(query: str):
 #************************************************************************************
 #-------------------------------GENERAL FUNCTIONS------------------------------------
 #************************************************************************************
-async def flip_coin(iteration: int=1, total_iterations: int=1):
+def flip_coin(iteration: int=1, total_iterations: int=1):
     if random.random() > 0.5:
-        return await flip_coin(iteration=iteration + 1, total_iterations=total_iterations) if iteration < total_iterations else True
+        return flip_coin(iteration=iteration + 1, total_iterations=total_iterations) if iteration < total_iterations else True
     return False
 
 def pad_text(text, desired_length):

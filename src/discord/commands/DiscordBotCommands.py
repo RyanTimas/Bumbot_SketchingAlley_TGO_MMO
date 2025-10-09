@@ -191,6 +191,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         creature = await discord_bot.creature_spawner_handler.creature_picker()
         await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
         await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
+        await ctx.message.delete()
 
     @discord_bot.discord_bot.command(name='spawn_every_creature', help="spawns one of every single creature for a given environment id.", hidden=True)
     async def spawn_every_creature(ctx, param1: str = None, param2: str = None, param3: str = None):

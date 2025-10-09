@@ -204,7 +204,7 @@ TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_DEX_NUM = """SELECT COUNT(*), COUN
 TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_DEX_NUM = """SELECT COUNT(*), COUNT(DISTINCT c.dex_no) FROM tgommo_user_creature uc JOIN tgommo_creature c ON uc.creature_id  = c.creature_id WHERE uc.is_mythical=?;"""
 
 TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_USER_BASE = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id LEFT JOIN tgommo_creature c ON c.creature_id  = uc.creature_id  WHERE user_id =? AND uc.is_mythical=? AND e.dex_no =?"""
-TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER__BASE = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id LEFT JOIN tgommo_creature c ON c.creature_id  = uc.creature_id  WHERE user_id =? AND uc.is_mythical=? AND e.dex_no =?"""
+TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER_BASE = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id LEFT JOIN tgommo_creature c ON c.creature_id  = uc.creature_id  WHERE uc.is_mythical=? AND e.dex_no =?"""
 TGOMMO_GET_MAX_VARIANT_NUMBER_FOR_CREATURES = """SELECT COUNT(DISTINCT(variant_no)) FROM tgommo_creature"""
 
 """ Collection Queries """

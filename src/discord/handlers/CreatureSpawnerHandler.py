@@ -19,7 +19,6 @@ from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
 
-
 class CreatureSpawnerHandler:
     def __init__(self, discord_bot: Bot):
         self.discord_bot = discord_bot
@@ -186,6 +185,10 @@ class CreatureSpawnerHandler:
     def _handle_time_change(self):
         current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
 
+        # Clear user catches if the hour has changed
+        if current_time.hour != self.last_spawn_time.hour:
+            USER_CATCHES_HOURLY.clear()
+
         is_new_day = current_time.date() > self.last_spawn_time.date()
 
         old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
@@ -198,6 +201,8 @@ class CreatureSpawnerHandler:
             self.time_of_day = DAY if self.is_day else NIGHT
 
         if is_new_day or is_day_night_transition:
+            USER_CATCHES_DAILY.clear()
+
             # todo: implement in V 3.0
             if is_day_night_transition:
                 self.is_day = not self.is_day

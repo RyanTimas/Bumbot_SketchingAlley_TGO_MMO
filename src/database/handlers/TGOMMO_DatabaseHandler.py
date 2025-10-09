@@ -204,7 +204,7 @@ class TGOMMODatabaseHandler:
 
         # GET TOTAL FOR CREATURES CAUGHT
         # build query
-        collected_creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_USER_BASE if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER__BASE
+        collected_creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_USER_BASE if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_DISTINCT_CREATURE_CATCHES_FOR_SERVER_BASE
         collected_creature_count_query += " AND e.variant_no=?" if time_of_day != BOTH else ""
         collected_creature_count_query += " AND c.variant_no = 1" if not include_variants else ""
 

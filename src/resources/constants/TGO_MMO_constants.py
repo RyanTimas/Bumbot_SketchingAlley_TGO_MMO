@@ -3,6 +3,10 @@ IS_EVENT = False
 EVENT_IDS = []
 MYTHICAL_SPAWN_CHANCE = 250  # 1 in 250 chance of a mythical spawning
 
+# track user timeouts
+USER_CATCHES_DAILY = {}
+USER_CATCHES_HOURLY = {}
+
 '''TIME OF DAY'''
 DAY = "Day"
 NIGHT = "Night"

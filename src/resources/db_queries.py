@@ -136,9 +136,10 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )"""
 TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile_avatar_link (
-    avatar_id TEXT PRIMARY KEY,
+    avatar_id TEXT,
     user_id INTEGER NOT NULL,
     UNIQUE(avatar_id, user_id),
+    PRIMARY KEY (avatar_id, user_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
 )"""

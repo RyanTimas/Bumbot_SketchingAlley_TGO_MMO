@@ -32,8 +32,9 @@ class PlayerProfilePageFactory:
 
     def load_player_info(self):
         player_info = get_tgommo_db_handler().insert_new_user_profile(user_id=self.target_user.id, nickname=self.target_user.name)
+        avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=player_info[3], convert_to_object=True)
 
-        self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar_id=player_info[3], background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
+        self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar=avatar, background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
 
         self.creature_team = []
         creature_team_info = get_tgommo_db_handler().get_creatures_for_player_profile((self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6))
@@ -87,7 +88,7 @@ class PlayerProfilePageFactory:
         return player_profile_img
 
     def _place_avatar_on_image(self, player_profile_image: Image.Image):
-        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.player.avatar_id}{IMAGE_FILE_EXTENSION}")
+        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.player.avatar.avatar_type}_{self.player.avatar.img_root}{IMAGE_FILE_EXTENSION}")
         player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
         return player_profile_image
 

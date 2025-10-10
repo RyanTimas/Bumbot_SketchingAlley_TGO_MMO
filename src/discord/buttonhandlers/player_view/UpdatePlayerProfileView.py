@@ -11,13 +11,16 @@ class UpdatePlayerProfileView(discord.ui.View):
         super().__init__(timeout=None)
 
         # LOAD VARIABLES
+        self.player = player
+
         self.user_id = user_id
         self.interaction = interaction
 
-        self.user_id = user_id
         self.display_name = player.nickname
 
-        self.avatar_id = player.avatar_id
+        self.current_avatar_id = player.avatar.avatar_id
+        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
+
         self.background_id = player.background_id
 
         self.creature_id_1 = player.creature_slot_id_1 if player.creature_slot_id_1 != -1 else ''
@@ -100,7 +103,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         # filter creature IDs to ensure they are valid
         await self.handle_invalid_creature_ids(interaction)
 
-        params = (self.display_name,self.avatar_id,self.background_id,self.creature_id_1,self.creature_id_2,self.creature_id_3,self.creature_id_4,self.creature_id_5,self.creature_id_6, self.currency,self.available_catches, self.rod_level, self.rod_amount,self.trap_level,self.trap_amount, self.user_id)
+        params = (self.display_name, self.current_avatar_id, self.background_id, self.creature_id_1, self.creature_id_2, self.creature_id_3, self.creature_id_4, self.creature_id_5, self.creature_id_6, self.currency, self.available_catches, self.rod_level, self.rod_amount, self.trap_level, self.trap_amount, self.user_id)
         get_tgommo_db_handler().update_user_profile(params=params)
 
         self.player_profile_image_factory.load_player_info()
@@ -143,13 +146,13 @@ class UpdatePlayerProfileView(discord.ui.View):
 
     # CREATE DROPDOWNS
     def create_avatar_picker_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Avatar {i}", value=str(i)) for i in range(1, 3)]
+        options = [discord.SelectOption(label=f"Avatar {i} - {self.unlocked_avatars[i-1].name}", value=str(self.unlocked_avatars[i-1].avatar_id)) for i in range(1, len(self.unlocked_avatars)+1)]
         dropdown = Select(placeholder="Choose Avatar", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
     async def avatar_dropdown_callback(self, interaction: discord.Interaction):
         # Access the selected value from the interaction
-        self.avatar_id = int(interaction.data["values"][0])
+        self.current_avatar_id = interaction.data["values"][0]
         await interaction.response.defer()
 
     def create_background_picker_dropdown(self, row=1):

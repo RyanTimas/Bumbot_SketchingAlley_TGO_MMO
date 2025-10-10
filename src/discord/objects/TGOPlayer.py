@@ -1,17 +1,13 @@
-import random
-
-from src.discord.objects.CreatureRarity import COMMON, UNCOMMON, CreatureRarity, RARE, EPIC, LEGENDARY
-from src.resources.constants.TGO_MMO_constants import *
+from src.discord.objects.TGOAvatar import TGOAvatar
 
 
 class TGOPlayer:
-    def __init__(self, player_id:int, user_id: int, nickname:str, avatar_id:int, background_id:int, creature_slot_id_1:int, creature_slot_id_2:int, creature_slot_id_3:int, creature_slot_id_4:int, creature_slot_id_5:int, creature_slot_id_6:int, currency:int, available_catches:int, rod_level:int, rod_amount:int, trap_level:int, trap_amount:int):
+    def __init__(self, player_id:int, user_id: int, nickname:str, avatar:TGOAvatar, background_id:int, creature_slot_id_1:int, creature_slot_id_2:int, creature_slot_id_3:int, creature_slot_id_4:int, creature_slot_id_5:int, creature_slot_id_6:int, currency:int, available_catches:int, rod_level:int, rod_amount:int, trap_level:int, trap_amount:int):
         self.player_id = player_id
         self.user_id = user_id
 
         self.nickname = nickname
-
-        self.avatar_id = avatar_id
+        self.avatar = avatar
         self.background_id = background_id
 
         self.creature_slot_id_1 = creature_slot_id_1

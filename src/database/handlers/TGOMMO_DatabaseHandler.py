@@ -1,5 +1,6 @@
 from src.database.handlers.QueryHandler import QueryHandler
 from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON
+from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -29,7 +30,7 @@ class TGOMMODatabaseHandler:
         return return_value[0][0]
 
     def insert_new_user_profile(self, user_id=-1, nickname = ''):
-        params = (user_id, nickname, 1, 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0)
+        params = (user_id, nickname, 'D1', 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0)
 
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
         return self.get_user_profile_by_user_id(user_id=user_id)
@@ -61,7 +62,10 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             player_details = response[0]
-            return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar_id=player_details[3], background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
+
+            avatar_details = self.QueryHandler.execute_query(TGOMMO_SELECT_AVATAR_BY_ID, params=(player_details[3],))[0]
+            avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5])) if avatar_details else None
+            return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar=avatar, background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
         return response[0]
 
     def get_creature_by_catch_id(self, creature_id=0, convert_to_object=False):
@@ -74,6 +78,28 @@ class TGOMMODatabaseHandler:
             creature_details = response[0]
             return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
         return response[0]
+
+    def get_avatar_by_id(self, avatar_id, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_AVATAR_BY_ID, params=(avatar_id,))
+
+        if convert_to_object:
+            avatar_details = response[0]
+            return TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
+        return response[0]
+
+    def get_unlocked_avatars_by_user_id(self, user_id, convert_to_object=False):
+        default_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_DEFAULT_AVATARS, params=())
+        unlocked_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(user_id,))
+
+        all_avatar_details = default_avatar_details + unlocked_avatar_details
+
+        if convert_to_object:
+            avatars = []
+            for avatar_details in all_avatar_details:
+                avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
+                avatars.append(avatar)
+            return avatars
+        return all_avatar_details
 
 
     ''' Get Objects By Dex No Queries'''

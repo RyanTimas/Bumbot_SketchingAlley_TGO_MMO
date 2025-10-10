@@ -3,6 +3,7 @@ from discord.ui import Button, Modal, TextInput, Select
 
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
@@ -63,6 +64,7 @@ class CreatureCaughtView(discord.ui.View):
     async def nickname_modal_on_submit(self, interaction: discord.Interaction):
         get_tgommo_db_handler().update_creature_nickname(self.creature_id, self.nickname_input.value)
         self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
+        await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
         await interaction.response.send_message(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
 
 

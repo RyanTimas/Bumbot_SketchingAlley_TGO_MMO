@@ -136,7 +136,7 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )"""
 TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile_avatar_link (
-    avatar_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    avatar_id TEXT PRIMARY KEY,
     user_id INTEGER NOT NULL,
     UNIQUE(avatar_id, user_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
@@ -268,9 +268,13 @@ TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avata
 
 TGOMMO_AVATAR_GET_DEFAULT_AVATARS = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked FROM user_avatar WHERE is_unlocked = 1;"""
 TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_FOR_SERVER = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id = -1;"""
-TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.is_unlocked FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id = ?;"""
+TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.is_unlocked FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id IN (-1, ?);"""
 
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = -1 AND avatar_id = ?;"""
+TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = ? AND avatar_id = ?;"""
+
+""" Avatar Unlock Condition Queries """
+TGOMMO_GET_USERS_WHO_PLAYED_IN_TIMERANGE = """SELECT DISTINCT user_id FROM tgommo_user_creature WHERE catch_date > ? AND  catch_date < ?;"""
 
 
 '''============='''

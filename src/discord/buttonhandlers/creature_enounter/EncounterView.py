@@ -7,6 +7,7 @@ from discord.ui import View
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
 from src.discord.buttonhandlers.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
+from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -31,7 +32,7 @@ class CatchButton(discord.ui.Button):
         async with self._lock:
             # Check if creature was already caught
             if self.caught:
-                await interaction.send_message("Someone else already caught this creature...", ephemeral=True)
+                await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                 return
 
             # Mark as caught immediately to prevent others from catching
@@ -56,6 +57,8 @@ class CatchButton(discord.ui.Button):
 
         # send a personal message to user confirming the catch
         await self.handle_successful_catch_response(interaction, catch_id)
+
+        await AvatarUnlockHandler(user_id=interaction.user.id, interaction=interaction).check_avatar_unlock_conditions()
 
         # delete the original spawn message so nobody else can catch it
         try:

@@ -3,6 +3,7 @@ from discord.ui import Modal, TextInput, Button, Select
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
@@ -113,6 +114,8 @@ class UpdatePlayerProfileView(discord.ui.View):
         await self.original_message.edit(attachments=[new_png], view=self.original_view)
 
         await interaction.response.send_message("Changes successfully saved!", ephemeral=True)
+        await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.display_name, interaction=interaction).check_avatar_unlock_conditions()
+
 
     def display_creature_collection_button(self, row=0):
         button = Button(label="See Creature Storage", style=discord.ButtonStyle.red, row=row)

@@ -35,6 +35,12 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
         return self.get_user_profile_by_user_id(user_id=user_id)
 
+    def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1):
+        return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id))
+
+    def check_if_user_unlocked_avatar(self, user_id=-1, avatar_id=-1):
+        return self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER, params=(user_id, avatar_id))[0][0] > 0
+
 
     ''' SELECT QUERIES '''
     ''' Get Objects By IDs Queries'''
@@ -100,6 +106,21 @@ class TGOMMODatabaseHandler:
                 avatars.append(avatar)
             return avatars
         return all_avatar_details
+
+    def get_unlocked_avatars_for_server(self, convert_to_object=False):
+        all_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(-1,))
+
+        if convert_to_object:
+            avatars = []
+            for avatar_details in all_avatar_details:
+                avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
+                avatars.append(avatar)
+            return avatars
+        return all_avatar_details
+
+    def get_unlocked_avatar_ids_for_server(self):
+        response = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(-1,))
+        return [row[1] for row in response]
 
 
     ''' Get Objects By Dex No Queries'''
@@ -258,6 +279,12 @@ class TGOMMODatabaseHandler:
             return collections
 
         return response
+
+
+    """ Player Avatar Unlock Queries """
+    def get_users_who_played_during_time_range(self, min_timestamp='1900-01-01 00:00:00', max_timestamp='2100-01-01 00:00:00'):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_USERS_WHO_PLAYED_IN_TIMERANGE, params=(min_timestamp, max_timestamp))
+        return response[0]
 
 
     ''' Update Queries '''

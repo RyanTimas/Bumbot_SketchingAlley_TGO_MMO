@@ -269,7 +269,7 @@ class TGOMMODatabaseHandler:
         return True if response else False
 
     def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
-        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_DISPLAY_CREATURES, params=params)
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
         return response
 
     def update_creature_display_index(self, user_id, creature_id, display_index):
@@ -298,14 +298,26 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_AVATAR_LINK_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
 
         # Clear existing records
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
-        # Insert creature records
+        self.insert_creature_records()
+        self.insert_environment_records()
+        self.insert_user_avatar_records()
+        self.insert_collection_records()
+
+        # Link creatures to environments
+        self.insert_environment_creature_records()
+
+
+    def insert_creature_records(self):
         creature_data = [
             # WAVE 1
             ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
@@ -371,7 +383,11 @@ class TGOMMODatabaseHandler:
             ('Mountain Lion', '', 50, 1, 'Mountain Lion', 'Puma concolor', MAMMAL, '', MOUNTAIN_LION_IMAGE_ROOT, 5),
         ]
 
-        # Insert environment records
+        for index, creature in enumerate(creature_data):
+            creature = (index + 1,) + creature
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)
+
+    def insert_environment_records(self):
         environment_data = [
             # 01 Eastern US Forest
             ('Forest', 'Summer - Day', 1, 1, 'Eastern United States', '', 'forest_est', False, True, 5),
@@ -384,28 +400,11 @@ class TGOMMODatabaseHandler:
             ('Everglades', 'Night', 2, 2, 'Florida', '', 'everglades', True, True, 5),
         ]
 
-        # insert collection records
-        collections_data = [
-            (f"{MAMMAL}s", "", f"{DEER_IMAGE_ROOT}_1", MAMMAL, TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL, TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT,  f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{MAMMAL}_1",  1),
-            (f"{BIRD}s", "", f"{BLUEJAY_IMAGE_ROOT}_1", BIRD, TGOMMO_COLLECTION_QUERY_BIRD_TOTAL, TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
-            (f"{REPTILE}s", "", f"{TURTLE_IMAGE_ROOT}_1", REPTILE, TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL, TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
-            (f"{AMPHIBIAN}s", "", f"{TOAD_IMAGE_ROOT}_1", AMPHIBIAN, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_2",  1),
-            (f"{BUG}s", "", f"{MANTIS_IMAGE_ROOT}_1", BUG, TGOMMO_COLLECTION_QUERY_BUG_TOTAL, TGOMMO_COLLECTION_QUERY_BUG_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{BUG}_1",  1),
-
-            (f"{VARIANTS}", "", f"{DEER_IMAGE_ROOT}_2", MAMMAL, TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL, TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_2", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_3", 1),
-        ]
-
-        for index, collection in enumerate(collections_data):
-            collection = (index + 1,) + collection
-            self.QueryHandler.execute_query(TGOMMO_INSERT_COLLECTION, params=collection)
-        for index, creature in enumerate(creature_data):
-            creature = (index + 1,) + creature
-            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)
         for index, environment in enumerate(environment_data):
             environment = (index + 1,) + environment
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_ENVIRONMENT, params=environment)
 
-        # Link creatures to environments
+    def insert_environment_creature_records(self):
         environment_creature_data = [
             # Forest - Day Spawns
             self.format_creature_environment_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_COMMON, ''),
@@ -485,6 +484,70 @@ class TGOMMODatabaseHandler:
 
         for ec_link in environment_creature_data:
             self.QueryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
+
+    def insert_collection_records(self):
+        collections_data = [
+            (f"{MAMMAL}s", "", f"{DEER_IMAGE_ROOT}_1", MAMMAL, TGOMMO_COLLECTION_QUERY_MAMMAL_TOTAL, TGOMMO_COLLECTION_QUERY_MAMMAL_CAUGHT,  f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{MAMMAL}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{MAMMAL}_1",  1),
+            (f"{BIRD}s", "", f"{BLUEJAY_IMAGE_ROOT}_1", BIRD, TGOMMO_COLLECTION_QUERY_BIRD_TOTAL, TGOMMO_COLLECTION_QUERY_BIRD_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BIRD}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{REPTILE}s", "", f"{TURTLE_IMAGE_ROOT}_1", REPTILE, TGOMMO_COLLECTION_QUERY_REPTILE_TOTAL, TGOMMO_COLLECTION_QUERY_REPTILE_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{REPTILE}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{REPTILE}_1",  1),
+            (f"{AMPHIBIAN}s", "", f"{TOAD_IMAGE_ROOT}_1", AMPHIBIAN, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_TOTAL, TGOMMO_COLLECTION_QUERY_AMPHIBIAN_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_1", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{AMPHIBIAN}_2",  1),
+            (f"{BUG}s", "", f"{MANTIS_IMAGE_ROOT}_1", BUG, TGOMMO_COLLECTION_QUERY_BUG_TOTAL, TGOMMO_COLLECTION_QUERY_BUG_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{BUG}_2", f"{PLAYER_PROFILE_BACKGROUND_PREFIX}{BUG}_1",  1),
+
+            (f"{VARIANTS}", "", f"{DEER_IMAGE_ROOT}_2", MAMMAL, TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL, TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT, f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_1", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_2", f"{PLAYER_PROFILE_AVATAR_PREFIX}{VARIANTS}_3", 1),
+        ]
+
+        for index, collection in enumerate(collections_data):
+            collection = (index + 1,) + collection
+            self.QueryHandler.execute_query(TGOMMO_INSERT_COLLECTION, params=collection)
+
+    def insert_user_avatar_records(self):
+        avatar_data = [
+            # Default Avatars
+            ('D1', 'Red', AVATAR_TYPE_DEFAULT, '1_Red'),
+            ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, '2_Leaf'),
+            ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, '3_Hilbert'),
+            ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, '4_Hilda'),
+
+            # Secret Avatars
+            ('S1', 'Jordo', AVATAR_TYPE_SECRET, '1_Jordo'),
+            ('S2', 'Miku', AVATAR_TYPE_SECRET, '2_Miku'),
+            ('S3', 'Garfield', AVATAR_TYPE_SECRET, '3_Garfield'),
+            ('S4', 'Samus', AVATAR_TYPE_SECRET, '4_Samus'),
+            ('S5', 'Boss Baby', AVATAR_TYPE_SECRET, '5_BossBaby'),
+            ('S6', 'Walter White', AVATAR_TYPE_SECRET, '6_WalterWhite'),
+
+            # Event Avatars
+            ('E1', 'Pim', AVATAR_TYPE_EVENT, '1_Pim',),
+            ('E2', 'Charlie', AVATAR_TYPE_EVENT, '2_Charlie',),
+            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, '3_Freddy',),
+
+            # Quest Avatars
+            ('Q1', 'Donkey Kong', AVATAR_TYPE_QUEST, '1_DonkeyKong',),
+            ('Q2', 'Big Bird', AVATAR_TYPE_QUEST, '2_BigBird',),
+            ('Q3', 'Gex', AVATAR_TYPE_QUEST, '3_Gex',),
+            ('Q4', 'Kermit', AVATAR_TYPE_QUEST, '4_Kermit',),
+            ('Q5', 'Hornet', AVATAR_TYPE_QUEST, '5_Hornet',),
+            ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, '6_Leonardo',),
+            ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, '6_Raphael',),
+            ('Q6c', 'Leonardo', AVATAR_TYPE_QUEST, '6_Michealangelo',),
+            ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, '6_Donatello',),
+            ('Q7a', 'Gold', AVATAR_TYPE_QUEST, '6_Gold',),
+            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, '6_Lyra',),
+            ('Q7c', 'Homer', AVATAR_TYPE_QUEST, '6_Homer',),
+
+            # Transcendant Avatars
+            ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, '1_Bigfoot',),
+            ('T2', 'Mothman', AVATAR_TYPE_TRANSCENDANT, '2_Mothman',),
+            ('T3', 'Frogman', AVATAR_TYPE_TRANSCENDANT, '3_Frogman',),
+
+            # Fallback Avatars
+            ('F1', 'Fallback-1', AVATAR_TYPE_FALLBACK, '1_DefaultM',),
+            ('F2', 'Fallback-2', AVATAR_TYPE_FALLBACK, '2_DefaultF',),
+        ]
+
+        for index, avatar in enumerate(avatar_data):
+            avatar = (index + 1,) + avatar + (avatar[2] == AVATAR_TYPE_DEFAULT or self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER, params=(avatar[0],))[0][0],)
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR, params=avatar)
 
 
     def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name=''):

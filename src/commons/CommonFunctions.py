@@ -6,10 +6,13 @@ import random
 import aiohttp
 import discord
 import io
+
+import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File
 
 from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK, FONT_COLOR_WHITE
+from src.resources.constants.file_paths import PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE, PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
@@ -74,6 +77,15 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     x = center_pixel_location[0] - text_width / 2
     y = center_pixel_location[1] - text_height / 2
     return (x, y)
+
+def open_image_from_url(image_url):
+    response = requests.get(image_url)
+    if response.status_code == 200:
+        img = Image.open(io.BytesIO(response.content))
+        return img
+    else:
+        return Image.open(PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE)
+
 
 
 # puts a colored border around an input image

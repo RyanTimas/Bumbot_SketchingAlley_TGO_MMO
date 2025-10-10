@@ -66,7 +66,8 @@ class TGOMMODatabaseHandler:
     def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
         if response is None or len(response) == 0:
-            response = self.insert_new_user_profile(user_id=user_id)
+            self.insert_new_user_profile(user_id=user_id)
+            response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
 
         if convert_to_object:
             player_details = response[0]
@@ -361,7 +362,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
-        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
+        # self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
         self.insert_creature_records()
         self.insert_environment_records()

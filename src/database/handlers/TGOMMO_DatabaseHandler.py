@@ -362,6 +362,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_AVATAR, params=())
         # self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
         self.insert_creature_records()
@@ -583,13 +584,15 @@ class TGOMMODatabaseHandler:
             ('Q3', 'Gex', AVATAR_TYPE_QUEST, '3_Gex',),
             ('Q4', 'Kermit', AVATAR_TYPE_QUEST, '4_Kermit',),
             ('Q5', 'Hornet', AVATAR_TYPE_QUEST, '5_Hornet',),
-            ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, '6_Leonardo',),
-            ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, '6_Raphael',),
-            ('Q6c', 'Leonardo', AVATAR_TYPE_QUEST, '6_Michealangelo',),
-            ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, '6_Donatello',),
-            ('Q7a', 'Gold', AVATAR_TYPE_QUEST, '6_Gold',),
-            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, '6_Lyra',),
-            ('Q7c', 'Homer', AVATAR_TYPE_QUEST, '6_Homer',),
+            ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, '6a_Leonardo',),
+            ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, '6b_Raphael',),
+            ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, '6c_Michelangelo',),
+            ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, '6d_Donatello',),
+            ('Q7a', 'Gold', AVATAR_TYPE_QUEST, '7a_Gold',),
+            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, '7b_Lyra',),
+            ('Q7c', 'Homer', AVATAR_TYPE_QUEST, '8_Homer',),
+
+            ('QS1', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'S1_SquirrelGirl',),
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, '1_Bigfoot',),

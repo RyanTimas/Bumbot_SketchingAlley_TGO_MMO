@@ -3,17 +3,21 @@ from discord.ui import Button, Modal, TextInput, Select
 
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.embeds import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class CreatureCaughtView(discord.ui.View):
-    def __init__(self, interaction: discord.Interaction, creature_id: int):
+    def __init__(self, interaction: discord.Interaction, creature_id: int, successful_catch_embed_handler:CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
         super().__init__(timeout=None)
 
         self.creature_id = creature_id
         self.interaction = interaction
         self.display_index = None
+
+        self.successful_catch_message = successful_catch_message
+        self.successful_catch_embed_handler = successful_catch_embed_handler
 
         self.user_profile:TGOPlayer = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.interaction.user.id, convert_to_object=True)
         self.display_creature_ids = [self.user_profile.creature_slot_id_1, self.user_profile.creature_slot_id_2, self.user_profile.creature_slot_id_3, self.user_profile.creature_slot_id_4, self.user_profile.creature_slot_id_5, self.user_profile.creature_slot_id_6, ]
@@ -66,6 +70,9 @@ class CreatureCaughtView(discord.ui.View):
         self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
         await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
         await interaction.response.send_message(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
+
+        # edit original caught creature notif to show nickname
+        await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(nickname=self.nickname_input.value)[0])
 
 
     # CREATE DROPDOWNS

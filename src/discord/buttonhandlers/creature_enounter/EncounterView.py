@@ -26,6 +26,9 @@ class CatchButton(discord.ui.Button):
         self.environment = environment
         self.caught = False  # Track if creature has been caught
 
+        self.successful_catch_embed_handler = None
+        self.successful_catch_message = None
+
 
     async def callback(self, interaction: discord.Interaction):
         # Use lock to ensure only one user can catch at a time
@@ -45,7 +48,8 @@ class CatchButton(discord.ui.Button):
                 return
 
         # generate the successful catch embed
-        successful_catch_embed = CreatureEmbedHandler(self.creature, self.environment).generate_catch_embed(interaction=interaction)
+        self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment)
+        successful_catch_embed = self.successful_catch_embed_handler.generate_catch_embed(interaction=interaction)
         total_xp = successful_catch_embed[2]
 
         # insert record of user catching the creature & give user xp for catching the creature
@@ -53,7 +57,7 @@ class CatchButton(discord.ui.Button):
         get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
         # send a message to the channel announcing the successful catch
-        await interaction.channel.send(embed=successful_catch_embed[0], files=[successful_catch_embed[1]])
+        self.successful_catch_message = await interaction.channel.send(embed=successful_catch_embed[0], files=[successful_catch_embed[1]])
 
         # send a personal message to user confirming the catch
         await self.handle_successful_catch_response(interaction, catch_id)
@@ -68,7 +72,7 @@ class CatchButton(discord.ui.Button):
 
 
     async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
-        nickname_view = CreatureCaughtView(interaction=interaction, creature_id=catch_id)
+        nickname_view = CreatureCaughtView(interaction=interaction, creature_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
         await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
 
 

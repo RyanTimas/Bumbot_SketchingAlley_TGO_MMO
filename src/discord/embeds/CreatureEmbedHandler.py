@@ -21,6 +21,8 @@ class CreatureEmbedHandler:
         self.creature = creature
         self.environment = environment
         self.time_of_day = time_of_day
+        self.catch_user = None
+        self.interaction = None
 
 
     def generate_spawn_embed(self, is_spawn_message: bool = True):
@@ -50,19 +52,24 @@ class CreatureEmbedHandler:
         return embed, thumbnail_img, encounter_img
 
 
-    def generate_catch_embed(self, interaction: discord.Interaction):
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+    def generate_catch_embed(self, interaction: discord.Interaction= None, nickname: str = None):
+        if interaction:
+            self.interaction = interaction
+            self.catch_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id, convert_to_object=True)
 
+        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         embed = discord.Embed(color=discord.Color.dark_green())
 
         embed.set_author(name = f'The {self.creature.name.upper()} was caught!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
-        embed.add_field(name=f"✨     Caught By - **{interaction.user.name.upper()}**", value=f"", inline=False)
+        embed.add_field(name=f"✨     Caught By - **{self.catch_user.nickname}** *({self.interaction.user.name.upper()})*", value=f"", inline=False)
+        if nickname:
+            embed.add_field(name=f"‼️     Nickname - **{nickname}**", value=f"", inline=False)
         embed.add_field(name=f"🕒     Caught On - **{discord.utils.utcnow().strftime('%Y-%m-%d %H:%M UTC')}**\n\n\n\n", value=f"", inline=False)
 
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
 
         # calculate xp to add and add fields to embed
-        total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=interaction)
+        total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=self.interaction)
 
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
         embed.add_field(name=f"✨ **Total {total_xp} xp** ✨", value=f"", inline=False)

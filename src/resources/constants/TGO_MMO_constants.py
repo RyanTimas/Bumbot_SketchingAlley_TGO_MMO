@@ -16,7 +16,7 @@ BOTH = "both"
 
 """COLLECTIONS KEYWORDS"""
 VARIANTS = "Variants"
-MYTHICAL = "Mythical"
+MYTHICAL_TEXT = "Mythical"
 
 '''EMBED ICONS'''
 TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/535/535137.png"

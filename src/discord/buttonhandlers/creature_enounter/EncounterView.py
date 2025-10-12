@@ -78,7 +78,7 @@ class CatchButton(discord.ui.Button):
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
         if self.creature.rarity.name == MYTHICAL.name:
-            return True  # Mythical creatures can always be caught
+            return True, ""  # Mythical creatures can always be caught
 
         # handle hourly catch limits
         if user_id in USER_CATCHES_HOURLY:

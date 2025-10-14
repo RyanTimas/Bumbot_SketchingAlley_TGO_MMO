@@ -1,7 +1,7 @@
 '''GENERAL_CONSTANTS'''
 IS_EVENT = False
 EVENT_IDS = []
-MYTHICAL_SPAWN_CHANCE = 250  # 1 in 250 chance of a mythical spawning
+MYTHICAL_SPAWN_CHANCE = 350  # 1 in 350 chance of a mythical spawning
 
 # track user timeouts
 USER_CATCHES_DAILY = {}

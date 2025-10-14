@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image, pad_text, get_query_connector
+from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
@@ -45,7 +45,7 @@ class PlayerProfilePageFactory:
                 creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]
                 rarity = MYTHICAL if creature_info[14] else get_rarity_by_name(creature_info[13])
 
-                creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], rarity = rarity,)
+                creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], caught_date=creature_info[15], rarity = rarity,)
                 self.creature_team.append(creature)
 
 
@@ -163,8 +163,9 @@ class PlayerProfilePageFactory:
             title = creature.nickname if creature.nickname != "" else creature.name
             creature_img_path = DEX_ICON_CREATURE_BASE + f"_{creature.img_root}" + f"{"_S" if creature.rarity == MYTHICAL else ""}" + IMAGE_FILE_EXTENSION
             image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.rarity.name}{IMAGE_FILE_EXTENSION}'
+            catch_date = convert_date_format_to_month_name(creature.caught_date)
 
-            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, content_image_path=creature_img_path, background_image_path=None,image_color_path=image_color_path, tab_title=title,tab_subtitle=creature.full_name, tab_footer='')
+            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, content_image_path=creature_img_path, background_image_path=None,image_color_path=image_color_path, tab_title=title,tab_subtitle=creature.full_name, tab_footer=catch_date)
             team_tab_image = team_tab.create_tab()
 
             background_img.paste(team_tab_image, current_offset, team_tab_image)

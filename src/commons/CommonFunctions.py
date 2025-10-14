@@ -329,3 +329,22 @@ def pad_text(text, desired_length):
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%m-%d %H:%M:%S") -> str:
+    if date_str is not None and date_str != "Unknown":
+        try:
+            from datetime import datetime
+            catch_date = datetime.strptime(date_str, current_format)
+            day = catch_date.day
+            # Add suffix to day (1st, 2nd, 3rd, etc.)
+            if 11 <= day <= 13:
+                suffix = "th"
+            else:
+                suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+            month_abbr = catch_date.strftime("%b")
+            formatted_date = f"{month_abbr} {day}{suffix} {catch_date.year}"
+        except (ValueError, TypeError):
+            formatted_date = date_str
+
+        return formatted_date
+    return "Unknown"

@@ -1,4 +1,5 @@
 import random
+import time
 
 from src.discord.objects.CreatureRarity import COMMON, UNCOMMON, CreatureRarity, RARE, EPIC, LEGENDARY
 from src.resources.constants.TGO_MMO_constants import *
@@ -25,7 +26,9 @@ class TGOCreature:
 
         self.rarity = rarity
         self.caught_date = caught_date
-        self.despawn_time = random.randint(1, 15)
+
+        self.spawn_time = int(time.time())
+        self.despawn_time = random.randint(3, 15)
 
 
 CURRENT_SPAWN_POOL = [

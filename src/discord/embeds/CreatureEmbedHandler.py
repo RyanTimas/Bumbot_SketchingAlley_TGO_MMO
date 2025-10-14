@@ -25,28 +25,41 @@ class CreatureEmbedHandler:
         self.interaction = None
 
 
-    def generate_spawn_embed(self, is_spawn_message: bool = True):
+    def generate_spawn_embed(self):
         thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         thumbnail_img = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
 
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
-        embed = discord.Embed(color=self.creature.rarity.color if is_spawn_message else discord.Color.dark_red())
-        embed.set_author(name = f'A wild {self.creature.name} appears!!' if is_spawn_message else f"The {self.creature.name} has run away...", icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+        embed = discord.Embed(color=self.creature.rarity.color)
+        embed.set_author(name = f'A wild {self.creature.name} appears!!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
-        if is_spawn_message:
-            embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
-            embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
+        embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
+        embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
 
-            if self.time_of_day:
-                embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
-            embed.timestamp = discord.utils.utcnow()
-            embed.set_image(url=f"attachment://{encounter_img.filename}")
-        else:
-            embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False)}", value=f'', inline=True)
-            thumbnail_img = to_grayscale(thumbnail_img)
-            thumbnail_img.filename = "thumbnail.png"
+        if self.time_of_day:
+            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
+
+        embed.timestamp = discord.utils.utcnow()
+        embed.set_image(url=f"attachment://{encounter_img.filename}")
+
+        embed.set_thumbnail(url=f"attachment://thumbnail.png")
+        return embed, thumbnail_img, encounter_img
+
+    def generate_despawn_embed(self):
+        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+        thumbnail_img = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
+
+        encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
+        encounter_img = encounter_img_handler.create_encounter_image()
+
+        embed = discord.Embed(color=discord.Color.dark_red())
+        embed.set_author(name = f"The {self.creature.name} has run away...", icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+
+        embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False)}", value=f'', inline=True)
+        thumbnail_img = to_grayscale(thumbnail_img)
+        thumbnail_img.filename = "thumbnail.png"
 
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         return embed, thumbnail_img, encounter_img
@@ -82,7 +95,7 @@ class CreatureEmbedHandler:
 
 
     def get_despawn_timestamp(self, is_countdown: bool = True):
-        despawn_timestamp = int(time.time()) + self.creature.despawn_time * 60
+        despawn_timestamp = self.creature.spawn_time + self.creature.despawn_time * 60
         despawn_character = 'R' if is_countdown else 'F'
         return f"<t:{despawn_timestamp}:{despawn_character}>"
 

@@ -162,7 +162,7 @@ class CreatureSpawnerHandler:
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
-        time.sleep(creature.despawn_time * 60)  # Convert minutes to seconds
+        time.sleep(creature.despawn_time)
         try:
             # Try to fetch the message to check if it still exists
             channel = self.discord_bot.get_channel(spawn_message.channel.id)
@@ -170,7 +170,7 @@ class CreatureSpawnerHandler:
         except discord.NotFound:
             return
 
-        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_spawn_embed(is_spawn_message=False)
+        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
         asyncio.run_coroutine_threadsafe(
             self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(

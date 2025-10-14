@@ -41,7 +41,7 @@ class AvatarUnlockHandler:
             "miku": ("S2", "_Secret_2_Miku"),
             "garfield": ("S3", "_Secret_3_Garfield"),
             "samus": ("S4", "_Secret_4_Samus"),
-            "boss baby": ("S5", "_Secret_5_BossBaby"),
+            "boss": ("S5", "_Secret_5_BossBaby"),
             "walter white": ("S6", "_Secret_6_WalterWhite"),
         }
 

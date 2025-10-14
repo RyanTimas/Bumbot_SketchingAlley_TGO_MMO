@@ -171,7 +171,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
     @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")
     async def tgommo_help(ctx):
         view = TGOMMOMenuView(message_author=ctx.author, discord_bot=discord_bot)
-        title_text = f'{ctx.author.mention} Welcome to the Creature Catcher Help Menu!'
+        title_text = f'{ctx.author.mention} Welcome to the TGO MMO Help Menu!'
 
         await ctx.message.delete()
         await ctx.send(title_text, files=[], view=view)

@@ -31,6 +31,7 @@ CURRENT_SPAWN_POOL = [
 
 ]
 
+PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=0, variant_no=0, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, rarity=COMMON)
 
 TEST_CREATURE_COMMON = TGOCreature(creature_id= 1, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=COMMON)
 TEST_CREATURE_UNCOMMON = TGOCreature(creature_id= 2, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=UNCOMMON)

@@ -4,7 +4,7 @@ from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image,
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
-from src.discord.objects.TGOCreature import TGOCreature
+from src.discord.objects.TGOCreature import TGOCreature, PLACEHOLDER_CREATURE
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import PLAYER_PROFILE_CREATURE_RESIZE_PERCENT, \
     PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE
@@ -31,20 +31,22 @@ class PlayerProfilePageFactory:
 
 
     def load_player_info(self):
-        player_info = get_tgommo_db_handler().insert_new_user_profile(user_id=self.target_user.id, nickname=self.target_user.name)
+        player_info = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id, nickname=self.target_user.display_name)
         avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=player_info[3], convert_to_object=True)
 
         self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar=avatar, background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
 
         self.creature_team = []
-        creature_team_info = get_tgommo_db_handler().get_creatures_for_player_profile((self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6))
-        for creature_info in creature_team_info:
-            creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]
-            rarity = MYTHICAL if creature_info[14] else get_rarity_by_name(creature_info[13])
+        for slot_id in (self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6):
+            if slot_id == -1:
+                self.creature_team.append(PLACEHOLDER_CREATURE)
+            else:
+                creature_info = get_tgommo_db_handler().get_creature_for_player_profile(creature_id=slot_id)
+                creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]
+                rarity = MYTHICAL if creature_info[14] else get_rarity_by_name(creature_info[13])
 
-            creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], rarity = rarity,)
-
-            self.creature_team.append(creature)
+                creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], rarity = rarity,)
+                self.creature_team.append(creature)
 
 
     def build_player_profile_page_image(self, new_page_number = None, tab_is_open = None, open_tab = None):
@@ -74,14 +76,15 @@ class PlayerProfilePageFactory:
 
 
     def _place_creatures_on_image(self, player_profile_img: Image.Image):
-        for i in range(len(self.creature_team)):
-            creature: TGOCreature = self.creature_team[i]
+        for index, creature in enumerate(self.creature_team):
+            if creature.creature_id == -1:
+                continue
 
             creature_image = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{creature.img_root}{'_S' if creature.rarity is MYTHICAL else ''}_THUMB{IMAGE_FILE_EXTENSION}")
             creature_image = creature_image.resize((int(creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
 
-            x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[i][0] - (creature_image.width // 2)
-            y_offset = PLAYER_PROFILE_CREATURE_COORDINATES[i][1] - (creature_image.height // 2)
+            x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][0] - (creature_image.width // 2)
+            y_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][1] - (creature_image.height // 2)
 
             player_profile_img.paste(creature_image, (x_offset, y_offset), creature_image)
 
@@ -153,8 +156,9 @@ class PlayerProfilePageFactory:
     def _build_team_tab(self, background_img: Image.Image):
         current_offset = (1097,70)
 
-        for i in range(len(self.creature_team)):
-            creature: TGOCreature = self.creature_team[i]
+        for index, creature in enumerate(self.creature_team):
+            if creature.creature_id == -1:
+                continue
 
             title = creature.nickname if creature.nickname != "" else creature.name
             creature_img_path = DEX_ICON_CREATURE_BASE + f"_{creature.img_root}" + f"{"_S" if creature.rarity == MYTHICAL else ""}" + IMAGE_FILE_EXTENSION

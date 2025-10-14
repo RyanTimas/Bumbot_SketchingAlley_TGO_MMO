@@ -63,7 +63,7 @@ class TGOMMODatabaseHandler:
             return TGOEnvironment(environment_id=environment_details[0], name=environment_details[1], variant_name=environment_details[2], dex_no=environment_details[3], variant_no=environment_details[4], location=environment_details[5], description=environment_details[6], img_root=environment_details[7], is_night_environment=environment_details[8], in_circulation=environment_details[9], encounter_rate=environment_details[10])
         return response[0]
 
-    def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False):
+    def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False, nickname=None):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
         if response is None or len(response) == 0:
             self.insert_new_user_profile(user_id=user_id)
@@ -100,15 +100,24 @@ class TGOMMODatabaseHandler:
         default_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_DEFAULT_AVATARS, params=())
         unlocked_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(user_id,))
 
+        # Use a dictionary to track seen avatar_ids and keep only the first occurrence
+        seen_avatar_ids = {}
+        unique_avatar_details = []
+
         all_avatar_details = default_avatar_details + unlocked_avatar_details
+        for avatar in unlocked_avatar_details:
+            avatar_id = avatar[1]  # avatar_id is at index 1
+            if avatar_id not in seen_avatar_ids:
+                seen_avatar_ids[avatar_id] = True
+                unique_avatar_details.append(avatar)
 
         if convert_to_object:
             avatars = []
-            for avatar_details in all_avatar_details:
+            for avatar_details in unique_avatar_details:
                 avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
                 avatars.append(avatar)
             return avatars
-        return all_avatar_details
+        return unique_avatar_details
 
     def get_unlocked_avatars_for_server(self, convert_to_object=False):
         all_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(-1,))
@@ -216,6 +225,10 @@ class TGOMMODatabaseHandler:
     def get_creatures_for_player_profile(self, params=(-1,-1,-1,-1,-1,-1)):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
         return response
+
+    def get_creature_for_player_profile(self, creature_id=(-1)):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURE_FOR_PLAYER_PROFILE_PAGE, params=(creature_id,))
+        return response[0]
 
     # Get all creatures a user has caught
     def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):

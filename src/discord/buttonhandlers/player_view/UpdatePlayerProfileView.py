@@ -53,12 +53,13 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         # text inputs
         self.display_name_input = TextInput(label="Display Name (12 chars max)", default=f"{self.display_name}", placeholder="Set your display name", max_length=20, required=False)
-        self.display_creature_1_input = TextInput(label="Display Creature 1", default=f"{self.creature_id_1}", placeholder="Set creature ID for slot 1 (use 'See Creature Storage' to view options)", max_length=5, required=False)
-        self.display_creature_2_input = TextInput(label="Display Creature 2", default=f"{self.creature_id_2}" if player.creature_slot_id_6 != -1 else '', placeholder="Set creature ID for slot 2", max_length=5, required=False)
-        self.display_creature_3_input = TextInput(label="Display Creature 3", default=f"{self.creature_id_3}", placeholder="Set creature ID for slot 3 (use 'See Creature Storage' to view options)", max_length=5, required=False)
-        self.display_creature_4_input = TextInput(label="Display Creature 4", default=f"{self.creature_id_4}", placeholder="Set creature ID for slot 4 (use 'See Creature Storage' to view options)", max_length=5, required=False)
-        self.display_creature_5_input = TextInput(label="Display Creature 5", default=f"{self.creature_id_5}", placeholder="Set creature ID for slot 5 (use 'See Creature Storage' to view options)", max_length=5, required=False)
-        self.display_creature_6_input = TextInput(label="Display Creature 6", default=f"{self.creature_id_6}", placeholder="Set creature ID for slot 6 (use 'See Creature Storage' to view options)", max_length=5, required=False)
+        self.display_creature_1_input = None
+        self.display_creature_2_input = None
+        self.display_creature_3_input = None
+        self.display_creature_4_input = None
+        self.display_creature_5_input = None
+        self.display_creature_6_input = None
+        self.update_modal_text_inputs()
 
         self.remove_display_creature_input = TextInput(label="Index of Creature to Remove", default=f"", placeholder="Which creature Slot would you like to remove? (1-6)", max_length=1, required=False)
 
@@ -67,7 +68,6 @@ class UpdatePlayerProfileView(discord.ui.View):
         # dropdowns
         avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
         background_picker_dropdown = self.create_background_picker_dropdown(row=2)
-
 
         # ADD COMPONENTS TO VIEW
         self.add_item(avatar_picker_dropdown)                 # row 1
@@ -137,12 +137,12 @@ class UpdatePlayerProfileView(discord.ui.View):
         return user_details_modal
     async def user_details_modal_on_submit(self, interaction: discord.Interaction):
         self.display_name = self.display_name_input.value if self.display_name_input.value != '' else self.display_name
-        self.creature_id_1 = self.display_creature_1_input.value
-        self.creature_id_2 = self.display_creature_2_input.value
-        self.creature_id_3 = self.display_creature_3_input.value
-        self.creature_id_4 = self.display_creature_4_input.value
-        self.creature_id_5 = self.display_creature_5_input.value
-        self.creature_id_6 = self.display_creature_6_input.value
+        self.creature_id_1 = self.display_creature_1_input.value if self.display_creature_1_input.value != '' else -1
+        self.creature_id_2 = self.display_creature_2_input.value if self.display_creature_2_input.value != '' else -1
+        self.creature_id_3 = self.display_creature_3_input.value if self.display_creature_3_input.value != '' else -1
+        self.creature_id_4 = self.display_creature_4_input.value if self.display_creature_4_input.value != '' else -1
+        self.creature_id_5 = self.display_creature_5_input.value if self.display_creature_5_input.value != '' else -1
+        self.creature_id_6 = self.display_creature_6_input.value if self.display_creature_6_input.value != '' else -1
 
         await interaction.response.send_message(f"Successfully modified player info - Remember to save your changes!", ephemeral=True)
 
@@ -318,9 +318,9 @@ class UpdatePlayerProfileView(discord.ui.View):
     def update_modal_text_inputs(self):
         self.display_name_input = TextInput(label="DisplayName", default=f"{self.display_name}", placeholder="Set your display name", max_length=20, required=False)
 
-        self.display_creature_1_input = TextInput(label="Display Creature 1", default=f"{self.creature_id_1}",placeholder="Set creature ID for slot 1 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-        self.display_creature_2_input = TextInput(label="Display Creature 2", default=f"{self.creature_id_2}",placeholder="Set creature ID for slot 2 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-        self.display_creature_3_input = TextInput(label="Display Creature 3", default=f"{self.creature_id_3}",placeholder="Set creature ID for slot 3 (use 'See Creature Storage' to view options)", max_length=20, required=False)
-        self.display_creature_4_input = TextInput(label="Display Creature 4", default=f"{self.creature_id_4}",placeholder="Set creature ID for slot 4 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-        self.display_creature_5_input = TextInput(label="Display Creature 5", default=f"{self.creature_id_5}",placeholder="Set creature ID for slot 5 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-        self.display_creature_6_input = TextInput(label="Display Creature 6", default=f"{self.creature_id_6}",placeholder="Set creature ID for slot 6 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+        self.display_creature_1_input = TextInput(label="Display Creature 1", default=f"{self.creature_id_1 if self.creature_id_1 != -1 else ''}",placeholder="Set creature ID for slot 1 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+        self.display_creature_2_input = TextInput(label="Display Creature 2", default=f"{self.creature_id_2 if self.creature_id_2 != -1 else ''}",placeholder="Set creature ID for slot 2 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+        self.display_creature_3_input = TextInput(label="Display Creature 3", default=f"{self.creature_id_3 if self.creature_id_3 != -1 else ''}",placeholder="Set creature ID for slot 3 (use 'See Creature Storage' to view options)", max_length=20, required=False)
+        self.display_creature_4_input = TextInput(label="Display Creature 4", default=f"{self.creature_id_4 if self.creature_id_4 != -1 else ''}",placeholder="Set creature ID for slot 4 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+        self.display_creature_5_input = TextInput(label="Display Creature 5", default=f"{self.creature_id_5 if self.creature_id_5 != -1 else ''}",placeholder="Set creature ID for slot 5 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+        self.display_creature_6_input = TextInput(label="Display Creature 6", default=f"{self.creature_id_6 if self.creature_id_6 != -1 else ''}",placeholder="Set creature ID for slot 6 (use 'See Creature Storage' to view options)",max_length=20, required=False)

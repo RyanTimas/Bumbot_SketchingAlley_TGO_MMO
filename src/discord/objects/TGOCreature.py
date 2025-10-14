@@ -28,7 +28,7 @@ class TGOCreature:
         self.caught_date = caught_date
 
         self.spawn_time = int(time.time())
-        self.despawn_time = random.randint(3, 15)
+        self.despawn_time = random.randint(3, 15) * 60
 
 
 CURRENT_SPAWN_POOL = [

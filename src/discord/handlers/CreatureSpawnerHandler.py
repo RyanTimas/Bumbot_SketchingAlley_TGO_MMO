@@ -135,7 +135,7 @@ class CreatureSpawnerHandler:
             critter_chain_multiplier += 1
             if random.randint(0, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
                 duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.despawn_time += (1000 *60) # add 1000 minutes to give the illusion they do not despawn
+                duplicate_creature.despawn_time += (3600 *60) # add 1000 minutes to give the illusion they do not despawn
                 duplicate_creature.img_root += '_S'
 
             await self.spawn_creature(duplicate_creature)
@@ -156,7 +156,7 @@ class CreatureSpawnerHandler:
 
         if random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
             selected_creature.rarity = MYTHICAL
-            selected_creature.despawn_time += (1000 * 60) # add 1000 minutes to give the illusion they do not despawn
+            selected_creature.despawn_time += (3600 * 60) # add 1000 minutes to give the illusion they do not despawn
             selected_creature.img_root += '_S'
 
         return selected_creature

@@ -95,7 +95,7 @@ class CreatureEmbedHandler:
 
 
     def get_despawn_timestamp(self, is_countdown: bool = True):
-        despawn_timestamp = self.creature.spawn_time + self.creature.despawn_time * 60
+        despawn_timestamp = self.creature.spawn_time + self.creature.despawn_time
         despawn_character = 'R' if is_countdown else 'F'
         return f"<t:{despawn_timestamp}:{despawn_character}>"
 

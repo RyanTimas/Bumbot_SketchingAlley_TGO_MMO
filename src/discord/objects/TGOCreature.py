@@ -1,3 +1,5 @@
+import datetime
+import pytz
 import random
 import time
 
@@ -27,8 +29,18 @@ class TGOCreature:
         self.rarity = rarity
         self.caught_date = caught_date
 
-        self.spawn_time = int(time.time())
-        self.despawn_time = random.randint(3, 15) * 60
+        self.spawn_time = None
+        self.time_to_despawn = None
+        self.despawn_time = None
+
+
+    def refresh_spawn_and_despawn_time(self, timezone, minute_offset=None):
+        self.spawn_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)
+        self.time_to_despawn = minute_offset if minute_offset else random.randint(3, 15)
+        self.despawn_time = self.spawn_time + datetime.timedelta(minutes=self.time_to_despawn)
+        self.time_to_despawn = self.time_to_despawn * 60  # convert to seconds
+
+        print(f"[TGOCreature] Spawn Time: {self.spawn_time} | Despawn Time: {self.time_to_despawn}")
 
 
 CURRENT_SPAWN_POOL = [

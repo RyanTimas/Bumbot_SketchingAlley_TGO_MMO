@@ -95,9 +95,8 @@ class CreatureEmbedHandler:
 
 
     def get_despawn_timestamp(self, is_countdown: bool = True):
-        despawn_timestamp = self.creature.spawn_time + self.creature.despawn_time
         despawn_character = 'R' if is_countdown else 'F'
-        return f"<t:{despawn_timestamp}:{despawn_character}>"
+        return f"<t:{int(self.creature.despawn_time.timestamp())}:{despawn_character}>"
 
 
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):

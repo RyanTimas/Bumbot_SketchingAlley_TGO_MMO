@@ -135,7 +135,7 @@ class CreatureSpawnerHandler:
             critter_chain_multiplier += 1
             if random.randint(0, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
                 duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.despawn_time += (3600 *60) # add 1000 minutes to give the illusion they do not despawn
+                duplicate_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720)
                 duplicate_creature.img_root += '_S'
 
             await self.spawn_creature(duplicate_creature)
@@ -153,10 +153,11 @@ class CreatureSpawnerHandler:
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
+        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone)
 
         if random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
             selected_creature.rarity = MYTHICAL
-            selected_creature.despawn_time += (3600 * 60) # add 1000 minutes to give the illusion they do not despawn
+            selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720)
             selected_creature.img_root += '_S'
 
         return selected_creature
@@ -164,7 +165,7 @@ class CreatureSpawnerHandler:
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
-        time.sleep(creature.despawn_time)
+        time.sleep(creature.time_to_despawn)
         try:
             # Try to fetch the message to check if it still exists
             channel = self.discord_bot.get_channel(spawn_message.channel.id)

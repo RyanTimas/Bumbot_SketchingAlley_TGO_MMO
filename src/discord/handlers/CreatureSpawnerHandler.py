@@ -148,20 +148,19 @@ class CreatureSpawnerHandler:
     async def creature_picker(self):
         # FOR LAUNCH, SET COMMON CRITTERS TO BE WAY MORE COMMON BUT MAKE SPAWN MORE FREQUENTLY, only a 25% chance to pull an actual roll
         rarity = get_rarity() if (flip_coin(total_iterations=2) or self.time_of_day in (DUSK, DAWN)) else COMMON
+        rarity = TRANSCENDANT if flip_coin(total_iterations=11) else rarity
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
-        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone)
 
-        if random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
+        if rarity.name != TRANSCENDANT.name and random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
             selected_creature.rarity = MYTHICAL
-            selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720)
             selected_creature.img_root += '_S'
 
+        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
         return selected_creature
-
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):

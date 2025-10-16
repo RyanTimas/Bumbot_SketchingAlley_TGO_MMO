@@ -379,13 +379,13 @@ class TGOMMODatabaseHandler:
         # self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
         self.insert_creature_records()
+        self.insert_transcendant_creature_records()
         self.insert_environment_records()
         self.insert_user_avatar_records()
         self.insert_collection_records()
 
         # Link creatures to environments
         self.insert_environment_creature_records()
-
 
     def insert_creature_records(self):
         creature_data = [
@@ -455,6 +455,20 @@ class TGOMMODatabaseHandler:
 
         for index, creature in enumerate(creature_data):
             creature = (index + 1,) + creature
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)
+
+    def insert_transcendant_creature_records(self):
+        transcendant_creature_data = [
+            ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MAMMAL, '', BIGFOOT_IMAGE_ROOT, 5),
+            ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', INSECT, '', MOTHMAN_IMAGE_ROOT, 5),
+            ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', AMPHIBIAN, '', FROGMAN_IMAGE_ROOT, 5),
+            # ('Chupacabra', '', CHUPACABRA_DEX_NO, 1, 'Chupacabra', 'N/A', REPTILE, '', CHUPACABRA_IMAGE_ROOT, 5),
+            # ('Jersey Devil', '', JERSEY_DEVIL_DEX_NO, 1, 'Jersey Devil', 'N/A', MAMMAL, '', JERSEY_DEVIL_IMAGE_ROOT, 5),
+            # ('Thunderbird', '', THUNDERBIRD_DEX_NO, 1, 'Thunderbird', 'N/A', BIRD, '', THUNDERBIRD_IMAGE_ROOT, 5),
+        ]
+
+        for index, creature in enumerate(transcendant_creature_data):
+            creature = (9000 + index + 1,) + creature
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=creature)
 
     def insert_environment_records(self):
@@ -550,6 +564,15 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(PORCUPINE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_RARE, ''),
             self.format_creature_environment_link_params(COYOTE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_EPIC, ''),
             self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_LEGENDARY, ''),
+
+            # Transcendant Spawns
+            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
+
+            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
         ]
 
         for ec_link in environment_creature_data:

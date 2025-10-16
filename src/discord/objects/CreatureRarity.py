@@ -21,9 +21,10 @@ RARE = CreatureRarity(name="Rare", color=discord.Color.blue(), emojii='🟦', fo
 EPIC = CreatureRarity(name="Epic", color=discord.Color.purple(), emojii='🟪', font_color=(155, 89, 182), outline_color=FONT_COLOR_BLACK)
 LEGENDARY = CreatureRarity(name="Legendary", color=discord.Color.yellow(), emojii='🟨', font_color=(250, 204, 20), outline_color=FONT_COLOR_BLACK)
 MYTHICAL = CreatureRarity(name="Mythical", color=discord.Color.gold(), emojii='⭐', font_color=(255, 215, 0), outline_color=(235, 233, 210))
+TRANSCENDANT = CreatureRarity(name="Transcendant", color=discord.Color.red(), emojii='⁉️', font_color=(255, 165, 0), outline_color=(255, 140, 0))
 
 # List of all rarities for easy iteration
-ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL]
+ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT]
 
 
 def get_rarity_by_name(name: str):

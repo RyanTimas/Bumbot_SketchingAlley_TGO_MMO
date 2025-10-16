@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import get_image_path, load_font
-from src.discord.objects.CreatureRarity import CreatureRarity
+from src.discord.objects.CreatureRarity import CreatureRarity, TRANSCENDANT
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
@@ -42,7 +42,7 @@ class DexIconFactory:
             dex_icon_img.paste(icon_stats_overlay, (0, 0), icon_stats_overlay)
 
         # add the final overlay on top
-        icon_overlay = Image.open(DEX_ICON_OVERLAY)
+        icon_overlay = Image.open(DEX_ICON_OVERLAY if self.rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)
         dex_icon_img.paste(icon_overlay, (0, 0), icon_overlay)
 
         # self.add_text_to_image(image=dex_icon_img).show()
@@ -50,6 +50,9 @@ class DexIconFactory:
 
 
     def add_text_to_image(self, image: Image.Image):
+        if self.rarity.name == TRANSCENDANT.name:
+            return image
+
         image = self.add_dex_num_to_image(image)
 
         if self.show_stats:

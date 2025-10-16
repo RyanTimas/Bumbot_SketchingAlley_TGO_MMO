@@ -7,6 +7,7 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
     resize_text_to_fit
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.image_factories.DexIconFactory import DexIconFactory
+from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
 from src.resources.constants.file_paths import *
@@ -240,7 +241,9 @@ class EncyclopediaImageFactory:
 
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
-        text = f"{'0' if self.distinct_catches < 10 else ''} {self.distinct_catches} / {'0' if len(self.creatures) < 10 else ''} {len(self.creatures)}"
+
+        creature_count = len([creature for creature in self.creatures if get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], dex_no=self.environment.dex_no).name != TRANSCENDANT.name])
+        text = f"{'0' if self.distinct_catches < 10 else ''} {self.distinct_catches} / {'0' if creature_count < 10 else ''} {creature_count}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 

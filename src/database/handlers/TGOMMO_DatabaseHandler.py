@@ -105,7 +105,7 @@ class TGOMMODatabaseHandler:
         unique_avatar_details = []
 
         all_avatar_details = default_avatar_details + unlocked_avatar_details
-        for avatar in unlocked_avatar_details:
+        for avatar in all_avatar_details:
             avatar_id = avatar[1]  # avatar_id is at index 1
             if avatar_id not in seen_avatar_ids:
                 seen_avatar_ids[avatar_id] = True

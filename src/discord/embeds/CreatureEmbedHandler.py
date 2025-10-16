@@ -36,7 +36,9 @@ class CreatureEmbedHandler:
         embed.set_author(name = f'A wild {self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"} appears!!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
         embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
-        embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
+
+        if self.creature.rarity.name != MYTHICAL.name and self.creature.rarity.name != TRANSCENDANT.name:
+            embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
 
         if self.time_of_day:
             embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')

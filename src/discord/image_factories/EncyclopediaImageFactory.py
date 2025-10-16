@@ -164,6 +164,9 @@ class EncyclopediaImageFactory:
 
             creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
 
+            if creature_is_locked and rarity.name == TRANSCENDANT.name:
+                continue
+
             dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics, img_root=img_root)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 

@@ -46,6 +46,9 @@ class CreatureCaughtView(discord.ui.View):
         button.callback = self.display_creature_button_callback
         return button
     async def display_creature_button_callback(self, interaction: discord.Interaction):
+        if self.display_index is None:
+            await interaction.response.send_message(f"You gotta pick a display index first", ephemeral=True)
+            return
 
         # if creature was already set as display creature, remove it from the display list
         for index, id in enumerate(self.display_creature_ids):

@@ -460,9 +460,9 @@ class TGOMMODatabaseHandler:
 
     def insert_transcendant_creature_records(self):
         transcendant_creature_data = [
-            ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MAMMAL, '', BIGFOOT_IMAGE_ROOT, 5),
-            ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', INSECT, '', MOTHMAN_IMAGE_ROOT, 5),
-            ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', AMPHIBIAN, '', FROGMAN_IMAGE_ROOT, 5),
+            ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MYSTICAL, '', BIGFOOT_IMAGE_ROOT, 5),
+            ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', MYSTICAL, '', MOTHMAN_IMAGE_ROOT, 5),
+            ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', MYSTICAL, '', FROGMAN_IMAGE_ROOT, 5),
             # ('Chupacabra', '', CHUPACABRA_DEX_NO, 1, 'Chupacabra', 'N/A', REPTILE, '', CHUPACABRA_IMAGE_ROOT, 5),
             # ('Jersey Devil', '', JERSEY_DEVIL_DEX_NO, 1, 'Jersey Devil', 'N/A', MAMMAL, '', JERSEY_DEVIL_IMAGE_ROOT, 5),
             # ('Thunderbird', '', THUNDERBIRD_DEX_NO, 1, 'Thunderbird', 'N/A', BIRD, '', THUNDERBIRD_IMAGE_ROOT, 5),

@@ -206,6 +206,7 @@ FISH = "Fish"
 MOLLUSK = "Mollusk"
 CRUSTACEAN = "Crustacean"
 ARACHNID = "Arachnid"
+MYSTICAL = "Mystical"
 
 '''CREATURE RARITY NAMES'''
 TGOMMO_RARITY_COMMON = "Common"

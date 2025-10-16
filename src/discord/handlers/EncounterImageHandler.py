@@ -40,6 +40,11 @@ class EncounterImageHandler:
         if glow:
             final_img.paste(glow, (0, 0), glow)
 
+        if self.creature.rarity.name == TRANSCENDANT.name:
+            transcendant_glow =Image.open(ENCOUNTER_SCREEN_TRANSCENDANT_GLOW_IMAGE)
+            transcendant_glow = Image.blend(Image.new('RGBA', transcendant_glow.size, (0, 0, 0, 0)), transcendant_glow, 0.6)
+            final_img.paste(transcendant_glow, (0, 0), transcendant_glow)
+
         # Paste the textbox onto the background
         final_img.paste(camera_overlay_img, (0, 0), camera_overlay_img)
         final_img.paste(textbox_img, (0, 0), textbox_img)

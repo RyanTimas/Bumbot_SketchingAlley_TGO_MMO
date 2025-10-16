@@ -11,3 +11,8 @@ AVATAR_MYTHICAL_QUEST_2_QUERY = """SELECT COUNT(DISTINCT(creature_id)) >= 5 FROM
 
 # INDIVIDUAL QUEST QUERIES
 AVATAR_SQUIRRELGIRL_QUEST_QUERY = """SELECT COUNT(*) >= 100 FROM tgommo_user_creature WHERE creature_id IN (3, 56)  AND user_id = ?;"""
+
+# TRANSCENDANT QUEST QUERIES
+AVATAR_BIGFOOT_QUEST_QUERY = """SELECT COUNT(*) >= 1 FROM tgommo_user_creature WHERE creature_id = 9001 AND user_id = ?;"""
+AVATAR_MOTHMAN_QUEST_QUERY = """SELECT COUNT(*) >= 1 FROM tgommo_user_creature WHERE creature_id = 9002 AND user_id = ?;"""
+AVATAR_FROGMAN_QUEST_QUERY = """SELECT COUNT(*) >= 1 FROM tgommo_user_creature WHERE creature_id = 9003 AND user_id = ?;"""

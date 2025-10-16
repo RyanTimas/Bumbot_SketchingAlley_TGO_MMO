@@ -104,7 +104,14 @@ class UpdatePlayerProfileView(discord.ui.View):
         # filter creature IDs to ensure they are valid
         await self.handle_invalid_creature_ids(interaction)
 
-        params = (self.display_name, self.current_avatar_id, self.background_id, self.creature_id_1, self.creature_id_2, self.creature_id_3, self.creature_id_4, self.creature_id_5, self.creature_id_6, self.currency, self.available_catches, self.rod_level, self.rod_amount, self.trap_level, self.trap_amount, self.user_id)
+        creature_slot_1 = int(self.creature_id_1) if self.creature_id_1 != '' else -1
+        creature_slot_2 = int(self.creature_id_2) if self.creature_id_2 != '' else -1
+        creature_slot_3 = int(self.creature_id_3) if self.creature_id_3 != '' else -1
+        creature_slot_4 = int(self.creature_id_4) if self.creature_id_4  != '' else -1
+        creature_slot_5 = int(self.creature_id_5) if self.creature_id_5 != '' else -1
+        creature_slot_6 = int(self.creature_id_6) if self.creature_id_6 != '' else -1
+
+        params = (self.display_name, self.current_avatar_id, self.background_id,  creature_slot_1, creature_slot_2, creature_slot_3, creature_slot_4, creature_slot_5, creature_slot_6, self.currency, self.available_catches, self.rod_level, self.rod_amount, self.trap_level, self.trap_amount, self.user_id)
         get_tgommo_db_handler().update_user_profile(params=params)
 
         self.player_profile_image_factory.load_player_info()

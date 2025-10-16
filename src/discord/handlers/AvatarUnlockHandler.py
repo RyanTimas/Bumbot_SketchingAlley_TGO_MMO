@@ -3,6 +3,7 @@ from fileinput import filename
 
 import discord
 import pytz
+from sqlalchemy.orm.collections import collection
 from sqlalchemy.util import await_only
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -25,11 +26,10 @@ class AvatarUnlockHandler:
         await self.define_avatar_quests_unlocks()
 
         # event unlocks
-        self.handle_avatar_pim_unlock()
-        await self.handle_avatar_charlie_unlock()
-        await self.handle_avatar_freddy_unlock()
+        await self.timeline_based_avatar_unlocks()
 
-        #quests unlocks
+        self.handle_avatar_pim_unlock()
+
 
     # NICKNAME-BASED UNLOCK HANDLERS
     async def handle_nickname_based_unlocks(self):
@@ -80,6 +80,28 @@ class AvatarUnlockHandler:
             avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_3_Freddy{IMAGE_FILE_EXTENSION}"
             await self.interaction.followup.send(f"You have unlocked the special halloween 2025 avatar: Freddy Fazbear!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
 
+    async  def timeline_based_avatar_unlocks(self):
+        timeline_params = [
+            ("Charlie", "2", datetime.datetime(2025, 9, 10, 12, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 17, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Freddy Fazbear", "3", datetime.datetime(2025, 10, 31, 0, 0, 1, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 31, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Allan", "4", datetime.datetime(2025, 10, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 24, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+        ]
+
+        for timeline_param in timeline_params:
+            name = timeline_param[0]
+            avatar_id = timeline_param[1]
+            start_time = timeline_param[2]
+            end_time = timeline_param[3]
+            user_id = timeline_param[4]
+
+            current_time = datetime.datetime.now(pytz.UTC)
+            if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"E{avatar_id}", user_id=self.user_id):
+                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"E{avatar_id}", user_id=self.user_id)
+
+                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{avatar_id}_{name}{IMAGE_FILE_EXTENSION}"
+                await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {name}!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
+
+
     # QUEST-BASED UNLOCK HANDLERS
     # handle collection quests
     async def define_avatar_quests_unlocks(self):
@@ -102,6 +124,10 @@ class AvatarUnlockHandler:
 
         individual_quests = [
             ("Squirrel Girl", "S1", AVATAR_SQUIRRELGIRL_QUEST_QUERY, (self.user_id,)),
+
+            ("Bigfoot", "T1", AVATAR_BIGFOOT_QUEST_QUERY, (self.user_id,)),
+            ("Mothman", "T2", AVATAR_MOTHMAN_QUEST_QUERY, (self.user_id,)),
+            ("Frogman", "T3", AVATAR_FROGMAN_QUEST_QUERY, (self.user_id,)),
         ]
 
         for collection_param in collection_params:

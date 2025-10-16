@@ -9,7 +9,7 @@ from src.commons.CommonFunctions import build_image_file, to_grayscale, convert_
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
-from src.discord.objects.CreatureRarity import MYTHICAL
+from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON, IMAGE_FOLDER_CREATURES_PATH, \
@@ -33,7 +33,7 @@ class CreatureEmbedHandler:
         encounter_img = encounter_img_handler.create_encounter_image()
 
         embed = discord.Embed(color=self.creature.rarity.color)
-        embed.set_author(name = f'A wild {self.creature.name} appears!!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+        embed.set_author(name = f'A wild {self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"} appears!!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
         embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
         embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)

@@ -5,6 +5,7 @@ from PIL import Image, ImageFilter, ImageDraw, ImageFont
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
+from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import *
@@ -83,7 +84,7 @@ class EncounterImageHandler:
         support_font_2 = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 18)
 
         # Draw each line of text
-        self.place_text_on_image(lines=[self.creature.name], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.rarity.font_color, outline_color=self.creature.rarity.outline_color)
+        self.place_text_on_image(lines=[self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else '???'], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.rarity.font_color, outline_color=self.creature.rarity.outline_color)
         self.place_text_on_image(lines=['A Wild'], font=support_font_2, outline_width=2, draw=draw, padding=(-140, 128), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
         self.place_text_on_image(lines=['Appears'], font=support_font, outline_width=2, draw=draw, padding=(140, 130), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
 

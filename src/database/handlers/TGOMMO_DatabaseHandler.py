@@ -386,6 +386,7 @@ class TGOMMODatabaseHandler:
 
         # Link creatures to environments
         self.insert_environment_creature_records()
+        self.insert_transcendant_environment_creature_records()
 
     def insert_creature_records(self):
         creature_data = [
@@ -564,12 +565,19 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(PORCUPINE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_RARE, ''),
             self.format_creature_environment_link_params(COYOTE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_EPIC, ''),
             self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_LEGENDARY, ''),
+        ]
 
-            # Transcendant Spawns
-            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
+        for ec_link in environment_creature_data:
+            self.QueryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
+
+    def insert_transcendant_environment_creature_records(self):
+        environment_creature_data = [
+            # Forest - Day Spawns
+             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
             self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
             self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
 
+            # Forest - Night Spawns
             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
             self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
             self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),

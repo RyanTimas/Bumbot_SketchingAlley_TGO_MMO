@@ -621,6 +621,8 @@ class TGOMMODatabaseHandler:
             ('E1', 'Pim', AVATAR_TYPE_EVENT, '1_Pim',),
             ('E2', 'Charlie', AVATAR_TYPE_EVENT, '2_Charlie',),
             ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, '3_Freddy',),
+            ('E4', 'Allan', AVATAR_TYPE_EVENT, '4_Allan',),
+            ('E5', 'Glep', AVATAR_TYPE_EVENT, '5_Glep',),
 
             # Quest Avatars
             ('Q1', 'Donkey Kong', AVATAR_TYPE_QUEST, '1_DonkeyKong',),

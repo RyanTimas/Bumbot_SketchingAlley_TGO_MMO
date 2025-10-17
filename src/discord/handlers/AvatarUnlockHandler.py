@@ -60,31 +60,17 @@ class AvatarUnlockHandler:
         for user_id in user_ids_who_played_beta:
             get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id="E1", user_id=user_id)
 
-    async def handle_avatar_charlie_unlock(self):
-        current_time = datetime.datetime.now(pytz.UTC)
-        is_within_opening_week = (datetime.datetime(2025, 9, 10, 12, 0, 0, tzinfo=pytz.UTC) <= current_time <= datetime.datetime(2025, 10, 17, 23, 59, 59, tzinfo=pytz.UTC))
-
-        if is_within_opening_week and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id="E2", user_id=self.user_id):
-            get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id="E2", user_id=self.user_id)
-
-            avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_2_Charlie{IMAGE_FILE_EXTENSION}"
-            await self.interaction.followup.send(f"You have unlocked the special opening week avatar: Charlie!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
-
-    async def handle_avatar_freddy_unlock(self):
-        current_time = datetime.datetime.now(pytz.UTC)
-        is_halloween_2025 = (current_time.year == 2025 and current_time.month == 10 and current_time.day == 31)
-
-        if is_halloween_2025 and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id="E3", user_id=self.user_id):
-            get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id="E3", user_id=self.user_id)
-
-            avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_3_Freddy{IMAGE_FILE_EXTENSION}"
-            await self.interaction.followup.send(f"You have unlocked the special halloween 2025 avatar: Freddy Fazbear!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
-
     async  def timeline_based_avatar_unlocks(self):
         timeline_params = [
-            ("Charlie", "2", datetime.datetime(2025, 9, 10, 12, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 17, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Freddy Fazbear", "3", datetime.datetime(2025, 10, 31, 0, 0, 1, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 31, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Allan", "4", datetime.datetime(2025, 10, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 24, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+
+            ("Charlie", "2", datetime.datetime(2025, 9, 10, 12, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 16, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Allan", "4", datetime.datetime(2025, 10, 17, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 23, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Glep", "5", datetime.datetime(2025, 10, 24, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 30, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("The Boss", "6", datetime.datetime(2025, 10, 31, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 6, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Mr Frog", "7", datetime.datetime(2025, 11, 7, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 13, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Tyler", "8", datetime.datetime(2025, 11, 14, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 20, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Smormu", "9", datetime.datetime(2025, 11, 21, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 27, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
         for timeline_param in timeline_params:
@@ -119,7 +105,7 @@ class AvatarUnlockHandler:
 
             ("Gold", "7a", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
             ("Lyra", "7b", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
-            ("Homer", "8", AVATAR_MYTHICAL_QUEST_2_QUERY, (self.user_id,)),
+            ("Homer", "7c", AVATAR_MYTHICAL_QUEST_2_QUERY, (self.user_id,)),
         ]
 
         individual_quests = [

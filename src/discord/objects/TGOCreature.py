@@ -40,8 +40,6 @@ class TGOCreature:
         self.despawn_time = self.spawn_time + datetime.timedelta(minutes=self.time_to_despawn)
         self.time_to_despawn = self.time_to_despawn * 60  # convert to seconds
 
-        print(f"[TGOCreature] Spawn Time: {self.spawn_time} | Despawn Time: {self.time_to_despawn}")
-
 
 CURRENT_SPAWN_POOL = [
 

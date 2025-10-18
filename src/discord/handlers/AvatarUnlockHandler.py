@@ -28,8 +28,6 @@ class AvatarUnlockHandler:
         # event unlocks
         await self.timeline_based_avatar_unlocks()
 
-        self.handle_avatar_pim_unlock()
-
 
     # NICKNAME-BASED UNLOCK HANDLERS
     async def handle_nickname_based_unlocks(self):
@@ -37,29 +35,24 @@ class AvatarUnlockHandler:
         player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
 
         avatar_combos = {
-            "jordo": ("S1", "_Secret_1_Jordo"),
-            "miku": ("S2", "_Secret_2_Miku"),
-            "garfield": ("S3", "_Secret_3_Garfield"),
-            "samus": ("S4", "_Secret_4_Samus"),
-            "boss": ("S5", "_Secret_5_BossBaby"),
-            "walter white": ("S6", "_Secret_6_WalterWhite"),
+            "jordo": ("S1", "Jordo"),
+            "miku": ("S2", "Miku"),
+            "garfield": ("S3", "Garfield"),
+            "samus": ("S4", "Samus"),
+            "boss": ("S5", "BossBaby"),
+            "white": ("S6", "WalterWhite"),
         }
 
         if self.nickname is not None and self.nickname.lower() in avatar_combos:
             avatar_id = avatar_combos[self.nickname.lower()][0]
-            file_name = avatar_combos[self.nickname.lower()][1]
+            file_name = f"_Secret_{avatar_combos[self.nickname.lower()][1]}"
 
             if avatar_id not in unlocked_secret_avatars:
-                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=avatar_id, user_id=-1)
+                get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar_id)
                 await self.interaction.channel.send(f"The secret avatar *{self.nickname.upper()}* has been unlocked for the server thanks to @{player.nickname}!!", file=discord.File(f"{PLAYER_PROFILE_AVATAR_BASE}{file_name}{IMAGE_FILE_EXTENSION}", filename="avatar.png"))
             return
 
     # EVENT-BASED UNLOCK HANDLERS
-    def handle_avatar_pim_unlock(self):
-        user_ids_who_played_beta = get_tgommo_db_handler().get_users_who_played_during_time_range(max_timestamp='2025-10-07 00:00:00')
-        for user_id in user_ids_who_played_beta:
-            get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id="E1", user_id=user_id)
-
     async  def timeline_based_avatar_unlocks(self):
         timeline_params = [
             ("Freddy Fazbear", "3", datetime.datetime(2025, 10, 31, 0, 0, 1, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 31, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
@@ -103,7 +96,7 @@ class AvatarUnlockHandler:
             ("Raphael", "6c", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
             ("Donatello", "6d", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
 
-            ("Gold", "7a", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
+            ("Ethan", "7a", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
             ("Lyra", "7b", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
             ("Homer", "7c", AVATAR_MYTHICAL_QUEST_2_QUERY, (self.user_id,)),
         ]

@@ -27,7 +27,7 @@ TGOMMO_CREATE_AVATAR_TABLE = """CREATE TABLE IF NOT EXISTS user_avatar (
 		avatar_name TEXT NOT NULL,
 		avatar_type TEXT NOT NULL,
 		img_root TEXT NOT NULL,
-		is_unlocked BOOLEAN DEFAULT 0,
+		series TEXT,
 		UNIQUE(avatar_id)
 )"""
 SA_CREATE_ROLES_TABLE = "CREATE TABLE IF NOT EXISTS roles (\n" \
@@ -266,11 +266,10 @@ TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_i
 
 
 """ AVATAR QUERIES """
-TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked FROM user_avatar WHERE avatar_id = ?;"""
+TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar WHERE avatar_id = ?;"""
 
-TGOMMO_AVATAR_GET_DEFAULT_AVATARS = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked FROM user_avatar WHERE is_unlocked = 1;"""
-TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_FOR_SERVER = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id = -1;"""
-TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.is_unlocked FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id IN (-1, ?);"""
+TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_FOR_SERVER = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id = -1;"""
+TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.series FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id IN (-1, ?);"""
 
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = -1 AND avatar_id = ?;"""
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = ? AND avatar_id = ?;"""
@@ -301,14 +300,14 @@ TGOMMO_UPDATE_USER_PROFILE_TRAP_LEVEL = """UPDATE tgommo_user_profile SET trap_l
 TGOMMO_UPDATE_USER_PROFILE_TRAP_AMOUNT = """UPDATE tgommo_user_profile SET trap_amount = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ?, creature_slot_id_2 = ?, creature_slot_id_3 = ?, creature_slot_id_4 = ?, creature_slot_id_5 = ?,creature_slot_id_6 = ? WHERE user_id = ?;"""
 
-TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE user_avatar SET is_unlocked = ? WHERE avatar_id = ?;"""
+TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
 
 '''============='''
 '''INSERT QUERIES'''
 '''============='''
 
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, is_unlocked) VALUES(?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series) VALUES(?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 
 TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""

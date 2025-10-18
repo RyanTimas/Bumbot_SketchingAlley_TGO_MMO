@@ -35,8 +35,12 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=params)
         return self.get_user_profile_by_user_id(user_id=user_id)
 
+    ''' Avatar Queries '''
     def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1):
         return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id))
+
+    def unlock_avatar_for_server(self, avatar_id=-1):
+        return self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS, params=(-1, avatar_id))
 
     def check_if_user_unlocked_avatar(self, user_id=-1, avatar_id=-1):
         return self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER, params=(user_id, avatar_id))[0][0] > 0
@@ -73,7 +77,7 @@ class TGOMMODatabaseHandler:
             player_details = response[0]
 
             avatar_details = self.QueryHandler.execute_query(TGOMMO_SELECT_AVATAR_BY_ID, params=(player_details[3],))[0]
-            avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5])) if avatar_details else None
+            avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], series=avatar_details[5],) if avatar_details else None
             return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar=avatar, background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
         return response[0]
 
@@ -93,31 +97,19 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             avatar_details = response[0]
-            return TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
+            return TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], series=avatar_details[5])
         return response[0]
 
     def get_unlocked_avatars_by_user_id(self, user_id, convert_to_object=False):
-        default_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_DEFAULT_AVATARS, params=())
-        unlocked_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(user_id,))
-
-        # Use a dictionary to track seen avatar_ids and keep only the first occurrence
-        seen_avatar_ids = {}
-        unique_avatar_details = []
-
-        all_avatar_details = default_avatar_details + unlocked_avatar_details
-        for avatar in all_avatar_details:
-            avatar_id = avatar[1]  # avatar_id is at index 1
-            if avatar_id not in seen_avatar_ids:
-                seen_avatar_ids[avatar_id] = True
-                unique_avatar_details.append(avatar)
+        avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(user_id,))
 
         if convert_to_object:
             avatars = []
-            for avatar_details in unique_avatar_details:
-                avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], is_unlocked=bool(avatar_details[5]))
+            for avatar_details in avatar_details:
+                avatar = TGOAvatar(avatar_num=avatar_details[0], avatar_id=avatar_details[1], name=avatar_details[2], avatar_type=avatar_details[3], img_root=avatar_details[4], series=avatar_details[5])
                 avatars.append(avatar)
             return avatars
-        return unique_avatar_details
+        return avatar_details
 
     def get_unlocked_avatars_for_server(self, convert_to_object=False):
         all_avatar_details = self.QueryHandler.execute_query(TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID, params=(-1,))
@@ -604,55 +596,68 @@ class TGOMMODatabaseHandler:
     def insert_user_avatar_records(self):
         avatar_data = [
             # Default Avatars
-            ('D1', 'Red', AVATAR_TYPE_DEFAULT, '1_Red'),
-            ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, '2_Leaf'),
-            ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, '3_Hilbert'),
-            ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, '4_Hilda'),
+            ('D1', 'Red', AVATAR_TYPE_DEFAULT, 'Red', 'Pokemon'),
+            ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, 'Leaf', 'Pokemon'),
+            ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, 'Hilbert', 'Pokemon'),
+            ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, 'Hilda', 'Pokemon'),
 
             # Secret Avatars
-            ('S1', 'Jordo', AVATAR_TYPE_SECRET, '1_Jordo'),
-            ('S2', 'Miku', AVATAR_TYPE_SECRET, '2_Miku'),
-            ('S3', 'Garfield', AVATAR_TYPE_SECRET, '3_Garfield'),
-            ('S4', 'Samus', AVATAR_TYPE_SECRET, '4_Samus'),
-            ('S5', 'Boss Baby', AVATAR_TYPE_SECRET, '5_BossBaby'),
-            ('S6', 'Walter White', AVATAR_TYPE_SECRET, '6_WalterWhite'),
+            ('S1', 'Jordo', AVATAR_TYPE_SECRET, 'Jordo', 'Sketching Alley'),
+            ('S2', 'Miku', AVATAR_TYPE_SECRET, 'Miku', 'Vocaloid'),
+            ('S3', 'Garfield', AVATAR_TYPE_SECRET, 'Garfield', 'Garfield'),
+            ('S4', 'Samus', AVATAR_TYPE_SECRET, 'Samus', 'Metroid'),
+            ('S5', 'Boss Baby', AVATAR_TYPE_SECRET, 'BossBaby', 'Boss Baby',),
+            ('S6', 'Walter White', AVATAR_TYPE_SECRET, 'WalterWhite', 'Breaking Bad',),
 
             # Event Avatars
-            ('E1', 'Pim', AVATAR_TYPE_EVENT, '1_Pim',),
-            ('E2', 'Charlie', AVATAR_TYPE_EVENT, '2_Charlie',),
-            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, '3_Freddy',),
-            ('E4', 'Allan', AVATAR_TYPE_EVENT, '4_Allan',),
-            ('E5', 'Glep', AVATAR_TYPE_EVENT, '5_Glep',),
+            ('E1', 'Pim', AVATAR_TYPE_EVENT, 'Pim', 'Smiling Friends',),
+            ('E2', 'Charlie', AVATAR_TYPE_EVENT, 'Charlie', 'Smiling Friends',),
+            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, 'Freddy', 'Smiling Friends',),
+            ('E4', 'Allan', AVATAR_TYPE_EVENT, 'Allan', 'Smiling Friends',),
+            ('E5', 'Glep', AVATAR_TYPE_EVENT, 'Glep', 'Smiling Friends',),
+            ('E6', 'The Boss', AVATAR_TYPE_EVENT, 'TheBoss', 'Smiling Friends',),
+            ('E7', 'Mr. Frog', AVATAR_TYPE_EVENT, 'MrFrog', 'Smiling Friends',),
+            ('E8', 'Tyler', AVATAR_TYPE_EVENT, 'Tyler', 'Smiling Friends',),
+            ('E9', 'Smormu', AVATAR_TYPE_EVENT, 'Smormu', 'Smiling Friends',),
 
             # Quest Avatars
-            ('Q1', 'Donkey Kong', AVATAR_TYPE_QUEST, '1_DonkeyKong',),
-            ('Q2', 'Big Bird', AVATAR_TYPE_QUEST, '2_BigBird',),
-            ('Q3', 'Gex', AVATAR_TYPE_QUEST, '3_Gex',),
-            ('Q4', 'Kermit', AVATAR_TYPE_QUEST, '4_Kermit',),
-            ('Q5', 'Hornet', AVATAR_TYPE_QUEST, '5_Hornet',),
-            ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, '6a_Leonardo',),
-            ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, '6b_Raphael',),
-            ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, '6c_Michelangelo',),
-            ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, '6d_Donatello',),
-            ('Q7a', 'Gold', AVATAR_TYPE_QUEST, '7a_Gold',),
-            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, '7b_Lyra',),
-            ('Q7c', 'Homer', AVATAR_TYPE_QUEST, '8_Homer',),
-
-            ('QS1', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'S1_SquirrelGirl',),
+            ('Q1', 'Donkey Kong', AVATAR_TYPE_QUEST, 'DonkeyKong', 'Donkey Kong Country',),
+            ('Q2', 'Big Bird', AVATAR_TYPE_QUEST, 'BigBird', 'Sesame Street',),
+            ('Q3', 'Gex', AVATAR_TYPE_QUEST, 'Gex', 'Gex',),
+            ('Q4', 'Kermit', AVATAR_TYPE_QUEST, 'Kermit', 'Muppets',),
+            ('Q5', 'Hornet', AVATAR_TYPE_QUEST, 'Hornet', 'Hollow Knigh',),
+            ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, 'Leonardo', 'Teenage Mutant Ninja Turtles',),
+            ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, 'Raphael', 'Teenage Mutant Ninja Turtles',),
+            ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, 'Michelangelo', 'Teenage Mutant Ninja Turtles',),
+            ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, 'Donatello', 'Teenage Mutant Ninja Turtles',),
+            ('Q7a', 'Ethan', AVATAR_TYPE_QUEST, 'Ethan', 'Pokemon',),
+            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, 'Lyra', 'Pokemon',),
+            ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
+            ('Q9', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'SquirrelGirl', 'Marvel',),
+            ('Q10', 'Turbo Granny', AVATAR_TYPE_QUEST, 'TurboGranny', 'DanDaDan',),
+            ('Q11', 'Mordecai', AVATAR_TYPE_QUEST, 'Mordecai', 'Regular Show',),
+            ('Q12', 'Rigby', AVATAR_TYPE_QUEST, 'Rigby', 'Regular Show',),
 
             # Transcendant Avatars
-            ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, '1_Bigfoot',),
-            ('T2', 'Mothman', AVATAR_TYPE_TRANSCENDANT, '2_Mothman',),
-            ('T3', 'Frogman', AVATAR_TYPE_TRANSCENDANT, '3_Frogman',),
+            ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),
+            ('T2', 'Mothman', AVATAR_TYPE_TRANSCENDANT, 'Mothman', 'Cryptid',),
+            ('T3', 'Frogman', AVATAR_TYPE_TRANSCENDANT, 'Frogman', 'Cryptid',),
 
             # Fallback Avatars
-            ('F1', 'Fallback-1', AVATAR_TYPE_FALLBACK, '1_DefaultM',),
-            ('F2', 'Fallback-2', AVATAR_TYPE_FALLBACK, '2_DefaultF',),
+            ('F1', 'Fallback-1', AVATAR_TYPE_FALLBACK, 'DefaultM', ''),
+            ('F2', 'Fallback-2', AVATAR_TYPE_FALLBACK, 'DefaultF', ''),
         ]
 
         for index, avatar in enumerate(avatar_data):
-            avatar = (index + 1,) + avatar + (avatar[2] == AVATAR_TYPE_DEFAULT or self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER, params=(avatar[0],))[0][0],)
+            avatar = (index + 1,) + avatar
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR, params=avatar)
+
+            # for avatars unlocked server wide, insert a starter record into avatar link table
+            if avatar[3] == AVATAR_TYPE_DEFAULT or avatar[3] == AVATAR_TYPE_SECRET:
+                avatar_id = avatar[1]
+                user_id = -1 if avatar[3] == AVATAR_TYPE_DEFAULT else 1
+                self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id))
+
 
 
     def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name=''):

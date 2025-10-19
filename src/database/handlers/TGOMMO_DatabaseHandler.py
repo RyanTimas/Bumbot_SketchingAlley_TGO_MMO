@@ -133,7 +133,7 @@ class TGOMMODatabaseHandler:
         if convert_to_object:
             avatars = []
             for avatar_details in response:
-                avatar = TGOAvatar(avatar_num=-1, avatar_id=avatar_details[0], name=avatar_details[1],avatar_type=AVATAR_TYPE_SECRET, img_root=avatar_details[2],unlock_query=avatar_details[3], unlock_threshold=avatar_details[4])
+                avatar = TGOAvatar(avatar_num=-1, avatar_id=avatar_details[0], name=avatar_details[1],avatar_type=AVATAR_TYPE_SECRET, img_root=avatar_details[2],unlock_query=avatar_details[3], unlock_threshold=avatar_details[4], is_parent_entry=avatar_details[5])
                 avatars.append(avatar)
             return avatars
         return response
@@ -708,7 +708,7 @@ class TGOMMODatabaseHandler:
             ('HGSS', ('Q7', AVATAR_MYTHICAL_QUEST_QUERY, 1)),
             ('Homer', ('Q8', AVATAR_MYTHICAL_QUEST_QUERY, 5)),
             ('Squirrel Girl', ('Q9', AVATAR_SQUIRRELGIRL_QUEST_QUERY, 100)),
-            ('Huntrix', ('Q13', AVATAR_MYTHICAL_QUEST_QUERY, 10)),
+            ('Huntrix', ('Q13', AVATAR_LEGENDARY_QUEST_QUERY, 3)),
 
             # ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY,1)),
             # ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY,1)),

@@ -286,8 +286,8 @@ TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID_ORDERED_BY_AVATAR_TYPE = """SELECT
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = -1 AND avatar_id = ?;"""
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = ? AND avatar_id = ?;"""
 
-TGOMMO_GET_ALL_AVATAR_UNLOCK_CONDITIONS = """SELECT auc.avatar_id, ua.avatar_name, ua.img_root, auc.unlock_query, auc.unlock_threshold FROM tgommo_user_avatar_unlock_condition auc LEFT JOIN user_avatar ua ON ua.avatar_id = auc.avatar_id;"""
-TGOMMO_GET_ALL_CHILD_AVATARS_FOR_PARENT_AVATAR_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar WHERE avatar_id LIKE '%?%' AND avatar_id != ?;"""
+TGOMMO_GET_ALL_AVATAR_UNLOCK_CONDITIONS = """SELECT auc.avatar_id, ua.avatar_name, ua.img_root, auc.unlock_query, auc.unlock_threshold, ua.is_parent_entry FROM tgommo_user_avatar_unlock_condition auc LEFT JOIN user_avatar ua ON ua.avatar_id = auc.avatar_id;"""
+TGOMMO_GET_ALL_CHILD_AVATARS_FOR_PARENT_AVATAR_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar WHERE avatar_id LIKE ? || '%' AND avatar_id != ?;"""
 
 '''============='''
 '''UPDATE QUERIES'''

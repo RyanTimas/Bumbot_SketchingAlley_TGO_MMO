@@ -28,6 +28,7 @@ TGOMMO_CREATE_AVATAR_TABLE = """CREATE TABLE IF NOT EXISTS user_avatar (
 		avatar_type TEXT NOT NULL,
 		img_root TEXT NOT NULL,
 		series TEXT,
+		is_parent_entry BOOLEAN DEFAULT False,
 		UNIQUE(avatar_id)
 )"""
 SA_CREATE_ROLES_TABLE = "CREATE TABLE IF NOT EXISTS roles (\n" \
@@ -110,6 +111,7 @@ TGOMMO_CREATE_USER_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_cr
     FOREIGN KEY (creature_variant_no) REFERENCES tgommo_creature (creature_id),
     FOREIGN KEY (environment_id) REFERENCES tgommo_environment (environment_id)
 )"""
+
 TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile (
     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -143,19 +145,28 @@ TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
 )"""
+TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_avatar_unlock_condition (
+    avatar_id TEXT,
+    unlock_query TEXT,
+    unlock_threshold INTEGER,
+ 
+    PRIMARY KEY (avatar_id),
+    FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
+)"""
+
 TGOMMO_CREATE_COLLECTION_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_collection (
-            collection_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT DEFAULT '',
-            image_path TEXT NOT NULL,
-            background_color_path TEXT NOT NULL,
-            total_count_query TEXT NOT NULL,
-            caught_count_query TEXT NOT NULL,
-            completion_reward_1 TEXT NOT NULL DEFAULT '',
-            completion_reward_2 TEXT NOT NULL DEFAULT '',
-            completion_reward_3 TEXT NOT NULL DEFAULT '',
-            is_active BOOLEAN NOT NULL DEFAULT 1
-        )"""
+    collection_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    image_path TEXT NOT NULL,
+    background_color_path TEXT NOT NULL,
+    total_count_query TEXT NOT NULL,
+    caught_count_query TEXT NOT NULL,
+    completion_reward_1 TEXT NOT NULL DEFAULT '',
+    completion_reward_2 TEXT NOT NULL DEFAULT '',
+    completion_reward_3 TEXT NOT NULL DEFAULT '',
+    is_active BOOLEAN NOT NULL DEFAULT 1
+)"""
 
 '''*******************'''
 '''   USER Queries    '''
@@ -266,17 +277,17 @@ TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_i
 
 
 """ AVATAR QUERIES """
-TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar WHERE avatar_id = ?;"""
+TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry FROM user_avatar WHERE avatar_id = ?;"""
 
 TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_FOR_SERVER = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id = -1;"""
 TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.series FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id IN (-1, ?);"""
+TGOMMO_AVATAR_GET_UNLOCKED_AVATARS_BY_USER_ID_ORDERED_BY_AVATAR_TYPE = """SELECT ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.img_root, ua.series FROM user_avatar ua LEFT JOIN tgommo_user_profile_avatar_link upal ON upal.avatar_id  = ua.avatar_id WHERE upal.user_id IN (-1, ?) ORDER BY CASE avatar_type WHEN 'Default' THEN 1 WHEN 'Secret' THEN 2 WHEN 'Event' THEN 3 WHEN 'Quest' THEN 4 WHEN 'Transcendant' THEN 5 ELSE 6 END;"""
 
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_SERVER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = -1 AND avatar_id = ?;"""
 TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER = """SELECT count(avatar_id) FROM tgommo_user_profile_avatar_link WHERE user_id = ? AND avatar_id = ?;"""
 
-""" Avatar Unlock Condition Queries """
-TGOMMO_GET_USERS_WHO_PLAYED_IN_TIMERANGE = """SELECT DISTINCT user_id FROM tgommo_user_creature WHERE catch_date > ? AND  catch_date < ?;"""
-
+TGOMMO_GET_ALL_AVATAR_UNLOCK_CONDITIONS = """SELECT auc.avatar_id, ua.avatar_name, ua.img_root, auc.unlock_query, auc.unlock_threshold FROM tgommo_user_avatar_unlock_condition auc LEFT JOIN user_avatar ua ON ua.avatar_id = auc.avatar_id;"""
+TGOMMO_GET_ALL_CHILD_AVATARS_FOR_PARENT_AVATAR_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series FROM user_avatar WHERE avatar_id LIKE '%?%' AND avatar_id != ?;"""
 
 '''============='''
 '''UPDATE QUERIES'''
@@ -302,12 +313,14 @@ TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET
 
 TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
 
+
 '''============='''
 '''INSERT QUERIES'''
 '''============='''
 
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series) VALUES(?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold) VALUES(?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 
 TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
@@ -332,4 +345,5 @@ TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES = "DELETE FROM tgommo_envir
 
 TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS = "DELETE FROM tgommo_collection;"
 TGOMMO_DELETE_ALL_RECORDS_FROM_USER_AVATAR = "DELETE FROM user_avatar;"
+TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_UNLOCK_CONDITIONS = "DELETE FROM tgommo_user_avatar_unlock_condition;"
 

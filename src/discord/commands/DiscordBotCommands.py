@@ -12,6 +12,8 @@ from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfi
 from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection
+from src.discord.image_factories.quest_board.AvatarBoardHandler import UNLOCKED_AVATARS, AVATAR_QUESTS, \
+    AvatarBoardHandler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import USER_WHITELIST
 
@@ -137,7 +139,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.message.delete()
         await ctx.send('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
 
-    @discord_bot.discord_bot.command(name='player-profile', help="Shows User's . Use 'verbose' for detailed stats.")
+    @discord_bot.discord_bot.command(name='player-profile', help="Shows User's Profile Page.")
     async def player_profile(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
         # Initialize defaults
         tab_is_open = False
@@ -166,6 +168,30 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         await ctx.message.delete()
         await ctx.send('', files=[convert_to_png(player_profile_img, f'player_profile.png')], view=view)
+
+    @discord_bot.discord_bot.command(name='avatar-board', help="Shows User's Unlocked Avatars & Quest Progress.")
+    async def avatar_board(ctx, param1: str = None, param2: str = None):
+        # Initialize defaults
+        open_tab = UNLOCKED_AVATARS
+        target_user_id = None
+
+        for param in [param1, param2]:
+            if param is None:
+                continue
+            if param.upper() == UNLOCKED_AVATARS or param.upper() == AVATAR_QUESTS:
+                open_tab = param.upper()
+            elif param.isdigit():
+                target_user_id = int(param)
+
+        target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
+
+        avatar_board_handler = AvatarBoardHandler(user_id=target_user.id, open_tab=open_tab)
+        avatar_board_img = avatar_board_handler.build_avatar_board_page_image()
+
+        view = PlayerProfileView(user_id=ctx.author.id,player_profile_image_factory=avatar_board_img,tab_is_open=False,open_tab=open_tab)
+
+        await ctx.message.delete()
+        await ctx.send('', files=[convert_to_png(avatar_board_img, f'avatar_board.png')], view=view)
 
 
     @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")

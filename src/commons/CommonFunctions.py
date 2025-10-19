@@ -74,8 +74,8 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
 
-    x = center_pixel_location[0] - text_width / 2
-    y = center_pixel_location[1] - text_height / 2
+    x = center_pixel_location[0] - text_width // 2
+    y = center_pixel_location[1] - text_height // 2
     return (x, y)
 
 def open_image_from_url(image_url):

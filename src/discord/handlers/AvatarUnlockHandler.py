@@ -77,47 +77,26 @@ class AvatarUnlockHandler:
             if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"E{avatar_id}", user_id=self.user_id):
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"E{avatar_id}", user_id=self.user_id)
 
-                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{avatar_id}_{name}{IMAGE_FILE_EXTENSION}"
+                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name}{IMAGE_FILE_EXTENSION}"
                 await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {name}!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
 
 
     # QUEST-BASED UNLOCK HANDLERS
-    # handle collection quests
     async def define_avatar_quests_unlocks(self):
-        collection_params = [
-            ("Donkey Kong", "1", AVATAR_DONKEY_KONG_QUEST_QUERY, (self.user_id,)),
-            ("Big Bird", "2", AVATAR_BIG_BIRD_QUEST_QUERY, (self.user_id,)),
-            ("Gex", "3", AVATAR_GEX_QUEST_QUERY, (self.user_id,)),
-            ("Kermit", "4", AVATAR_KERMIT_QUEST_QUERY, (self.user_id,)),
-            ("Hornet", "5", AVATAR_HORNET_QUEST_QUERY, (self.user_id,)),
+        unlockable_avatars = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
 
-            ("Leonardo", "6a", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
-            ("Michelangelo", "6b", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
-            ("Raphael", "6c", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
-            ("Donatello", "6d", AVATAR_VARIANTS_QUEST_1_QUERY, (self.user_id,)),
+        for unlockable_avatar in unlockable_avatars:
+            params = (self.user_id,)
+            await self.handle_quest_complete_check(avatar= unlockable_avatar, params=params,)
 
-            ("Ethan", "7a", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
-            ("Lyra", "7b", AVATAR_MYTHICAL_QUEST_1_QUERY, (self.user_id,)),
-            ("Homer", "7c", AVATAR_MYTHICAL_QUEST_2_QUERY, (self.user_id,)),
-        ]
+    async  def handle_quest_complete_check(self, avatar, params):
+        user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=avatar.unlock_query, params=params)[0][0] >= avatar.unlock_threshold
 
-        individual_quests = [
-            ("Squirrel Girl", "S1", AVATAR_SQUIRRELGIRL_QUEST_QUERY, (self.user_id,)),
+        if user_reached_threshold  and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=avatar.avatar_id, user_id=self.user_id):
+            # if quest rewards more than one avatar (parent entry), unlock all child avatars
+            avatars_to_unlock = [avatar] if not avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id, convert_to_object=True)
 
-            ("Bigfoot", "T1", AVATAR_BIGFOOT_QUEST_QUERY, (self.user_id,)),
-            ("Mothman", "T2", AVATAR_MOTHMAN_QUEST_QUERY, (self.user_id,)),
-            ("Frogman", "T3", AVATAR_FROGMAN_QUEST_QUERY, (self.user_id,)),
-        ]
-
-        for collection_param in collection_params:
-            await self.handle_quest_complete_check(name= collection_param[0], query=collection_param[2], params=collection_param[3], avatar_id=collection_param[1])
-        for individual_param in individual_quests:
-            await self.handle_quest_complete_check(name= individual_param[0], query=individual_param[2], params=individual_param[3], avatar_id=individual_param[1])
-
-
-    async  def handle_quest_complete_check(self, query, params, name, avatar_id):
-        if get_tgommo_db_handler().QueryHandler.execute_query(query=query, params=params)[0][0] == 1  and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"Q{avatar_id}", user_id=self.user_id):
-            get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"Q{avatar_id}", user_id=self.user_id)
-            avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Quest_{avatar_id}_{name.replace(' ', '')}{IMAGE_FILE_EXTENSION}"
-            await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {name}!!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
-
+            for child_avatar in avatars_to_unlock:
+                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=self.user_id)
+                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Quest_{child_avatar.img_root}{IMAGE_FILE_EXTENSION}"
+                await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)

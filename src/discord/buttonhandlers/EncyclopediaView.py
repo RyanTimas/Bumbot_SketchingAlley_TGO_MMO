@@ -17,7 +17,7 @@ day = "day"
 night = "night"
 both = "both"
 
-next = "next"
+next_ = "next"
 previous = "previous"
 jump = "jump"
 
@@ -79,7 +79,7 @@ class EncyclopediaView(discord.ui.View):
             style=discord.ButtonStyle.blurple,
             row=row
         )
-        button.callback = self.nav_callback(new_page=next if is_next else previous)
+        button.callback = self.nav_callback(new_page=next_ if is_next else previous)
         return button
     def create_advanced_navigation_button(self, row):
         button = discord.ui.Button(
@@ -100,7 +100,7 @@ class EncyclopediaView(discord.ui.View):
 
                 # Update page number
                 page_options = {
-                    next: self.encyclopedia_image_factory.page_num +1,
+                    next_: self.encyclopedia_image_factory.page_num + 1,
                     previous: self.encyclopedia_image_factory.page_num -1,
                    jump: self.new_page
                 }

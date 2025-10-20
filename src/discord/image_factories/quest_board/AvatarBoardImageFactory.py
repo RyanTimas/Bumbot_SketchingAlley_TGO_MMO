@@ -10,19 +10,20 @@ from src.resources.constants.file_paths import *
 AVATAR_QUESTS = "AVATAR_QUESTS"
 UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
-class AvatarBoardHandler:
+class AvatarBoardImageFactory:
     def __init__(self, user_id, open_tab):
         self.user_id = user_id
 
-        self.page_num = 1
-        self.open_tab = UNLOCKED_AVATARS
+        self.open_tab = open_tab
+
+        self.unlocked_avatars = []
+        self.avatar_quests = []
 
         self.avatar_quest_icons = []
         self.unlocked_avatar_icons = []
 
-        self.unlocked_avatar_icons = []
-        self.avatar_quest_icons = []
-
+        self.page_num_unlocked_avatar = 1
+        self.page_num_avatar_quests = 1
         self.total_unlocked_avatar_pages = 1
         self.total_avatar_quest_pages = 1
 
@@ -32,8 +33,12 @@ class AvatarBoardHandler:
 
     def build_avatar_board_page_image(self, new_page_number = None, open_tab = None):
         # set new values in case button was clicked
-        self.page_num = new_page_number if new_page_number is not None else self.page_num
         self.open_tab = open_tab if open_tab is not None else self.open_tab
+        if new_page_number:
+            if self.open_tab == UNLOCKED_AVATARS:
+                self.page_num_unlocked_avatar = new_page_number
+            elif self.open_tab == AVATAR_QUESTS:
+                self.page_num_avatar_quests = new_page_number
 
         # construct base layers, start with environment bg
         background_img = Image.open(AVATAR_BOARD_BACKGROUND_IMAGE)
@@ -55,7 +60,7 @@ class AvatarBoardHandler:
 
     # Unlocked Avatars Section
     def build_unlocked_avatars_section(self, background_img):
-        self.unlocked_avatar_icons = self.get_unlocked_avatars_icons()
+        self.unlocked_avatar_icons = self.unlocked_avatar_icons if self.unlocked_avatar_icons else self.get_unlocked_avatars_icons()
         unlocked_avatars_grid_img = self.create_unlocked_avatars_grid()
 
         background_img.paste(unlocked_avatars_grid_img, (106, 100), unlocked_avatars_grid_img)
@@ -63,33 +68,30 @@ class AvatarBoardHandler:
         return background_img
 
     def get_unlocked_avatars_icons(self, page_swap = 0):
-        if len(self.unlocked_avatar_icons) == 0:
+        if len(self.unlocked_avatars) == 0:
             self.load_relevant_info()
-            self.page_num = 1
-            self.unlocked_avatar_icons = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
 
-        self.page_num += page_swap
+            self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
+
+            self.page_num_unlocked_avatar = 1
+            self.total_unlocked_avatar_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
+        self.page_num_unlocked_avatar += page_swap
 
         imgs = []
         raw_imgs = []
         icons_per_page = 75
 
-        starting_index = (self.page_num - 1) * icons_per_page
-        ending_index = min(starting_index + icons_per_page, len(self.unlocked_avatar_icons))  # Ensure we don't go past the end of the list
+        starting_index = (self.page_num_unlocked_avatar - 1) * icons_per_page
+        ending_index = min(starting_index + icons_per_page, len(self.unlocked_avatars))  # Ensure we don't go past the end of the list
 
         # Only process avatars within our page range
         for i in range(starting_index, ending_index):
-            avatar = self.unlocked_avatar_icons[i]
+            avatar = self.unlocked_avatars[i]
             avatar_icon = UnlockedAvatarIconFactory(avatar=avatar)
             unlocked_avatar_icon_img = avatar_icon.generate_avatar_quest_tab_image()
 
             raw_imgs.append(unlocked_avatar_icon_img)
             imgs.append(convert_to_png(unlocked_avatar_icon_img, f'creature_icon_{avatar.avatar_id}_{avatar.name}.png'))
-
-
-        # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
-        if self.total_unlocked_avatar_pages != (len(self.unlocked_avatar_icons) // icons_per_page) + (1 if len(self.unlocked_avatar_icons) % icons_per_page > 0 else 0):
-            self.total_unlocked_avatar_pages = (len(self.unlocked_avatar_icons) // icons_per_page) + (1 if len(self.unlocked_avatar_icons) % icons_per_page > 0 else 0)
 
         return raw_imgs  #, imgs
 
@@ -132,7 +134,7 @@ class AvatarBoardHandler:
 
     # Avatar Quests Section
     def build_avatar_quests_page(self, background_img):
-        self.avatar_quest_icons = self.get_avatar_quests_icons()
+        self.avatar_quest_icons = self.avatar_quest_icons if self.avatar_quest_icons else self.get_avatar_quests_icons()
         avatar_quests_grid_img = self.create_avatar_quests_grid()
 
         background_img.paste(avatar_quests_grid_img, (103, 100), avatar_quests_grid_img)
@@ -140,34 +142,31 @@ class AvatarBoardHandler:
         return background_img
 
     def get_avatar_quests_icons(self, page_swap = 0):
-        if len(self.avatar_quest_icons) == 0:
+        if len(self.avatar_quests) == 0:
             self.load_relevant_info()
-            self.page_num = 1
 
-            self.avatar_quest_icons = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
+            self.avatar_quests = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
 
-        self.page_num += page_swap
+            self.page_num_avatar_quests = 1
+            self.total_avatar_quest_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
+        self.page_num_avatar_quests += page_swap
 
         imgs = []
         raw_imgs = []
         tabs_per_page = 18
 
-        starting_index = (self.page_num - 1) * tabs_per_page  # Adjust calculation to start from 0
-        ending_index = min(starting_index + tabs_per_page, len(self.avatar_quest_icons))  # Ensure we don't go past the end of the list
+        starting_index = (self.page_num_avatar_quests - 1) * tabs_per_page  # Adjust calculation to start from 0
+        ending_index = min(starting_index + tabs_per_page, len(self.avatar_quests))  # Ensure we don't go past the end of the list
 
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
-            avatar = self.avatar_quest_icons[i]
+            avatar = self.avatar_quests[i]
 
             avatar_quest = AvatarQuestTabFactory(avatar=avatar, user_id=self.user_id)
             avatar_quest_img = avatar_quest.generate_avatar_quest_tab_image()
 
             raw_imgs.append(avatar_quest_img)
             imgs.append(convert_to_png(avatar_quest_img, f'creature_icon_{avatar.img_root}.png'))
-
-        # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
-        if self.total_avatar_quest_pages != (len(self.avatar_quest_icons) // tabs_per_page) + (1 if len(self.avatar_quest_icons) % tabs_per_page > 0 else 0):
-            self.total_avatar_quest_pages = (len(self.avatar_quest_icons) // tabs_per_page) + (1 if len(self.avatar_quest_icons) % tabs_per_page > 0 else 0)
 
         return raw_imgs  #, imgs
 

@@ -8,12 +8,13 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
+from src.discord.buttonhandlers.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
 from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection
-from src.discord.image_factories.quest_board.AvatarBoardHandler import UNLOCKED_AVATARS, AVATAR_QUESTS, \
-    AvatarBoardHandler
+from src.discord.image_factories.quest_board.AvatarBoardImageFactory import UNLOCKED_AVATARS, AVATAR_QUESTS, \
+    AvatarBoardImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import USER_WHITELIST
 
@@ -185,10 +186,10 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
-        avatar_board_handler = AvatarBoardHandler(user_id=target_user.id, open_tab=open_tab)
+        avatar_board_handler = AvatarBoardImageFactory(user_id=target_user.id, open_tab=open_tab)
         avatar_board_img = avatar_board_handler.build_avatar_board_page_image()
 
-        view = PlayerProfileView(user_id=ctx.author.id,player_profile_image_factory=avatar_board_img,tab_is_open=False,open_tab=open_tab)
+        view = AvatarBoardView(message_author=ctx.author, avatar_board_image_factory=avatar_board_handler, open_tab=open_tab)
 
         await ctx.message.delete()
         await ctx.send('', files=[convert_to_png(avatar_board_img, f'avatar_board.png')], view=view)

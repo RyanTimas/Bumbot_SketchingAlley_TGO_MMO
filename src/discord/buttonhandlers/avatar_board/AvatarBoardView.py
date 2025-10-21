@@ -29,7 +29,7 @@ class AvatarBoardView(discord.ui.View):
         self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=1)
 
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
-        self.close_button = create_close_button(row=2, interaction_lock=self.interaction_lock, message_author_id=self.id)
+        self.close_button = create_close_button(row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
 
         self.add_item(self.prev_button)
         self.add_item(self.next_button)

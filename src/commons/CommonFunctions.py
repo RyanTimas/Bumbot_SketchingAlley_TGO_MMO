@@ -260,11 +260,11 @@ def create_close_button(interaction_lock, message_author_id, row=2):
     )
     button.callback = close_callback(interaction_lock, message_author_id)
     return button
-def close_callback(interaction_lock, message_author):
+def close_callback(interaction_lock, message_author_id):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):
         # Check if we're already processing an interaction
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author.id):
+        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
             return
 
         # For delete operation, we need a shorter lock

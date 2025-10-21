@@ -37,7 +37,8 @@ class AvatarBoardView(discord.ui.View):
         self.add_item(self.avatar_quests_button)
 
         self.add_item(self.close_button)
-        self.add_item(self.go_back_button)
+        if self.original_view:
+            self.add_item(self.go_back_button)
 
         self.update_button_states()
 

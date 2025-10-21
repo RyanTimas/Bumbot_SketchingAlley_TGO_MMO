@@ -1,8 +1,10 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png
+from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
+    create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.buttonhandlers.EncyclopediaView import next_, previous
 from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
@@ -21,6 +23,11 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         self.current_avatar_id = player.avatar.avatar_id
         self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
+        self.unlocked_avatars = self.unlocked_avatars
+
+        self.avatar_page_capacity = 25
+        self.avatar_dropdown_page_num = 1
+        self.avatar_dropdown_total_pages = ((len(self.unlocked_avatars) - 1) // self.avatar_page_capacity) + 1
 
         self.background_id = player.background_id
 
@@ -51,6 +58,10 @@ class UpdatePlayerProfileView(discord.ui.View):
         display_creatures_button = self.display_creature_collection_button(row=3)
         save_changes_button = self.create_save_changes_button(row=4)
 
+        self.next_avatars_button = self.create_avatar_dropdown_navigation_button(is_next=True, row=0)
+        self.previous_avatars_button = self.create_avatar_dropdown_navigation_button(is_next=False, row=0)
+        self.placeholder_avatar_options_button = create_dummy_label_button(label_text=f"-----Avatars-----", row=0)
+
         # text inputs
         self.display_name_input = TextInput(label="Display Name (12 chars max)", default=f"{self.display_name}", placeholder="Set your display name", max_length=20, required=False)
         self.display_creature_1_input = None
@@ -59,40 +70,67 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.display_creature_4_input = None
         self.display_creature_5_input = None
         self.display_creature_6_input = None
-        self.update_modal_text_inputs()
 
         self.remove_display_creature_input = TextInput(label="Index of Creature to Remove", default=f"", placeholder="Which creature Slot would you like to remove? (1-6)", max_length=1, required=False)
 
         self.modal_lock = False
 
         # dropdowns
-        avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
+        self.avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
         background_picker_dropdown = self.create_background_picker_dropdown(row=2)
 
         # ADD COMPONENTS TO VIEW
-        self.add_item(avatar_picker_dropdown)                 # row 1
-        # self.add_item(background_picker_dropdown)        # row 2
+        # row 1
+        if len(self.unlocked_avatars) > self.avatar_page_capacity:
+            self.add_item(self.previous_avatars_button)
+            self.add_item(self.placeholder_avatar_options_button)
+            self.add_item(self.next_avatars_button)
+        # row 2
+        self.add_item(self.avatar_picker_dropdown)
+        # row 3
+        self.add_item(create_dummy_label_button(label_text="Update Profile:", row=2))
+        self.add_item(update_profile_button_1)
+        self.add_item(update_profile_button_2)
+        # row 4
+        self.add_item(display_creatures_button)
+        # row 5
+        self.add_item(save_changes_button)
 
-        self.add_item(update_profile_button_1)                    # row 3
-        self.add_item(update_profile_button_2)                    # row 3
-        self.add_item(display_creatures_button)               # row 3
-
-        self.add_item(save_changes_button)                    # row 4
-
+        self.update_view_components()
 
     # CREATE BUTTONS
+    def create_avatar_dropdown_navigation_button(self, is_next, row=0):
+        button = Button(
+            label="➡️" if is_next else "⬅️",
+            style=discord.ButtonStyle.blurple,
+            row=row
+        )
+        button.callback = self.nav_callback(new_page=next_ if is_next else previous)
+        return button
+    def nav_callback(self, new_page,):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            await interaction.response.defer()
+
+            self.avatar_dropdown_page_num += 1 if new_page == next_ else -1
+            self.update_view_components()
+
+            await interaction.message.edit(view=self)
+        return callback
+
+
     def create_update_profile_button(self, page, row=0):
         button = Button(label=f"Change Profile - {page}", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.update_profile_button_callback_page_1 if page == 1 else self.update_profile_button_callback_page_2
         return button
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def update_profile_button_callback_page_1(self, interaction: discord.Interaction):
-        self.update_modal_text_inputs()
+        self.update_view_components()
         await interaction.response.send_modal(self.create_user_details_modal(options=(self.display_name_input, self.display_creature_1_input, self.display_creature_2_input, self.display_creature_3_input)))
 
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def update_profile_button_callback_page_2(self, interaction: discord.Interaction):
-        self.update_modal_text_inputs()
+        self.update_view_components()
         await interaction.response.send_modal(self.create_user_details_modal(options=(self.display_creature_4_input, self.display_creature_5_input, self.display_creature_6_input)))
 
     def create_save_changes_button(self, row=0):
@@ -122,6 +160,7 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         await interaction.response.send_message("Changes successfully saved!", ephemeral=True)
         await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.display_name, interaction=interaction).check_avatar_unlock_conditions()
+        await interaction.message.delete(delay=2)
 
 
     def display_creature_collection_button(self, row=0):
@@ -156,8 +195,7 @@ class UpdatePlayerProfileView(discord.ui.View):
 
     # CREATE DROPDOWNS
     def create_avatar_picker_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Avatar {i} - {self.unlocked_avatars[i-1].name}", value=str(self.unlocked_avatars[i-1].avatar_id)) for i in range(1, len(self.unlocked_avatars)+1)]
-        dropdown = Select(placeholder="Choose Avatar", options=options, min_values=1, max_values=1, row=row)
+        dropdown = Select(placeholder="Choose Avatar", options=self.get_avatar_dropdown_options(), min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
     async def avatar_dropdown_callback(self, interaction: discord.Interaction):
@@ -321,6 +359,18 @@ class UpdatePlayerProfileView(discord.ui.View):
         for duplicate_id, position in positions:
             setattr(self, creature_id_attrs[position], "-1")
 
+    def get_avatar_dropdown_options(self):
+        first_index = ((self.avatar_dropdown_page_num - 1) * self.avatar_page_capacity)
+        last_index = min(self.avatar_dropdown_page_num * self.avatar_page_capacity, len(self.unlocked_avatars))
+
+        return [discord.SelectOption(label=f"Avatar {i+1} - {self.unlocked_avatars[i].name}", value=str(self.unlocked_avatars[i].avatar_id)) for i in range(first_index, last_index)]
+
+    # BUILD VIEW CONTENT
+    def update_view_components(self):
+        self.update_modal_text_inputs()
+        self.update_button_states()
+        self.update_dropdown_options()
+
 
     def update_modal_text_inputs(self):
         self.display_name_input = TextInput(label="DisplayName", default=f"{self.display_name}", placeholder="Set your display name", max_length=20, required=False)
@@ -331,3 +381,14 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.display_creature_4_input = TextInput(label="Display Creature 4", default=f"{self.creature_id_4 if self.creature_id_4 != -1 else ''}",placeholder="Set creature ID for slot 4 (use 'See Creature Storage' to view options)",max_length=20, required=False)
         self.display_creature_5_input = TextInput(label="Display Creature 5", default=f"{self.creature_id_5 if self.creature_id_5 != -1 else ''}",placeholder="Set creature ID for slot 5 (use 'See Creature Storage' to view options)",max_length=20, required=False)
         self.display_creature_6_input = TextInput(label="Display Creature 6", default=f"{self.creature_id_6 if self.creature_id_6 != -1 else ''}",placeholder="Set creature ID for slot 6 (use 'See Creature Storage' to view options)",max_length=20, required=False)
+
+    def update_dropdown_options(self):
+        self.avatar_picker_dropdown.options = self.get_avatar_dropdown_options()
+
+    def update_button_states(self):
+        first_index = ((self.avatar_dropdown_page_num - 1) * self.avatar_page_capacity) + 1
+        last_index = min(self.avatar_dropdown_page_num * self.avatar_page_capacity, len(self.unlocked_avatars))
+        self.placeholder_avatar_options_button.label = f"-----Avatars ({first_index} - {last_index})-----"
+
+        self.next_avatars_button.disabled = self.avatar_dropdown_page_num >= self.avatar_dropdown_total_pages
+        self.previous_avatars_button.disabled = self.avatar_dropdown_page_num == 1

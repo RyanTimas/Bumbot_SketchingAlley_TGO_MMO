@@ -202,6 +202,7 @@ class TGOMMOMenuView(discord.ui.View):
                     message_author=self.message_author,
                     avatar_board_image_factory=avatar_board_img_factory,
                     open_tab=avatar_board_img_factory.open_tab,
+                    original_view=self
                 )
 
                 # Update button states

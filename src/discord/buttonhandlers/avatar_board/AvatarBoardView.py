@@ -2,17 +2,19 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png
+from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png, \
+    create_go_back_button, create_close_button
 from src.discord.buttonhandlers.EncyclopediaView import next_, previous
 from src.discord.image_factories.quest_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS, \
     UNLOCKED_AVATARS
 
 
 class AvatarBoardView(discord.ui.View):
-    def __init__(self, message_author, avatar_board_image_factory: AvatarBoardImageFactory, open_tab=AVATAR_QUESTS):
+    def __init__(self, message_author, avatar_board_image_factory: AvatarBoardImageFactory, open_tab=AVATAR_QUESTS, original_view=None):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.interaction_lock = asyncio.Lock()
+        self.original_view = original_view
 
         self.avatar_board_image_factory = avatar_board_image_factory
         self.open_tab = open_tab
@@ -23,13 +25,19 @@ class AvatarBoardView(discord.ui.View):
         self.prev_button = self.create_navigation_button(is_next=False, row=0)
         self.next_button = self.create_navigation_button(is_next=True, row=0)
 
-        self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=1)
         self.avatar_quests_button = self.create_open_avatar_quests_panel_button(row=1)
+        self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=1)
+
+        self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
+        self.close_button = create_close_button(row=2, interaction_lock=self.interaction_lock, message_author_id=self.id)
 
         self.add_item(self.prev_button)
         self.add_item(self.next_button)
         self.add_item(self.unlocked_avatar_tab_button)
         self.add_item(self.avatar_quests_button)
+
+        self.add_item(self.close_button)
+        self.add_item(self.go_back_button)
 
         self.update_button_states()
 
@@ -83,7 +91,7 @@ class AvatarBoardView(discord.ui.View):
 
     def create_open_unlocked_avatars_panel_button(self, row=1):
         button = discord.ui.Button(
-            label="Avatars",
+            label="Unlocked Avatars",
             style=discord.ButtonStyle.primary,
             row=row  # Place in second row
         )

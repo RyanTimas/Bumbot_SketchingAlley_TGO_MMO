@@ -9,9 +9,11 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
+from src.discord.buttonhandlers.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
 from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
+from src.discord.image_factories.quest_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
 from src.resources.constants.file_paths import *
 
 
@@ -38,6 +40,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
+        self.avatar_board_button = self.create_avatar_board_button(row=2)
 
         self.close_button = self.create_close_button(row=3)
 
@@ -50,6 +53,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.add_item(self.open_server_encyclopedia_button)
 
         self.add_item(self.open_player_profile_button)
+        self.add_item(self.avatar_board_button)
 
         self.add_item(self.close_button)
 
@@ -81,7 +85,6 @@ class TGOMMOMenuView(discord.ui.View):
         )
         button.callback = self.encyclopedia_callback(button_type=button_type, is_verbose=False, show_variants=False, show_mythics=False)
         return button
-
     def encyclopedia_callback(self, button_type, is_verbose=False, show_variants=False, show_mythics=False):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -133,7 +136,6 @@ class TGOMMOMenuView(discord.ui.View):
         )
         button.callback = self.player_profile_callback(tab_is_open=tab_is_open, open_tab=open_tab)
         return button
-
     def player_profile_callback(self, tab_is_open=False, open_tab=TEAM):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -169,6 +171,47 @@ class TGOMMOMenuView(discord.ui.View):
                 # Send updated view
                 await interaction.message.edit(attachments=[file], view=view)
 
+        return callback
+
+
+    def create_avatar_board_button(self, row=1):
+        button = discord.ui.Button(
+            label="Open Avatar Board",
+            style=discord.ButtonStyle.red,
+            row=row
+        )
+        button.callback = self.display_avatar_board_callback()  # Add parentheses to call the function
+        return button
+    def display_avatar_board_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                avatar_board_img_factory = AvatarBoardImageFactory(
+                    user_id=self.message_author.id,
+                    open_tab= AVATAR_QUESTS,
+                )
+
+                avatar_board_view = AvatarBoardView(
+                    message_author=self.message_author,
+                    avatar_board_image_factory=avatar_board_img_factory,
+                    open_tab=avatar_board_img_factory.open_tab,
+                )
+
+                # Update button states
+                self.update_button_states()
+
+                new_avatar_board_img = avatar_board_img_factory.build_avatar_board_page_image()
+                file = convert_to_png(new_avatar_board_img, f'avatar_board.png')
+
+                # Send updated view
+                await interaction.message.edit(attachments=[file], view=avatar_board_view)
         return callback
 
 

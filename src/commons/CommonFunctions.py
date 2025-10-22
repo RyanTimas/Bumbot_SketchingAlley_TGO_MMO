@@ -199,7 +199,7 @@ async def check_if_user_can_interact_with_view(interaction, interaction_lock, me
         return False
 
     if interaction.user.id != message_author:
-        await interaction.response.send_message("Only the user who used this command may interact with this screen.", ephemeral=True)
+        await interaction.response.send_message("You do not have permission to interact with this command, freak.", ephemeral=True)
         return False
 
     return True

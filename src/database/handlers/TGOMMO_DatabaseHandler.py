@@ -245,6 +245,10 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
         return response[0][0]
 
+    def user_has_caught_species(self, user_id=0, creature_id=0):
+        response = self.QueryHandler.execute_query(TGOMMO_HAS_USER_CAUGHT_SPECIES, params=(user_id, creature_id))
+        return response[0][0] == 0
+
     def get_total_server_catches_for_species(self, creature_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID,params=(creature_id,))
         return response[0][0]

@@ -161,6 +161,8 @@ class AvatarBoardImageFactory:
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
             avatar = self.avatar_quests[i]
+            if avatar.is_secret:
+                continue
 
             avatar_quest = AvatarQuestTabFactory(avatar=avatar, user_id=self.user_id)
             avatar_quest_img = avatar_quest.generate_avatar_quest_tab_image()

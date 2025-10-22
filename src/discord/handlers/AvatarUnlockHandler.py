@@ -7,6 +7,7 @@ from sqlalchemy.orm.collections import collection
 from sqlalchemy.util import await_only
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.avatar_quest_db_queries import *
 from src.resources.constants.file_paths import *
 
@@ -17,7 +18,7 @@ class AvatarUnlockHandler:
         self.nickname = nickname
         self.interaction = interaction
 
-    async def check_avatar_unlock_conditions(self):
+    async def check_avatar_unlock_conditions(self, creature:TGOCreature =None):
         # secret unlocks
         if self.nickname:
             await self.handle_nickname_based_unlocks()
@@ -27,6 +28,10 @@ class AvatarUnlockHandler:
 
         # event unlocks
         await self.timeline_based_avatar_unlocks()
+
+        # todo: handle special case unlocks based on creature caught
+        if creature:
+            pass
 
 
     # NICKNAME-BASED UNLOCK HANDLERS

@@ -1,5 +1,5 @@
 class TGOAvatar:
-    def __init__(self, avatar_num:int =1, avatar_id:str ="", name:str ="", avatar_type:str ="Default", img_root:str ="", series:str ="", unlock_query:str ="", unlock_threshold:int =0, is_parent_entry:bool =False):
+    def __init__(self, avatar_num:int =1, avatar_id:str ="", name:str ="", avatar_type:str ="Default", img_root:str ="", series:str ="", unlock_query:str ="", unlock_threshold:int =0, is_parent_entry:bool =False, is_secret:bool =False):
         self.avatar_num = avatar_num
 
         self.avatar_id = avatar_id
@@ -13,3 +13,4 @@ class TGOAvatar:
         self.unlock_threshold = unlock_threshold
 
         self.is_parent_entry = is_parent_entry
+        self.is_secret = is_secret

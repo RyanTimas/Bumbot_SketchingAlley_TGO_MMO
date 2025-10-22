@@ -17,7 +17,8 @@ from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO
+from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO, TGOMMO_ROLE
+
 
 class CreatureSpawnerHandler:
     def __init__(self, discord_bot: Bot):
@@ -112,15 +113,17 @@ class CreatureSpawnerHandler:
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day).generate_spawn_embed()
 
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
+            content=TGOMMO_ROLE,
             view=TGOMMOEncounterView(discord_bot=self.discord_bot, message=f'Catch', creature=creature, environment=self.current_environment),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
         )
 
         # Create separate task for despawn
-        thread = threading.Thread(target=self._handle_despawn, args=(creature, spawn_message))
-        thread.daemon = True
-        thread.start()
+        if creature.rarity.name != TRANSCENDANT.name and creature.rarity.name != MYTHICAL.name:
+            thread = threading.Thread(target=self._handle_despawn, args=(creature, spawn_message))
+            thread.daemon = True
+            thread.start()
 
     # Spawns a duplicate creature to give illusion of a swarm
     async def duplicate_creature_spawner(self, creature: TGOCreature):

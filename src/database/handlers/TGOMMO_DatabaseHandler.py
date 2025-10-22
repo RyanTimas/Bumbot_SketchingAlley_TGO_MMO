@@ -133,7 +133,7 @@ class TGOMMODatabaseHandler:
         if convert_to_object:
             avatars = []
             for avatar_details in response:
-                avatar = TGOAvatar(avatar_num=-1, avatar_id=avatar_details[0], name=avatar_details[1],avatar_type=AVATAR_TYPE_SECRET, img_root=avatar_details[2],unlock_query=avatar_details[3], unlock_threshold=avatar_details[4], is_parent_entry=avatar_details[5])
+                avatar = TGOAvatar(avatar_num=-1, avatar_id=avatar_details[0], name=avatar_details[1],avatar_type=AVATAR_TYPE_SECRET, img_root=avatar_details[2],unlock_query=avatar_details[3], unlock_threshold=avatar_details[4], is_parent_entry=avatar_details[5], is_secret=avatar_details[6])
                 avatars.append(avatar)
             return avatars
         return response
@@ -626,6 +626,8 @@ class TGOMMODatabaseHandler:
             ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, 'Leaf', 'Pokemon',),
             ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, 'Hilbert', 'Pokemon',),
             ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, 'Hilda', 'Pokemon',),
+            ('D5', 'Paxton', AVATAR_TYPE_DEFAULT, 'Paxton', 'Pokemon',),
+            ('D6', 'Harmony', AVATAR_TYPE_DEFAULT, 'Harmony', 'Pokemon',),
 
             # Secret Avatars
             ('S1', 'Jordo', AVATAR_TYPE_SECRET, 'Jordo', 'Sketching Alley',),
@@ -664,15 +666,18 @@ class TGOMMODatabaseHandler:
             ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, 'Lyra', 'Pokemon',),
 
             ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
-            ('Q9', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'SquirrelGirl', 'Marvel',),
-            ('Q10', 'Turbo Granny', AVATAR_TYPE_QUEST, 'TurboGranny', 'DanDaDan',),
-            ('Q11', 'Mordecai', AVATAR_TYPE_QUEST, 'Mordecai', 'Regular Show',),
-            ('Q12', 'Rigby', AVATAR_TYPE_QUEST, 'Rigby', 'Regular Show',),
+            ('Q9', 'Turbo Granny', AVATAR_TYPE_QUEST, 'TurboGranny', 'DanDaDan',),
+            ('Q10', 'Mordecai', AVATAR_TYPE_QUEST, 'Mordecai', 'Regular Show',),
+            ('Q11', 'Rigby', AVATAR_TYPE_QUEST, 'Rigby', 'Regular Show',),
+            ('Q12', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'SquirrelGirl', 'Marvel',),
+            ('Q13', 'Noko Shikanoko', AVATAR_TYPE_QUEST, 'NokoShikanoko', 'Anime',),
 
-            ('Q13', 'Huntrix', AVATAR_TYPE_QUEST, 'Huntrix', 'K-Pop Demon Hunters',  True,),
-            ('Q13a', 'Rumi', AVATAR_TYPE_QUEST, 'Rumi', 'K-Pop Demon Hunters',),
-            ('Q13b', 'Mira', AVATAR_TYPE_QUEST, 'Mira', 'K-Pop Demon Hunters',),
-            ('Q13c', 'Zoey', AVATAR_TYPE_QUEST, 'Zoey', 'K-Pop Demon Hunters',),
+            ('Q14', 'Huntrix', AVATAR_TYPE_QUEST, 'Huntrix', 'K-Pop Demon Hunters',  True,),
+            ('Q14a', 'Rumi', AVATAR_TYPE_QUEST, 'Rumi', 'K-Pop Demon Hunters',),
+            ('Q14b', 'Mira', AVATAR_TYPE_QUEST, 'Mira', 'K-Pop Demon Hunters',),
+            ('Q14c', 'Zoey', AVATAR_TYPE_QUEST, 'Zoey', 'K-Pop Demon Hunters',),
+            ('Q15', 'Shuma Gorath', AVATAR_TYPE_QUEST, 'ShumaGorath', 'Marvel',),
+            ('Q16', 'Gary', AVATAR_TYPE_QUEST, 'Gary', 'Pokemon',),
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),
@@ -707,16 +712,25 @@ class TGOMMODatabaseHandler:
             ('TMNT', ('Q6', AVATAR_VARIANTS_QUEST_1_QUERY, 10)),
             ('HGSS', ('Q7', AVATAR_MYTHICAL_QUEST_QUERY, 1)),
             ('Homer', ('Q8', AVATAR_MYTHICAL_QUEST_QUERY, 5)),
-            ('Squirrel Girl', ('Q9', AVATAR_SQUIRRELGIRL_QUEST_QUERY, 100)),
-            ('Huntrix', ('Q13', AVATAR_LEGENDARY_QUEST_QUERY, 3)),
+            ('Mordecai', ('Q10', AVATAR_MORDECAI_QUEST_QUERY, 50)),
+            ('Rigby', ('Q11', AVATAR_RIGBY_QUEST_QUERY, 100)),
+            ('Squirrel Girl', ('Q12', AVATAR_SQUIRRELGIRL_QUEST_QUERY, 100)),
+            ('Noko Shikanoko', ('Q13', AVATAR_NOKOSHIKANOKO_QUEST_QUERY, 100)),
+            ('Huntrix', ('Q14', AVATAR_LEGENDARY_QUEST_QUERY, 3)),
+            ('Shuma Gorath', ('Q15', AVATAR_TOTAL_EPIC_QUEST_QUERY, 10)),
+            ('Gary', ('Q16', AVATAR_GARY_QUEST_QUERY, 50)),
 
-            # ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY,1)),
-            # ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY,1)),
-            # ('Frogman', ('T3', AVATAR_FROGMAN_QUEST_QUERY,1)),
+            ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY,1, True)),
+            ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY,1, True)),
+            ('Frogman', ('T3', AVATAR_FROGMAN_QUEST_QUERY,1, True)),
         ]
 
         for index, avatar in enumerate(avatar_data):
-            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=avatar[1])
+            avatar_params = avatar[1]
+            if len(avatar_params) == 3:
+                avatar_params = avatar_params + (False,)
+
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=avatar_params)
 
 
     def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name=''):

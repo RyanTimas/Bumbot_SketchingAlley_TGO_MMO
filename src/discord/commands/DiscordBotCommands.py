@@ -165,7 +165,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         player_profile_image_factory = PlayerProfilePageFactory(user_id=ctx.author.id,target_user = target_user, tab_is_open=tab_is_open, open_tab=open_tab)
         player_profile_img = player_profile_image_factory.build_player_profile_page_image()
 
-        view = PlayerProfileView(user_id=ctx.author.id,player_profile_image_factory=player_profile_image_factory,tab_is_open=False,open_tab=open_tab)
+        view = PlayerProfileView(user=ctx.author, profile_user_id=target_user_id, player_profile_image_factory=player_profile_image_factory,tab_is_open=False,open_tab=open_tab)
 
         await ctx.message.delete()
         await ctx.send('', files=[convert_to_png(player_profile_img, f'player_profile.png')], view=view)

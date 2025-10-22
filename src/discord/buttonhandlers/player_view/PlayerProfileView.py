@@ -10,9 +10,12 @@ from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePa
 
 
 class PlayerProfileView(discord.ui.View):
-    def __init__(self, user_id, player_profile_image_factory: PlayerProfilePageFactory, tab_is_open=False, open_tab=TEAM, original_view=None):
+    def __init__(self, user, player_profile_image_factory: PlayerProfilePageFactory, tab_is_open=False, open_tab=TEAM, original_view=None, profile_user_id=None):
         super().__init__(timeout=None)
-        self.user_id = user_id
+        self.user = user
+        self.user_id = user.id
+        self.profile_user_id = profile_user_id if profile_user_id is not None else self.user_id
+
         self.player_profile_image_factory = player_profile_image_factory
         self.tab_is_open = tab_is_open
         self.open_tab = open_tab
@@ -34,7 +37,8 @@ class PlayerProfileView(discord.ui.View):
 
         # Add buttons to view
         # row 1
-        self.add_item(self.update_player_profile_button)
+        if self.user_id == self.profile_user_id:
+            self.add_item(self.update_player_profile_button)
 
         # row 2
         self.add_item(self.panel_toggle_button)
@@ -189,7 +193,7 @@ class PlayerProfileView(discord.ui.View):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.user_id):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.profile_user_id):
                 return
 
             # Acquire lock to prevent concurrent actions
@@ -197,5 +201,5 @@ class PlayerProfileView(discord.ui.View):
                 await interaction.response.defer()
 
                 player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
-                await interaction.followup.send("Are you sure you want to change your display creatures? *(Note: This changes YOUR display creatures)*", ephemeral=False, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=player, player_profile_image_factory=self.player_profile_image_factory, original_view=self, original_message=interaction.message))
+                await interaction.followup.send(f"{self.user.mention} Welcome to the Player Profile Editor!*", ephemeral=False, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=player, player_profile_image_factory=self.player_profile_image_factory, original_view=self, original_message=interaction.message))
         return callback

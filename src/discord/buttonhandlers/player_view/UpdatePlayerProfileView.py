@@ -1,8 +1,10 @@
+import asyncio
+
 import discord
 from discord.ui import Modal, TextInput, Button, Select
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
-    create_dummy_label_button
+    create_dummy_label_button, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.buttonhandlers.EncyclopediaView import next_, previous
 from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
@@ -50,6 +52,8 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.rod_amount = player.rod_amount
         self.trap_level = player.trap_level
         self.trap_amount = player.trap_amount
+
+        self.interaction_lock = asyncio.Lock()
 
         # LOAD VIEW COMPONENTS
         # buttons
@@ -107,9 +111,12 @@ class UpdatePlayerProfileView(discord.ui.View):
         )
         button.callback = self.nav_callback(new_page=next_ if is_next else previous)
         return button
+    @retry_on_ssl_error(max_retries=3, delay=1)
     def nav_callback(self, new_page,):
-        @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+                return
+
             await interaction.response.defer()
 
             self.avatar_dropdown_page_num += 1 if new_page == next_ else -1
@@ -118,18 +125,22 @@ class UpdatePlayerProfileView(discord.ui.View):
             await interaction.message.edit(view=self)
         return callback
 
-
     def create_update_profile_button(self, page, row=0):
         button = Button(label=f"Change Profile - {page}", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.update_profile_button_callback_page_1 if page == 1 else self.update_profile_button_callback_page_2
         return button
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def update_profile_button_callback_page_1(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+            return
+
         self.update_view_components()
         await interaction.response.send_modal(self.create_user_details_modal(options=(self.display_name_input, self.display_creature_1_input, self.display_creature_2_input, self.display_creature_3_input)))
-
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def update_profile_button_callback_page_2(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+            return
+
         self.update_view_components()
         await interaction.response.send_modal(self.create_user_details_modal(options=(self.display_creature_4_input, self.display_creature_5_input, self.display_creature_6_input)))
 
@@ -139,6 +150,9 @@ class UpdatePlayerProfileView(discord.ui.View):
         return button
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def save_changes_button_callback(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+            return
+
         # filter creature IDs to ensure they are valid
         await self.handle_invalid_creature_ids(interaction)
 
@@ -162,13 +176,14 @@ class UpdatePlayerProfileView(discord.ui.View):
         await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.display_name, interaction=interaction).check_avatar_unlock_conditions()
         await interaction.message.delete(delay=2)
 
-
     def display_creature_collection_button(self, row=0):
         button = Button(label="See Creature Storage", style=discord.ButtonStyle.red, row=row)
         button.callback = self.display_creature_collection_callback
         return button
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def display_creature_collection_callback(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.user_id):
+            return
         await self.build_user_creature_collection(interaction)
 
 
@@ -181,7 +196,11 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         user_details_modal.on_submit = self.user_details_modal_on_submit
         return user_details_modal
+    @retry_on_ssl_error(max_retries=3, delay=1)
     async def user_details_modal_on_submit(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+            return
+
         self.display_name = self.display_name_input.value if self.display_name_input.value != '' else self.display_name
         self.creature_id_1 = self.display_creature_1_input.value if self.display_creature_1_input.value != '' else -1
         self.creature_id_2 = self.display_creature_2_input.value if self.display_creature_2_input.value != '' else -1
@@ -198,7 +217,11 @@ class UpdatePlayerProfileView(discord.ui.View):
         dropdown = Select(placeholder="Choose Avatar", options=self.get_avatar_dropdown_options(), min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
+    @retry_on_ssl_error(max_retries=3, delay=1)
     async def avatar_dropdown_callback(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
+            return
+
         # Access the selected value from the interaction
         self.current_avatar_id = interaction.data["values"][0]
         await interaction.response.defer()
@@ -208,6 +231,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         dropdown = Select(placeholder="Choose Background Style", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
+    @retry_on_ssl_error(max_retries=3, delay=1)
     async def background_dropdown_callback(self, interaction: discord.Interaction):
         # Access the selected value from the interaction
         self.background_id = int(interaction.data["values"][0])
@@ -370,7 +394,6 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.update_modal_text_inputs()
         self.update_button_states()
         self.update_dropdown_options()
-
 
     def update_modal_text_inputs(self):
         self.display_name_input = TextInput(label="DisplayName", default=f"{self.display_name}", placeholder="Set your display name", max_length=20, required=False)

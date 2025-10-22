@@ -139,7 +139,6 @@ class TGOMMOMenuView(discord.ui.View):
     def player_profile_callback(self, tab_is_open=False, open_tab=TEAM):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            # Check if we're already processing an interaction
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
                 return
 

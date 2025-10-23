@@ -1,14 +1,10 @@
 import datetime
-from fileinput import filename
 
 import discord
 import pytz
-from sqlalchemy.orm.collections import collection
-from sqlalchemy.util import await_only
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.avatar_quest_db_queries import *
 from src.resources.constants.file_paths import *
 
 

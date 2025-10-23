@@ -1,6 +1,6 @@
 import sqlite3
 
-from src.resources.db_queries import SA_CREATE_DELUXEWALLENTRIES_TABLE, SA_CREATE_ROLES_TABLE, SA_CREATE_USERS_TABLE
+from src.resources.constants.queries.create_table_queries import *
 
 
 class QueryHandler:

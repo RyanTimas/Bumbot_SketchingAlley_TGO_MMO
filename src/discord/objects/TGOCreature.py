@@ -8,7 +8,7 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = ''):
+    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = ''):
         self.creature_id = creature_id
 
         self.name = name
@@ -24,6 +24,7 @@ class TGOCreature:
         self.description = description
 
         self.img_root = img_root + f'_{variant_no}'
+        self.sub_environment = sub_environment
         self.encounter_rate = encounter_rate
 
         self.rarity = rarity

@@ -10,6 +10,7 @@ class TGOEnvironment:
         self.location = location
         self.description = description
 
+        self.short_name = img_root
         self.img_root = img_root + f'_{variant_no}'
         self.is_night_environment = is_night_environment == 1
         self.in_circulation = in_circulation

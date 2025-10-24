@@ -394,6 +394,7 @@ class TGOMMODatabaseHandler:
 
         # Clear existing records
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENTS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_ENVIRONMENT_CREATURES, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_UNLOCK_CONDITIONS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
@@ -499,8 +500,8 @@ class TGOMMODatabaseHandler:
         environment_data = [
             # 01 Eastern US Forest
             ('Eastern United States', 'Summer - Day', 1, 1, 'Eastern United States', '', 'est_us', False, True, 5),
-            ('Eastern United States', 1, 2, 'Eastern United States', '', 'est_us', True, True, 5),
-            ('Eastern United States', 1, 3, 'Eastern United States', '', 'est_us', False, False, 5),
+            ('Eastern United States', 'Summer - Night',1, 2, 'Eastern United States', '', 'est_us', True, True, 5),
+            ('Eastern United States', 'Winter - Day',1, 3, 'Eastern United States', '', 'est_us', False, False, 5),
             ('Eastern United States', 'Winter - Night', 1, 4, 'Eastern United States', '', 'est_us', False, False, 5),
 
             # 02 Everglades

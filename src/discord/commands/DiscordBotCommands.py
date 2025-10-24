@@ -230,11 +230,11 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         environment_id = 1
         variant_no = 1
 
-        if param1.isdigit():
+        if param1 and param1.isdigit():
             environment_id = int(param1)
             if param2 and param2.isdigit():
                 variant_no = int(param2)
-        elif param2.isdigit():
+        elif param2 and param2.isdigit():
             environment_id = int(param2)
             if param3 and param3.isdigit():
                 variant_no = int(param3)

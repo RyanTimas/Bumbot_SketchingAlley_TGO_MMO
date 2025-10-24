@@ -60,7 +60,7 @@ class CreatureSpawnerHandler:
             local_name = creature_link[2]
             creature_info = get_tgommo_db_handler().get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1], convert_to_object=False)
 
-            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]))
+            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]), sub_environment=creature_link[4])
             self.creature_spawn_pool.append(creature)
 
     def define_time_of_day(self):
@@ -138,7 +138,6 @@ class CreatureSpawnerHandler:
             critter_chain_multiplier += 1
             if random.randint(0, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
                 duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720)
                 duplicate_creature.img_root += '_S'
 
             await self.spawn_creature(duplicate_creature)

@@ -553,7 +553,7 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(CICADA_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(AMERICAN_CROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(RED_TAILED_HAWK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
-            self.format_creature_environment_link_params(SNOWY_OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
+            self.format_creature_environment_link_params(SNOWY_OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FIELD),
 
             # Forest - Night Spawns
             self.format_creature_environment_link_params(DEER_DEX_NO, 1, EASTERN_US_FOREST_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
@@ -597,14 +597,14 @@ class TGOMMODatabaseHandler:
     def insert_transcendant_environment_creature_records(self):
         environment_creature_data = [
             # EST US - Day Spawns
-             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
-            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
-            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, ''),
+             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
 
             # EST US - Night Spawns
-            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
-            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
-            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, ''),
+            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
         ]
 
         for ec_link in environment_creature_data:

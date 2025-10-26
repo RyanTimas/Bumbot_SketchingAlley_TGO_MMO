@@ -151,7 +151,7 @@ class CreatureSpawnerHandler:
     async def creature_picker(self):
         # FOR LAUNCH, SET COMMON CRITTERS TO BE WAY MORE COMMON BUT MAKE SPAWN MORE FREQUENTLY, only a 25% chance to pull an actual roll
         rarity = get_rarity() if (flip_coin(total_iterations=2) or self.time_of_day in (DUSK, DAWN)) else COMMON
-        rarity = TRANSCENDANT if flip_coin(total_iterations=11) else rarity
+        rarity = TRANSCENDANT if flip_coin(total_iterations=13) else rarity
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0

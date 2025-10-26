@@ -154,7 +154,7 @@ class TGOMMOMenuView(discord.ui.View):
                 )
 
                 view = PlayerProfileView(
-                    user_id=self.message_author.id,
+                    user=self.message_author,
                     player_profile_image_factory=player_profile_img_factory,
                     tab_is_open=tab_is_open,
                     open_tab=open_tab,

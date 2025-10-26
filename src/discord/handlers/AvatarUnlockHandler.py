@@ -36,22 +36,33 @@ class AvatarUnlockHandler:
         player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
 
         avatar_combos = {
-            "jordo": ("S1", "Jordo"),
-            "miku": ("S2", "Miku"),
-            "garfield": ("S3", "Garfield"),
-            "samus": ("S4", "Samus"),
-            "boss": ("S5", "BossBaby"),
-            "white": ("S6", "WalterWhite"),
+            # WAVE 1
+            (("jordo",), ("Jordo", "S1", "Jordo")),
+            (("miku",), ("Hatsune Miku", "S2", "Miku")),
+            (("garfield",), ("Garfield", "S3", "Garfield")),
+            (("samus", "aran", "metroid"),  ("Samus Aran", "S4", "Samus")),
+            (("boss", "baby"), ("the Boss Baby", "S5", "BossBaby")),
+            (("white", "walter"), ("Walter White", "S6", "WalterWhite")),
+            # WAVE 2
+            (("pink", "jesse"), ("Jesse Pinkman", "S7", "JessePinkman")),
+            (("mike", "ehrmantraut", "finger"), ("Mike Ehrmantraut", "S8", "MikeEhrmantraut")),
+            (("porky", "pig"), ("Porky Pig", "S9", "Porky")),
         }
 
-        if self.nickname is not None and self.nickname.lower() in avatar_combos:
-            avatar_id = avatar_combos[self.nickname.lower()][0]
-            file_name = f"_Secret_{avatar_combos[self.nickname.lower()][1]}"
+        for avatar in avatar_combos:
+            unlock_terms = avatar[0]
+            avatar_name = avatar[1][0]
+            avatar_id = avatar[1][1]
+            avatar_img_root = avatar[1][2]
 
-            if avatar_id not in unlocked_secret_avatars:
-                get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar_id)
-                await self.interaction.channel.send(f"The secret avatar *{self.nickname.upper()}* has been unlocked for the server thanks to @{player.nickname}!!", file=discord.File(f"{PLAYER_PROFILE_AVATAR_BASE}{file_name}{IMAGE_FILE_EXTENSION}", filename="avatar.png"))
-            return
+            for unlock_term in unlock_terms:
+                if unlock_term in self.nickname.lower():
+                    file_name = f"_Secret_{avatar_img_root}"
+
+                    if avatar_id not in unlocked_secret_avatars:
+                        get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar_id)
+                        await self.interaction.channel.send(f"The secret avatar *{avatar_name}* has been unlocked for the server thanks to @{player.nickname}!!", file=discord.File(f"{PLAYER_PROFILE_AVATAR_BASE}{file_name}{IMAGE_FILE_EXTENSION}", filename="avatar.png"))
+                    return
 
     # EVENT-BASED UNLOCK HANDLERS
     async  def timeline_based_avatar_unlocks(self):

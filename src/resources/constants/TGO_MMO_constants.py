@@ -6,6 +6,7 @@ MYTHICAL_SPAWN_CHANCE = 350  # 1 in 350 chance of a mythical spawning
 # track user timeouts
 USER_CATCHES_DAILY = {}
 USER_CATCHES_HOURLY = {}
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 '''TIME OF DAY'''
 DAY = "Day"
@@ -39,6 +40,13 @@ CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
 # todo: when every species in a location is caught, everyone who caught a species in that location gets +5000 xp
 CREATURE_TOTAL_XP_LINE_CENTERED = "‎                         ✨ **Total 150000 xp** ✨                        ‎ "
 
+
+'''AVATAR QUESTS'''
+AVATAR_QUEST_COMMON_COUNT = 100
+AVATAR_QUEST_UNCOMMON_COUNT = 50
+AVATAR_QUEST_RARE_COUNT = 25
+AVATAR_QUEST_EPIC_COUNT = 12
+AVATAR_QUEST_LEGENDARY_COUNT = 5
 
 '''ENCOUNTER SCREEN'''
 TEXT_BOX_WIDTH = 426

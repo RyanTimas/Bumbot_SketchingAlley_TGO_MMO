@@ -756,21 +756,28 @@ class TGOMMODatabaseHandler:
 
     def insert_user_avatar_records(self):
         avatar_data = [
-            # Default Avatars
+            # ----DEFAULT AVATARS----
             ('D1', 'Red', AVATAR_TYPE_DEFAULT, 'Red', 'Pokemon',),
             ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, 'Leaf', 'Pokemon',),
             ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, 'Hilbert', 'Pokemon',),
             ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, 'Hilda', 'Pokemon',),
             ('D5', 'Paxton', AVATAR_TYPE_DEFAULT, 'Paxton', 'Pokemon',),
             ('D6', 'Harmony', AVATAR_TYPE_DEFAULT, 'Harmony', 'Pokemon',),
+            ('D7', 'Brendan', AVATAR_TYPE_DEFAULT, 'Brendan', 'Pokemon',),
+            ('D8', 'May', AVATAR_TYPE_DEFAULT, 'May', 'Pokemon',),
 
-            # Secret Avatars
+            # ----SECRET AVATARS----
+            # WAVE 1
             ('S1', 'Jordo', AVATAR_TYPE_SECRET, 'Jordo', 'Sketching Alley',),
             ('S2', 'Miku', AVATAR_TYPE_SECRET, 'Miku', 'Vocaloid',),
             ('S3', 'Garfield', AVATAR_TYPE_SECRET, 'Garfield', 'Garfield',),
             ('S4', 'Samus', AVATAR_TYPE_SECRET, 'Samus', 'Metroid',),
             ('S5', 'Boss Baby', AVATAR_TYPE_SECRET, 'BossBaby', 'Boss Baby',),
             ('S6', 'Walter White', AVATAR_TYPE_SECRET, 'WalterWhite', 'Breaking Bad',),
+            # WAVE 2
+            ('S7', 'Jesse Pinkman', AVATAR_TYPE_SECRET, 'JessePinkman', 'Breaking Bad',),
+            ('S8', 'Mike Ehrmantraut', AVATAR_TYPE_SECRET, 'MikeEhrmantraut', 'Breaking Bad',),
+            ('S9', 'Porky Pig', AVATAR_TYPE_SECRET, 'Porky', 'Looney Tunes',),
 
             # Event Avatars
             ('E1', 'Pim', AVATAR_TYPE_EVENT, 'Pim', 'Smiling Friends',),
@@ -783,36 +790,42 @@ class TGOMMODatabaseHandler:
             ('E8', 'Tyler', AVATAR_TYPE_EVENT, 'Tyler', 'Smiling Friends',),
             ('E9', 'Smormu', AVATAR_TYPE_EVENT, 'Smormu', 'Smiling Friends',),
 
-            # Quest Avatars
+            # ----QUEST AVATARS----
+            #  COLLECTIONS
             ('Q1', 'Donkey Kong', AVATAR_TYPE_QUEST, 'DonkeyKong', 'Donkey Kong Country',),
             ('Q2', 'Big Bird', AVATAR_TYPE_QUEST, 'BigBird', 'Sesame Street',),
             ('Q3', 'Gex', AVATAR_TYPE_QUEST, 'Gex', 'Gex',),
             ('Q4', 'Kermit', AVATAR_TYPE_QUEST, 'Kermit', 'Muppets',),
             ('Q5', 'Hornet', AVATAR_TYPE_QUEST, 'Hornet', 'Hollow Knight',),
-
             ('Q6', 'TMNT', AVATAR_TYPE_QUEST, 'TMNT', 'Teenage Mutant Ninja Turtles', True,),
             ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, 'Leonardo', 'Teenage Mutant Ninja Turtles',),
             ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, 'Raphael', 'Teenage Mutant Ninja Turtles',),
             ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, 'Michelangelo', 'Teenage Mutant Ninja Turtles',),
             ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, 'Donatello', 'Teenage Mutant Ninja Turtles',),
-
+            # WAVE 1
             ('Q7', 'HeartGold/ SoulSilver Protagonists', AVATAR_TYPE_QUEST, 'HGSS', 'Pokemon', True,),
             ('Q7a', 'Ethan', AVATAR_TYPE_QUEST, 'Ethan', 'Pokemon',),
             ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, 'Lyra', 'Pokemon',),
-
             ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
+            # WAVE 2
             ('Q9', 'Turbo Granny', AVATAR_TYPE_QUEST, 'TurboGranny', 'DanDaDan',),
             ('Q10', 'Mordecai', AVATAR_TYPE_QUEST, 'Mordecai', 'Regular Show',),
             ('Q11', 'Rigby', AVATAR_TYPE_QUEST, 'Rigby', 'Regular Show',),
             ('Q12', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'SquirrelGirl', 'Marvel',),
             ('Q13', 'Noko Shikanoko', AVATAR_TYPE_QUEST, 'NokoShikanoko', 'Anime',),
-
             ('Q14', 'Huntrix', AVATAR_TYPE_QUEST, 'Huntrix', 'K-Pop Demon Hunters',  True,),
             ('Q14a', 'Rumi', AVATAR_TYPE_QUEST, 'Rumi', 'K-Pop Demon Hunters',),
             ('Q14b', 'Mira', AVATAR_TYPE_QUEST, 'Mira', 'K-Pop Demon Hunters',),
             ('Q14c', 'Zoey', AVATAR_TYPE_QUEST, 'Zoey', 'K-Pop Demon Hunters',),
             ('Q15', 'Shuma Gorath', AVATAR_TYPE_QUEST, 'ShumaGorath', 'Marvel',),
             ('Q16', 'Gary', AVATAR_TYPE_QUEST, 'Gary', 'Pokemon',),
+            # WAVE 3
+            ('Q17', 'Bugs Bunny', AVATAR_TYPE_QUEST, 'Bugs', 'Looney Tunes',),
+            ('Q18', 'Daffy Duck', AVATAR_TYPE_QUEST, 'Daffy', 'Looney Tunes',),
+            ('Q19', 'Puss In Boots', AVATAR_TYPE_QUEST, 'PussInBoots', 'Shrek',),
+            ('Q20', 'Bubsy', AVATAR_TYPE_QUEST, 'PussInBoots', 'Shrek',),
+            ('Q21', 'Spider-Man', AVATAR_TYPE_QUEST, 'SpiderMan', 'Marvel',),
+            ('Q22', 'Cynthia', AVATAR_TYPE_QUEST, 'Cynthia', 'Pokemon',),
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),
@@ -839,6 +852,7 @@ class TGOMMODatabaseHandler:
 
     def insert_user_avatar_unlock_condition_records(self):
         avatar_data = [
+            # COLLECTION QUESTS
             ('Donkey Kong', ('Q1', AVATAR_DONKEY_KONG_QUEST_QUERY, 20)),
             ('Big Bird', ('Q2', AVATAR_BIG_BIRD_QUEST_QUERY, 18)),
             ('Gex', ('Q3', AVATAR_GEX_QUEST_QUERY, 3)),
@@ -847,14 +861,24 @@ class TGOMMODatabaseHandler:
             ('TMNT', ('Q6', AVATAR_VARIANTS_QUEST_1_QUERY, 10)),
             ('HGSS', ('Q7', AVATAR_MYTHICAL_QUEST_QUERY, 1)),
             ('Homer', ('Q8', AVATAR_MYTHICAL_QUEST_QUERY, 5)),
-            ('Mordecai', ('Q10', AVATAR_MORDECAI_QUEST_QUERY, 50)),
-            ('Rigby', ('Q11', AVATAR_RIGBY_QUEST_QUERY, 100)),
-            ('Squirrel Girl', ('Q12', AVATAR_SQUIRRELGIRL_QUEST_QUERY, 100)),
-            ('Noko Shikanoko', ('Q13', AVATAR_NOKOSHIKANOKO_QUEST_QUERY, 100)),
+            # WAVE 2
+            ('Mordecai', ('Q10', AVATAR_MORDECAI_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+            ('Rigby', ('Q11', AVATAR_RIGBY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+            ('Squirrel Girl', ('Q12', AVATAR_SQUIRRELGIRL_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+            ('Noko Shikanoko', ('Q13', AVATAR_NOKOSHIKANOKO_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
             ('Huntrix', ('Q14', AVATAR_LEGENDARY_QUEST_QUERY, 3)),
             ('Shuma Gorath', ('Q15', AVATAR_TOTAL_EPIC_QUEST_QUERY, 10)),
-            ('Gary', ('Q16', AVATAR_GARY_QUEST_QUERY, 50)),
+            ('Gary', ('Q16', AVATAR_GARY_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+            #WAVE 3
+            ('Bugs', ('Q17', AVATAR_BUGS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+            ('Daffy', ('Q18', AVATAR_DAFFY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+            ('Puss in Boots', ('Q19', AVATAR_PUSSINBOOTS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+            ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
+            ('Spider-Man', ('Q21', AVATAR_SPIDERMAN_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+            ('Cynthia', ('Q22', AVATAR_CYNTHIA_QUEST_QUERY, 100)),
+            # WAVE 3.5
 
+            # Transcendant Avatars
             ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY,1, True)),
             ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY,1, True)),
             ('Frogman', ('T3', AVATAR_FROGMAN_QUEST_QUERY,1, True)),

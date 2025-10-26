@@ -27,8 +27,21 @@ class AvatarBoardImageFactory:
         self.total_unlocked_avatar_pages = 1
         self.total_avatar_quest_pages = 1
 
+        self.load_relevant_info()
+
     def load_relevant_info(self):
-        pass
+        # Load page info for both sections
+        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
+        self.page_num_unlocked_avatar = 1
+        self.total_unlocked_avatar_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
+
+        self.avatar_quests = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
+        self.page_num_avatar_quests = 1
+        self.total_avatar_quest_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
+
+        # load all unlocked avatar icons
+        self.unlocked_avatar_icons = self.get_unlocked_avatars_icons()
+        self.avatar_quest_icons = self.get_avatar_quests_icons()
 
 
     def build_avatar_board_page_image(self, new_page_number = None, open_tab = None):
@@ -60,21 +73,15 @@ class AvatarBoardImageFactory:
 
     # Unlocked Avatars Section
     def build_unlocked_avatars_section(self, background_img):
-        self.unlocked_avatar_icons = self.unlocked_avatar_icons if self.unlocked_avatar_icons else self.get_unlocked_avatars_icons()
         unlocked_avatars_grid_img = self.create_unlocked_avatars_grid()
-
-        background_img.paste(unlocked_avatars_grid_img, (106, 100), unlocked_avatars_grid_img)
+        background_img.paste(unlocked_avatars_grid_img, (102, 106), unlocked_avatars_grid_img)
 
         return background_img
 
     def get_unlocked_avatars_icons(self, page_swap = 0):
         if len(self.unlocked_avatars) == 0:
-            self.load_relevant_info()
+            return None
 
-            self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
-
-            self.page_num_unlocked_avatar = 1
-            self.total_unlocked_avatar_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
         self.page_num_unlocked_avatar += page_swap
 
         imgs = []
@@ -103,15 +110,19 @@ class AvatarBoardImageFactory:
         icon_width, icon_height = 70, 90
         icons_per_row = 15
 
+        # Define parameters for which icons will appear on page
+        icons_per_page = 75
+        starting_index = (self.page_num_unlocked_avatar - 1) * icons_per_page
+        ending_index = min(starting_index + icons_per_page, len(self.unlocked_avatars))
+
         # Calculate padding
         horizontal_padding = 1
         vertical_padding = 1
 
         # Place icons in grid
         row, col = 0, 0
-        for i, avatar_icon in enumerate(self.unlocked_avatar_icons):
-            # Open the file as an image
-
+        for i in range(starting_index, ending_index):
+            avatar_icon = self.unlocked_avatar_icons[i]
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)
@@ -143,24 +154,15 @@ class AvatarBoardImageFactory:
 
     def get_avatar_quests_icons(self, page_swap = 0):
         if len(self.avatar_quests) == 0:
-            self.load_relevant_info()
+            return None
 
-            self.avatar_quests = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
-
-            self.page_num_avatar_quests = 1
-            self.total_avatar_quest_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
         self.page_num_avatar_quests += page_swap
 
         imgs = []
         raw_imgs = []
-        tabs_per_page = 18
-
-        starting_index = (self.page_num_avatar_quests - 1) * tabs_per_page  # Adjust calculation to start from 0
-        ending_index = min(starting_index + tabs_per_page, len(self.avatar_quests))  # Ensure we don't go past the end of the list
 
         # Only process creatures within our page range
-        for i in range(starting_index, ending_index):
-            avatar = self.avatar_quests[i]
+        for i, avatar in enumerate(self.avatar_quests):
             if avatar.is_secret:
                 continue
 
@@ -184,9 +186,16 @@ class AvatarBoardImageFactory:
         horizontal_padding = 0
         vertical_padding = 5
 
-        # Place icons in grid
+        # Define how many icons will be displayed at a time
+        tabs_per_page = 16
+        starting_index = (self.page_num_avatar_quests - 1) * tabs_per_page  # Adjust calculation to start from 0
+        ending_index = min(starting_index + tabs_per_page, len(self.avatar_quest_icons))  # Ensure we don't go past the end of the list
+
+        # Place icons on grid
         row, col = 0, 0
-        for i, dex_icon in enumerate(self.avatar_quest_icons):
+        for i in range(starting_index, ending_index):
+            dex_icon = self.avatar_quest_icons[i]
+
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)

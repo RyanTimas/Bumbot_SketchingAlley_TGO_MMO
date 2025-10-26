@@ -20,7 +20,7 @@ AVATAR_HORNET_QUEST_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user
 
 # INDIVIDUAL QUEST QUERIES
 AVATAR_TURBOGRANNY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 56)  AND user_id = ?;"""
-AVATAR_SQUIRRELGIRL_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 56)  AND user_id = ?;"""
+AVATAR_SQUIRRELGIRL_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 5, 56, 66, 67)  AND user_id = ?;"""
 AVATAR_NOKOSHIKANOKO_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (1, 2, 30, 31)  AND user_id = ?;"""
 AVATAR_MORDECAI_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (10)  AND user_id = ?;"""
 AVATAR_RIGBY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (6)  AND user_id = ?;"""

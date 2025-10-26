@@ -843,7 +843,7 @@ class TGOMMODatabaseHandler:
             ('Big Bird', ('Q2', AVATAR_BIG_BIRD_QUEST_QUERY, 18)),
             ('Gex', ('Q3', AVATAR_GEX_QUEST_QUERY, 3)),
             ('Kermit', ('Q4', AVATAR_KERMIT_QUEST_QUERY, 2)),
-            ('Hornet', ('Q5', AVATAR_HORNET_QUEST_QUERY, 7)),
+            ('Hornet', ('Q5', AVATAR_HORNET_QUEST_QUERY, 5)),
             ('TMNT', ('Q6', AVATAR_VARIANTS_QUEST_1_QUERY, 10)),
             ('HGSS', ('Q7', AVATAR_MYTHICAL_QUEST_QUERY, 1)),
             ('Homer', ('Q8', AVATAR_MYTHICAL_QUEST_QUERY, 5)),

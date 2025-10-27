@@ -20,10 +20,8 @@ class EncounterImageHandler:
 
     # handler for generating encounter image
     def create_encounter_image(self):
-        foreground_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
-
-        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
-        final_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}{IMAGE_FILE_EXTENSION}")
+        foreground_img = Image.open(fr"{IMAGE_FOLDER_CREATURES_PATH}\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+        final_img, background_overlay_img = self.build_background_image()
 
         textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
         camera_overlay_img = Image.open(ENCOUNTER_SCREEN_CAMERA_OVERLAY_IMAGE)
@@ -36,6 +34,9 @@ class EncounterImageHandler:
         foreground_image_with_border = self.add_outline_to_img(foreground_img)
         foreground_image_offset = self.get_foreground_image_offset(foreground_img, final_img)
         final_img.paste(foreground_image_with_border, foreground_image_offset, foreground_image_with_border)
+
+        if background_overlay_img:
+            final_img.paste(background_overlay_img, (0, 0), background_overlay_img)
 
         if glow:
             final_img.paste(glow, (0, 0), glow)
@@ -73,6 +74,18 @@ class EncounterImageHandler:
                 glow.paste(rays, (0, 0), rays)
             return glow
         return None
+
+    def build_background_image(self):
+        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
+        sub_environment = self.creature.sub_environment if self.creature.sub_environment else SUB_ENVIRONMENT_FOREST
+
+        path_name = rf"{IMAGE_FOLDER_ENVIRONMENTS_PATH}\{self.environment.short_name}\{sub_environment}"
+        img_name = f"{ENCOUNTER_SCREEN_IMAGE_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}"
+
+        full_img_path = fr"{path_name}\{img_name}{IMAGE_FILE_EXTENSION}"
+        overlay_path = fr"{path_name}\{img_name}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}"
+
+        return Image.open(full_img_path), None if not os.path.exists(overlay_path) else Image.open(overlay_path)
 
 
     # set up text to add to encounter image

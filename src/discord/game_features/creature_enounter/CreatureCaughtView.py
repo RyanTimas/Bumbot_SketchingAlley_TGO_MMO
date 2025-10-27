@@ -1,15 +1,14 @@
 import discord
 from discord.ui import Button, Modal, TextInput, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.embeds import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.game_features.creature_enounter import CreatureEmbedHandler
+from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class CreatureCaughtView(discord.ui.View):
-    def __init__(self, interaction: discord.Interaction, creature_id: int, successful_catch_embed_handler:CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
+    def __init__(self, interaction: discord.Interaction, creature_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
         super().__init__(timeout=None)
 
         self.creature_id = creature_id

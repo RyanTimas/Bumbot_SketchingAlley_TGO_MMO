@@ -5,7 +5,7 @@ from discord.ui import Select
 from src.commons.CommonFunctions import convert_to_png, create_go_back_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 verbose_keyword = "verbose"
 variants_keyword = "variants"

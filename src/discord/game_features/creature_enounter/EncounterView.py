@@ -1,13 +1,12 @@
 import asyncio
 
-import discord
 from discord import Message
 from discord.ui import View
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
-from src.discord.buttonhandlers.creature_enounter.CreatureCaughtView import CreatureCaughtView
-from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
+from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
+from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment

@@ -8,7 +8,7 @@ from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import *
 
 
-class DexIconFactory:
+class EncyclopediaIconFactory:
     def __init__(self, creature_name = '', dex_no = 1, variant_no=1, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False, total_catches=0, total_mythical_catches=0, show_mythics=False, img_root=''):
         self.creature_name = creature_name
         self.rarity = rarity

@@ -2,8 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
 
-from src.database.handlers.DatabaseHandler import DatabaseHandler
-from src.discord.handlers.CreatureSpawnerHandler import CreatureSpawnerHandler
+from src.discord.game_features.creature_enounter.CreatureSpawnerHandler import CreatureSpawnerHandler
 
 
 class DiscordBot:

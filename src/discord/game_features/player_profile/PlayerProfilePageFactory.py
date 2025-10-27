@@ -1,8 +1,6 @@
-from PIL import Image, ImageDraw, ImageFont
-
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
+from src.discord.game_features.player_profile.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
 from src.discord.objects.TGOCreature import TGOCreature, PLACEHOLDER_CREATURE
 from src.discord.objects.TGOPlayer import TGOPlayer

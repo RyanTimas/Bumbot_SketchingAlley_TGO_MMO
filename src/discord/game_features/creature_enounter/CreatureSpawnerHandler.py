@@ -12,8 +12,8 @@ from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import flip_coin
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.buttonhandlers.creature_enounter.EncounterView import TGOMMOEncounterView
-from src.discord.embeds.CreatureEmbedHandler import CreatureEmbedHandler
+from src.discord.game_features.creature_enounter.EncounterView import TGOMMOEncounterView
+from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *

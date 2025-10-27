@@ -4,8 +4,8 @@ import discord
 
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png, \
     create_go_back_button, create_close_button
-from src.discord.buttonhandlers.EncyclopediaView import next_, previous
-from src.discord.image_factories.quest_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS, \
+from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS, \
     UNLOCKED_AVATARS
 
 

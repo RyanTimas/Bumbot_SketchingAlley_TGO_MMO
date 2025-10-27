@@ -6,8 +6,8 @@ from discord.ui import Modal, TextInput, Button, Select
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
     create_dummy_label_button, check_if_user_can_interact_with_view, create_close_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.buttonhandlers.EncyclopediaView import next_, previous
-from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
+from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 

@@ -1,13 +1,11 @@
-import datetime
-import time
 from random import randint
 
 import discord
 from PIL import Image
 
-from src.commons.CommonFunctions import build_image_file, to_grayscale, convert_to_png
+from src.commons.CommonFunctions import to_grayscale, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.handlers.EncounterImageHandler import EncounterImageHandler
+from src.discord.game_features.creature_enounter.EncounterImageHandler import EncounterImageHandler
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment

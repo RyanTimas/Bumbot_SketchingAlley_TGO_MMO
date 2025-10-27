@@ -1,12 +1,12 @@
 from io import BytesIO
 
 import requests
-from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic, center_text_on_pixel, \
     resize_text_to_fit
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.DexIconFactory import DexIconFactory
+from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
@@ -167,7 +167,7 @@ class EncyclopediaImageFactory:
             if creature_is_locked and rarity.name == TRANSCENDANT.name:
                 continue
 
-            dex_icon = DexIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity,creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics, img_root=img_root)
+            dex_icon = EncyclopediaIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity, creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics, img_root=img_root)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)

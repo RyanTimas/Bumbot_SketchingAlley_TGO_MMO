@@ -7,13 +7,13 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
-from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
-from src.discord.buttonhandlers.avatar_board.AvatarBoardView import AvatarBoardView
-from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
-from src.discord.buttonhandlers.TGOMMOMenuView import TGOMMOMenuView
-from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection
-from src.discord.image_factories.quest_board.AvatarBoardImageFactory import UNLOCKED_AVATARS, AVATAR_QUESTS, \
+from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
+from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
+from src.discord.game_features.TGOMMOMenuView import TGOMMOMenuView
+from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import UNLOCKED_AVATARS, AVATAR_QUESTS, \
     AvatarBoardImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import USER_WHITELIST

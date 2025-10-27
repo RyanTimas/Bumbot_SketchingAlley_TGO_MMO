@@ -2,9 +2,8 @@ from PIL import Image
 
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.DexIconFactory import DexIconFactory
-from src.discord.image_factories.quest_board.AvatarQuestTabFactory import AvatarQuestTabFactory
-from src.discord.image_factories.quest_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
+from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
+from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
 from src.resources.constants.file_paths import *
 
 AVATAR_QUESTS = "AVATAR_QUESTS"

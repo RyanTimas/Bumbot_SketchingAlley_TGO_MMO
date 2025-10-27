@@ -8,12 +8,12 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
     create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
-from src.discord.buttonhandlers.EncyclopediaView import EncyclopediaView
-from src.discord.buttonhandlers.avatar_board.AvatarBoardView import AvatarBoardView
-from src.discord.buttonhandlers.player_view.PlayerProfileView import PlayerProfileView
-from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.image_factories.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
-from src.discord.image_factories.quest_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
+from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
+from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
+from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
 from src.resources.constants.file_paths import *
 
 

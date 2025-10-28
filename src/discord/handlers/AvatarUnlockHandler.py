@@ -47,6 +47,7 @@ class AvatarUnlockHandler:
             (("pink", "jesse"), ("Jesse Pinkman", "S7", "JessePinkman")),
             (("mike", "ehrmantraut", "finger"), ("Mike Ehrmantraut", "S8", "MikeEhrmantraut")),
             (("porky", "pig"), ("Porky Pig", "S9", "Porky")),
+            (("jason", "vorhees", "13"), ("Jason Vorhees", "S10", "JasonVorhees")),
         }
 
         for avatar in avatar_combos:

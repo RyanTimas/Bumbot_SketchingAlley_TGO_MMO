@@ -35,6 +35,7 @@ AVATAR_PUSSINBOOTS_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WH
 AVATAR_BUBSY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (28)  AND user_id = ?;"""
 AVATAR_SPIDERMAN_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (46)  AND user_id = ?;"""
 AVATAR_CYNTHIA_QUEST_QUERY = AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY
+AVATAR_MARCELINE_QUEST_QUERY =  """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (55)  AND user_id = ?;"""
 
 
 # TRANSCENDANT QUEST QUERIES

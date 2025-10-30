@@ -1,6 +1,5 @@
 from src.database.handlers.QueryHandler import QueryHandler
-from src.resources.db_queries import SA_USERS_INSERT_NEW_RECORD, SA_USERS_SELECT_ALL, SA_USERS_SELECT_ALL_BY_USERID, \
-    SA_USERS_DELETE_BY_USERID, SA_USERS_UPDATE_LEVEL, SA_USERS_UPDATE_XP
+from src.resources.constants.queries.db_queries import *
 
 from src.discord.objects.User import User
 

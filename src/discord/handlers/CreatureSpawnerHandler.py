@@ -52,15 +52,20 @@ class CreatureSpawnerHandler:
         dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
         self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=dex_no, variant_no=variant_no, convert_to_object=True)
 
-        # Retrieve & Define Spawn Pool
-        self.creature_spawn_pool = []
-        creature_links = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id)
+        if IS_EVENT:
+            self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
+        else:
+            # Retrieve & Define Spawn Pool
+            self.creature_spawn_pool = []
+            creature_links = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
+            self.define_creature_spawn_pool(creature_links=creature_links)
 
+    def define_creature_spawn_pool(self, creature_links):
         for creature_link in creature_links:
             local_name = creature_link[2]
             creature_info = get_tgommo_db_handler().get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1], convert_to_object=False)
 
-            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]))
+            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]), sub_environment=creature_link[4])
             self.creature_spawn_pool.append(creature)
 
     def define_time_of_day(self):
@@ -93,7 +98,6 @@ class CreatureSpawnerHandler:
             try:
                 await self.spawn_creature(creature= creature)
                 await self.duplicate_creature_spawner(creature=creature)
-
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
@@ -101,8 +105,8 @@ class CreatureSpawnerHandler:
                 traceback.print_exc()
                 await asyncio.sleep(5)
 
-            # wait between 8 and 12 minutes before spawning another creature - will spawn 288 - 480 creatures a day
-            await asyncio.sleep(random.uniform(3, 5) * 60)
+            # wait between 3 and 5 minutes before spawning another creature - will spawn 288 - 480 creatures a day
+            await asyncio.sleep(random.uniform(CREATURE_SPAWN_RATE_LOW_END, CREATURE_SPAWN_RATE_HIGH_END) * 60)
 
             # check if a new day has begun or if a day/night transition has occurred
             self._handle_time_change()
@@ -136,9 +140,8 @@ class CreatureSpawnerHandler:
             duplicate_creature = deepcopy(creature)
 
             critter_chain_multiplier += 1
-            if random.randint(0, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
+            if random.randint(1, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
                 duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720)
                 duplicate_creature.img_root += '_S'
 
             await self.spawn_creature(duplicate_creature)
@@ -149,21 +152,28 @@ class CreatureSpawnerHandler:
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self):
-        # FOR LAUNCH, SET COMMON CRITTERS TO BE WAY MORE COMMON BUT MAKE SPAWN MORE FREQUENTLY, only a 25% chance to pull an actual roll
-        rarity = get_rarity() if (flip_coin(total_iterations=2) or self.time_of_day in (DUSK, DAWN)) else COMMON
-        rarity = TRANSCENDANT if flip_coin(total_iterations=13) else rarity
+        rarity = self.determine_creature_rarity()
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
 
-        if rarity.name != TRANSCENDANT.name and random.randint(0, MYTHICAL_SPAWN_CHANCE) == 1:
+        if rarity.name != TGOMMO_RARITY_TRANSCENDANT and flip_coin(total_iterations=MYTHICAL_SPAWN_COIN_FLIPS):
             selected_creature.rarity = MYTHICAL
             selected_creature.img_root += '_S'
 
-        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
+        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone)
         return selected_creature
+
+    def determine_creature_rarity(self):
+        if IS_EVENT:
+            return TRANSCENDANT if flip_coin(total_iterations=7) else get_event_rarity()
+
+        rarity = get_rarity() if (random.randint(1, 3) == 1 or self.time_of_day in (DUSK, DAWN)) else COMMON
+        is_transcendant = flip_coin(total_iterations=13)
+        return TRANSCENDANT if is_transcendant else rarity
+
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):

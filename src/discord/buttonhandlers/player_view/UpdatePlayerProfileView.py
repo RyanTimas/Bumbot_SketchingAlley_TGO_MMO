@@ -4,7 +4,7 @@ import discord
 from discord.ui import Modal, TextInput, Button, Select
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
-    create_dummy_label_button, check_if_user_can_interact_with_view
+    create_dummy_label_button, check_if_user_can_interact_with_view, create_close_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.buttonhandlers.EncyclopediaView import next_, previous
 from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
@@ -61,6 +61,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         update_profile_button_2 = self.create_update_profile_button(page=2,row=2)
         display_creatures_button = self.display_creature_collection_button(row=3)
         save_changes_button = self.create_save_changes_button(row=4)
+        close_button = create_close_button(row=4, interaction_lock=self.interaction_lock, message_author_id=self.user_id)
 
         self.next_avatars_button = self.create_avatar_dropdown_navigation_button(is_next=True, row=0)
         self.previous_avatars_button = self.create_avatar_dropdown_navigation_button(is_next=False, row=0)
@@ -99,6 +100,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.add_item(display_creatures_button)
         # row 5
         self.add_item(save_changes_button)
+        self.add_item(close_button)
 
         self.update_view_components()
 
@@ -111,8 +113,8 @@ class UpdatePlayerProfileView(discord.ui.View):
         )
         button.callback = self.nav_callback(new_page=next_ if is_next else previous)
         return button
-    @retry_on_ssl_error(max_retries=3, delay=1)
     def nav_callback(self, new_page,):
+        @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.player.user_id):
                 return

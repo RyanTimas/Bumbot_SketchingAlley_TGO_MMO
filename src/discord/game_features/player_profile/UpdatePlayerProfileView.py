@@ -9,6 +9,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
+from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 
 
 class UpdatePlayerProfileView(discord.ui.View):
@@ -40,7 +41,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.creature_id_5 = player.creature_slot_id_5 if player.creature_slot_id_5 != -1 else ''
         self.creature_id_6 = player.creature_slot_id_6 if player.creature_slot_id_6 != -1 else ''
 
-        self.user_creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(self.user_id)
+        self.user_creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(self.user_id, convert_to_object=True,)
 
         self.player_profile_image_factory = player_profile_image_factory
         self.original_view = original_view
@@ -248,15 +249,11 @@ class UpdatePlayerProfileView(discord.ui.View):
         for creature_index, creature in enumerate(self.user_creature_collection):
             current_page = pages[page_num]
 
-            catch_id = creature[0]
-            creature_id = creature[1]
-            creature_name = f'{creature[2]}{f' -  {creature[3]}' if creature[3] != '' else ''}'
-            spawn_rarity = creature[5]
-            is_mythical = creature[6]
-            nickname = f'**__{creature[4]}❗__**' if creature[4] != '' else creature[2] + ('✨' if is_mythical else '')
+            creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
+            nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
 
-            newlines = f'{'\n' if creature_id != self.user_creature_collection[creature_index - 1][1] else ''}\n'
-            new_entry = f"{newlines}{creature_index + 1}.  \t\t [{catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
+            newlines = f'{'\n' if creature.creature_id != self.user_creature_collection[creature_index - 1].creature_id else ''}\n'
+            new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
 
             if len(current_page) + len(new_entry) > 1900:
                 page_num += 1
@@ -346,7 +343,7 @@ class UpdatePlayerProfileView(discord.ui.View):
             found_in_collection = False
 
             for creature in self.user_creature_collection:
-                if str(creature[0]) == str(display_creature_id):
+                if str(creature.creature_id) == str(display_creature_id):
                     found_in_collection = True
                     break
 

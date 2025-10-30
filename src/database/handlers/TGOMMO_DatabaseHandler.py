@@ -1,5 +1,5 @@
 from src.database.handlers.QueryHandler import QueryHandler
-from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON
+from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
@@ -84,14 +84,38 @@ class TGOMMODatabaseHandler:
         return response[0]
 
     def get_creature_by_catch_id(self, creature_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_CATCH_ID, params=(creature_id,))
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID, params=(creature_id,))
 
         if not response:
             return None
 
         if convert_to_object:
-            creature_details = response[0]
-            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
+            creature_info = response[0]
+
+            return TGOCreature(
+                creature_id=creature_info[1],
+                catch_id=creature_info[0],
+
+                name=creature_info[2],
+                local_name = creature_info[3],
+                nickname=creature_info[4],
+                variant_name = creature_info[5],
+
+                dex_no=creature_info[6],
+                variant_no=creature_info[7],
+
+                full_name=creature_info[8],
+                scientific_name=creature_info[9],
+                kingdom=creature_info[10],
+                description=creature_info[11],
+
+                img_root=creature_info[12],
+                sub_environment=creature_info[13],
+                encounter_rate=creature_info[14],
+                rarity= get_rarity_by_name(creature_info[15]),
+
+                caught_date=creature_info[16],
+            )
         return response[0]
 
     def get_avatar_by_id(self, avatar_id, convert_to_object=False):
@@ -237,8 +261,39 @@ class TGOMMODatabaseHandler:
 
     # Get all creatures a user has caught
     def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_CREATURE_COLLECTION_BY_USER, params=(user_id,))
-        return response
+        creature_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURES_BY_USER_ID, params=(user_id,))
+
+        if convert_to_object:
+            creatures = []
+            for creature in creature_data:
+                creatures.append(
+                    TGOCreature(
+                        creature_id=creature[1],
+                        catch_id=creature[0],
+
+                        name=creature[2],
+                        local_name=creature[3],
+                        nickname=creature[4],
+                        variant_name=creature[5],
+
+                        dex_no=creature[6],
+                        variant_no=creature[7],
+
+                        full_name=creature[8],
+                        scientific_name=creature[9],
+                        kingdom=creature[10],
+                        description=creature[11],
+
+                        img_root=creature[12],
+                        sub_environment=creature[13],
+                        encounter_rate=creature[14],
+                        rarity=get_rarity_by_name(creature[15]),
+
+                        caught_date=creature[16],
+                    )
+                )
+            return creatures
+        return creature_data
 
 
     ''' Encyclopedia & Statistics Queries '''
@@ -415,128 +470,128 @@ class TGOMMODatabaseHandler:
     def insert_creature_records(self):
         creature_data = [
             # WAVE 1
-            ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
-            ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5),
-            ('Squirrel', '', 2, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', MAMMAL, '', GRAY_SQUIRREL_IMAGE_ROOT, 5),
-            ('Rabbit', '', 3, 1, 'Eastern Cottontail', 'Sylvilagus floridanus', MAMMAL, '', RABBIT_IMAGE_ROOT, 5),
-            ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', MAMMAL, '', CHIPMUNK_IMAGE_ROOT, 5),
-            ('Raccoon', '', 5, 1, 'Raccoon', 'Procyon lotor', MAMMAL, '', RACOON_IMAGE_ROOT, 5),
-            ('Robin', '', 6, 1, 'American Robin', 'Turdus migratorius', BIRD, '', ROBIN_IMAGE_ROOT, 5),
-            ('Sparrow', 'Male', 7, 1, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
-            ('Sparrow', 'Female', 7, 2, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5),
-            ('Blue Jay', '', 8, 1, 'Blue Jay', 'Cyanocitta cristata', BIRD, '', BLUEJAY_IMAGE_ROOT, 5),
-            ('Goldfinch', '', 9, 1, 'American Goldfinch', 'Spinus tristis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5),
-            ('Cardinal', 'Male', 10, 1, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5),
-            ('Cardinal', 'Female', 10, 2, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5),
-            ('Monarch', 'Caterpillar', 11, 1, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
-            ('Monarch', 'Chrysalis', 11, 2, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
-            ('Monarch', 'Butterfly', 11, 3, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5),
-            ('Mantis', '', 12, 1, 'Praying Mantis', 'Stagmomantis carolina', INSECT, '', MANTIS_IMAGE_ROOT, 5),
-            ('Snake', '', 13, 1, 'Eastern Garter Snake', 'Thamnophis sirtalis sirtalis', REPTILE, '', GARTERSNAKE_IMAGE_ROOT, 5),
-            ('Turtle', '', 14, 1, 'Box Turtle', 'Terrapene carolina carolina', REPTILE, '', BOX_TURTLE_IMAGE_ROOT, 5),
-            ('Toad', '', 15, 1, 'American Toad', 'Anaxyrus americanus', AMPHIBIAN, '', TOAD_IMAGE_ROOT, 5),
-            ('Duck', 'Drake', 16, 1, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
-            ('Duck', 'Hen', 16, 2, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5),
-            ('Turkey', '', 17, 1, 'Wild Turkey', 'Meleagris gallopavo', BIRD, '', TURKEY_IMAGE_ROOT, 5),
-            ('Owl', '', 18, 1, 'Great Horned Owl', 'Bubo virginianus', BIRD, '', GREAT_HORNED_OWL_IMAGE_ROOT, 5),
-            ('Eagle', '', 19, 1, 'Bald Eagle', 'Haliaeetus leucocephalus', BIRD, '', EAGLE_IMAGE_ROOT, 5),
-            ('Opossum', '', 20, 1, 'Virginia Opossum', 'Didelphis virginiana', MAMMAL, '', OPOSSUM_IMAGE_ROOT, 5),
-            ('Fox', '', 21, 1, 'Red Fox', 'Vulpes vulpes', MAMMAL, '', REDFOX_IMAGE_ROOT, 5),
-            ('Bobcat', '', 22, 1, 'Bobcat', 'Lynx rufus', MAMMAL, '', BOBCAT_IMAGE_ROOT, 5),
-            ('Bear', '', 23, 1, 'Black Bear', 'Ursus americanus', MAMMAL, '', BLACKBEAR_IMAGE_ROOT, 5),
-            ('Moose', 'Cow', 24, 1, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
-            ('Moose', 'Bull', 24, 2, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5),
-            ('Wolf', '', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5),
+            ('Deer', 'Doe', 1, 1, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Deer', 'Buck', 1, 2, 'White-Tailed Deer', 'Odocoileus virginianus', MAMMAL, '', DEER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Squirrel', '', 2, 1, 'Eastern Gray Squirrel', 'Sciurus carolinensis', MAMMAL, '', GRAY_SQUIRREL_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Rabbit', '', 3, 1, 'Eastern Cottontail', 'Sylvilagus floridanus', MAMMAL, '', RABBIT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Chipmunk', '', 4, 1, 'Eastern Chipmunk', 'Tamias striatus', MAMMAL, '', CHIPMUNK_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Raccoon', '', 5, 1, 'Raccoon', 'Procyon lotor', MAMMAL, '', RACOON_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Robin', '', 6, 1, 'American Robin', 'Turdus migratorius', BIRD, '', ROBIN_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Sparrow', 'Male', 7, 1, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Sparrow', 'Female', 7, 2, 'House Sparrow', 'Passer domesticus', BIRD, '', SPARROW_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Blue Jay', '', 8, 1, 'Blue Jay', 'Cyanocitta cristata', BIRD, '', BLUEJAY_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Goldfinch', '', 9, 1, 'American Goldfinch', 'Spinus tristis', BIRD, '', GOLDFINCH_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Cardinal', 'Male', 10, 1, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Cardinal', 'Female', 10, 2, 'Northern Cardinal', 'Cardinalis cardinalis', BIRD, '', CARDINAL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Monarch', 'Caterpillar', 11, 1, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Monarch', 'Chrysalis', 11, 2, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Monarch', 'Butterfly', 11, 3, 'Monarch', 'Danaus plexippus', INSECT, '', MONARCH_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Mantis', '', 12, 1, 'Praying Mantis', 'Stagmomantis carolina', INSECT, '', MANTIS_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Snake', '', 13, 1, 'Eastern Garter Snake', 'Thamnophis sirtalis sirtalis', REPTILE, '', GARTERSNAKE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Turtle', '', 14, 1, 'Box Turtle', 'Terrapene carolina carolina', REPTILE, '', BOX_TURTLE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Toad', '', 15, 1, 'American Toad', 'Anaxyrus americanus', AMPHIBIAN, '', TOAD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Duck', 'Drake', 16, 1, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Duck', 'Hen', 16, 2, 'Mallard', 'Anas platyrhynchos', BIRD, '', MALLARD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Turkey', '', 17, 1, 'Wild Turkey', 'Meleagris gallopavo', BIRD, '', TURKEY_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Owl', '', 18, 1, 'Great Horned Owl', 'Bubo virginianus', BIRD, '', GREAT_HORNED_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Eagle', '', 19, 1, 'Bald Eagle', 'Haliaeetus leucocephalus', BIRD, '', EAGLE_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Opossum', '', 20, 1, 'Virginia Opossum', 'Didelphis virginiana', MAMMAL, '', OPOSSUM_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Fox', '', 21, 1, 'Red Fox', 'Vulpes vulpes', MAMMAL, '', REDFOX_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Bobcat', '', 22, 1, 'Bobcat', 'Lynx rufus', MAMMAL, '', BOBCAT_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Bear', '', 23, 1, 'Black Bear', 'Ursus americanus', MAMMAL, '', BLACKBEAR_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Moose', 'Cow', 24, 1, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Moose', 'Bull', 24, 2, 'Moose', 'Alces alces', MAMMAL, '', MOOSE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Wolf', '', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # WAVE 2
-            ('Cat', 'Tabby', 26, 1, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5),
-            ('Cat', 'Black', 26, 2, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5),
-            ('Cat', 'Orange', 26, 3, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5),
-            ('Cat', 'Calico', 26, 4, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5),
-            ('Mouse', '', 27, 1, 'Field Mouse', 'Apodemus', MAMMAL, '', MOUSE_IMAGE_ROOT, 5),
-            ('Groundhog', '', 28, 1, 'Groundhog', 'Marmota monax', MAMMAL, '', GROUNDHOG_IMAGE_ROOT, 5),
-            ('Dove', '', 29, 1, 'Mourning Dove', 'Zenaida macroura', BIRD, '', MOURNING_DOVE_IMAGE_ROOT, 5),
-            ('Goose', '', 30, 1, 'Canada Goose', 'Branta canadensis', BIRD, '', CANADA_GOOSE_IMAGE_ROOT, 5),
-            ('Vulture', '', 31, 1, 'Turkey Vulture', 'Cathartes aura', BIRD, '', TURKEY_VULTURE_IMAGE_ROOT, 5),
-            ('Cicada', '', 32, 1, 'Walker’s Cicada', 'Megatibicen pronotalis walkeri', INSECT, '', CICADA_IMAGE_ROOT, 5),
-            ('Cricket', '', 33, 1, 'Field Cricket', 'Gryllus sp.', INSECT, '', CRICKET_IMAGE_ROOT, 5),
-            ('Firefly', '', 34, 1, 'Common Eastern Firefly', 'Photinus pyralis', INSECT, '', FIREFLY_IMAGE_ROOT, 5),
-            ('Luna Moth', '', 35, 1, 'Luna Moth', 'Actias luna', INSECT, '', LUNA_MOTH_IMAGE_ROOT, 5),
-            ('Spider', '', 36, 1, 'Black Widow', 'Latrodectus', ARACHNID, '', BLACK_WIDOW_IMAGE_ROOT, 5),
-            ('Salamander', '', 37, 1, 'Spotted Salamander', 'Ambystoma maculatum', AMPHIBIAN, '', SALAMANDER_IMAGE_ROOT, 5),
-            ('Snapping Turtle', '', 38, 1, 'Common Snapping Turtle', 'Chelydra serpentina', REPTILE, '', SNAPPING_TURTLE_IMAGE_ROOT, 5),
-            ('Crow', '', 39, 1, 'American Crow', 'Corvus brachyrhynchos', BIRD, '', AMERICAN_CROW_IMAGE_ROOT, 5),
-            ('Hawk', '', 40, 1, 'Red-Tailed Hawk', 'Buteo jamaicensis', BIRD, '', RED_TAILED_HAWK_IMAGE_ROOT, 5),
-            ('Nighthawk', '', 41, 1, 'Common Nighthawk', 'Chordeiles minor', BIRD, '', NIGHTHAWK_IMAGE_ROOT, 5),
-            ('Woodcock', '', 42, 1, 'American Woodcock', 'Scolopax minor', BIRD, '', WOODCOCK_IMAGE_ROOT, 5),
-            ('Owl', '', 43, 1, 'Eastern Screech Owl', 'Megascops asio', BIRD, '', SCREECH_OWL_IMAGE_ROOT, 5),
-            ('Owl', '', 44, 1, 'Snowy Owl', 'Bubo scandiacus', BIRD, '', SNOWY_OWL_IMAGE_ROOT, 5),
-            ('Bat', '', 45, 1, 'Big Brow Bat', 'Eptesicus fuscus', MAMMAL, '', BAT_IMAGE_ROOT, 5),
-            ('Flying Squirrel', '', 46, 1, 'Northern Flying Squirrel', 'Glaucomys sabrinus', MAMMAL, '', FLYING_SQUIRREL_IMAGE_ROOT, 5),
-            ('Skunk', '', 47, 1, 'Striped Skunk', 'Mephitis mephitis', MAMMAL, '', SKUNK_IMAGE_ROOT, 5),
-            ('Porcupine', '', 48, 1, 'North American Porcupine', 'Erethizon dorsatum', MAMMAL, '', PORCUPINE_IMAGE_ROOT, 5),
-            ('Coyote', '', 49, 1, 'Coyote', 'Canis latrans', MAMMAL, '', COYOTE_IMAGE_ROOT, 5),
-            ('Mountain Lion', '', 50, 1, 'Mountain Lion', 'Puma concolor', MAMMAL, '', MOUNTAIN_LION_IMAGE_ROOT, 5),
+            ('Cat', 'Tabby', 26, 1, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Cat', 'Black', 26, 2, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Cat', 'Orange', 26, 3, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Cat', 'Calico', 26, 4, 'Domestic Cat', 'Felis catus', MAMMAL, '', CAT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Mouse', '', 27, 1, 'Field Mouse', 'Apodemus', MAMMAL, '', MOUSE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Groundhog', '', 28, 1, 'Groundhog', 'Marmota monax', MAMMAL, '', GROUNDHOG_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Dove', '', 29, 1, 'Mourning Dove', 'Zenaida macroura', BIRD, '', MOURNING_DOVE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Goose', '', 30, 1, 'Canada Goose', 'Branta canadensis', BIRD, '', CANADA_GOOSE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Vulture', '', 31, 1, 'Turkey Vulture', 'Cathartes aura', BIRD, '', TURKEY_VULTURE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Cicada', '', 32, 1, 'Walker’s Cicada', 'Megatibicen pronotalis walkeri', INSECT, '', CICADA_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Cricket', '', 33, 1, 'Field Cricket', 'Gryllus sp.', INSECT, '', CRICKET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Firefly', '', 34, 1, 'Common Eastern Firefly', 'Photinus pyralis', INSECT, '', FIREFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Luna Moth', '', 35, 1, 'Luna Moth', 'Actias luna', INSECT, '', LUNA_MOTH_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Spider', '', 36, 1, 'Black Widow', 'Latrodectus', ARACHNID, '', BLACK_WIDOW_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Salamander', '', 37, 1, 'Spotted Salamander', 'Ambystoma maculatum', AMPHIBIAN, '', SALAMANDER_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Snapping Turtle', '', 38, 1, 'Common Snapping Turtle', 'Chelydra serpentina', REPTILE, '', SNAPPING_TURTLE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Crow', '', 39, 1, 'American Crow', 'Corvus brachyrhynchos', BIRD, '', AMERICAN_CROW_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Hawk', '', 40, 1, 'Red-Tailed Hawk', 'Buteo jamaicensis', BIRD, '', RED_TAILED_HAWK_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Nighthawk', '', 41, 1, 'Common Nighthawk', 'Chordeiles minor', BIRD, '', NIGHTHAWK_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Woodcock', '', 42, 1, 'American Woodcock', 'Scolopax minor', BIRD, '', WOODCOCK_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Owl', '', 43, 1, 'Eastern Screech Owl', 'Megascops asio', BIRD, '', SCREECH_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Owl', '', 44, 1, 'Snowy Owl', 'Bubo scandiacus', BIRD, '', SNOWY_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Bat', '', 45, 1, 'Big Brow Bat', 'Eptesicus fuscus', MAMMAL, '', BAT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Flying Squirrel', '', 46, 1, 'Northern Flying Squirrel', 'Glaucomys sabrinus', MAMMAL, '', FLYING_SQUIRREL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Skunk', '', 47, 1, 'Striped Skunk', 'Mephitis mephitis', MAMMAL, '', SKUNK_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Porcupine', '', 48, 1, 'North American Porcupine', 'Erethizon dorsatum', MAMMAL, '', PORCUPINE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Coyote', '', 49, 1, 'Coyote', 'Canis latrans', MAMMAL, '', COYOTE_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Mountain Lion', '', 50, 1, 'Mountain Lion', 'Puma concolor', MAMMAL, '', MOUNTAIN_LION_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # WAVE 3
-            ('Skink', '', 51, 1, 'Common Five-lined Skink', 'Plestiodon fasciatus', REPTILE, '', SKINK_IMAGE_ROOT, 5),
-            ('Copperhead', '', 52, 1, 'Eastern Copperhead', 'Plestiodon fasciatus', REPTILE, '', COPPERHEAD_IMAGE_ROOT, 5),
-            ('Worm', '', 53, 1, 'Earth Worm', 'TEMPORARY', CLITELLATA, '', EARTHWORM_IMAGE_ROOT, 5),
-            ('Mole', '', 54, 1, 'Eastern Mole', 'TEMPORARY', MAMMAL, '', EASTERN_MOLE_IMAGE_ROOT, 5),
-            ('Mole', '', 55, 1, 'Star-Nosed Mole', 'TEMPORARY', MAMMAL, '', STAR_NOSED_MOLE_IMAGE_ROOT, 5),
-            ('Squirrel', '', 56, 1, 'American Red Squirrel', 'TEMPORARY', MAMMAL, '', RED_SQUIRREL_IMAGE_ROOT, 5),
-            ('Ground Squirrel', '', 57, 1, 'Thirteen-Lined Ground Squirrel', 'TEMPORARY', MAMMAL, '', THIRTEEN_LINED_GROUND_SQUIRREL_IMAGE_ROOT, 5),
-            ('Stoat', '', 58, 1, 'Stoat', 'TEMPORARY', MAMMAL, '', STOAT_IMAGE_ROOT, 5),
-            ('Boar', '', 59, 1, 'Wild Boar', 'TEMPORARY', MAMMAL, '', BOAR_IMAGE_ROOT, 5),
-            ('Finch', '', 60, 1, 'House Finch', 'TEMPORARY', BIRD, '', HOUSE_FINCH_IMAGE_ROOT, 5),
-            ('Starling', '', 61, 1, 'European Starling', 'TEMPORARY', BIRD, '', STARLING_IMAGE_ROOT, 5),
-            ('Chickadee', '', 62, 1, 'Black-Capped Chickadee', 'TEMPORARY', BIRD, '', BLACK_CAPPED_CHICKADEE_IMAGE_ROOT, 5),
-            ('Oriole', '', 63, 1, 'Baltimore Oriole', 'TEMPORARY', BIRD, '', BALTIMORE_ORIOLE_IMAGE_ROOT, 5),
-            ('Blackbird', 'Male', 64, 1, 'Red Wing Blackbird', 'TEMPORARY', BIRD, '', REDWING_BLACKBIRD_IMAGE_ROOT, 5),
-            ('Blackbird', 'Female', 64, 2, 'Red Wing Blackbird', 'TEMPORARY', BIRD, '', REDWING_BLACKBIRD_IMAGE_ROOT, 5),
-            ('Woodpecker', '', 65, 1, 'Pileated Woodpecker', 'TEMPORARY', BIRD, '', PILEATED_WOODPECKER_IMAGE_ROOT, 5),
-            ('Hummingbird', '', 66, 1, 'Ruby-Throated Hummingbird', 'TEMPORARY', BIRD, '', HUMMINGBIRD_IMAGE_ROOT, 5),
-            ('Swallow', '', 67, 1, 'Barn Swallow', 'TEMPORARY', BIRD, '', BARN_SWALLOW_IMAGE_ROOT, 5),
-            ('Owl', '', 68, 1, 'Barn Owl', 'TEMPORARY', BIRD, '', BARN_OWL_IMAGE_ROOT, 5),
-            ('Snail', 'Brown Lipped', 69, 1, 'Brown Lipped Snail', 'Cepaea nemoralis', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Carthusian', 69, 2, 'Carthusian Snail', 'Monacha cartusiana', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Garlic', 69, 3, 'Garlic Snail', 'Oxychilus alliarius', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Roman', 69, 4, 'Roman Snail', 'Helix pomatia', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Rosy Wolfsnail', 69, 5, 'Rosy Wolfsnail', 'Euglandina rosea', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Zebra', 69, 6, 'Zebra Snail', 'Flammulina zebra', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Snail', 'Amber', 69, 7, 'Amber Snail', 'Succinea', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5),
-            ('Swallowtail', 'Caterpillar', 70, 1, 'Eastern Tiger Swallowtail', 'TEMPORARY', INSECT, '', SWALLOWTAIL_BUTTERFLY_IMAGE_ROOT, 5),
-            ('Swallowtail', 'Butterfly', 70, 2, 'Eastern Tiger Swallowtail', 'TEMPORARY', INSECT, '', SWALLOWTAIL_BUTTERFLY_IMAGE_ROOT, 5),
-            ('Moth', '', 71, 1, 'Tiger Moth', 'TEMPORARY', INSECT, '', TIGER_MOTH_IMAGE_ROOT, 5),
-            ('Moth', '', 72, 1, 'Polyphemus Moth', 'TEMPORARY', INSECT, '', POLYPHEMUS_MOTH_IMAGE_ROOT, 5),
-            ('Honeybee', '', 73, 1, 'Eastern Honeybee', 'TEMPORARY', INSECT, '', HONEYBEE_IMAGE_ROOT, 5),
-            ('Ladybug', '', 74, 1, 'Seven-spotted Lady Beetle', 'TEMPORARY', INSECT, '', LADYBUG_IMAGE_ROOT, 5),
-            ('Roly Poly', '', 75, 1, 'Common Pill Woodlouse', 'TEMPORARY', CRUSTACEAN, '', ROLY_POLY_IMAGE_ROOT, 5),
-            ('Lanternfly', '', 76, 1, 'Spotted Lanternfly', 'TEMPORARY', INSECT, '', SPOTTED_LANTERNFLY_IMAGE_ROOT, 5),
-            ('Walkingstick', '', 77, 1, 'Northern Walkingstick', 'TEMPORARY', INSECT, '', NORTHERN_WALKING_STICK_IMAGE_ROOT, 5),
-            ('Dragonfly', '', 78, 1, 'Blue Dasher', 'TEMPORARY', INSECT, '', DRAGONFLY_IMAGE_ROOT, 5),
-            ('Water Strider', '', 79, 1, 'North American Common Water Strider', 'TEMPORARY', INSECT, '', POND_SKATER_IMAGE_ROOT, 5),
-            ('Frog', 'Frog', 80, 1, 'Bull Frog', 'TEMPORARY', AMPHIBIAN, '', BULL_FROG_IMAGE_ROOT, 5),
-            ('Frog', 'Tadpole', 80, 2, 'Bull Frog', 'TEMPORARY', AMPHIBIAN, '', BULL_FROG_IMAGE_ROOT, 5),
-            ('Newt', '', 81, 1, 'Eastern Newt', 'TEMPORARY', AMPHIBIAN, '', EASTERN_NEWT_IMAGE_ROOT, 5),
-            ('Crayfish', '', 82, 1, 'Eastern Crayfish', 'Cambarus bartonii', CRUSTACEAN, '', CRAYFISH_IMAGE_ROOT, 5),
-            ('Turtle', '', 83, 1, 'Painted Turtle', 'Chrysemys picta', REPTILE, '', PAINTED_TURTLE_IMAGE_ROOT, 5),
-            ('Killdeer', '', 84, 1, 'Killdeer', 'Charadrius vociferus', BIRD, '', KILLDEER_IMAGE_ROOT, 5),
-            ('Seagull', '', 85, 1, 'Ring-Billed Gull', 'Larus delawarensis', BIRD, '', SEAGULL_IMAGE_ROOT, 5),
-            ('Cormorant', '', 86, 1, 'Double-Crested Cormorant', 'Nannopterum auritum', BIRD, '', CORMORANT_IMAGE_ROOT, 5),
-            ('Kingfisher', '', 87, 1, 'Belted Kingfisher', 'Megaceryle alcyon', BIRD, '', BELTED_KINGFISHER_IMAGE_ROOT, 5),
-            ('Loon', '', 88, 1, 'Common Loon', 'Gavia immer', BIRD, '', LOON_IMAGE_ROOT, 5),
-            ('Swan', '', 89, 1, 'Mute Swan', 'Cygnus olor', BIRD, '', MUTE_SWAN_IMAGE_ROOT, 5),
-            ('Heron', '', 90, 1, 'Great Blue Heron', 'Ardea herodias', BIRD, '', GREAT_BLUE_HERON_IMAGE_ROOT, 5),
-            ('Heron', '', 91, 1, 'Black Crowned Night Heron', 'Nycticorax nycticorax', BIRD, '', BLACK_CROWNED_NIGHT_HERON_IMAGE_ROOT, 5),
-            ('Crane', '', 92, 1, 'Sandhill Crane', 'Antigone canadensis', BIRD, '', SANDHILL_CRANE_IMAGE_ROOT, 5),
-            ('Muskrat', '', 93, 1, 'Muskrat', 'Ondatra zibethicus', MAMMAL, '', MUSKRAT_IMAGE_ROOT, 5),
-            ('Beaver', '', 94, 1, 'American Beaver', 'Castor canadensis', MAMMAL, '', BEAVER_IMAGE_ROOT, 5),
-            ('Otter', '', 95, 1, 'North American River Otter', 'Lontra canadensis', MAMMAL, '', RIVER_OTTER_IMAGE_ROOT, 5),
-            ('Hercules Beetle', 'Male', 96, 1, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5),
-            ('Hercules Beetle', 'Female', 96, 2, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5),
-            ('Hellbender', '', 97, 1, 'Hellbender', 'Cryptobranchus alleganiensis', REPTILE, '', HELLBENDER_IMAGE_ROOT, 5),
-            ('Puffin', '', 98, 1, 'Atlantic Puffin', 'Fratercula arctica', BIRD, '', PUFFIN_IMAGE_ROOT, 5),
-            ('Seal', '', 99, 1, 'Harbor Seal', 'Phoca vitulina', MAMMAL, '', HARBOR_SEAL_IMAGE_ROOT, 5),
-            ('Alligator', '', 100, 1, 'American Alligator', 'Alligator mississippiensis', REPTILE, '', ALLIGATOR_IMAGE_ROOT, 5),
+            ('Skink', '', 51, 1, 'Common Five-lined Skink', 'Plestiodon fasciatus', REPTILE, '', SKINK_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Copperhead', '', 52, 1, 'Eastern Copperhead', 'Plestiodon fasciatus', REPTILE, '', COPPERHEAD_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Worm', '', 53, 1, 'Earth Worm', 'TEMPORARY', CLITELLATA, '', EARTHWORM_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Mole', '', 54, 1, 'Eastern Mole', 'TEMPORARY', MAMMAL, '', EASTERN_MOLE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Mole', '', 55, 1, 'Star-Nosed Mole', 'TEMPORARY', MAMMAL, '', STAR_NOSED_MOLE_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Squirrel', '', 56, 1, 'American Red Squirrel', 'TEMPORARY', MAMMAL, '', RED_SQUIRREL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Ground Squirrel', '', 57, 1, 'Thirteen-Lined Ground Squirrel', 'TEMPORARY', MAMMAL, '', THIRTEEN_LINED_GROUND_SQUIRREL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Stoat', '', 58, 1, 'Stoat', 'TEMPORARY', MAMMAL, '', STOAT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Boar', '', 59, 1, 'Wild Boar', 'TEMPORARY', MAMMAL, '', BOAR_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Finch', '', 60, 1, 'House Finch', 'TEMPORARY', BIRD, '', HOUSE_FINCH_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Starling', '', 61, 1, 'European Starling', 'TEMPORARY', BIRD, '', STARLING_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Chickadee', '', 62, 1, 'Black-Capped Chickadee', 'TEMPORARY', BIRD, '', BLACK_CAPPED_CHICKADEE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Oriole', '', 63, 1, 'Baltimore Oriole', 'TEMPORARY', BIRD, '', BALTIMORE_ORIOLE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Blackbird', 'Male', 64, 1, 'Red Wing Blackbird', 'TEMPORARY', BIRD, '', REDWING_BLACKBIRD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Blackbird', 'Female', 64, 2, 'Red Wing Blackbird', 'TEMPORARY', BIRD, '', REDWING_BLACKBIRD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Woodpecker', '', 65, 1, 'Pileated Woodpecker', 'TEMPORARY', BIRD, '', PILEATED_WOODPECKER_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Hummingbird', '', 66, 1, 'Ruby-Throated Hummingbird', 'TEMPORARY', BIRD, '', HUMMINGBIRD_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Swallow', '', 67, 1, 'Barn Swallow', 'TEMPORARY', BIRD, '', BARN_SWALLOW_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Owl', '', 68, 1, 'Barn Owl', 'TEMPORARY', BIRD, '', BARN_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Snail', 'Brown Lipped', 69, 1, 'Brown Lipped Snail', 'Cepaea nemoralis', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Snail', 'Carthusian', 69, 2, 'Carthusian Snail', 'Monacha cartusiana', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Snail', 'Garlic', 69, 3, 'Garlic Snail', 'Oxychilus alliarius', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Snail', 'Roman', 69, 4, 'Roman Snail', 'Helix pomatia', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Snail', 'Rosy Wolfsnail', 69, 5, 'Rosy Wolfsnail', 'Euglandina rosea', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Snail', 'Zebra', 69, 6, 'Zebra Snail', 'Flammulina zebra', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Snail', 'Amber', 69, 7, 'Amber Snail', 'Succinea', MOLLUSK, '', SNAIL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Swallowtail', 'Caterpillar', 70, 1, 'Eastern Tiger Swallowtail', 'TEMPORARY', INSECT, '', SWALLOWTAIL_BUTTERFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Swallowtail', 'Butterfly', 70, 2, 'Eastern Tiger Swallowtail', 'TEMPORARY', INSECT, '', SWALLOWTAIL_BUTTERFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Moth', '', 71, 1, 'Tiger Moth', 'TEMPORARY', INSECT, '', TIGER_MOTH_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Moth', '', 72, 1, 'Polyphemus Moth', 'TEMPORARY', INSECT, '', POLYPHEMUS_MOTH_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Honeybee', '', 73, 1, 'Eastern Honeybee', 'TEMPORARY', INSECT, '', HONEYBEE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Ladybug', '', 74, 1, 'Seven-spotted Lady Beetle', 'TEMPORARY', INSECT, '', LADYBUG_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Roly Poly', '', 75, 1, 'Common Pill Woodlouse', 'TEMPORARY', CRUSTACEAN, '', ROLY_POLY_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Lanternfly', '', 76, 1, 'Spotted Lanternfly', 'TEMPORARY', INSECT, '', SPOTTED_LANTERNFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Walkingstick', '', 77, 1, 'Northern Walkingstick', 'TEMPORARY', INSECT, '', NORTHERN_WALKING_STICK_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Dragonfly', '', 78, 1, 'Blue Dasher', 'TEMPORARY', INSECT, '', DRAGONFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Water Strider', '', 79, 1, 'North American Common Water Strider', 'TEMPORARY', INSECT, '', POND_SKATER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Frog', 'Frog', 80, 1, 'Bull Frog', 'TEMPORARY', AMPHIBIAN, '', BULL_FROG_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Frog', 'Tadpole', 80, 2, 'Bull Frog', 'TEMPORARY', AMPHIBIAN, '', BULL_FROG_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Newt', '', 81, 1, 'Eastern Newt', 'TEMPORARY', AMPHIBIAN, '', EASTERN_NEWT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Crayfish', '', 82, 1, 'Eastern Crayfish', 'Cambarus bartonii', CRUSTACEAN, '', CRAYFISH_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Turtle', '', 83, 1, 'Painted Turtle', 'Chrysemys picta', REPTILE, '', PAINTED_TURTLE_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Killdeer', '', 84, 1, 'Killdeer', 'Charadrius vociferus', BIRD, '', KILLDEER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Seagull', '', 85, 1, 'Ring-Billed Gull', 'Larus delawarensis', BIRD, '', SEAGULL_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Cormorant', '', 86, 1, 'Double-Crested Cormorant', 'Nannopterum auritum', BIRD, '', CORMORANT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Kingfisher', '', 87, 1, 'Belted Kingfisher', 'Megaceryle alcyon', BIRD, '', BELTED_KINGFISHER_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Loon', '', 88, 1, 'Common Loon', 'Gavia immer', BIRD, '', LOON_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Swan', '', 89, 1, 'Mute Swan', 'Cygnus olor', BIRD, '', MUTE_SWAN_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Heron', '', 90, 1, 'Great Blue Heron', 'Ardea herodias', BIRD, '', GREAT_BLUE_HERON_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Heron', '', 91, 1, 'Black Crowned Night Heron', 'Nycticorax nycticorax', BIRD, '', BLACK_CROWNED_NIGHT_HERON_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Crane', '', 92, 1, 'Sandhill Crane', 'Antigone canadensis', BIRD, '', SANDHILL_CRANE_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Muskrat', '', 93, 1, 'Muskrat', 'Ondatra zibethicus', MAMMAL, '', MUSKRAT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Beaver', '', 94, 1, 'American Beaver', 'Castor canadensis', MAMMAL, '', BEAVER_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Otter', '', 95, 1, 'North American River Otter', 'Lontra canadensis', MAMMAL, '', RIVER_OTTER_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Hercules Beetle', 'Male', 96, 1, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Hercules Beetle', 'Female', 96, 2, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Hellbender', '', 97, 1, 'Hellbender', 'Cryptobranchus alleganiensis', REPTILE, '', HELLBENDER_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Puffin', '', 98, 1, 'Atlantic Puffin', 'Fratercula arctica', BIRD, '', PUFFIN_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Seal', '', 99, 1, 'Harbor Seal', 'Phoca vitulina', MAMMAL, '', HARBOR_SEAL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Alligator', '', 100, 1, 'American Alligator', 'Alligator mississippiensis', REPTILE, '', ALLIGATOR_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
         ]
 
         for index, creature in enumerate(creature_data):
@@ -545,9 +600,9 @@ class TGOMMODatabaseHandler:
 
     def insert_transcendant_creature_records(self):
         transcendant_creature_data = [
-            ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MYSTICAL, '', BIGFOOT_IMAGE_ROOT, 5),
-            ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', MYSTICAL, '', MOTHMAN_IMAGE_ROOT, 5),
-            ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', MYSTICAL, '', FROGMAN_IMAGE_ROOT, 5),
+            ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MYSTICAL, '', BIGFOOT_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
+            ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', MYSTICAL, '', MOTHMAN_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
+            ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', MYSTICAL, '', FROGMAN_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
             # ('Chupacabra', '', CHUPACABRA_DEX_NO, 1, 'Chupacabra', 'N/A', REPTILE, '', CHUPACABRA_IMAGE_ROOT, 5),
             # ('Jersey Devil', '', JERSEY_DEVIL_DEX_NO, 1, 'Jersey Devil', 'N/A', MAMMAL, '', JERSEY_DEVIL_IMAGE_ROOT, 5),
             # ('Thunderbird', '', THUNDERBIRD_DEX_NO, 1, 'Thunderbird', 'N/A', BIRD, '', THUNDERBIRD_IMAGE_ROOT, 5),

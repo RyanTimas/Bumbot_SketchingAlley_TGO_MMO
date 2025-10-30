@@ -5,7 +5,7 @@ from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
 from src.discord.objects.TGOCreature import TGOCreature, PLACEHOLDER_CREATURE
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import PLAYER_PROFILE_CREATURE_RESIZE_PERCENT, \
-    PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE
+    PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE, TGOMMO_RARITY_MYTHICAL
 from src.resources.constants.file_paths import *
 
 TEAM = "Team"
@@ -212,7 +212,7 @@ class PlayerProfilePageFactory:
 
 
 async def build_user_creature_collection(author, ctx):
-    creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(author.id)
+    creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(author.id, convert_to_object=True)
 
     page_num = 0
     pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
@@ -221,15 +221,11 @@ async def build_user_creature_collection(author, ctx):
     for creature_index, creature in enumerate(creature_collection):
         current_page = pages[page_num]
 
-        catch_id = creature[0]
-        creature_id = creature[1]
-        creature_name = f'{creature[2]}{f' -  {creature[3]}' if creature[3] != '' else ''}'
-        spawn_rarity = creature[5]
-        is_mythical = creature[6]
-        nickname = f'**__{creature[4]}❗__**' if creature[4] != '' else creature[2] + ('✨' if is_mythical else '')
+        is_mythical = creature.rarity.name == TGOMMO_RARITY_MYTHICAL
+        nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if is_mythical else '')
 
-        newlines = f'{'\n' if creature_id != creature_collection[creature_index - 1][1] else ''}\n'
-        new_entry = f"{newlines}{creature_index + 1}.  \t\t [{catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
+        newlines = f'{'\n' if creature.creature_id != creature_collection[creature_index - 1].creature_id else ''}\n'
+        new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature.name, 20)}) \t {pad_text(nickname, 20)}"
 
         if len(current_page) + len(new_entry) > 1900:
             page_num += 1

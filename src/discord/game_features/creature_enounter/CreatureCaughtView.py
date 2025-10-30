@@ -81,9 +81,9 @@ class CreatureCaughtView(discord.ui.View):
     def create_display_creature_index_dropdown(self, row=1):
         options = []
         for index, display_creature_id in enumerate(self.display_creature_ids):
-            creature_info = get_tgommo_db_handler().get_creature_by_catch_id(display_creature_id)
+            creature = get_tgommo_db_handler().get_creature_by_catch_id(display_creature_id, convert_to_object=True)
 
-            label = f"{index+1} - [EMPTY]" if creature_info is None else f"{index+1} - {creature_info[0]} ({creature_info[1]})"
+            label = f"{index+1} - [EMPTY]" if creature is None else f"{index+1} - {creature.nickname} ({creature.name})"
             options.append(discord.SelectOption(label=label, value=str(index)))
 
         dropdown = Select(placeholder="Choose Display Slot", options=options, min_values=1, max_values=1, row=row)

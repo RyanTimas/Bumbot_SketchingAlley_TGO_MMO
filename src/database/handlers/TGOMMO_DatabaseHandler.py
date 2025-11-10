@@ -837,7 +837,7 @@ class TGOMMODatabaseHandler:
             # Event Avatars
             ('E1', 'Pim', AVATAR_TYPE_EVENT, 'Pim', 'Smiling Friends',),
             ('E2', 'Charlie', AVATAR_TYPE_EVENT, 'Charlie', 'Smiling Friends',),
-            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, 'Freddy', 'Smiling Friends',),
+            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, 'FreddyFazbear', 'Five Nights at Freddy\'s',),
             ('E4', 'Allan', AVATAR_TYPE_EVENT, 'Allan', 'Smiling Friends',),
             ('E5', 'Glep', AVATAR_TYPE_EVENT, 'Glep', 'Smiling Friends',),
             ('E6', 'The Boss', AVATAR_TYPE_EVENT, 'TheBoss', 'Smiling Friends',),

@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ui import Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png
+from src.commons.CommonFunctions import *
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous, jump
 from src.resources.constants.TGO_MMO_constants import *
@@ -58,6 +58,7 @@ class CreatureInventoryView(discord.ui.View):
         self.add_item(self.show_only_favorites_button)
         self.add_item(self.show_only_nicknames_button)
         # row 3
+        self.add_item(create_dummy_label_button(label_text="Sort:", row=3))
         self.add_item(self.order_alphabetically_button)
         self.add_item(self.order_catch_date_button)
         self.add_item(self.order_dex_no_button)
@@ -138,7 +139,7 @@ class CreatureInventoryView(discord.ui.View):
                 elif button_type == NICKNAME_KEY:
                     self.show_only_nicknames = not self.show_only_nicknames
 
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
+                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
 
                 # Update state and button appearance
                 self.update_button_states()
@@ -188,7 +189,7 @@ class CreatureInventoryView(discord.ui.View):
 
     # CREATE DROPDOWNS
     def create_box_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Box {i}", value=str(i)) for i in range(1, self.creature_inventory_image_factory.total_box_num + 1)]
+        options = [discord.SelectOption(label=f"Box {i}", value=str(i)) for i in range(1, self.creature_inventory_image_factory.total_unlocked_box_num + 1)]
         dropdown = Select(placeholder="Skip to Box", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
@@ -201,7 +202,7 @@ class CreatureInventoryView(discord.ui.View):
     def update_button_states(self):
         # Update the enabled/disabled state of navigation buttons based on current page
         self.prev_button.disabled = self.creature_inventory_image_factory.current_box_num <= 1
-        self.next_button.disabled = self.creature_inventory_image_factory.current_box_num >= self.creature_inventory_image_factory.total_box_num
+        self.next_button.disabled = self.creature_inventory_image_factory.current_box_num >= self.creature_inventory_image_factory.total_unlocked_box_num
 
         self.show_only_mythics_button.style = discord.ButtonStyle.green if self.show_only_mythics else discord.ButtonStyle.gray
         self.show_only_favorites_button.style = discord.ButtonStyle.green if self.show_only_favorites else discord.ButtonStyle.gray

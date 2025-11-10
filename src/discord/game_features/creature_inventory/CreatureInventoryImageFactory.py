@@ -1,6 +1,6 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryIconImageFactory import \
     CreatureInventoryIconImageFactory
@@ -22,7 +22,8 @@ class CreatureInventoryImageFactory:
         self.order_type = CAUGHT_DATE_ORDER
 
         self.current_box_num = 1
-        self.total_box_num = 8
+        self.total_unlocked_box_num = 8
+        self.total_box_num = 15
 
         self.load_relevant_info()
 
@@ -60,17 +61,22 @@ class CreatureInventoryImageFactory:
             icons_grid = self.build_creature_inventory_icons_grid(creature_icons= icons)
             background_img.paste(icons_grid, (160, 260), icons_grid)
 
+        background_img = self.add_text_to_image(background_img)
         return background_img
 
     def place_box_icons_on_image(self, image: Image.Image):
         box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON).resize((100, 100))
         selected_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_SELECTED).resize((100, 100))
+        locked_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_LOCKED).resize((100, 100))
 
         current_coordinates = (200, 127)
         x_offset = 100
 
         for box_num in range(1, self.total_box_num + 1):
-            current_box_icon = selected_box_icon_img if box_num == self.current_box_num else box_icon_img
+            if box_num > self.total_unlocked_box_num:
+                current_box_icon = locked_box_icon_img
+            else:
+                current_box_icon = selected_box_icon_img if box_num == self.current_box_num else box_icon_img
             image.paste(current_box_icon, current_coordinates, current_box_icon)
             current_coordinates = (current_coordinates[0] + x_offset, current_coordinates[1])
 
@@ -151,6 +157,15 @@ class CreatureInventoryImageFactory:
         creature_icons = list(creature_icons)
         return creatures, creature_icons
 
+    def add_text_to_image(self, image: Image.Image):
+        draw = ImageDraw.Draw(image)
+        default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 36)
+
+        box_num_text = f"BOX {self.current_box_num}"
+        pixel_location = center_text_on_pixel(text= box_num_text, font=default_font, center_pixel_location=(960, 90))
+        draw.text(pixel_location, text=box_num_text, font=default_font, fill=(200, 255, 185))
+
+        return image
 
 
     def get_creatures_for_release(self):

@@ -89,7 +89,7 @@ class AvatarUnlockHandler:
             if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"E{avatar_id}", user_id=self.user_id):
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"E{avatar_id}", user_id=self.user_id)
 
-                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name}{IMAGE_FILE_EXTENSION}"
+                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name.replace(' ', '')}{IMAGE_FILE_EXTENSION}"
                 await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {name}!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
 
 

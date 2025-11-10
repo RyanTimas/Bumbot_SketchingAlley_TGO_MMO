@@ -1,5 +1,5 @@
 from src.database.handlers.QueryHandler import QueryHandler
-from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name
+from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, MYTHICAL
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
@@ -287,9 +287,9 @@ class TGOMMODatabaseHandler:
                         img_root=creature[12],
                         sub_environment=creature[13],
                         encounter_rate=creature[14],
-                        rarity=get_rarity_by_name(creature[15]),
+                        rarity=MYTHICAL if creature[16] else get_rarity_by_name(creature[15]),
 
-                        caught_date=creature[16],
+                        caught_date=creature[17],
                     )
                 )
             return creatures

@@ -8,6 +8,8 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
     create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
+from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
+from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
@@ -41,6 +43,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
         self.avatar_board_button = self.create_avatar_board_button(row=2)
+        self.creature_inventory_button = self.create_creature_inventory_button(row=2)
 
         self.close_button = self.create_close_button(row=3)
 
@@ -54,6 +57,7 @@ class TGOMMOMenuView(discord.ui.View):
 
         self.add_item(self.open_player_profile_button)
         self.add_item(self.avatar_board_button)
+        self.add_item(self.creature_inventory_button)
 
         self.add_item(self.close_button)
 
@@ -213,6 +217,48 @@ class TGOMMOMenuView(discord.ui.View):
                 # Send updated view
                 await interaction.message.edit(attachments=[file], view=avatar_board_view)
         return callback
+
+    def create_creature_inventory_button(self, row=1):
+        button = discord.ui.Button(
+            label="Open Creature Inventory",
+            style=discord.ButtonStyle.blurple,
+            row=row
+        )
+        button.callback = self.creature_inventory_callback()  # Add parentheses to call the function
+        return button
+    def creature_inventory_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                creature_inventory_img_factory = CreatureInventoryImageFactory(
+                    user=self.message_author,
+                )
+
+                creature_inventory_view = CreatureInventoryView(
+                    message_author=self.message_author,
+                    owner_id=self.message_author.id,
+                    creature_inventory_image_factory=creature_inventory_img_factory,
+                    original_view=self
+                )
+
+                # Update button states
+                self.update_button_states()
+
+                creature_inventory_img = creature_inventory_img_factory.build_creature_inventory_page_image()
+                file = convert_to_png(creature_inventory_img, f'creature_inventory_img.png')
+
+                # Send updated view
+                await interaction.message.edit(attachments=[file], view=creature_inventory_view)
+        return callback
+
+
 
 
     def create_welcome_button(self):

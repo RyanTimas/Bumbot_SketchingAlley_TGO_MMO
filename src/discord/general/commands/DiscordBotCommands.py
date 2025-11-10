@@ -7,6 +7,8 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord import DiscordBot
+from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
+from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
@@ -67,6 +69,7 @@ def _assign_general_discord_commands(discord_bot: DiscordBot):
 
 
 def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
+    # GENERAL COMMANDS FOR TGO MMO
     @discord_bot.discord_bot.command(name='current-environment', help="Display the current environment.", hidden=True)
     async def current_environment(ctx):
         avatar_url = ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url
@@ -75,7 +78,21 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         time_of_day = "Night" if discord_bot.creature_spawner_handler.is_night_time else "Day"
         await ctx.channel.send(f"Current Environment: {env.name} ({time_of_day})", delete_after=10)
 
+    @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")
+    async def tgommo_help(ctx):
+        view = TGOMMOMenuView(message_author=ctx.author, discord_bot=discord_bot)
+        title_text = f'{ctx.author.mention} Welcome to the TGO MMO Help Menu!'
 
+        await ctx.message.delete()
+        await ctx.send(title_text, files=[], view=view)
+
+    @discord_bot.discord_bot.command(name='caught-creatures', help="Brings up list of all caught creatures.")
+    async def caught_creatures(ctx):
+        await build_user_creature_collection(ctx.message.author, ctx)
+        await ctx.message.delete()
+
+
+    # OPEN SCREEN COMMANDS
     @discord_bot.discord_bot.command(name='encyclopedia', help="List all creatures caught. Use 'verbose' for detailed stats.")
     async def encyclopedia(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
         # Initialize defaults
@@ -194,19 +211,23 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         await ctx.message.delete()
         await ctx.send('', files=[convert_to_png(avatar_board_img, f'avatar_board.png')], view=view)
 
+    @discord_bot.discord_bot.command(name='creature-inventory', help="Shows User's inventory of creatures.")
+    async def creature_inventory(ctx, param1: str = None):
+        target_user_id = None
+        for param in [param1]:
+            if param is None:
+                continue
+            if param.isdigit():
+                target_user_id = int(param)
+        target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
-    @discord_bot.discord_bot.command(name='tgommo', help="Brings up the Menu for TGOMMO.")
-    async def tgommo_help(ctx):
-        view = TGOMMOMenuView(message_author=ctx.author, discord_bot=discord_bot)
-        title_text = f'{ctx.author.mention} Welcome to the TGO MMO Help Menu!'
+        creature_inventory_handler = CreatureInventoryImageFactory(user=target_user,)
+        creature_inventory_img = convert_to_png(creature_inventory_handler.build_creature_inventory_page_image(), f'avatar_board.png')
+        view = CreatureInventoryView( message_author=ctx.author, owner_id=target_user.id,creature_inventory_image_factory=creature_inventory_handler)
 
         await ctx.message.delete()
-        await ctx.send(title_text, files=[], view=view)
+        await ctx.channel.send(content='', files=[creature_inventory_img], view=view)
 
-    @discord_bot.discord_bot.command(name='caught-creatures', help="Brings up list of all caught creatures.")
-    async def caught_creatures(ctx):
-        await build_user_creature_collection(ctx.message.author, ctx)
-        await ctx.message.delete()
 
     # MOD COMMANDS
     @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.", hidden=True)

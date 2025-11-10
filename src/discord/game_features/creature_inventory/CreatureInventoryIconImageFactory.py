@@ -24,36 +24,36 @@ class CreatureInventoryIconImageFactory:
 
         if self.creature.is_favorite:
             favorite_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_FAVORITE_STAMP_IMAGE)
-            creature_img.paste(favorite_overlay, (0, 0), favorite_overlay)
+            icon_img.paste(favorite_overlay, (0, 0), favorite_overlay)
+        if self.creature.nickname != '':
+            nickname_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_NICKNAME_STAMP_IMAGE)
+            icon_img.paste(nickname_overlay, (0, 0), nickname_overlay)
+        if self.creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
+            mythical_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_MYTHICAL_STAMP_IMAGE)
+            icon_img.paste(mythical_overlay, (0, 0), mythical_overlay)
 
         return self.add_text_to_image(image=icon_img)
 
 
     def add_text_to_image(self, image: Image.Image):
         draw = ImageDraw.Draw(image)
-        default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 23)
+        default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 16)
+        max_width = 64
 
-        nickname_font = resize_text_to_fit(text=self.creature.nickname, draw=draw, font=default_font, max_width=68, min_font_size=8)
+        # add creature nickname to image
+        nickname_font = resize_text_to_fit(text=self.creature.nickname, draw=draw, font=default_font, max_width=max_width, min_font_size=8)
         pixel_location = center_text_on_pixel(text= self.creature.nickname, font=nickname_font, center_pixel_location=(40, 80))
         draw.text(pixel_location, text=self.creature.nickname, font=nickname_font, fill=FONT_COLOR_BLACK)
 
-        species_font = resize_text_to_fit(text=self.creature.full_name, draw=draw, font=default_font, max_width=68, min_font_size=6)
-        pixel_location = center_text_on_pixel(text= self.creature.full_name, font=species_font, center_pixel_location=(40, 92))
-        draw.text(pixel_location, text=self.creature.full_name, font=species_font, fill=FONT_COLOR_BLACK)
+        # add creature name to image
+        species_font = resize_text_to_fit(text=self.creature.name, draw=draw, font=default_font, max_width=max_width, min_font_size=6)
+        pixel_location = center_text_on_pixel(text= self.creature.name, font=species_font, center_pixel_location=(40, 96))
+        draw.text(pixel_location, text=self.creature.name, font=species_font, fill=FONT_COLOR_BLACK)
 
-        catch_id_font = resize_text_to_fit(text= f'{self.creature.catch_id}', draw=draw, font=default_font, max_width=68, min_font_size=6)
+        # add creature catch id to image
+        catch_id_font = resize_text_to_fit(text= f'{self.creature.catch_id}', draw=draw, font=default_font, max_width=max_width, min_font_size=6)
         pixel_location = center_text_on_pixel(text= f'{self.creature.catch_id}', font=catch_id_font, center_pixel_location=(40, 110))
         draw.text(pixel_location, text= f'{self.creature.catch_id}', font=catch_id_font, fill=FONT_COLOR_BLACK)
-
-        indicator_text = ""
-        if self.creature.nickname != '':
-            indicator_text += "❗"
-        if self.creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
-            indicator_text += "✨"
-
-        indicator_font = resize_text_to_fit(text= indicator_text, draw=draw, font=default_font, max_width=68, min_font_size=6)
-        pixel_location = center_text_on_pixel(text= indicator_text, font=indicator_font, center_pixel_location=(40, 129))
-        draw.text(pixel_location, text= indicator_text, font=indicator_font, fill=FONT_COLOR_BLACK)
 
         return image
 

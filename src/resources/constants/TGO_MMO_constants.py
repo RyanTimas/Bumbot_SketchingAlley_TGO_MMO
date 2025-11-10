@@ -76,6 +76,11 @@ PLAYER_PROFILE_CREATURE_COORDINATES = [
     (426, 580), (852, 580)      # front row
 ]
 
+'''CREATURE BOXES'''
+ALPHABETICAL_ORDER = 'alphabetical'
+DEX_NO_ORDER = 'dex_no'
+CAUGHT_DATE_ORDER = 'caught_date'
+
 '''-------------'''
 '''CREATURES'''
 '''-------------'''

@@ -66,7 +66,7 @@ class CreatureInventoryView(discord.ui.View):
         # row 2
         self.add_item(self.expand_filter_options_button)
         self.add_item(self.expand_order_options_button)
-        self.add_item(create_dummy_label_button(label_text="Inventory Management (Coming Soon 😏)", row=2))
+        self.add_item(create_dummy_label_button(label_text="Creature Management (Coming Soon 😏)", row=2))
 
         # row 3a
         if self.expanded_display == FILTER_EXPANSION_KEY:

@@ -245,14 +245,16 @@ class UpdatePlayerProfileView(discord.ui.View):
         page_num = 0
         pages = [f"Total Unique Creatures Caught: {len(self.user_creature_collection)}"]
 
+        ordered_creatures = sorted(self.user_creature_collection, key=lambda c: c.dex_no)
+
         # add an entry for each creature in collection
-        for creature_index, creature in enumerate(self.user_creature_collection):
+        for creature_index, creature in enumerate(ordered_creatures):
             current_page = pages[page_num]
 
             creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
             nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
 
-            newlines = f'{'\n' if creature.creature_id != self.user_creature_collection[creature_index - 1].creature_id else ''}\n'
+            newlines = f'{'\n' if creature.creature_id != ordered_creatures[creature_index - 1].creature_id else ''}\n'
             new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
 
             if len(current_page) + len(new_entry) > 1900:

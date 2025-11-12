@@ -343,7 +343,7 @@ class UpdatePlayerProfileView(discord.ui.View):
             found_in_collection = False
 
             for creature in self.user_creature_collection:
-                if str(creature.creature_id) == str(display_creature_id):
+                if str(creature.catch_id) == str(display_creature_id):
                     found_in_collection = True
                     break
 

@@ -4,6 +4,7 @@ import discord
 from discord.ui import Select
 
 from src.commons.CommonFunctions import *
+from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous, jump
 from src.resources.constants.TGO_MMO_constants import *
@@ -32,6 +33,9 @@ class CreatureInventoryView(discord.ui.View):
         self.show_only_nicknames = False
         self.order_type = CAUGHT_DATE_ORDER
         self.expanded_display = FILTER_EXPANSION_KEY
+
+        self.ids_to_release = []
+        self.ids_to_favorite = []
 
         # DEFINE VIEW COMPONENTS
         self.box_jump_dropdown = self.create_box_jump_dropdown(row=0)
@@ -269,6 +273,34 @@ class CreatureInventoryView(discord.ui.View):
         dropdown = Select(placeholder="Skip to Box", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
+
+    def create_release_button(self, row=3):
+        button = discord.ui.Button(
+            label="Release Selected Creatures",
+            style=discord.ButtonStyle.danger,
+            row=row
+        )
+        button.callback = self.release_button_callback()
+        return button
+    def release_button_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                get_tgommo_db_handler().release_user_creatures(user_id=interaction.user.id, creature_id=self.release_creatures)
+
+                # todo: handle rolls for items obtained from releases
+                # todo: handle gold gain from release
+
+
+                # TO-DO: implement release functionality
+                pass
+
+        return callback
 
     async def avatar_dropdown_callback(self, interaction: discord.Interaction):
         self.new_box = int(interaction.data["values"][0])

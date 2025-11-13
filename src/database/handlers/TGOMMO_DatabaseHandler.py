@@ -6,6 +6,7 @@ from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.TGO_MMO_creature_constants import *
 from src.resources.constants.queries.avatar_quest_db_queries import *
 from src.resources.constants.general_constants import *
 from src.resources.constants.queries.create_table_queries import *

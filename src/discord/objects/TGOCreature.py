@@ -5,6 +5,7 @@ import time
 
 from src.discord.objects.CreatureRarity import COMMON, UNCOMMON, CreatureRarity, RARE, EPIC, LEGENDARY
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.TGO_MMO_creature_constants import *
 
 
 class TGOCreature:

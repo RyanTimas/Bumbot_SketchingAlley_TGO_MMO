@@ -1,0 +1,192 @@
+import asyncio
+
+import discord
+from discord.ui import Select
+
+from src.commons.CommonFunctions import *
+from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
+from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
+from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous, jump
+from src.resources.constants.TGO_MMO_constants import *
+
+
+
+class CreatureInventoryManagementView(discord.ui.View):
+    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION):
+        super().__init__(timeout=None)
+        self.message_author = message_author
+        self.mode = mode
+
+        self.creature_inventory_image_factory = creature_inventory_image_factory
+        self.original_view = original_view
+        self.original_message = original_message
+
+        self.creatures = creatures
+        self.selected_ids = []
+
+        self.interaction_lock = asyncio.Lock()
+        self.view_state = view_state
+
+        # DEFINE VIEW COMPONENTS
+        self.selectable_creature_dropdown_1 = self.create_creature_dropdown(row=0, dropdown_num=0)
+        self.selectable_creature_dropdown_2 = self.create_creature_dropdown(row=1, dropdown_num=1)
+        self.selectable_creature_dropdown_3 = self.create_creature_dropdown(row=2, dropdown_num=2)
+        self.selectable_creature_dropdown_4 = self.create_creature_dropdown(row=3, dropdown_num=3)
+
+        self.confirmation_button = self.create_confirmation_button(row=4)
+        self.final_confirmation_button_yes = self.create_final_confirmation_button(row=4, is_confirm=True)
+        self.final_confirmation_button_no = self.create_final_confirmation_button(row=4, is_confirm=False)
+
+        self.refresh_view()
+
+
+    # CREATE BUTTONS
+    def create_confirmation_button(self, row=0):
+        button = discord.ui.Button(
+            label=f"{self.mode} Creatures",
+            style=discord.ButtonStyle.blurple,
+            row=row
+        )
+
+        button.callback = self.confirmation_callback()
+        return button
+    def confirmation_callback(self, ):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                # todo: Generate new image based on mode and selected ids
+                # todo: Update image on original view with confirmation
+                # todo: enable yes/no buttons to confirm release or favorite action
+
+                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image()
+                file = convert_to_png(new_image, f'player_boxes_page.png')
+
+                self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
+                await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[file], view=self, ephemeral=True)
+
+        return callback
+
+    def create_final_confirmation_button(self, row=0, is_confirm=True):
+        button = discord.ui.Button(
+            label=f"Confirm" if is_confirm else "No",
+            style=discord.ButtonStyle.green if is_confirm else discord.ButtonStyle.red,
+            row=row,
+            custom_id=f"final_confirmation_{'yes' if is_confirm else 'no'}"  # Unique custom_id
+        )
+
+        button.callback = self.final_confirmation_callback()
+        return button
+    def final_confirmation_callback(self, is_confirm=True):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                # todo: call database to release or favorite selected creatures
+                # get_tgommo_db_handler().release_user_creatures(user_id=interaction.user.id, creature_id=self.release_creatures)
+                # get_tgommo_db_handler().favorite_user_creatures(user_id=interaction.user.id, creature_id=self.release_creatures)
+
+                # todo: call cash generator to update user's cash if releasing creatures
+                # todo: call item generator to update user's items if releasing creatures
+                # todo: Generate new image based on money gained and items gained
+                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image()
+                file = convert_to_png(new_image, f'player_boxes_page.png')
+
+                self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)
+                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
+
+                # todo: Update image on original view with confirmation
+                await self.original_message.edit("updated lol", attachments=[file], view=self.original_view)
+
+        return callback
+
+    # CREATE DROPDOWNS
+    def create_creature_dropdown(self, row=1, dropdown_num = 0):
+        lower_bound = 0 + (dropdown_num * 25)
+        upper_bound = min(25 + (dropdown_num * 25), len(self.creatures))
+
+        options = [
+            discord.SelectOption(
+                label=f"{self.build_creature_dropdown_options(creature)}",
+                value=creature.catch_id
+            )
+            for i, creature in enumerate(self.creatures[lower_bound: upper_bound])
+        ]
+
+        dropdown = Select(
+            placeholder=f"Select creatures to {self.mode} ({lower_bound +1} - {upper_bound})",
+            options=options,
+            min_values=1,
+            max_values=25,
+            row=row,
+            custom_id=f"creature_dropdown_{dropdown_num}"
+        )
+
+        dropdown.callback = self.avatar_dropdown_callback
+        return dropdown
+    async def avatar_dropdown_callback(self, interaction: discord.Interaction):
+        self.selected_ids = []
+        dropdowns = [
+            self.selectable_creature_dropdown_1,
+            self.selectable_creature_dropdown_2,
+            self.selectable_creature_dropdown_3,
+            self.selectable_creature_dropdown_4
+        ]
+
+        for dropdown in dropdowns:
+            if dropdown.values:
+                self.selected_ids.extend(dropdown.values)
+
+        print(f"YOU HAVE SELECTED {self.selected_ids} CREATURES FOR {self.mode.upper()}.")
+
+        await interaction.response.defer()
+
+    # FUNCTIONS FOR UPDATING VIEW STATE
+    def refresh_view(self, view_state=None):
+        self.view_state = view_state if view_state else self.view_state
+
+        self.update_button_states()
+        self.rebuild_view()
+    def update_button_states(self):
+        # UPDATE ENABLED/DISABLED STATES
+        self.final_confirmation_button_yes.disabled = self.view_state != VIEW_WORKFLOW_STATE_CONFIRMATION
+        self.final_confirmation_button_no.disabled = self.view_state != VIEW_WORKFLOW_STATE_CONFIRMATION
+        self.confirmation_button.disabled = self.view_state != VIEW_WORKFLOW_STATE_INTERACTION
+    def rebuild_view(self):
+        for item in self.children.copy():
+            self.remove_item(item)
+
+        if self.view_state == VIEW_WORKFLOW_STATE_INTERACTION:
+            self.add_item(self.confirmation_button)
+
+            if len(self.creatures) > 0:
+                self.add_item(self.selectable_creature_dropdown_1)
+            if len(self.creatures) > 25:
+                self.add_item(self.selectable_creature_dropdown_2)
+            if len(self.creatures) > 50:
+                self.add_item(self.selectable_creature_dropdown_3)
+            if len(self.creatures) > 75:
+                self.add_item(self.selectable_creature_dropdown_4)
+        elif self.view_state == VIEW_WORKFLOW_STATE_CONFIRMATION:
+            self.add_item(self.final_confirmation_button_yes)
+            # self.add_item(self.final_confirmation_button_no)
+        elif self.view_state == VIEW_WORKFLOW_STATE_FINALIZED:
+            for item in self.children:
+                self.remove_item(item)
+
+
+    # SUPPORT FUNCTIONS
+    def build_creature_dropdown_options(self, creature):
+        creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
+        nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + (
+            '✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
+
+        return f"[{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"

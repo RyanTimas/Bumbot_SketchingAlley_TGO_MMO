@@ -58,12 +58,12 @@ class CreatureInventoryView(discord.ui.View):
         self.order_catch_date_button = self.create_order_button(row=3, button_type=DEX_NO_ORDER)
         self.order_dex_no_button = self.create_order_button(row=3, button_type=CAUGHT_DATE_ORDER)
 
-        self.release_button = self.create_release_button(row=3)
+        self.release_button = self.create_creature_management_button(row=3, button_type=CREATURE_INVENTORY_MODE_RELEASE)
+        self.favorite_button = self.create_creature_management_button(row=3, button_type=CREATURE_INVENTORY_MODE_FAVORITE)
 
         self.close_button = self.create_close_button(row=4)
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=4, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
 
-        # self.release_button = self.create_release_button(row=3)
 
         # ADD ITEMS TO VIEW
         # row 0
@@ -90,6 +90,7 @@ class CreatureInventoryView(discord.ui.View):
         # row 3c
         elif self.expanded_display == CREATURE_MANAGEMENT_EXPANSION_KEY:
             self.add_item(self.release_button)
+            self.add_item(self.favorite_button)
 
         # row 4
         self.add_item(self.close_button)
@@ -131,7 +132,7 @@ class CreatureInventoryView(discord.ui.View):
                     jump: self.new_box
                 }
 
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(new_box_number=page_options[new_page])
+                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(new_box_number=page_options[new_page], order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
                 # Update state and button appearance
                 self.update_button_states()
@@ -172,7 +173,7 @@ class CreatureInventoryView(discord.ui.View):
                 elif button_type == NICKNAME_KEY:
                     self.show_only_nicknames = not self.show_only_nicknames
 
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
+                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
 
                 # Update state and button appearance
                 self.update_button_states()
@@ -243,7 +244,7 @@ class CreatureInventoryView(discord.ui.View):
                 await interaction.response.defer()
 
                 self.expanded_display = button_type
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
                 self.update_button_states()
 
@@ -253,15 +254,20 @@ class CreatureInventoryView(discord.ui.View):
 
         return callback
 
-    def create_release_button(self, row=3):
+    def create_creature_management_button(self, button_type, row=3, ):
+        label = {
+            CREATURE_INVENTORY_MODE_RELEASE: "Release Selected Creatures",
+            CREATURE_INVENTORY_MODE_FAVORITE: "Favorite Selected Creatures"
+        }
+
         button = discord.ui.Button(
-            label="Release Selected Creatures",
+            label=label[button_type],
             style=discord.ButtonStyle.blurple,
             row=row
         )
-        button.callback = self.release_button_callback()
+        button.callback = self.creature_management_button_callback(button_type)
         return button
-    def release_button_callback(self):
+    def creature_management_button_callback(self, button_type):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
@@ -270,14 +276,15 @@ class CreatureInventoryView(discord.ui.View):
             async with self.interaction_lock:
                 view = CreatureInventoryManagementView(
                     message_author=self.message_author,
-                    creatures=self.creature_inventory_image_factory.caught_creatures[0:min(100, len(self.creature_inventory_image_factory.caught_creatures))],
+                    mode=button_type,
+                    creatures=self.creature_inventory_image_factory.caught_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index],
                     creature_inventory_image_factory=self.creature_inventory_image_factory,
                     original_message=interaction.message,
                     original_view=self,
-                    mode=CREATURE_INVENTORY_RELEASE_MODE,
                 )
 
-                await interaction.response.send_message(content="Select creatures to release:", view=view, ephemeral=True)
+                box_is_empty = len(self.creature_inventory_image_factory.caught_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index]) == 0
+                await interaction.response.send_message(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)
         return callback
 
     def create_close_button(self, row=2):
@@ -345,6 +352,7 @@ class CreatureInventoryView(discord.ui.View):
             self.add_item(self.order_dex_no_button)
         elif self.expanded_display == CREATURE_MANAGEMENT_EXPANSION_KEY:
             self.add_item(self.release_button)
+            self.add_item(self.favorite_button)
 
 
     def remove_items_from_view(self):
@@ -360,6 +368,7 @@ class CreatureInventoryView(discord.ui.View):
 
         # remove management buttons
         self.remove_item(self.release_button)
+        self.remove_item(self.favorite_button)
 
 
     # FUNCTIONS FOR UPDATING DATABASE
@@ -369,3 +378,7 @@ class CreatureInventoryView(discord.ui.View):
     def release_creatures(self, creature_ids: list[int]):
         pass
 
+    # SUPPORT FUNCTIONS
+    def reload_image(self):
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(new_box_number=self.creature_inventory_image_factory.current_box_num, order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+        return convert_to_png(new_image, f'player_boxes_page.png')

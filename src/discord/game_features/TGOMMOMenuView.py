@@ -251,7 +251,7 @@ class TGOMMOMenuView(discord.ui.View):
                 # Update button states
                 self.update_button_states()
 
-                creature_inventory_img = creature_inventory_img_factory.build_creature_inventory_page_image()
+                creature_inventory_img = creature_inventory_img_factory.get_creature_inventory_page_image()
                 file = convert_to_png(creature_inventory_img, f'creature_inventory_img.png')
 
                 # Send updated view

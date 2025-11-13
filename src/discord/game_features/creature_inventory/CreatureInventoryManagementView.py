@@ -63,7 +63,7 @@ class CreatureInventoryManagementView(discord.ui.View):
                 # todo: Update image on original view with confirmation
                 # todo: enable yes/no buttons to confirm release or favorite action
 
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image()
+                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
                 file = convert_to_png(new_image, f'player_boxes_page.png')
 
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
@@ -97,7 +97,7 @@ class CreatureInventoryManagementView(discord.ui.View):
                 # todo: call cash generator to update user's cash if releasing creatures
                 # todo: call item generator to update user's items if releasing creatures
                 # todo: Generate new image based on money gained and items gained
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image()
+                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image()
                 file = convert_to_png(new_image, f'player_boxes_page.png')
 
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)

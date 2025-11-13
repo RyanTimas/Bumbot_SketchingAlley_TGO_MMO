@@ -222,7 +222,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
         creature_inventory_handler = CreatureInventoryImageFactory(user=target_user,)
-        creature_inventory_img = convert_to_png(creature_inventory_handler.build_creature_inventory_page_image(), f'avatar_board.png')
+        creature_inventory_img = convert_to_png(creature_inventory_handler.get_creature_inventory_page_image(), f'avatar_board.png')
         view = CreatureInventoryView( message_author=ctx.author, owner_id=target_user.id,creature_inventory_image_factory=creature_inventory_handler)
 
         await ctx.message.delete()

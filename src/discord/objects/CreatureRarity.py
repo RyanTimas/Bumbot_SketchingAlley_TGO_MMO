@@ -23,6 +23,10 @@ LEGENDARY = CreatureRarity(name="Legendary", color=discord.Color.yellow(), emoji
 MYTHICAL = CreatureRarity(name="Mythical", color=discord.Color.gold(), emojii='⭐', font_color=(255, 215, 0), outline_color=(235, 233, 210))
 TRANSCENDANT = CreatureRarity(name="Transcendant", color=discord.Color.red(), emojii='⁉️', font_color=FONT_COLOR_BLACK, outline_color=(255, 0, 0))
 
+NORMAL = CreatureRarity(name="Normal", color=discord.Color(0xFFFFFF)  , emojii='⚪️', font_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_BLACK)
+EXOTIC = CreatureRarity(name="Exotic", color=discord.Color.teal(), emojii='💎️', font_color=(255, 215, 0), outline_color=FONT_COLOR_BLACK)
+OMNIPOTENT = CreatureRarity(name="Omnipotent", color=discord.Color.pink(), emojii='🌈', font_color=(255, 215, 0), outline_color=FONT_COLOR_BLACK)
+
 # List of all rarities for easy iteration
 ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT]
 

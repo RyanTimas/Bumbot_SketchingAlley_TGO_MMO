@@ -113,9 +113,12 @@ TGOMMO_RARITY_RARE = "Rare"
 TGOMMO_RARITY_EPIC = "Epic"
 TGOMMO_RARITY_LEGENDARY = "Legendary"
 TGOMMO_RARITY_MYTHICAL = "Mythical"
-TGOMMO_RARITY_EXOTIC = "Exotic"
 TGOMMO_RARITY_TRANSCENDANT = "Transcendant"
+
+TGOMMO_RARITY_NORMAL = "Normal"
+TGOMMO_RARITY_EXOTIC = "Exotic"
 TGOMMO_RARITY_EVENT = "Event"
+TGOMMO_RARITY_OMNIPOTENT = "Omnipotent"
 
 '''------------------'''
 '''ENVIRONMENTS'''
@@ -146,6 +149,12 @@ AVATAR_TYPE_TRANSCENDANT = "Transcendant"
 AVATAR_TYPE_CUSTOM = "Custom"
 AVATAR_TYPE_FALLBACK = "Fallback"
 
+'''------------------------------'''
+'''INVENTORY ITEMS'''
+'''------------------------------'''
+ITEM_TYPE_NAMETAG = 'NameTag'
+ITEM_TYPE_BAIT = 'Bait'
+ITEM_TYPE_MEGAPHONE = 'Megaphone'
 
 '''HELP MENU STRINGS'''
 TGOMMO_HELP_MENU_TITLE = (

@@ -144,13 +144,17 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
 
 TGOMMO_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_inventory_item (
     item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    
     item_name TEXT NOT NULL,
     item_type TEXT NOT NULL,
-    item_description TEXT DEFAULT ''
+    item_description TEXT DEFAULT '',
+    
+    rarity TEXT NOT NULL,
     is_rewardable BOOLEAN DEFAULT 0,
+    img_root TEXT NOT NULL
 )"""
 
-TGOMMO_CREATE_USER_INVENTORY_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_inventory (
+TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_item_inventory_link (
     inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,

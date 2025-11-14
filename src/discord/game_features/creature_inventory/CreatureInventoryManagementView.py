@@ -97,10 +97,10 @@ class CreatureInventoryManagementView(discord.ui.View):
                 # if user chose to release creatures, give rewards
                 final_image_mode = CREATURE_INVENTORY_MODE_DEFAULT
                 if self.mode == CREATURE_INVENTORY_MODE_RELEASE:
-                    currency_earned, items_earned = self.handle_post_release_rewards()
+                    currency_earned, earned_items = self.handle_post_release_rewards()
 
                     get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.id, new_currency=currency_earned)
-                    # get_tgommo_db_handler().add_items_to_user_profile(user_id=self.message_author.id, items=items_earned)
+                    # get_tgommo_db_handler().add_items_to_user_profile(user_id=self.message_author.id, items=earned_items)
 
                     final_image_mode = CREATURE_INVENTORY_MODE_RELEASE_RESULTS
 
@@ -189,24 +189,24 @@ class CreatureInventoryManagementView(discord.ui.View):
     # SUPPORT FUNCTIONS
     def build_creature_dropdown_options(self, creature):
         creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
-        nickname = f'{creature.nickname}' if creature.nickname != '' else (creature.name)
+        nickname = f'{creature.nickname}' if creature.nickname != '' else creature.name
 
         creature_symbols =  '❗' if len(creature.nickname) > 0 else ''
         creature_symbols +=  '✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else ''
 
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 
-    def reload_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
-        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
+    def reload_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False, currency_earned=0, earned_items=None):
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, currency=currency_earned, earned_items=earned_items)
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def handle_post_release_rewards(self):
         # add new currency to user profile based on number of released creatures
         currency_earned = self.calculate_new_currency_amount()
 
-        items_earned = self.roll_for_earned_items()
+        earned_items = self.roll_for_earned_items()
 
-        return currency_earned,  items_earned
+        return currency_earned,  earned_items
 
 
     def calculate_new_currency_amount(self):

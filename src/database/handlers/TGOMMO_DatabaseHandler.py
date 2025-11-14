@@ -463,13 +463,21 @@ class TGOMMODatabaseHandler:
     '''"""""""""""""""""""""""""""""'''
     def init_tgommo_tables(self):
         # Create tables first
+        # Basic Object Tables
         self.QueryHandler.execute_query(TGOMMO_CREATE_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_TABLE)
-        self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
-        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_INVENTORY_ITEM_TABLE)
+
+        # Link Tables
+        self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_AVATAR_LINK_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
 
@@ -480,6 +488,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_UNLOCK_CONDITIONS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_AVATAR, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_INVENTORY_ITEM, params=())
         # self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
         self.insert_creature_records()

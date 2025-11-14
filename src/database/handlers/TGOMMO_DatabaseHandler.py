@@ -469,7 +469,7 @@ class TGOMMODatabaseHandler:
 
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_TABLE)
-        self.QueryHandler.execute_query(TGOMMO_INVENTORY_ITEM_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_INVENTORY_ITEM_TABLE)
 
         # Link Tables
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
@@ -984,17 +984,37 @@ class TGOMMODatabaseHandler:
 
     def insert_item_records(self):
         item_data = [
-            ('NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, ''),
+            (f'{ITEM_TYPE_NAMETAG}_1', 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1),
 
-            ('Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch.', TGOMMO_RARITY_NORMAL, True, ''),
-            ('Common Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be common.', TGOMMO_RARITY_COMMON, True, '',),
-            ('Uncommon Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be uncommon.', TGOMMO_RARITY_UNCOMMON, True, '',),
-            ('Rare Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be rare.', TGOMMO_RARITY_RARE, True, '',),
-            ('Epic Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be epic.', TGOMMO_RARITY_EPIC, True, '',),
-            ('Legendary Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be legendary.', TGOMMO_RARITY_LEGENDARY, True, '',),
-            ('Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '',),
-            ('Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_MYTHICAL, False, '',),
-            ('Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '',),
+            (f'{ITEM_TYPE_BAIT}_1', 'Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch.', TGOMMO_RARITY_NORMAL, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_2', 'Common Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be common.', TGOMMO_RARITY_COMMON, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_3', 'Uncommon Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be uncommon.', TGOMMO_RARITY_UNCOMMON, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_4', 'Rare Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be rare.', TGOMMO_RARITY_RARE, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_5', 'Epic Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be epic.', TGOMMO_RARITY_EPIC, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_6', 'Legendary Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be legendary.', TGOMMO_RARITY_LEGENDARY, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_7', 'Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '', 1),
+            (f'{ITEM_TYPE_BAIT}_8', 'Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (f'{ITEM_TYPE_BAIT}_9', 'Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+
+            (f'{ITEM_TYPE_MEGAPHONE}_1', 'Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a new creature spawns.', TGOMMO_RARITY_NORMAL, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_2', 'Common Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a common creature spawns.', TGOMMO_RARITY_COMMON, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_3', 'Uncommon Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a uncommon creature spawns.', TGOMMO_RARITY_UNCOMMON, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_4', 'Rare Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a rare creature spawns.', TGOMMO_RARITY_RARE, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_5', 'Epic Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever an epic creature spawns.', TGOMMO_RARITY_EPIC, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_6', 'Legendary Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a legendary creature spawns.', TGOMMO_RARITY_LEGENDARY, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_7', 'Mythical Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a mythical creature spawns.', TGOMMO_RARITY_MYTHICAL, False, '', -1),
+            (f'{ITEM_TYPE_MEGAPHONE}_8', 'Transcendant Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a transcendant creature spawns. Breaks after a single catch, though', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (f'{ITEM_TYPE_MEGAPHONE}_9', 'Omnipotent Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you when any creature of your choice spawns. Breaks after a single catch, though.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+
+            (f'{ITEM_TYPE_CHARM}_1', 'Charm', ITEM_TYPE_CHARM, 'Increases the amount of creatures that will spawn for the next 30 minutes.', TGOMMO_RARITY_NORMAL, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_2', 'Common Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 30 minutes', TGOMMO_RARITY_COMMON, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_3', 'Unommon Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 30 minutes', TGOMMO_RARITY_UNCOMMON, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_4', 'Rare Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for rare creatures. Lasts for 30 minutes', TGOMMO_RARITY_RARE, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_5', 'Epic Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for epic creatures. Lasts for 30 minutes', TGOMMO_RARITY_EPIC, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_6', 'Legendary Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for legendary creatures. Lasts for 30 minutes', TGOMMO_RARITY_LEGENDARY, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_7', 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 30 minutes', TGOMMO_RARITY_MYTHICAL, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_8', 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 30 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (f'{ITEM_TYPE_CHARM}_9', 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 10 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
         ]
 
         for index, item in enumerate(item_data):

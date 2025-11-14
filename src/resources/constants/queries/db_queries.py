@@ -107,6 +107,9 @@ TGOMMO_COLLECTION_QUERY_MYTHICAL_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_i
 TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL = """SELECT COUNT(DISTINCT c.creature_id) FROM tgommo_creature c WHERE c.variant_no != 1;"""
 TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.creature_variant_no!=1 AND user_id=?;"""
 
+'''USER QUERIES'''
+TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
+
 
 """ AVATAR QUERIES """
 TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry FROM user_avatar WHERE avatar_id = ?;"""

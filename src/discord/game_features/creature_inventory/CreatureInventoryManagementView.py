@@ -94,14 +94,17 @@ class CreatureInventoryManagementView(discord.ui.View):
                     await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
                     return
 
+                # if user chose to release creatures, give rewards
+                final_image_mode = CREATURE_INVENTORY_MODE_DEFAULT
                 if self.mode == CREATURE_INVENTORY_MODE_RELEASE:
-                    pass
-                    # todo: call cash generator to update user's cash if releasing creatures
-                    # todo: call item generator to update user's items if releasing creatures
-                    # todo: Generate new image based on money gained and items gained
+                    currency_earned, items_earned = self.handle_post_release_rewards()
 
-                updated_image = self.reload_image(refresh_creatures=True)
+                    get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.id, new_currency=currency_earned)
+                    # get_tgommo_db_handler().add_items_to_user_profile(user_id=self.message_author.id, items=items_earned)
 
+                    final_image_mode = CREATURE_INVENTORY_MODE_RELEASE_RESULTS
+
+                updated_image = self.reload_image(refresh_creatures=True, image_mode=final_image_mode)
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)
                 await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
                 await self.original_message.edit(content="updated lol", attachments=[updated_image], view=self.original_view)
@@ -196,3 +199,26 @@ class CreatureInventoryManagementView(discord.ui.View):
     def reload_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
         new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
         return convert_to_png(new_image, f'player_boxes_page.png')
+
+    def handle_post_release_rewards(self):
+        # add new currency to user profile based on number of released creatures
+        currency_earned = self.calculate_new_currency_amount()
+
+        items_earned = self.roll_for_earned_items()
+
+        return currency_earned,  items_earned
+
+
+    def calculate_new_currency_amount(self):
+        return random.randint(1, 5) * len(self.selected_ids)
+
+    def roll_for_earned_items(self):
+        earned_items = []
+
+        # for each released creature, roll for item based on predefined drop rates
+        for selected_id in self.selected_ids:
+            released_creature_rarity = get_tgommo_db_handler().get_creature_by_catch_id(selected_id).rarity
+            # todo: modify drop rates based on released creature rarity
+            # todo: implement guaranteed item drops for certain events
+
+        return earned_items

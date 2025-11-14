@@ -419,6 +419,13 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
         return response
 
+    def update_user_profile_currency(self, user_id, new_currency):
+        user_currency = self.QueryHandler.execute_query(TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID, params=(user_id,))[0][0]
+        user_currency += new_currency
+
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_id, user_currency))
+        return response
+
     def update_creature_display_index(self, user_id, creature_id, display_index):
         queries = [
             TGOMMO_UPDATE_USER_PROFILE_CREATURE_1,
@@ -964,6 +971,15 @@ class TGOMMODatabaseHandler:
                 avatar_params = avatar_params + (False,)
 
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=avatar_params)
+
+    def insert_item_records(self):
+        item_data = [
+            # COLLECTION QUESTS
+            # ('Donkey Kong', ('Q1', AVATAR_DONKEY_KONG_QUEST_QUERY, 20)),
+        ]
+
+        for index, item in enumerate(item_data):
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=item)
 
 
     def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name='', sub_environment=SUB_ENVIRONMENT_FOREST):

@@ -9,7 +9,7 @@ from src.resources.constants.TGO_MMO_creature_constants import *
 
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = ''):
+    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False):
         self.timezone = pytz.timezone('US/Eastern')
 
         self.creature_id = creature_id
@@ -40,8 +40,8 @@ class TGOCreature:
         self.despawn_time = None
         self.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=0)
 
-        self.is_favorite = False
-        self.is_released = False
+        self.is_favorite = is_favorite
+        self.is_released = is_released
 
 
     def refresh_spawn_and_despawn_time(self, timezone, minute_offset=None):

@@ -20,7 +20,7 @@ class CreatureInventoryImageFactory:
 
         # define creature management items
         self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
-        self.caught_creatures_icons = self.build_creature_icons(self.caught_creatures)
+        self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type(self.caught_creatures, self.caught_creatures_icons)
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures(self.caught_creatures, self.caught_creatures_icons)
 
@@ -36,11 +36,11 @@ class CreatureInventoryImageFactory:
         self.creature_ids_to_update = []
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None):
-        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update)
+    def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False):
+        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
         return self.build_creature_inventory_page_image()
 
-    def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None):
+    def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False):
         # define filter & order settings
         self.show_mythics_only = show_mythics_only
         self.show_nicknames_only = show_nicknames_only
@@ -48,6 +48,9 @@ class CreatureInventoryImageFactory:
         self.order_type = order_type if order_type else self.order_type
 
         # define creature management items
+        if refresh_creatures:
+            self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
+            self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type(self.caught_creatures, self.caught_creatures_icons)
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures(self.caught_creatures, self.caught_creatures_icons)
 
@@ -121,8 +124,8 @@ class CreatureInventoryImageFactory:
         for i in range(self.starting_index, self.ending_index):
             creature_icon = self.filtered_creature_icons[i]
 
-            if self.image_mode == CREATURE_INVENTORY_MODE_RELEASE and str(self.caught_creatures[i].catch_id) not in self.creature_ids_to_update:
-                creature_icon.putalpha(0)
+            icon_is_invisible = self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT and str(self.caught_creatures[i].catch_id) not in self.creature_ids_to_update
+            creature_icon.putalpha(0 if icon_is_invisible else 255)
 
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
@@ -139,9 +142,9 @@ class CreatureInventoryImageFactory:
 
         return grid_canvas
 
-    def build_creature_icons(self, creatures):
+    def build_creature_icons(self):
         imgs = []
-        for creature in creatures:
+        for creature in self.caught_creatures:
             creature_icon = CreatureInventoryIconImageFactory(creature=creature)
             creature_icon_img = creature_icon.generate_inventory_icon_image()
 

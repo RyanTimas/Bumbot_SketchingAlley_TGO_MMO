@@ -291,6 +291,8 @@ class TGOMMODatabaseHandler:
                         rarity=MYTHICAL if creature[16] else get_rarity_by_name(creature[15]),
 
                         caught_date=creature[17],
+                        is_favorite=bool(creature[18]),
+                        is_released=bool(creature[19]),
                     )
                 )
             return creatures
@@ -379,7 +381,7 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    ''' Update Queries '''
+    ''' UPDATE QUERIES '''
     def update_creature_nickname(self, creature_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
         return response
@@ -429,6 +431,22 @@ class TGOMMODatabaseHandler:
 
         response = self.QueryHandler.execute_query(queries[display_index], params=(creature_id, user_id))
         return response
+
+    def update_user_creature_set_is_favorite(self, creature_ids, is_favorite=True):
+        for creature_id in creature_ids:
+            self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_FAVORITE, params=(1 if is_favorite else 0, creature_id))
+        return True
+
+    def update_user_creature_set_is_released(self, creature_ids, is_released=True):
+        # First check if any of the creatures are already released, if so don't release any creatures
+        for creature_id in creature_ids:
+            if self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURE_IS_RELEASED_BY_CREATURE_ID, params=(creature_id,))[0][0] == 1:
+                return False
+
+        # If none are released, proceed to release all creatures
+        for creature_id in creature_ids:
+                self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_RELEASED, params=(1 if is_released else 0, creature_id))
+        return True
 
     ''' Delete Queries '''
 

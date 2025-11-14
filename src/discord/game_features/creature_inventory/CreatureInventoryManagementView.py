@@ -59,15 +59,10 @@ class CreatureInventoryManagementView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                # todo: Generate new image based on mode and selected ids
-                # todo: Update image on original view with confirmation
-                # todo: enable yes/no buttons to confirm release or favorite action
-
-                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
-                file = convert_to_png(new_image, f'player_boxes_page.png')
+                updated_image = self.reload_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
 
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
-                await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[file], view=self, ephemeral=True)
+                await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[updated_image], view=self, ephemeral=True)
 
         return callback
 
@@ -90,21 +85,26 @@ class CreatureInventoryManagementView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                # todo: call database to release or favorite selected creatures
-                # get_tgommo_db_handler().release_user_creatures(user_id=interaction.user.id, creature_id=self.release_creatures)
-                # get_tgommo_db_handler().favorite_user_creatures(user_id=interaction.user.id, creature_id=self.release_creatures)
+                perform_operation = {
+                    CREATURE_INVENTORY_MODE_RELEASE: lambda: get_tgommo_db_handler().update_user_creature_set_is_released(creature_ids=self.selected_ids),
+                    CREATURE_INVENTORY_MODE_FAVORITE: lambda: get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=self.selected_ids)
+                }
 
-                # todo: call cash generator to update user's cash if releasing creatures
-                # todo: call item generator to update user's items if releasing creatures
-                # todo: Generate new image based on money gained and items gained
-                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image()
-                file = convert_to_png(new_image, f'player_boxes_page.png')
+                if not perform_operation[self.mode]():
+                    await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
+                    return
+
+                if self.mode == CREATURE_INVENTORY_MODE_RELEASE:
+                    pass
+                    # todo: call cash generator to update user's cash if releasing creatures
+                    # todo: call item generator to update user's items if releasing creatures
+                    # todo: Generate new image based on money gained and items gained
+
+                updated_image = self.reload_image(refresh_creatures=True)
 
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)
                 await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
-
-                # todo: Update image on original view with confirmation
-                await self.original_message.edit("updated lol", attachments=[file], view=self.original_view)
+                await self.original_message.edit(content="updated lol", attachments=[updated_image], view=self.original_view)
 
         return callback
 
@@ -124,8 +124,8 @@ class CreatureInventoryManagementView(discord.ui.View):
         dropdown = Select(
             placeholder=f"Select creatures to {self.mode} ({lower_bound +1} - {upper_bound})",
             options=options,
-            min_values=1,
-            max_values=25,
+            min_values=min(1, len(options)),
+            max_values=len(options),
             row=row,
             custom_id=f"creature_dropdown_{dropdown_num}"
         )
@@ -186,7 +186,13 @@ class CreatureInventoryManagementView(discord.ui.View):
     # SUPPORT FUNCTIONS
     def build_creature_dropdown_options(self, creature):
         creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
-        nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + (
-            '✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
+        nickname = f'{creature.nickname}' if creature.nickname != '' else (creature.name)
 
-        return f"[{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
+        creature_symbols =  '❗' if len(creature.nickname) > 0 else ''
+        creature_symbols +=  '✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else ''
+
+        return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
+
+    def reload_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
+        return convert_to_png(new_image, f'player_boxes_page.png')

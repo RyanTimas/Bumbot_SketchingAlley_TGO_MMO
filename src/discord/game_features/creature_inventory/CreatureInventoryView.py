@@ -132,15 +132,10 @@ class CreatureInventoryView(discord.ui.View):
                     jump: self.new_box
                 }
 
-                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(new_box_number=page_options[new_page], order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+                update_image = self.reload_image(new_box_number=page_options[new_page], order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
-                # Update state and button appearance
                 self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'player_boxes_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
-
+                await interaction.message.edit(attachments=[update_image], view=self)
         return callback
 
     def create_filter_button(self, row=2, button_type=MYTHIC_KEY):
@@ -173,14 +168,10 @@ class CreatureInventoryView(discord.ui.View):
                 elif button_type == NICKNAME_KEY:
                     self.show_only_nicknames = not self.show_only_nicknames
 
-                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
+                updated_image = self.reload_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
-                # Update state and button appearance
                 self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'player_boxes_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
+                await interaction.message.edit(attachments=[updated_image], view=self)
 
         return callback
 
@@ -208,14 +199,10 @@ class CreatureInventoryView(discord.ui.View):
                 await interaction.response.defer()
 
                 self.order_type = button_type
-                new_image = self.creature_inventory_image_factory.build_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+                updated_image = self.reload_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
-                # Update state and button appearance
                 self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'player_boxes_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
+                await interaction.message.edit(attachments=[updated_image], view=self)
 
         return callback
 
@@ -244,13 +231,10 @@ class CreatureInventoryView(discord.ui.View):
                 await interaction.response.defer()
 
                 self.expanded_display = button_type
-                new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+                updated_image = self.reload_image(order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
 
                 self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'player_boxes_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
+                await interaction.message.edit(attachments=[updated_image], view=self)
 
         return callback
 
@@ -277,7 +261,7 @@ class CreatureInventoryView(discord.ui.View):
                 view = CreatureInventoryManagementView(
                     message_author=self.message_author,
                     mode=button_type,
-                    creatures=self.creature_inventory_image_factory.caught_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index],
+                    creatures=self.creature_inventory_image_factory.filtered_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index],
                     creature_inventory_image_factory=self.creature_inventory_image_factory,
                     original_message=interaction.message,
                     original_view=self,
@@ -354,7 +338,6 @@ class CreatureInventoryView(discord.ui.View):
             self.add_item(self.release_button)
             self.add_item(self.favorite_button)
 
-
     def remove_items_from_view(self):
         # remove order buttons
         self.remove_item(self.order_alphabetically_button)
@@ -371,14 +354,7 @@ class CreatureInventoryView(discord.ui.View):
         self.remove_item(self.favorite_button)
 
 
-    # FUNCTIONS FOR UPDATING DATABASE
-    def get_released_creatures(self):
-        return [creature for creature in self.creatures if creature.is_released]
-
-    def release_creatures(self, creature_ids: list[int]):
-        pass
-
     # SUPPORT FUNCTIONS
-    def reload_image(self):
-        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(new_box_number=self.creature_inventory_image_factory.current_box_num, order_type=self.order_type, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, )
+    def reload_image(self, new_box_number=None, order_type=None, show_mythics_only=None, show_favorites_only=None, show_nicknames_only=None):
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(order_type=order_type, new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_favorites_only=show_favorites_only, show_nicknames_only=show_nicknames_only, )
         return convert_to_png(new_image, f'player_boxes_page.png')

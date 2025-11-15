@@ -161,6 +161,7 @@ TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgo
     item_id TEXT UNIQUE,
     user_id INTEGER NOT NULL,
     item_quantity INTEGER NOT NULL DEFAULT 0,
+    last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     UNIQUE(user_id, item_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id)

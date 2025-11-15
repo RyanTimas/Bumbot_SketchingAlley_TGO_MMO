@@ -45,7 +45,7 @@ class CreatureInventoryImageFactory:
 
     # CONSTRUCT IMAGE FUNCTIONS
     def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, currency= 0, earned_items= None):
-        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
+        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, currency=currency, earned_items=earned_items)
         return self.build_creature_inventory_page_image()
 
     def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, currency= 0, earned_items= None):
@@ -79,6 +79,7 @@ class CreatureInventoryImageFactory:
         mode_image_paths = {
             CREATURE_INVENTORY_MODE_DEFAULT: (CREATURE_INVENTORY_BG_IMAGE, CREATURE_INVENTORY_MENU_OVERLAY_IMAGE),
             CREATURE_INVENTORY_MODE_RELEASE: (CREATURE_INVENTORY_BG_RELEASE_IMAGE, CREATURE_INVENTORY_MENU_RELEASE_OVERLAY_IMAGE),
+            CREATURE_INVENTORY_MODE_RELEASE_RESULTS: (CREATURE_INVENTORY_BG_IMAGE, CREATURE_INVENTORY_MENU_OVERLAY_IMAGE),
             CREATURE_INVENTORY_MODE_FAVORITE: (CREATURE_INVENTORY_BG_RELEASE_IMAGE, CREATURE_INVENTORY_MENU_FAVORITE_OVERLAY_IMAGE)
         }
 
@@ -144,8 +145,9 @@ class CreatureInventoryImageFactory:
         for i in range(self.starting_index, self.ending_index):
             creature_icon = self.filtered_creature_icons[i]
 
-            icon_is_invisible = self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT and str(self.caught_creatures[i].catch_id) not in self.creature_ids_to_update
-            creature_icon.putalpha(0 if icon_is_invisible else 255)
+            if self.image_mode == CREATURE_INVENTORY_MODE_RELEASE:
+                icon_is_invisible = str(self.caught_creatures[i].catch_id) not in self.creature_ids_to_update
+                creature_icon.putalpha(0 if icon_is_invisible else 255)
 
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
@@ -181,27 +183,20 @@ class CreatureInventoryImageFactory:
         vertical_padding = 1
         row, col = 0, 0
 
-        item_icons = self.build_items_icons()
-
-        for i, item in enumerate(self.earned_items):
-            creature_icon = self.filtered_creature_icons[i]
-
-            icon_is_invisible = self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT and str(
-                self.caught_creatures[i].catch_id) not in self.creature_ids_to_update
-            creature_icon.putalpha(0 if icon_is_invisible else 255)
-
+        for i, item_icon in enumerate(self.build_items_icons()):
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)
 
             # Paste icon onto canvas
-            grid_canvas.paste(creature_icon, (int(x), int(y)), creature_icon)
+            grid_canvas.paste(item_icon, (int(x), int(y)), item_icon)
 
             # Move to next position
             col += 1
             if col >= icons_per_row:
                 col = 0
                 row += 1
+
 
         return grid_canvas
     def build_items_icons(self):

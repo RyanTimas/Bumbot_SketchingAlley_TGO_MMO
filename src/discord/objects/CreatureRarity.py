@@ -28,7 +28,7 @@ EXOTIC = CreatureRarity(name="Exotic", color=discord.Color.teal(), emojii='💎�
 OMNIPOTENT = CreatureRarity(name="Omnipotent", color=discord.Color.pink(), emojii='🌈', font_color=(255, 215, 0), outline_color=FONT_COLOR_BLACK)
 
 # List of all rarities for easy iteration
-ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT]
+ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT, NORMAL, EXOTIC, OMNIPOTENT]
 
 
 def get_rarity_by_name(name: str):

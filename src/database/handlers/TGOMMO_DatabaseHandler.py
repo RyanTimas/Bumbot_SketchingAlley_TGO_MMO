@@ -5,6 +5,7 @@ from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
+from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.TGO_MMO_creature_constants import *
 from src.resources.constants.queries.avatar_quest_db_queries import *
@@ -297,6 +298,18 @@ class TGOMMODatabaseHandler:
                 )
             return creatures
         return creature_data
+
+    def get_items_for_release(self, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_ALL_INVENTORY_ITEMS_FOR_RELEASE_CONFIRMATION, params=())
+
+        if convert_to_object:
+            items = []
+            for item_details in response:
+                rarity = get_rarity_by_name(item_details[5])
+                item = TGOPlayerItem(item_num=item_details[0], item_id=item_details[1], item_name=item_details[2], item_type=item_details[3], item_description=item_details[4], rarity=rarity, is_rewardable=item_details[6], img_root=item_details[7], default_uses=item_details[8], )
+                items.append(item)
+            return items
+        return response
 
 
     ''' Encyclopedia & Statistics Queries '''
@@ -981,6 +994,7 @@ class TGOMMODatabaseHandler:
                 avatar_params = avatar_params + (False,)
 
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=avatar_params)
+
 
     def insert_item_records(self):
         item_data = [

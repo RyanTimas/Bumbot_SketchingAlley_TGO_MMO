@@ -37,5 +37,3 @@ class CreatureInventoryReleaseResultItemImageFactory:
         draw.text(pixel_location, text=f"{self.count}", font=count_font, fill=FONT_COLOR_BLACK)
 
         return image
-
-

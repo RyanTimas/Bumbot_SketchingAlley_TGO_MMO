@@ -34,6 +34,8 @@ class CreatureInventoryManagementView(discord.ui.View):
         self.confirmation_button = self.create_confirmation_button(row=4)
         self.final_confirmation_button_yes = self.create_final_confirmation_button(row=4, is_confirm=True)
         self.final_confirmation_button_no = self.create_final_confirmation_button(row=4, is_confirm=False)
+        self.select_all_button = self.create_select_all_button(row=4)
+        self.deselect_all_button = self.create_deselect_all_button(row=4)
 
         self.rewardable_items = get_tgommo_db_handler().get_items_for_release(convert_to_object=True)
 
@@ -116,8 +118,67 @@ class CreatureInventoryManagementView(discord.ui.View):
                 # if releasing, show results image
                 if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS:
                     release_results_image = self.reload_release_results_image(currency_earned=currency_earned, earned_items=earned_items, count_released=len(self.selected_ids))
-                    await interaction.followup.send(files=[release_results_image])
+                    await interaction.channel.send(files=[release_results_image])
         return callback
+
+    def create_select_all_button(self, row=4):
+        button = discord.ui.Button(
+            label="Select All",
+            style=discord.ButtonStyle.secondary,
+            row=row,
+            custom_id="select_all_button"
+        )
+        button.callback = self.select_all_callback
+        return button
+    async def select_all_callback(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            return
+
+        dropdowns = [
+            (self.selectable_creature_dropdown_1, len(self.creatures) > 0),
+            (self.selectable_creature_dropdown_2, len(self.creatures) > 25),
+            (self.selectable_creature_dropdown_3, len(self.creatures) > 50),
+            (self.selectable_creature_dropdown_4, len(self.creatures) > 75)
+        ]
+
+        for dropdown, is_present in dropdowns:
+            if is_present and dropdown.options:
+                dropdown._values = [option.value for option in dropdown.options]
+
+        # Update selected_ids
+        self.selected_ids = []
+        for dropdown, is_present in dropdowns:
+            if is_present and dropdown.values:
+                self.selected_ids.extend(dropdown.values)
+        await interaction.response.edit_message(view=self)
+
+    def create_deselect_all_button(self, row=4):
+        button = discord.ui.Button(
+            label="Deselect All",
+            style=discord.ButtonStyle.secondary,
+            row=row,
+            custom_id="deselect_all_button"
+        )
+        button.callback = self.deselect_all_callback
+        return button
+    async def deselect_all_callback(self, interaction: discord.Interaction):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            return
+
+        dropdowns = [
+            (self.selectable_creature_dropdown_1, len(self.creatures) > 0),
+            (self.selectable_creature_dropdown_2, len(self.creatures) > 25),
+            (self.selectable_creature_dropdown_3, len(self.creatures) > 50),
+            (self.selectable_creature_dropdown_4, len(self.creatures) > 75)
+        ]
+
+        for dropdown, is_present in dropdowns:
+            if is_present:
+                dropdown.values_ = []
+
+        self.selected_ids = []
+        await interaction.response.edit_message(view=self)
+
 
     # CREATE DROPDOWNS
     def create_creature_dropdown(self, row=1, dropdown_num = 0):
@@ -138,7 +199,7 @@ class CreatureInventoryManagementView(discord.ui.View):
             min_values=min(1, len(options)),
             max_values=len(options),
             row=row,
-            custom_id=f"creature_dropdown_{dropdown_num}"
+            custom_id=f"creature_dropdown_{dropdown_num}",
         )
 
         dropdown.callback = self.avatar_dropdown_callback
@@ -160,6 +221,7 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         await interaction.response.defer()
 
+
     # FUNCTIONS FOR UPDATING VIEW STATE
     def refresh_view(self, view_state=None):
         self.view_state = view_state if view_state else self.view_state
@@ -177,6 +239,8 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         if self.view_state == VIEW_WORKFLOW_STATE_INTERACTION:
             self.add_item(self.confirmation_button)
+            # self.add_item(self.select_all_button)
+            # self.add_item(self.deselect_all_button)
 
             if len(self.creatures) > 0:
                 self.add_item(self.selectable_creature_dropdown_1)
@@ -213,6 +277,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         return convert_to_png(new_image, f'release_results.png')
 
 
+# TODO: MOVE TO SEPARATE FILE
     # REWARD ITEM HANDLING
     def handle_post_release_rewards(self):
         currency_earned = self.calculate_new_currency_amount()
@@ -233,27 +298,33 @@ class CreatureInventoryManagementView(discord.ui.View):
             creature = get_tgommo_db_handler().get_creature_by_catch_id(selected_id, convert_to_object=True)
 
             # roll for random item
-            earned_items.append(self.get_random_items(creature= creature, iteration=1))
+            earned_items.extend(self.get_random_items(creature= creature))
 
             # todo: roll for release amount bonus items
 
             # todo: roll for default items
 
         # Convert to list of tuples (item, count)
-        item_counts = {}
-        for item in earned_items:
-            if item in item_counts:
-                item_counts[item] += 1
-            else:
-                item_counts[item] = 1
         return self.convert_items_to_count_map(earned_items)
 
 
-    def get_random_items(self, creature, iteration=1, random_items = []):
-        if random.randint(1, 15 * iteration) <= 10:
+    def get_random_items(self, creature):
+        rarity_item_drop_rates = {
+            TGOMMO_RARITY_COMMON: 15,
+            TGOMMO_RARITY_UNCOMMON: 25,
+            TGOMMO_RARITY_NORMAL: 25,
+            TGOMMO_RARITY_RARE: 10,
+            TGOMMO_RARITY_EPIC: 10,
+            TGOMMO_RARITY_LEGENDARY: 5,
+            TGOMMO_RARITY_MYTHICAL: 5,
+            TGOMMO_RARITY_TRANSCENDANT: 10,
+            TGOMMO_RARITY_OMNIPOTENT: 1
+        }
+
+        if random.randint(1, rarity_item_drop_rates[creature.rarity.name]) == 1:
             earned_item = self.roll_for_random_item(creature)
-            return earned_item
-        return None
+            return [earned_item,]
+        return []
 
     def roll_for_random_item(self, creature):
         reward_pool = []

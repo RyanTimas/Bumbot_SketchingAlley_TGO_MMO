@@ -86,16 +86,23 @@ class ReleaseResultImageFactory:
 
     def add_text_to_image(self, image: Image.Image):
         draw = ImageDraw.Draw(image)
+        navy_blue_color = (38, 36, 109)
+
         name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28)
 
         # add username footer
         name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user.id, convert_to_object=True).nickname}'s Release Summary"
         pixel_location = center_text_on_pixel(text=name_text, font=name_font, center_pixel_location=(960, 1034))
-        draw.text(pixel_location, text=name_text, font=name_font, fill=(38, 36, 109))
+        draw.text(pixel_location, text=name_text, font=name_font, fill=navy_blue_color)
 
         # add released count and currency earned
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 36)
-        draw.text((725, 150), text=f"{self.count_released}", font=default_font, fill=(38, 36, 109))
-        draw.text((1090, 150), text=f"{self.currency}", font=default_font, fill=(38, 36, 109))
+        draw.text((805, 150), text=f"{self.count_released}", font=default_font, fill=(38, 36, 109))
+        draw.text((1170, 150), text=f"{self.currency}", font=default_font, fill=navy_blue_color)
+
+        if len(self.earned_items) == 0:
+            no_items_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 48)
+            pixel_location = center_text_on_pixel(text="No Items Earned", font=no_items_font, center_pixel_location=(960, 540))
+            draw.text(pixel_location, text="No Items Earned", font=no_items_font, fill=navy_blue_color)
 
         return image

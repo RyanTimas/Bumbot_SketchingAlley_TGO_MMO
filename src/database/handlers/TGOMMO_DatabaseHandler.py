@@ -439,6 +439,14 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_id, user_currency))
         return response
 
+    def update_user_profile_available_items(self, user_id, item_id, new_amount):
+        # add a dummy record in case user hasn't obtained this item before
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
+
+        item_quantity = self.QueryHandler.execute_query(TGOMMO_GET_USER_ITEM_AMOUNT_BY_USER_ID_AND_ITEM_ID, params=(user_id, item_id))[0][0]
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT, params=(item_quantity + new_amount, item_id, user_id))
+        return response
+
     def update_creature_display_index(self, user_id, creature_id, display_index):
         queries = [
             TGOMMO_UPDATE_USER_PROFILE_CREATURE_1,

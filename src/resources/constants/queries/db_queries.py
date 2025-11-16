@@ -128,6 +128,8 @@ TGOMMO_GET_ALL_CHILD_AVATARS_FOR_PARENT_AVATAR_ID = """SELECT avatar_num, avatar
 TGOMMO_GET_ALL_INVENTORY_ITEMS = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item;"""
 TGOMMO_GET_ALL_INVENTORY_ITEMS_FOR_RELEASE_CONFIRMATION = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item WHERE is_rewardable=1;"""
 
+TGOMMO_GET_USER_ITEM_AMOUNT_BY_USER_ID_AND_ITEM_ID = """SELECT item_quantity FROM tgommo_user_item_inventory_link WHERE user_id = ? AND item_id = ?;"""
+
 '''============='''
 '''UPDATE QUERIES'''
 '''============='''
@@ -155,6 +157,8 @@ TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET
 
 TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
 
+TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT = """UPDATE tgommo_user_item_inventory_link SET item_quantity = ? WHERE item_id = ? AND user_id = ?;"""
+
 
 '''============='''
 '''INSERT QUERIES'''
@@ -172,7 +176,7 @@ TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num
 TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, creature_name, environment_name, spawn_rarity, local_name, sub_environment_type) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
 
-TGOMMO_INSERT_USER_ITEM_LINK = """INSERT INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used) VALUES (?, ?, ?, ?);"""
+TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used) VALUES (?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 
 TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold, is_secret) VALUES(?, ?, ?, ?);"""

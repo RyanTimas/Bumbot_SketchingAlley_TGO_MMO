@@ -78,7 +78,7 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         button.callback = self.final_confirmation_callback()
         return button
-    def final_confirmation_callback(self, is_confirm=True):
+    def final_confirmation_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
@@ -102,7 +102,8 @@ class CreatureInventoryManagementView(discord.ui.View):
                     currency_earned, earned_items = self.handle_post_release_rewards()
 
                     get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.id, new_currency=currency_earned)
-                    # get_tgommo_db_handler().add_items_to_user_profile(user_id=self.message_author.id, items=earned_items)
+                    for item, count in earned_items:
+                        get_tgommo_db_handler().update_user_profile_available_items(user_id=self.message_author.id, item_id=item.item_id, new_amount=count)
 
                     final_image_mode = CREATURE_INVENTORY_MODE_RELEASE_RESULTS
 

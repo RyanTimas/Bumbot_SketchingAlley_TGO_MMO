@@ -1,8 +1,6 @@
 import random
-
 import discord
-
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_GOLD, FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureRarity:
@@ -52,3 +50,18 @@ def get_rarity():
         selected_rarity = COMMON
 
     return selected_rarity
+
+def get_rarity_hierarchy_value(rarity_name):
+    rarity_hierarchy = {
+        TGOMMO_RARITY_NORMAL: 3,
+
+        TGOMMO_RARITY_COMMON: 1,
+        TGOMMO_RARITY_UNCOMMON: 2,
+        TGOMMO_RARITY_RARE: 3,
+        TGOMMO_RARITY_EPIC: 4,
+        TGOMMO_RARITY_LEGENDARY: 5,
+        TGOMMO_RARITY_MYTHICAL: 4,
+        TGOMMO_RARITY_TRANSCENDANT: 7,
+        TGOMMO_RARITY_OMNIPOTENT: 10,
+    }
+    return rarity_hierarchy.get(rarity_name, 0)

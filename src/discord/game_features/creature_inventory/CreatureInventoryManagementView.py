@@ -1,11 +1,11 @@
 from discord.ui import Select
 
 from src.commons.CommonFunctions import *
-from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
-from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous, jump
+from src.discord.game_features.creature_inventory.ReleaseResultImageFactory import ReleaseResultImageFactory
+from src.discord.objects.CreatureRarity import get_rarity_hierarchy_value
 from src.resources.constants.TGO_MMO_constants import *
-
 
 
 class CreatureInventoryManagementView(discord.ui.View):
@@ -15,6 +15,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         self.mode = mode
 
         self.creature_inventory_image_factory = creature_inventory_image_factory
+        self.release_result_image_factory = ReleaseResultImageFactory(user= message_author)
         self.original_view = original_view
         self.original_message = original_message
 
@@ -58,7 +59,7 @@ class CreatureInventoryManagementView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                updated_image = self.reload_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
+                updated_image = self.reload_creature_inventory_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
 
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
                 await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[updated_image], view=self, ephemeral=True)
@@ -103,11 +104,19 @@ class CreatureInventoryManagementView(discord.ui.View):
 
                     final_image_mode = CREATURE_INVENTORY_MODE_RELEASE_RESULTS
 
-                updated_image = self.reload_image(refresh_creatures=True, image_mode=final_image_mode, currency_earned=currency_earned if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS else 0, earned_items=earned_items if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS else None)
                 self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)
-                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
-                await self.original_message.edit(content="updated lol", attachments=[updated_image], view=self.original_view)
 
+                # SEND MESSAGES
+                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
+
+                # always update original message to reflect changes
+                updated_creature_inventory_image = self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT, )
+                await self.original_message.edit(content="updated lol", attachments=[updated_creature_inventory_image], view=self.original_view)
+
+                # if releasing, show results image
+                if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS:
+                    release_results_image = self.reload_release_results_image(currency_earned=currency_earned, earned_items=earned_items, count_released=len(self.selected_ids))
+                    await interaction.followup.send(files=[release_results_image])
         return callback
 
     # CREATE DROPDOWNS
@@ -195,36 +204,36 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 
-    def reload_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False, currency_earned=0, earned_items=None):
-        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, currency=currency_earned, earned_items=earned_items)
+    def reload_creature_inventory_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
         return convert_to_png(new_image, f'player_boxes_page.png')
+
+    def reload_release_results_image(self, currency_earned=0, earned_items=None, count_released=0):
+        new_image = self.release_result_image_factory.get_creature_inventory_page_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
+        return convert_to_png(new_image, f'release_results.png')
 
 
     # REWARD ITEM HANDLING
     def handle_post_release_rewards(self):
-        # add new currency to user profile based on number of released creatures
         currency_earned = self.calculate_new_currency_amount()
-
         earned_items = self.get_earned_items()
-
         return currency_earned,  earned_items
 
     def calculate_new_currency_amount(self):
-        return random.randint(1, 5) * len(self.selected_ids)
+        total_currency = 0
+        for _ in self.selected_ids:
+            total_currency += random.randint(1, 5)
+        return total_currency
 
     def get_earned_items(self):
         earned_items = []
-        earned_items.append(self.rewardable_items[0])
-        earned_items.append(self.rewardable_items[0])
-        earned_items.append(self.rewardable_items[1])
-        earned_items.append(self.rewardable_items[1])
-        earned_items.append(self.rewardable_items[1])
-        earned_items.append(self.rewardable_items[2])
 
         # for each released creature, roll for item based on predefined drop rates
         for selected_id in self.selected_ids:
+            creature = get_tgommo_db_handler().get_creature_by_catch_id(selected_id, convert_to_object=True)
+
             # roll for random item
-            earned_items.extend(self.get_random_items(creature= get_tgommo_db_handler().get_creature_by_catch_id(selected_id), iteration=1))
+            earned_items.append(self.get_random_items(creature= creature, iteration=1))
 
             # todo: roll for release amount bonus items
 
@@ -237,28 +246,50 @@ class CreatureInventoryManagementView(discord.ui.View):
                 item_counts[item] += 1
             else:
                 item_counts[item] = 1
+        return self.convert_items_to_count_map(earned_items)
 
-        return [(item, count) for item, count in item_counts.items()]
 
     def get_random_items(self, creature, iteration=1, random_items = []):
-
-        if random.randint(1, 25) <= 10:
-            earned_item = self.roll_for_random_item(get_tgommo_db_handler().get_creature_by_catch_id(creature))
-            random_items.append(earned_item)
-
-        return random_items if len(random_items) < iteration else self.get_random_items(creature, iteration +1, random_items)
+        if random.randint(1, 15 * iteration) <= 10:
+            earned_item = self.roll_for_random_item(creature)
+            return earned_item
+        return None
 
     def roll_for_random_item(self, creature):
         reward_pool = []
+        creature_rarity_hierarchy_value = get_rarity_hierarchy_value(creature.rarity.name)
+
+        rarity_bonuses_rates = {
+            TGOMMO_RARITY_COMMON: 25,
+            TGOMMO_RARITY_UNCOMMON: 25,
+            TGOMMO_RARITY_NORMAL: 15,
+            TGOMMO_RARITY_EPIC: 10,
+            TGOMMO_RARITY_RARE: 10,
+            TGOMMO_RARITY_LEGENDARY: 7,
+            TGOMMO_RARITY_MYTHICAL: 5,
+            TGOMMO_RARITY_TRANSCENDANT: 1,
+            TGOMMO_RARITY_OMNIPOTENT: 1
+        }
 
         for item in self.rewardable_items:
+            # only throw items at or above the creature's rarity into the pool
             if item.item_type == ITEM_TYPE_BAIT:
-                rate = 1
+                item_rarity_level = get_rarity_hierarchy_value(item.rarity.name)
 
-                # perform rarity matching bonus
-                if creature.rarity.name == item.rarity.name:
-                    rate = rate * 10
+                if item_rarity_level >= creature_rarity_hierarchy_value:
+                    rate = 1 * rarity_bonuses_rates[item.rarity.name]
 
-                reward_pool.extend([item.item_id] * rate)
+                    # perform rarity matching bonus
+                    if creature.rarity.name == item.rarity.name:
+                        rate = 50
 
+                    reward_pool.extend([item] * rate)
         return reward_pool[random.randint(0, len(reward_pool) -1)]
+
+    def convert_items_to_count_map(self, earned_items):
+        # Convert to list of tuples (item, count)
+        item_counts = {}
+        for item in earned_items:
+            item_counts[item] = (item_counts[item] + 1) if item in item_counts else 1
+        return [(item, count) for item, count in item_counts.items()]
+

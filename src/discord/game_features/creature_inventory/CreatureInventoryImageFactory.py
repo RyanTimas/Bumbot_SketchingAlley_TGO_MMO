@@ -38,17 +38,13 @@ class CreatureInventoryImageFactory:
         self.image_mode = CREATURE_INVENTORY_MODE_DEFAULT
         self.creature_ids_to_update = []
 
-        # define release summary items
-        self.currency = 0
-        self.earned_items = []
-
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, currency= 0, earned_items= None):
-        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, currency=currency, earned_items=earned_items)
+    def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False):
+        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
         return self.build_creature_inventory_page_image()
 
-    def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, currency= 0, earned_items= None):
+    def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False):
         # define filter & order settings
         self.show_mythics_only = show_mythics_only
         self.show_nicknames_only = show_nicknames_only
@@ -71,15 +67,10 @@ class CreatureInventoryImageFactory:
         self.image_mode = image_mode if image_mode else CREATURE_INVENTORY_MODE_DEFAULT
         self.creature_ids_to_update = creature_ids_to_update if creature_ids_to_update else []
 
-        # define release summary items
-        self.currency = currency
-        self.earned_items = earned_items
-
     def build_creature_inventory_page_image(self):
         mode_image_paths = {
             CREATURE_INVENTORY_MODE_DEFAULT: (CREATURE_INVENTORY_BG_IMAGE, CREATURE_INVENTORY_MENU_OVERLAY_IMAGE),
             CREATURE_INVENTORY_MODE_RELEASE: (CREATURE_INVENTORY_BG_RELEASE_IMAGE, CREATURE_INVENTORY_MENU_RELEASE_OVERLAY_IMAGE),
-            CREATURE_INVENTORY_MODE_RELEASE_RESULTS: (CREATURE_INVENTORY_BG_IMAGE, CREATURE_INVENTORY_MENU_OVERLAY_IMAGE),
             CREATURE_INVENTORY_MODE_FAVORITE: (CREATURE_INVENTORY_BG_RELEASE_IMAGE, CREATURE_INVENTORY_MENU_FAVORITE_OVERLAY_IMAGE)
         }
 
@@ -98,15 +89,10 @@ class CreatureInventoryImageFactory:
         # place box icons
         if self.image_mode == CREATURE_INVENTORY_MODE_DEFAULT:
             background_img = self.place_box_icons_on_image(background_img)
+
+        # add text to image
+        if self.image_mode == CREATURE_INVENTORY_MODE_DEFAULT:
             background_img = self.add_text_to_image(background_img)
-
-        if self.image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS:
-            background_img = background_img.filter(ImageFilter.GaussianBlur(radius=8))
-            release_results_bg_img = Image.open(CREATURE_INVENTORY_RELEASE_SUMMARY_BG_IMAGE)
-            items_grid = self.build_release_summary_items_grid()
-
-            background_img.paste(release_results_bg_img, (0, 0), release_results_bg_img)
-            background_img.paste(items_grid, (130, 360), items_grid)
 
         background_img.paste(corner_overlay_img, (0, 0), corner_overlay_img)
         return background_img
@@ -172,52 +158,18 @@ class CreatureInventoryImageFactory:
             imgs.append(creature_icon_img)
         return imgs
 
-    def build_release_summary_items_grid(self):
-        grid_canvas = Image.new('RGBA', (1658, 634), (0, 0, 0, 0))
-
-        icon_width, icon_height = 826, 126
-        icons_per_row = 2
-
-        # Calculate padding
-        horizontal_padding = 1
-        vertical_padding = 1
-        row, col = 0, 0
-
-        for i, item_icon in enumerate(self.build_items_icons()):
-            # Calculate position
-            x = col * (icon_width + horizontal_padding if i != 0 else 0)
-            y = row * (icon_height + vertical_padding if i != 0 else 0)
-
-            # Paste icon onto canvas
-            grid_canvas.paste(item_icon, (int(x), int(y)), item_icon)
-
-            # Move to next position
-            col += 1
-            if col >= icons_per_row:
-                col = 0
-                row += 1
-
-
-        return grid_canvas
-    def build_items_icons(self):
-        imgs = []
-        for item in self.earned_items:
-            item_icon = CreatureInventoryReleaseResultItemImageFactory(item=item[0], count=item[1])
-            creature_icon_img = item_icon.generate_release_result_item_icon_image()
-
-            imgs.append(creature_icon_img)
-        return imgs
-
 
     def add_text_to_image(self, image: Image.Image):
         draw = ImageDraw.Draw(image)
-        default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 36)
+        # add box number text to image
+        default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 58)
 
         box_num_text = f"BOX {self.current_box_num}"
-        pixel_location = center_text_on_pixel(text= box_num_text, font=default_font, center_pixel_location=(960, 90))
+        pixel_location = center_text_on_pixel(text=box_num_text, font=default_font, center_pixel_location=(960, 90))
         draw.text(pixel_location, text=box_num_text, font=default_font, fill=(200, 255, 185))
 
         return image
+
 
     # SUPPORT FUNCTIONS
     # return list of caught creatures to display based on filters

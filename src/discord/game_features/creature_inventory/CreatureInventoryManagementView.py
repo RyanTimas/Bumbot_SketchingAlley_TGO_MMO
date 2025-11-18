@@ -9,7 +9,7 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryManagementView(discord.ui.View):
-    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False):
+    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False, show_only_mythics=False, show_only_favorites=False, show_only_nicknames=False):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.mode = mode
@@ -24,6 +24,10 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         self.interaction_lock = asyncio.Lock()
         self.view_state = view_state
+
+        self.show_only_mythics = show_only_mythics
+        self.show_only_favorites = show_only_favorites
+        self.show_only_nicknames = show_only_nicknames
         self.select_all_enabled = select_all_enabled
 
         # DEFINE VIEW COMPONENTS
@@ -277,7 +281,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 
     def reload_creature_inventory_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
-        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures)
+        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def reload_release_results_image(self, currency_earned=0, earned_items=None, count_released=0):
@@ -365,7 +369,7 @@ class CreatureInventoryManagementView(discord.ui.View):
                 item_rarity_level = get_rarity_hierarchy_value(item.rarity.name)
 
                 if item_rarity_level >= creature_rarity_hierarchy_value:
-                    rate = 1 * rarity_bonuses_rates[item.rarity.name] * (.25 if item.item_type == ITEM_TYPE_CHARM else 1)
+                    rate = 1 * rarity_bonuses_rates[item.rarity.name] * (.1 if item.item_type == ITEM_TYPE_CHARM else 1)
 
                     # perform rarity matching bonus
                     if creature.rarity.name == item.rarity.name:

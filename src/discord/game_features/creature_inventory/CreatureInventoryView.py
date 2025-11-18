@@ -292,7 +292,11 @@ class CreatureInventoryView(discord.ui.View):
                     creature_inventory_image_factory=self.creature_inventory_image_factory,
                     original_message=interaction.message,
                     original_view=self,
-                    select_all_enabled=self.select_all_enabled
+                    select_all_enabled=self.select_all_enabled,
+
+                    show_only_mythics=self.show_only_mythics,
+                    show_only_favorites=self.show_only_favorites,
+                    show_only_nicknames=self.show_only_nicknames,
                 )
 
                 box_is_empty = len(self.creature_inventory_image_factory.caught_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index]) == 0

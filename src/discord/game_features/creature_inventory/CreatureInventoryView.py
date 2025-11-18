@@ -41,6 +41,8 @@ class CreatureInventoryView(discord.ui.View):
         self.ids_to_release = []
         self.ids_to_favorite = []
 
+        self.select_all_enabled = True
+
         # DEFINE VIEW COMPONENTS
         # row 0
         self.box_jump_dropdown = self.create_box_jump_dropdown(row=0)
@@ -290,6 +292,7 @@ class CreatureInventoryView(discord.ui.View):
                     creature_inventory_image_factory=self.creature_inventory_image_factory,
                     original_message=interaction.message,
                     original_view=self,
+                    select_all_enabled=self.select_all_enabled
                 )
 
                 box_is_empty = len(self.creature_inventory_image_factory.caught_creatures[self.creature_inventory_image_factory.starting_index:self.creature_inventory_image_factory.ending_index]) == 0

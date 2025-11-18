@@ -9,7 +9,7 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryManagementView(discord.ui.View):
-    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION):
+    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.mode = mode
@@ -24,6 +24,7 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         self.interaction_lock = asyncio.Lock()
         self.view_state = view_state
+        self.select_all_enabled = select_all_enabled
 
         # DEFINE VIEW COMPONENTS
         self.selectable_creature_dropdown_1 = self.create_creature_dropdown(row=0, dropdown_num=0)
@@ -37,7 +38,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         self.select_all_button = self.create_select_all_button(row=4)
         self.deselect_all_button = self.create_deselect_all_button(row=4)
 
-        self.rewardable_items = get_tgommo_db_handler().get_items_for_release(convert_to_object=True)
+        self.rewardable_items = get_tgommo_db_handler().get_rewardable_inventory_items(convert_to_object=True)
 
         self.refresh_view()
 
@@ -200,8 +201,14 @@ class CreatureInventoryManagementView(discord.ui.View):
             min_values=min(1, len(options)),
             max_values=len(options),
             row=row,
-            custom_id=f"creature_dropdown_{dropdown_num}",
+            custom_id=f"creature_dropdown_{dropdown_num}"
         )
+
+        # Pre-select all options if select_all_enabled is True
+        # if self.select_all_enabled and options:
+        #     dropdown._values = [option.value for option in options]
+        #     # Also update selected_ids with these values
+        #     self.selected_ids.extend([option.value for option in options])
 
         dropdown.callback = self.avatar_dropdown_callback
         return dropdown
@@ -292,7 +299,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         return total_currency
 
     def get_earned_items(self):
-        earned_items = []
+        earned_items = self.get_release_milestone_items()
 
         # for each released creature, roll for item based on predefined drop rates
         for selected_id in self.selected_ids:
@@ -300,9 +307,6 @@ class CreatureInventoryManagementView(discord.ui.View):
 
             # roll for random item
             earned_items.extend(self.get_random_items(creature= creature))
-
-            # todo: roll for release amount bonus items
-
             # todo: roll for default items
 
         # Convert to list of tuples (item, count)
@@ -317,16 +321,28 @@ class CreatureInventoryManagementView(discord.ui.View):
             TGOMMO_RARITY_RARE: 10,
             TGOMMO_RARITY_EPIC: 10,
             TGOMMO_RARITY_LEGENDARY: 5,
-            TGOMMO_RARITY_MYTHICAL: 5,
-            TGOMMO_RARITY_TRANSCENDANT: 10,
+            TGOMMO_RARITY_MYTHICAL: 1,
+            TGOMMO_RARITY_TRANSCENDANT: 1,
             TGOMMO_RARITY_OMNIPOTENT: 1
         }
 
         if random.randint(1, rarity_item_drop_rates[creature.rarity.name]) == 1:
+            if creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
+                return [
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_LEGENDARY_BAIT, convert_to_object=True),
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_EPIC_BAIT, convert_to_object=True),
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_RARE_CHARM, convert_to_object=True),
+                ]
+            if creature.rarity.name == TGOMMO_RARITY_TRANSCENDANT:
+                return [
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_MYTHICAL_BAIT, convert_to_object=True),
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_LEGENDARY_BAIT, convert_to_object=True),
+                    get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_EPIC_CHARM, convert_to_object=True),
+                ]
+
             earned_item = self.roll_for_random_item(creature)
             return [earned_item,]
         return []
-
     def roll_for_random_item(self, creature):
         reward_pool = []
         creature_rarity_hierarchy_value = get_rarity_hierarchy_value(creature.rarity.name)
@@ -345,11 +361,11 @@ class CreatureInventoryManagementView(discord.ui.View):
 
         for item in self.rewardable_items:
             # only throw items at or above the creature's rarity into the pool
-            if item.item_type == ITEM_TYPE_BAIT:
+            if item.item_type in (ITEM_TYPE_BAIT, ITEM_TYPE_CHARM):
                 item_rarity_level = get_rarity_hierarchy_value(item.rarity.name)
 
                 if item_rarity_level >= creature_rarity_hierarchy_value:
-                    rate = 1 * rarity_bonuses_rates[item.rarity.name]
+                    rate = 1 * rarity_bonuses_rates[item.rarity.name] * (.25 if item.item_type == ITEM_TYPE_CHARM else 1)
 
                     # perform rarity matching bonus
                     if creature.rarity.name == item.rarity.name:
@@ -357,6 +373,32 @@ class CreatureInventoryManagementView(discord.ui.View):
 
                     reward_pool.extend([item] * rate)
         return reward_pool[random.randint(0, len(reward_pool) -1)]
+
+    def get_release_milestone_items(self):
+        milestone_amounts = {
+            TGOMMO_RARITY_COMMON: 10,
+            TGOMMO_RARITY_UNCOMMON: 25,
+            TGOMMO_RARITY_RARE: 50,
+            TGOMMO_RARITY_EPIC: 100,
+            TGOMMO_RARITY_LEGENDARY: 250,
+            TGOMMO_RARITY_MYTHICAL: 500,
+        }
+
+        user_released_creature_amount = len(get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.message_author.id, convert_to_object=True))
+        milestone_items = []
+
+        for rarity, milestone in milestone_amounts.items():
+            if user_released_creature_amount % milestone == 0 and user_released_creature_amount > 0:
+                # Find items of this rarity from rewardable items
+                rarity_items = [item for item in self.rewardable_items if item.rarity.name == rarity]
+                if rarity_items:
+                    # Add a random item of this rarity
+                    milestone_items.append(random.choice(rarity_items))
+            elif get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.message_author.id, convert_to_object=True) == 0:
+                milestone_items.append(get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_LEGENDARY_BAIT, convert_to_object=True))
+                milestone_items.append(get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_CHARM, convert_to_object=True))
+
+        return milestone_items
 
     def convert_items_to_count_map(self, earned_items):
         # Convert to list of tuples (item, count)

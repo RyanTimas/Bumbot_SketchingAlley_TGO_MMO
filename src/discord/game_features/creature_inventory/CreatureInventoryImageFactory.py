@@ -138,7 +138,7 @@ class CreatureInventoryImageFactory:
         for i in range(self.starting_index, self.ending_index):
             creature_icon = self.filtered_creature_icons[i]
 
-            if self.image_mode == CREATURE_INVENTORY_MODE_RELEASE:
+            if self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT:
                 icon_is_invisible = str(self.caught_creatures[i].catch_id) not in self.creature_ids_to_update
                 creature_icon.putalpha(0 if icon_is_invisible else 255)
 

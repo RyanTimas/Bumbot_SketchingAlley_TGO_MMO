@@ -20,13 +20,12 @@ SA_USERS_DELETE_BY_USERID = "DELETE FROM users WHERE user_id=?"
 '''============='''
 '''SELECT QUERIES'''
 '''============='''
-
-''' Get Creature/Environments By IDs Queries'''
+# Get Creature/Environments By IDs Queries
 TGOMMO_SELECT_CREATURE_BY_ID = """SELECT creature_id, name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate FROM tgommo_creature WHERE creature_id = ?"""
 TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
 TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""
 
-''' Creature Select Queries '''
+# Creature Select Queries
 TGOMMO_SELECT_CREATURE_BY_DEX_AND_VARIANT_NUMBER = """SELECT creature_id, name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate FROM tgommo_creature WHERE dex_no = ? AND variant_no = ?"""
 TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT = """SELECT c.dex_no, c.variant_no, ce.local_name, ce.spawn_rarity, ce.sub_environment_type FROM tgommo_creature c JOIN tgommo_environment_creature ce ON c.creature_id = ce.creature_id WHERE ce.environment_id = ? ORDER BY dex_no, variant_no"""
 
@@ -38,11 +37,17 @@ TGOMMO_SELECT_USER_CREATURE_IS_RELEASED_BY_CREATURE_ID = """SELECT is_released F
 TGOMMO_SELECT_DISPLAY_CREATURES_FOR_PLAYER_PROFILE_PAGE = """SELECT c.creature_id,uc.nickname, ec.creature_name, ec.local_name, c.variant_name,c.dex_no,c.variant_no,c.full_name,c.scientific_name,c.kingdom,c.description,c.img_root,c.encounter_rate,ec.spawn_rarity,uc.is_mythical from tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id  LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id AND uc.creature_variant_no = c.variant_no WHERE uc.catch_id IN (?, ?, ?, ?, ?, ?);"""
 TGOMMO_SELECT_DISPLAY_CREATURE_FOR_PLAYER_PROFILE_PAGE = """SELECT c.creature_id,uc.nickname, ec.creature_name, ec.local_name, c.variant_name,c.dex_no,c.variant_no,c.full_name,c.scientific_name,c.kingdom,c.description,c.img_root,c.encounter_rate,ec.spawn_rarity,uc.is_mythical, uc.catch_date from tgommo_user_creature uc  LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id  LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id AND uc.creature_variant_no = c.variant_no WHERE uc.catch_id IN (?);"""
 
-''' Environment Select Queries '''
+TGOMMO_SELECT_RELEASED_CREATURES_BY_USER_ID = """SELECT uc.catch_id, uc.creature_id, ec.creature_name, ec.local_name, uc.nickname, c.variant_name, c.dex_no, c.variant_no, c.full_name, c.scientific_name, c.kingdom, c.description, c.img_root, ec.sub_environment_type, c.encounter_rate, ec.spawn_rarity, uc.creature_id, uc.creature_variant_no, uc.is_mythical, uc.catch_date FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id WHERE uc.user_id = ? AND uc.is_released = 1;"""
+
+# Environment Select Queries
 TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
 TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM tgommo_environment WHERE in_circulation = 1 ORDER BY RANDOM() LIMIT 1"""
 
-''' Encyclopedia & Statistics Queries '''
+# Player Select Queries
+TGOMMO_SELECT_USER_ITEMS_BY_USER_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ?;"""
+TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
+
+# Encyclopedia & Statistics Queries
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root  FROM tgommo_creature c  LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id  LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id WHERE e.dex_no  = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id WHERE e.dex_no  = ? AND e.variant_no = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
@@ -107,9 +112,6 @@ TGOMMO_COLLECTION_QUERY_MYTHICAL_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_i
 TGOMMO_COLLECTION_QUERY_VARIANTS_TOTAL = """SELECT COUNT(DISTINCT c.creature_id) FROM tgommo_creature c WHERE c.variant_no != 1;"""
 TGOMMO_COLLECTION_QUERY_VARIANTS_CAUGHT = """SELECT COUNT(DISTINCT uc.creature_id) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.creature_variant_no!=1 AND user_id=?;"""
 
-'''USER QUERIES'''
-TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
-
 
 """ AVATAR QUERIES """
 TGOMMO_SELECT_AVATAR_BY_ID = """SELECT avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry FROM user_avatar WHERE avatar_id = ?;"""
@@ -126,7 +128,8 @@ TGOMMO_GET_ALL_CHILD_AVATARS_FOR_PARENT_AVATAR_ID = """SELECT avatar_num, avatar
 
 """ITEM QUERIES"""
 TGOMMO_GET_ALL_INVENTORY_ITEMS = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item;"""
-TGOMMO_GET_ALL_INVENTORY_ITEMS_FOR_RELEASE_CONFIRMATION = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item WHERE is_rewardable=1;"""
+TGOMMO_GET_ALL_REWARDABLE_INVENTORY_ITEMS = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item WHERE is_rewardable=1;"""
+TGOMMO_GET_INVENTORY_ITEM_BY_ITEM_ID = """SELECT item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses FROM tgommo_inventory_item WHERE item_id=?;"""
 
 TGOMMO_GET_USER_ITEM_AMOUNT_BY_USER_ID_AND_ITEM_ID = """SELECT item_quantity FROM tgommo_user_item_inventory_link WHERE user_id = ? AND item_id = ?;"""
 

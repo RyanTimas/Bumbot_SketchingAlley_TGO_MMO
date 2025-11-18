@@ -76,8 +76,13 @@ class CatchButton(discord.ui.Button):
 
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
+        # check if user has space in their creature inventory
+        if len(get_tgommo_db_handler().get_creature_collection_by_user(user_id=user_id)) >= 8:
+            return False, "Your creature inventory is full! Please release some creatures before catching more.",
+
+        # Mythical creatures can always be caught
         if self.creature.rarity.name == MYTHICAL.name:
-            return True, ""  # Mythical creatures can always be caught
+            return True, ""
 
         # handle hourly catch limits
         if user_id in USER_CATCHES_HOURLY:

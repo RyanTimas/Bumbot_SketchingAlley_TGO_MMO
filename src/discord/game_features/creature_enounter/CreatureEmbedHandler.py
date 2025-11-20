@@ -15,23 +15,28 @@ from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON,
 
 
 class CreatureEmbedHandler:
-    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None, time_of_day=None):
+    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None, spawn_user = None, time_of_day=None):
         self.creature = creature
         self.environment = environment
+        self.spawn_user = spawn_user
+
         self.time_of_day = time_of_day
         self.catch_user = None
         self.interaction = None
 
 
     def generate_spawn_embed(self):
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
-        thumbnail_img = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
+        thumbnail_img = convert_to_png(image=Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"), file_name="thumbnail.png")
 
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
         embed = discord.Embed(color=self.creature.rarity.color)
-        embed.set_author(name = f'A wild {self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"} appears!!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+
+        creature_name = self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"
+        message = f'{self.spawn_user.nickname} has attracted a wild {creature_name}!' if self.spawn_user else f'A wild {creature_name} has appeared!'
+
+        embed.set_author(name = message, icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
         embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
 

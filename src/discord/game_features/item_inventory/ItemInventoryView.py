@@ -1,7 +1,5 @@
 from discord.ui import Select
 
-from discord.ui import Select
-
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory

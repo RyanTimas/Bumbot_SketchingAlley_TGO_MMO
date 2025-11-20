@@ -12,10 +12,11 @@ from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import flip_coin
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_enounter.EncounterView import TGOMMOEncounterView
+from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
+from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO, TGOMMO_ROLE
 
@@ -88,12 +89,9 @@ class CreatureSpawnerHandler:
     # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
         while self.are_creatures_spawning:
-            creature = await self.creature_picker()
 
             try:
-                await self.spawn_creature(creature= creature)
-                await self.duplicate_creature_spawner(creature=creature)
-
+                await self.spawn_creature()
             except (ssl.SSLError, Exception) as e:
                 # Handle all errors in a single block
                 error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
@@ -109,12 +107,13 @@ class CreatureSpawnerHandler:
 
 
     # Spawns a creature and sends a message to the discord channel
-    async def spawn_creature(self, creature: TGOCreature):
+    async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None):
+        creature = creature if creature else await self.creature_picker(rarity= rarity)
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day).generate_spawn_embed()
 
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
             content=TGOMMO_ROLE,
-            view=TGOMMOEncounterView(discord_bot=self.discord_bot, message=f'Catch', creature=creature, environment=self.current_environment),
+            view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, user_who_triggered=user),
             files=[creature_embed[1], creature_embed[2]],
             embed=creature_embed[0]
         )
@@ -124,6 +123,10 @@ class CreatureSpawnerHandler:
             thread = threading.Thread(target=self._handle_despawn, args=(creature, spawn_message))
             thread.daemon = True
             thread.start()
+
+        # see if duplicate creatures should spawn for swarm effect, swarms are not eligible for bait spawns
+        if not user:
+            await self.duplicate_creature_spawner(creature=creature)
 
     # Spawns a duplicate creature to give illusion of a swarm
     async def duplicate_creature_spawner(self, creature: TGOCreature):
@@ -147,9 +150,9 @@ class CreatureSpawnerHandler:
         return
 
     # Picks a random creature from the spawn pool
-    async def creature_picker(self):
+    async def creature_picker(self, rarity= None):
         # FOR LAUNCH, SET COMMON CRITTERS TO BE WAY MORE COMMON BUT MAKE SPAWN MORE FREQUENTLY, only a 25% chance to pull an actual roll
-        rarity = get_rarity() if (random.randint(1, 3) == 1 or self.time_of_day in (DUSK, DAWN)) else COMMON
+        rarity = rarity if rarity else get_rarity() if (random.randint(1, 3) == 1 or self.time_of_day in (DUSK, DAWN)) else COMMON
         rarity = TRANSCENDANT if flip_coin(total_iterations=13) else rarity
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]

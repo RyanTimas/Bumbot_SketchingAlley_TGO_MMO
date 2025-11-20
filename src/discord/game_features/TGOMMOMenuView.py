@@ -12,6 +12,8 @@ from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory 
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
+from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
@@ -44,6 +46,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
         self.avatar_board_button = self.create_avatar_board_button(row=2)
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
+        self.item_inventory_button = self.create_item_inventory_button(row=2)
 
         self.close_button = self.create_close_button(row=3)
 
@@ -58,6 +61,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.add_item(self.open_player_profile_button)
         self.add_item(self.avatar_board_button)
         self.add_item(self.creature_inventory_button)
+        self.add_item(self.item_inventory_button)
 
         self.add_item(self.close_button)
 
@@ -256,6 +260,46 @@ class TGOMMOMenuView(discord.ui.View):
 
                 # Send updated view
                 await interaction.message.edit(attachments=[file], view=creature_inventory_view)
+        return callback
+
+    def create_item_inventory_button(self, row=1):
+        button = discord.ui.Button(
+            label="Open Item Inventory",
+            style=discord.ButtonStyle.green,
+            row=row
+        )
+        button.callback = self.item_inventory_callback()  # Add parentheses to call the function
+        return button
+    def item_inventory_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            # Check if we're already processing an interaction
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            # Acquire lock to prevent concurrent actions
+            async with self.interaction_lock:
+                await interaction.response.defer()
+
+                user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.message_author.id, convert_to_object=True)
+                item_inventory_img_factory = ItemInventoryImageFactory(user=user,)
+
+                item_inventory_view = ItemInventoryView(
+                    command_user=user,
+                    target_user=user,
+                    item_inventory_image_factory=item_inventory_img_factory,
+                    original_message=interaction.message,
+                    original_view=self
+                )
+
+                # Update button states
+                self.update_button_states()
+
+                item_inventory_img = item_inventory_img_factory.generate_item_inventory_image()
+                file = convert_to_png(item_inventory_img, f'item_inventory_img.png')
+
+                # Send updated view
+                await interaction.message.edit(attachments=[file], view=item_inventory_view)
         return callback
 
 

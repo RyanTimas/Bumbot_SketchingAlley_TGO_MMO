@@ -118,7 +118,7 @@ class CreatureInventoryManagementView(discord.ui.View):
 
                 # always update original message to reflect changes
                 updated_creature_inventory_image = self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT, )
-                await self.original_message.edit(content="updated lol", attachments=[updated_creature_inventory_image], view=self.original_view)
+                await self.original_message.edit(content="", attachments=[updated_creature_inventory_image], view=self.original_view)
 
                 # if releasing, show results image
                 if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS:

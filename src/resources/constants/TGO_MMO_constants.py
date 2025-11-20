@@ -8,6 +8,7 @@ USER_CATCHES_DAILY = {}
 USER_CATCHES_HOURLY = {}
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''VIEW WORKFLOW STATES'''
+VIEW_WORKFLOW_STATE_INITIAL = "initial"
 VIEW_WORKFLOW_STATE_INTERACTION = "interaction"
 VIEW_WORKFLOW_STATE_CONFIRMATION = "confirmation"
 VIEW_WORKFLOW_STATE_FINALIZED = "finalized"

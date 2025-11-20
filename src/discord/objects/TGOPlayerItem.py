@@ -2,7 +2,7 @@ from src.discord.objects.CreatureRarity import CreatureRarity
 
 
 class TGOPlayerItem:
-    def __init__(self, item_num:int, item_id: int, item_name: str, item_type: str, item_description: str, rarity:CreatureRarity, is_rewardable: bool, img_root: str, default_uses: int, item_quantity: int =0, last_used: int =0):
+    def __init__(self, item_num:int, item_id: int, item_name: str, item_type: str, item_description: str, rarity:CreatureRarity, is_rewardable: bool, img_root: str, default_uses: int =0, item_quantity: int =0, last_used: int =0):
         self.item_num = item_num
         self.item_id = item_id
         self.item_name = item_name
@@ -12,7 +12,7 @@ class TGOPlayerItem:
 
         self.rarity = rarity
         self.is_rewardable = is_rewardable
-        self.img_root = img_root
+        self.img_root = img_root if img_root != '' else f"{item_type.lower()}_{rarity.name.lower()}"
         self.default_uses = default_uses
 
         self.item_quantity = item_quantity

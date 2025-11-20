@@ -11,6 +11,8 @@ from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory 
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
+from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
@@ -227,6 +229,26 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         await ctx.message.delete()
         await ctx.channel.send(content='', files=[creature_inventory_img], view=view)
+
+    @discord_bot.discord_bot.command(name='item-inventory', help="Shows User's inventory of items.")
+    async def item_inventory(ctx, param1: str = None):
+        target_user_id = None
+        for param in [param1]:
+            if param is None:
+                continue
+            if param.isdigit():
+                target_user_id = int(param)
+
+        target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=ctx.author.id if target_user_id is None else target_user_id, convert_to_object=True)
+        command_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=ctx.author.id, convert_to_object=True)
+
+        item_inventory_handler = ItemInventoryImageFactory(user=target_user,)
+        item_inventory_img = convert_to_png(item_inventory_handler.build_item_inventory_page_image(), f'avatar_board.png')
+        view = ItemInventoryView(command_user=command_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler)
+
+        await ctx.message.delete()
+        await ctx.channel.send(files=[item_inventory_img], view=view)
+
 
 
     # MOD COMMANDS

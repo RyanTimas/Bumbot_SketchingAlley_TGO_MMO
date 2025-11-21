@@ -5,7 +5,6 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureReleaseRewardHandler import CreatureReleaseRewardHandler
 from src.discord.game_features.creature_inventory.ReleaseResultImageFactory import ReleaseResultImageFactory
-from src.discord.objects.CreatureRarity import get_rarity_hierarchy_value
 from src.resources.constants.TGO_MMO_constants import *
 
 
@@ -289,10 +288,6 @@ class CreatureInventoryManagementView(discord.ui.View):
 
     # REWARD ITEM HANDLING
     def handle_post_release_rewards(self):
-        try:
-            reward_handler = CreatureReleaseRewardHandler(self.message_author.id)
-            return reward_handler.calculate_rewards(self.selected_ids)
-        except Exception as e:
-            print(f"Error calculating rewards: {e}")
-            return 0, {}  # Return default values on error
+        reward_handler = CreatureReleaseRewardHandler(self.message_author.id)
+        return reward_handler.calculate_rewards(self.selected_ids)
 

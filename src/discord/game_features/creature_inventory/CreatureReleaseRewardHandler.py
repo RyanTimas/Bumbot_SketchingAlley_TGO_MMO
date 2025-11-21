@@ -1,5 +1,5 @@
+import math
 import random
-from collections import defaultdict
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.CreatureRarity import get_rarity_hierarchy_value
@@ -97,7 +97,7 @@ class CreatureReleaseRewardHandler:
                     if creature.rarity.name == item.rarity.name:
                         rate = 50
 
-                    reward_pool.extend([item] * rate)
+                    reward_pool.extend([item] * math.floor(rate))
         return reward_pool[random.randint(0, len(reward_pool) -1)]
 
     def get_release_milestone_items(self):

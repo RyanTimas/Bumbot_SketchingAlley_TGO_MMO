@@ -100,13 +100,13 @@ class CreatureSpawnerHandler:
     # Spawns a creature and sends a message to the discord channel
     async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None):
         creature = creature if creature else await self.creature_picker(rarity= rarity)
-        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day).generate_spawn_embed()
+        creature_embed, creature_thumb_img, creature_encounter_img = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day, spawn_user=user).generate_spawn_embed()
 
         spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
             content=TGOMMO_ROLE,
-            view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, user_who_triggered=user),
-            files=[creature_embed[1], creature_embed[2]],
-            embed=creature_embed[0]
+            view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user),
+            files=[creature_thumb_img, creature_encounter_img],
+            embed=creature_embed
         )
 
         # Create separate task for despawn

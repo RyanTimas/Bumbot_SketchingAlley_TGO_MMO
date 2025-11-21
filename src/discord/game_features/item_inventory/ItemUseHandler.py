@@ -1,4 +1,5 @@
 from src.commons.CommonFunctions import *
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
@@ -17,12 +18,15 @@ class ItemUseHandler:
         }
 
 
-    async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, channel):
-        """Apply the effect of an item to a user"""
-
-        if item.item_type in self.active_effect:
-            # get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=item.item_quantity - 1)
+    async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        # check to make sure user has at least 1 bait
+        if get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
             await self.active_effect[item.item_type](user=user, item=item)
+
+            # remove an item from the user after the effect is applied
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
+        else:
+            await interaction.followup.send(f"You don't got any {item.item_name}s left to use, dude...", ephemeral=True)
 
 
     '''############ ITEM EFFECT HANDLERS ############'''
@@ -37,7 +41,6 @@ class ItemUseHandler:
 
 
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem):
-        # todo: implement bait effect
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
 
     '''############ SUPPORT FUNCTIONS ############'''

@@ -82,8 +82,10 @@ class ItemInventoryView(discord.ui.View):
 
             async with self.interaction_lock:
                 await interaction.response.defer()
-                await ItemUseHandler(channel=interaction.channel, discord_bot=self.discord_bot).use_item(user=self.target_user, item=self.selected_item, channel=interaction.channel)
-                await self.original_message.delete()
+                await ItemUseHandler(channel=interaction.channel, discord_bot=self.discord_bot).use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
+
+                if self.original_message:
+                    await self.original_message.delete()
         return callback
 
     def create_close_button(self, row=2):
@@ -98,7 +100,7 @@ class ItemInventoryView(discord.ui.View):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.command_user.id):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.command_user.user_id):
                 return
 
             # For delete operation, we need a shorter lock

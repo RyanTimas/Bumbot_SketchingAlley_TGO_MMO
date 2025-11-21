@@ -13,12 +13,12 @@ from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import USER_CATCHES_DAILY, USER_CATCHES_HOURLY
 
 class CreatureEncounterView(View):
-    def __init__(self, discord_bot, creature:TGOCreature, environment:TGOEnvironment, user_who_triggered:TGOPlayer = None):
+    def __init__(self, discord_bot, creature:TGOCreature, environment:TGOEnvironment, spawn_user:TGOPlayer = None):
         super().__init__(timeout=None)
         self.discord_bot = discord_bot
         self.creature = creature
         self.environment = environment
-        self.user_who_triggered = user_who_triggered
+        self.spawn_user = spawn_user
 
         self.caught = False  # Track if creature has been caught
 
@@ -40,7 +40,7 @@ class CreatureEncounterView(View):
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.user_who_triggered else self.user_who_triggered.user_id):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
             async with self.interaction_lock:
@@ -58,7 +58,7 @@ class CreatureEncounterView(View):
                     return
 
             # generate the successful catch embed
-            self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.user_who_triggered)
+            self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.spawn_user)
             successful_catch_embed = self.successful_catch_embed_handler.generate_catch_embed(interaction=interaction)
             total_xp = successful_catch_embed[2]
 

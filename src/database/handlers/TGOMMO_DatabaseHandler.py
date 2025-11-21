@@ -329,28 +329,50 @@ class TGOMMODatabaseHandler:
             return creatures
         return creature_data
 
+    def get_user_item_by_user_id_and_item_id(self, user_id=0, item_id=0, convert_to_object=False):
+        item_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID, params=(user_id, item_id))[0]
+
+        if convert_to_object:
+            return TGOPlayerItem(
+                item_id=item_data[1],
+                item_num=item_data[0],
+
+                item_name=item_data[2],
+                 item_type=item_data[3],
+                 item_description=item_data[4],
+
+                rarity=get_rarity_by_name(item_data[5]),
+                is_rewardable=item_data[6],
+                img_root=item_data[7],
+                default_uses=item_data[8],
+
+                item_quantity=item_data[9],
+                last_used=item_data[10],
+            )
+        return item_data
+
     def get_item_collection_by_user_id(self, user_id=0, convert_to_object=False):
         item_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_ITEMS_BY_USER_ID, params=(user_id,))
 
         if convert_to_object:
             items = []
-            for creature in item_data:
+            for item in item_data:
                 items.append(
                     TGOPlayerItem(
-                        item_id=creature[1],
-                        item_num=creature[0],
+                        item_id=item[1],
+                        item_num=item[0],
 
-                        item_name=creature[2],
-                        item_type=creature[3],
-                        item_description=creature[4],
+                        item_name=item[2],
+                        item_type=item[3],
+                        item_description=item[4],
 
-                        rarity=get_rarity_by_name(creature[5]),
-                        is_rewardable=creature[6],
-                        img_root=creature[7],
-                        default_uses=creature[8],
+                        rarity=get_rarity_by_name(item[5]),
+                        is_rewardable=item[6],
+                        img_root=item[7],
+                        default_uses=item[8],
 
-                        item_quantity=creature[9],
-                        last_used=creature[10],
+                        item_quantity=item[9],
+                        last_used=item[10],
                     )
                 )
             return items

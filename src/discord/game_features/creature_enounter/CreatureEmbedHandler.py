@@ -25,6 +25,9 @@ class CreatureEmbedHandler:
         self.catch_user = None
         self.interaction = None
 
+        self.total_xp = 0
+        self.xp_fields = []
+
 
     def generate_spawn_embed(self):
         thumbnail_img = convert_to_png(image=Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"), file_name="thumbnail.png")
@@ -97,16 +100,20 @@ class CreatureEmbedHandler:
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
 
         # calculate xp to add and add fields to embed
-        total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=self.interaction)
+        if self.total_xp == 0:
+            self.total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=self.interaction)
+        else:
+            for field in self.xp_fields:
+                embed.add_field(name=field['name'], value=field['value'], inline=field['inline'])
 
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
-        embed.add_field(name=f"✨ **Total {total_xp} xp** ✨", value=f"", inline=False)
+        embed.add_field(name=f"✨ **Total {self.total_xp} xp** ✨", value=f"", inline=False)
 
         thumbnail_png = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         embed.timestamp = discord.utils.utcnow()
 
-        return embed, thumbnail_png, total_xp
+        return embed, thumbnail_png, self.total_xp
 
 
     def get_despawn_timestamp(self, is_countdown: bool = True, timestamp: int = None):
@@ -120,16 +127,29 @@ class CreatureEmbedHandler:
         user_has_caught_species = get_tgommo_db_handler().user_has_caught_species(user_id=interaction.user.id, creature_id=self.creature.creature_id)
         total_server_catches = get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id)
 
+        self.add_xp_field_to_embed(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
 
         if not user_has_caught_species:
+            self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 2500
         if 0 == total_server_catches:
+            self.add_xp_field_to_embed(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
         if self.creature.rarity == MYTHICAL:
+            self.add_xp_field_to_embed(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
 
         return total_xp, catch_embed
+
+    def add_xp_field_to_embed(self, name, value, inline):
+        self.xp_fields.append(
+            {
+                'name': name,
+                'value': value,
+                'inline': inline
+            }
+        )

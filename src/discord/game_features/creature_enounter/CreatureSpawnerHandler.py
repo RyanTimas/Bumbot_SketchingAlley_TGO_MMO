@@ -24,7 +24,6 @@ from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOM
 class CreatureSpawnerHandler:
     def __init__(self, discord_bot: Bot):
         self.discord_bot = discord_bot
-
         self.are_creatures_spawning = True
 
         self.current_environment = None
@@ -34,36 +33,11 @@ class CreatureSpawnerHandler:
         self.is_day = None
         self.time_of_day = None
 
-
-    # kicks off the creature spawner
-    def start_creature_spawner(self):
         self.define_time_of_day()
         self.define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
-        asyncio.create_task(self._creature_spawner())
 
 
-    # Toggles whether creatures are spawning or not
-    def toggle_creature_spawner(self, ctx):
-        self.are_creatures_spawning = not self.are_creatures_spawning
-        return "creatures are now spawning" if self.are_creatures_spawning else "creatures are no longer spawning"
-
-
-    # Loads a particular environment and defines the spawn pool for that environment
-    def define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
-        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=dex_no, variant_no=variant_no, convert_to_object=True)
-
-        # Retrieve & Define Spawn Pool
-        self.creature_spawn_pool = []
-        creature_links = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id)
-
-        for creature_link in creature_links:
-            local_name = creature_link[2]
-            creature_info = get_tgommo_db_handler().get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1], convert_to_object=False)
-
-            creature = TGOCreature(creature_id= creature_info[0], name=creature_info[1] if local_name == '' else local_name, variant_name=creature_info[2], dex_no=creature_info[3], variant_no=creature_info[4],full_name=creature_info[5], scientific_name=creature_info[6], kingdom=creature_info[7], description=creature_info[8], img_root=creature_info[9], encounter_rate=creature_info[10], rarity=get_rarity_by_name(creature_link[3]), sub_environment=creature_link[4])
-            self.creature_spawn_pool.append(creature)
-
+    '''FUNCTIONS TO INITIALIZE SPAWNER DATA'''
     def define_time_of_day(self):
         # TODO: WILL PULL TIMEZONE FROM ENVIRONMENT IN FUTURE
         self.timezone = pytz.timezone('US/Eastern')
@@ -85,6 +59,22 @@ class CreatureSpawnerHandler:
         else:
             self.time_of_day = DAY if self.is_day else NIGHT
 
+    def define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
+        environment_dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
+
+        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no, convert_to_object=True)
+        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
+
+
+    '''FUNCTIONS TO HANDLE SPAWNER BEHAVIOR'''
+    # kicks off the creature spawner
+    def start_creature_spawner(self):
+        asyncio.create_task(self._creature_spawner())
+
+    # Toggles whether creatures are spawning or not
+    def toggle_creature_spawner(self, ctx):
+        self.are_creatures_spawning = not self.are_creatures_spawning
+        return "creatures are now spawning" if self.are_creatures_spawning else "creatures are no longer spawning"
 
     # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
@@ -106,6 +96,7 @@ class CreatureSpawnerHandler:
             self._handle_time_change()
 
 
+    '''FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC'''
     # Spawns a creature and sends a message to the discord channel
     async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None):
         creature = creature if creature else await self.creature_picker(rarity= rarity)
@@ -155,7 +146,7 @@ class CreatureSpawnerHandler:
         rarity = rarity if rarity else get_rarity() if (random.randint(1, 3) == 1 or self.time_of_day in (DUSK, DAWN)) else COMMON
         rarity = TRANSCENDANT if flip_coin(total_iterations=13) else rarity
 
-        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity == rarity]
+        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity.name == rarity.name]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
@@ -187,6 +178,7 @@ class CreatureSpawnerHandler:
         )
 
 
+    '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
     # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
     def _handle_time_change(self):
         current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)

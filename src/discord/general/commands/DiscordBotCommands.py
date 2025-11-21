@@ -24,6 +24,7 @@ from src.resources.constants.general_constants import USER_WHITELIST
 
 
 def initialize_discord_commands(discord_bot: DiscordBot):
+    # Initialize creature spawner data
     _assign_general_discord_commands(discord_bot)
     _assign_tgo_mmo_discord_commands(discord_bot)
 
@@ -223,7 +224,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
                 target_user_id = int(param)
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
-        creature_inventory_handler = CreatureInventoryImageFactory(user=target_user,)
+        creature_inventory_handler = CreatureInventoryImageFactory(user=target_user)
         creature_inventory_img = convert_to_png(creature_inventory_handler.get_creature_inventory_page_image(), f'avatar_board.png')
         view = CreatureInventoryView( message_author=ctx.author, owner_id=target_user.id,creature_inventory_image_factory=creature_inventory_handler)
 
@@ -244,7 +245,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         item_inventory_handler = ItemInventoryImageFactory(user=target_user,)
         item_inventory_img = convert_to_png(item_inventory_handler.build_item_inventory_page_image(), f'avatar_board.png')
-        view = ItemInventoryView(command_user=command_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler)
+        view = ItemInventoryView(command_user=command_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot= discord_bot)
 
         await ctx.message.delete()
         await ctx.channel.send(files=[item_inventory_img], view=view)

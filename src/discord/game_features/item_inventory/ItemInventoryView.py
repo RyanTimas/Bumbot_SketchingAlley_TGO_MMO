@@ -1,15 +1,17 @@
 from discord.ui import Select
 
 from src.commons.CommonFunctions import *
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
+from src.discord.game_features.item_inventory.ItemUseHandler import ItemUseHandler
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
 class ItemInventoryView(discord.ui.View):
-    def __init__(self, command_user, target_user, item_inventory_image_factory: ItemInventoryImageFactory, original_view=None, original_message=None):
+    def __init__(self, discord_bot, command_user, target_user, item_inventory_image_factory: ItemInventoryImageFactory, original_view=None, original_message=None):
         super().__init__(timeout=None)
+        self.discord_bot = discord_bot
+
         self.command_user = command_user
         self.target_user = target_user
 
@@ -29,6 +31,7 @@ class ItemInventoryView(discord.ui.View):
         self.close_button = self.create_close_button(row=2)
 
         self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_INITIAL)
+
 
     # CREATE BUTTONS
     def create_use_item_button(self, row=1):
@@ -79,13 +82,7 @@ class ItemInventoryView(discord.ui.View):
 
             async with self.interaction_lock:
                 await interaction.response.defer()
-
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=self.target_user.user_id, item_id=self.selected_item.item_id, new_amount=self.selected_item.item_quantity - 1)
-                item_img = convert_to_png(Image.open(f"{ITEM_INVENTORY_ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
-
-                await interaction.channel.send(content=f"{self.target_user.nickname} has used {self.selected_item.item_name}.", files=[item_img])
-                # todo: schedule message to show item has worn off after 30 mins
-
+                await ItemUseHandler(channel=interaction.channel, discord_bot=self.discord_bot).use_item(user=self.target_user, item=self.selected_item, channel=interaction.channel)
                 await self.original_message.delete()
         return callback
 

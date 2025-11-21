@@ -12,7 +12,7 @@ class ItemInventoryImageFactory:
     def __init__(self, user,):
         self.user = user
 
-        self.user_items = get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True)
+        self.user_items = [item for item in get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
         self.user_item_icons = self.build_item_icons()
 
         self.starting_index = 0
@@ -24,7 +24,7 @@ class ItemInventoryImageFactory:
 
     def refresh_item_inventory_parameters(self, user):
         self.user = user is not None and user or self.user
-        self.user_items = get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True)
+        self.user_items = [item for item in get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
         self.user_item_icons = self.build_item_icons()
 
     def build_item_inventory_page_image(self):
@@ -50,14 +50,14 @@ class ItemInventoryImageFactory:
         row, col = 0, 0
 
         for i in range(self.starting_index, self.ending_index):
-            creature_icon = self.user_item_icons[i]
+            item_icon = self.user_item_icons[i]
 
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)
 
             # Paste icon onto canvas
-            grid_canvas.paste(creature_icon, (int(x), int(y)), creature_icon)
+            grid_canvas.paste(item_icon, (int(x), int(y)), item_icon)
 
             # Move to next position
             col += 1

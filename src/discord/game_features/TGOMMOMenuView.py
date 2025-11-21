@@ -289,7 +289,8 @@ class TGOMMOMenuView(discord.ui.View):
                     target_user=user,
                     item_inventory_image_factory=item_inventory_img_factory,
                     original_message=interaction.message,
-                    original_view=self
+                    original_view=self,
+                    discord_bot=self.discord_bot
                 )
 
                 # Update button states

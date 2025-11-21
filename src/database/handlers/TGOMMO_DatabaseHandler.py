@@ -201,8 +201,27 @@ class TGOMMODatabaseHandler:
         if environment_id == -1:
             environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())[0][0]
 
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
-        return response
+        creature_data = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
+
+        if convert_to_object:
+            creatures = []
+            for creature_link in creature_data:
+                # load base creature
+                creature = self.get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1], convert_to_object=True)
+
+                # update creature to load environment specific info
+                local_name = creature_link[2]
+                spawn_rarity = get_rarity_by_name(creature_link[3])
+                sub_environment_type = creature_link[4]
+
+                creature.name = local_name if local_name != '' else creature.name
+                creature.rarity = spawn_rarity
+                creature.sub_environment = sub_environment_type
+
+                creatures.append(creature)
+
+            return creatures
+        return creature_data
 
     def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0):
         # determine whether we should grab creatures for a specific environment or all environments

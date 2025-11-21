@@ -1,5 +1,3 @@
-from importlib.metadata import files
-
 from src.commons.CommonFunctions import *
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
@@ -8,21 +6,23 @@ from src.resources.constants.file_paths import *
 
 
 class ItemUseHandler:
-    def __init__(self, channel):
+    def __init__(self, channel, discord_bot):
+        self.discord_bot = discord_bot
+        self.channel = channel
+
         self.active_effect = {
             ITEM_TYPE_NAMETAG: self.use_nametag,
             ITEM_TYPE_CHARM: self.use_charm,
-            ITEM_TYPE_BAIT: self.use_nametag,
+            ITEM_TYPE_BAIT: self.use_bait,
         }
 
-        self.channel = channel
 
-    async def apply_item_effect(self, user: str, item: TGOPlayerItem, channel):
+    async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, channel):
         """Apply the effect of an item to a user"""
 
         if item.item_type in self.active_effect:
-            await self.active_effect[item.item_id](user_id=user, item=item)
-            return
+            # get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=item.item_quantity - 1)
+            await self.active_effect[item.item_type](user=user, item=item)
 
 
     '''############ ITEM EFFECT HANDLERS ############'''
@@ -38,7 +38,7 @@ class ItemUseHandler:
 
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem):
         # todo: implement bait effect
-        await self.handle_channel_communication(user, item)
+        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
 
     '''############ SUPPORT FUNCTIONS ############'''
     async def handle_channel_communication(self, user: TGOPlayer, item: TGOPlayerItem):

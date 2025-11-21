@@ -76,6 +76,9 @@ class AvatarUnlockHandler:
             ("Mr Frog", "7", datetime.datetime(2025, 11, 7, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 13, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Tyler", "8", datetime.datetime(2025, 11, 14, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 20, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Smormu", "9", datetime.datetime(2025, 11, 21, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 11, 27, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Blue Janitor Dude", "10", datetime.datetime(2025, 11, 28, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 4, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Dolly Dimpley", "11", datetime.datetime(2025, 12, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 11, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Cool Autistic Gamer 774", "12", datetime.datetime(2025, 12, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 18, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
         for timeline_param in timeline_params:

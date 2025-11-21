@@ -986,6 +986,9 @@ class TGOMMODatabaseHandler:
             ('E7', 'Mr. Frog', AVATAR_TYPE_EVENT, 'MrFrog', 'Smiling Friends',),
             ('E8', 'Tyler', AVATAR_TYPE_EVENT, 'Tyler', 'Smiling Friends',),
             ('E9', 'Smormu', AVATAR_TYPE_EVENT, 'Smormu', 'Smiling Friends',),
+            ('E10', 'Blue Janitor Dude', AVATAR_TYPE_EVENT, 'BlueJanitorDude', 'Smiling Friends',),
+            ('E11', 'Dolly Dimpley', AVATAR_TYPE_EVENT, 'DollyDimpley', 'Smiling Friends',),
+            ('E12', 'Cool Autistic Gamer 774', AVATAR_TYPE_EVENT, 'CoolAutisticGamer774', 'Smiling Friends',),
 
             # ----QUEST AVATARS----
             #  COLLECTIONS

@@ -15,7 +15,7 @@ class CreatureInventoryReleaseResultItemImageFactory:
 
     def generate_release_result_item_icon_image(self):
         tab_img = Image.open(CREATURE_INVENTORY_RELEASE_SUMMARY_TAB_BG_IMAGE)
-        item_img = Image.open(ITEM_INVENTORY_ITEM_ROOT + f"_{self.item.item_type}_{self.item.rarity.name}" + IMAGE_FILE_EXTENSION).resize((100, 100))
+        item_img = Image.open(ITEM_INVENTORY_ITEM_BASE + f"{self.item.item_type}_{self.item.rarity.name}" + IMAGE_FILE_EXTENSION).resize((100, 100))
         tab_img.paste(item_img, (31, 12), item_img)
 
         return self.add_text_to_image(image=tab_img)

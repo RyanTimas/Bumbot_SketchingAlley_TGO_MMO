@@ -30,6 +30,12 @@ class DiscordBot:
         # Re-raise other errors so they aren't suppressed
         raise error
 
+    async def get_discord_user(self, user_id: int):
+        """Fetch the Discord user object based on user_id"""
+        if self.discord_bot and self.discord_bot.bot:
+            return await self.discord_bot.bot.fetch_user(user_id)
+        return None
+
 
     def run(self):
         self.discord_bot.run(self.token)

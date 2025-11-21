@@ -15,10 +15,11 @@ from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON,
 
 
 class CreatureEmbedHandler:
-    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None, spawn_user = None, time_of_day=None):
+    def __init__(self, creature:TGOCreature, environment:TGOEnvironment=None, spawn_user = None, time_of_day=None, active_bonuses = None):
         self.creature = creature
         self.environment = environment
         self.spawn_user = spawn_user
+        self.active_bonuses = active_bonuses
 
         self.time_of_day = time_of_day
         self.catch_user = None
@@ -41,7 +42,16 @@ class CreatureEmbedHandler:
         embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
 
         if self.creature.rarity.name != MYTHICAL.name and self.creature.rarity.name != TRANSCENDANT.name:
-            embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp()}*", inline=True)
+            embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp(timestamp=int(self.creature.despawn_time.timestamp()))}*", inline=True)
+
+        # add active bonuses to embed
+        bonus_description = ''
+        for bonus in self.active_bonuses:
+            bonus_description += f"-#\t{bonus.rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
+        if len(self.active_bonuses) > 0:
+            embed.add_field(name=f"", value=f"", inline=False)
+            embed.add_field(name=f"Active Bonuses", value=f"{bonus_description}", inline=False)
+
 
         if self.time_of_day:
             embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
@@ -62,7 +72,7 @@ class CreatureEmbedHandler:
         embed = discord.Embed(color=discord.Color.dark_red())
         embed.set_author(name = f"The {self.creature.name} has run away...", icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
-        embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False)}", value=f'', inline=True)
+        embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False, timestamp=int(self.creature.despawn_time.timestamp()))}", value=f'', inline=True)
         thumbnail_img = to_grayscale(thumbnail_img)
         thumbnail_img.filename = "thumbnail.png"
 
@@ -99,9 +109,9 @@ class CreatureEmbedHandler:
         return embed, thumbnail_png, total_xp
 
 
-    def get_despawn_timestamp(self, is_countdown: bool = True):
+    def get_despawn_timestamp(self, is_countdown: bool = True, timestamp: int = None):
         despawn_character = 'R' if is_countdown else 'F'
-        return f"<t:{int(self.creature.despawn_time.timestamp())}:{despawn_character}>"
+        return f"<t:{timestamp}:{despawn_character}>"
 
 
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):

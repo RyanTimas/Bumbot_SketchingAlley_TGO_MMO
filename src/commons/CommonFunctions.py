@@ -180,7 +180,7 @@ def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
 
         return current_font
 
-def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=10, allow_newlines=False, max_lines=1):
+def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=10, allow_newlines=False, max_lines=5):
     current_font = font
     current_font_size = font.size
     current_text = text

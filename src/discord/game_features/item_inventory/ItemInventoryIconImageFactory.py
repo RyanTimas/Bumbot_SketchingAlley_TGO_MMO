@@ -28,8 +28,8 @@ class ItemInventoryIconImageFactory:
         draw.text((72, 5), text=self.item.item_name, font=image_name_font, fill=FONT_COLOR_WHITE)
 
         # add item description to image
-        image_description_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 16)
-        item_description_font, item_description_text  = resize_text_to_fit_with_newlines(text=self.item.item_description, draw=draw, font=image_description_font, max_width=max_width, min_font_size=12)
+        image_description_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)
+        item_description_font, item_description_text  = resize_text_to_fit_with_newlines(text=self.item.item_description, draw=draw, font=image_description_font, max_width=max_width, min_font_size=12, allow_newlines=True)
         draw.text((75, 25), text=item_description_text, font=item_description_font, fill=FONT_COLOR_WHITE)
 
         # add item uses to image

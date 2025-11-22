@@ -29,6 +29,7 @@ class ItemInventoryView(discord.ui.View):
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
         self.close_button = self.create_close_button(row=2)
+        self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.command_user.user_id)
 
         self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_INITIAL)
 
@@ -134,12 +135,13 @@ class ItemInventoryView(discord.ui.View):
         for item in self.children.copy():
             self.remove_item(item)
 
-        # add options that will always appear
-
         if view_mode == VIEW_WORKFLOW_STATE_INITIAL:
-            if len(self.user_items) > 0:
+            if len(self.user_items) > 0 and self.target_user.user_id == self.command_user.user_id:
                 self.add_item(self.item_select_dropdown)
                 self.add_item(self.use_item_button)
+
+            if self.original_view is not None:
+                self.add_item(self.go_back_button)
             self.add_item(self.close_button)
         if view_mode == VIEW_WORKFLOW_STATE_CONFIRMATION:
             self.add_item(self.use_item_confirm_button)

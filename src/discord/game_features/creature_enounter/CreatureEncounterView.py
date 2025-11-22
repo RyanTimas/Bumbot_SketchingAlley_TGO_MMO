@@ -49,11 +49,13 @@ class CreatureEncounterView(View):
                     await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
+                # can always catch mythical creatures or if spawned using bait
+                can_catch = self.creature.rarity != MYTHICAL or self.spawn_user
+                if not can_catch:
+                    can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
                 self.caught = can_catch
 
-                # can always catch mythical creatures
-                if not can_catch and self.creature.rarity != MYTHICAL:
+                if not can_catch:
                     await interaction.response.send_message(catch_message, ephemeral=True)
                     return
 

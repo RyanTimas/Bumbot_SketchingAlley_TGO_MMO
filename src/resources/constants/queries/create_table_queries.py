@@ -158,13 +158,13 @@ TGOMMO_CREATE_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_invent
 )"""
 
 TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_item_inventory_link (
-    item_id TEXT UNIQUE,
+    item_id TEXT,
     user_id INTEGER NOT NULL,
     item_quantity INTEGER NOT NULL DEFAULT 0,
     last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE(user_id, item_id),
-    FOREIGN KEY (user_id) REFERENCES users (user_id)
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (item_id) REFERENCES tgommo_inventory_item (item_id)
 )"""
 

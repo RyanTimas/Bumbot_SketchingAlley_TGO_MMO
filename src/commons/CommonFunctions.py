@@ -359,28 +359,24 @@ def go_back_callback(original_view, interaction_lock=None, message_author_id=Non
         await interaction.message.edit(attachments=[], view=original_view)
     return callback
 
-# Button that deletes message when clicked
-def create_close_button(interaction_lock, message_author_id, row=2):
+
+def create_close_button(interaction_lock, message_author_id, row=1):
     button = discord.ui.Button(
         label="✘",
         style=discord.ButtonStyle.red,
-        row=row  # Place in third row
+        row=row
     )
-    button.callback = close_callback(interaction_lock, message_author_id)
-    return button
-def close_callback(interaction_lock, message_author_id):
+
     @retry_on_ssl_error(max_retries=3, delay=1)
-    async def callback(interaction):
-        # Check if we're already processing an interaction
+    async def close_callback(interaction):
         if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
             return
 
-        # For delete operation, we need a shorter lock
         async with interaction_lock:
-            # Delete the message
             await interaction.message.delete()
 
-    return callback
+    button.callback = close_callback
+    return button
 
 # Placeholder button that does nothing when clicked
 def create_dummy_label_button(label_text, row=1):

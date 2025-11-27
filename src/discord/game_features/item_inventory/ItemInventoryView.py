@@ -28,7 +28,7 @@ class ItemInventoryView(discord.ui.View):
         self.item_select_dropdown = self.create_items_dropdown(row=0)
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
-        self.close_button = self.create_close_button(row=2)
+        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.command_user.user_id, row=2)
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.command_user.user_id)
 
         self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_INITIAL)
@@ -89,27 +89,6 @@ class ItemInventoryView(discord.ui.View):
                     await self.original_message.delete()
         return callback
 
-    def create_close_button(self, row=2):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=row
-        )
-        button.callback = self.close_callback()
-        return button
-    def close_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.command_user.user_id):
-                return
-
-            # For delete operation, we need a shorter lock
-            async with self.interaction_lock:
-                # Delete the message
-                await interaction.message.delete()
-
-        return callback
 
     # CREATE DROPDOWNS
     def create_items_dropdown(self, row=1):

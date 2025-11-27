@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ui import Select
 
-from src.commons.CommonFunctions import convert_to_png, create_go_back_button
+from src.commons.CommonFunctions import convert_to_png, create_go_back_button, create_close_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
@@ -49,7 +49,7 @@ class EncyclopediaView(discord.ui.View):
         self.day_only_button = self.create_toggle_button(day_spawns_keyword, row=2)
         self.night_only_button = self.create_toggle_button(night_spawns_keyword, row=2)
 
-        self.close_button = self.create_close_button(row=3)
+        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=3)
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=3, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
 
         # Add buttons to view
@@ -183,27 +183,6 @@ class EncyclopediaView(discord.ui.View):
 
         return callback
 
-    def create_close_button(self, row=2):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=row
-        )
-        button.callback = self.close_callback()
-        return button
-    def close_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
-            # For delete operation, we need a shorter lock
-            async with self.interaction_lock:
-                # Delete the message
-                await interaction.message.delete()
-
-        return callback
 
     # CREATE DROPDOWNS
     def create_avatar_picker_dropdown(self, row=1):

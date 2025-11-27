@@ -2,7 +2,7 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import convert_to_png, create_go_back_button
+from src.commons.CommonFunctions import convert_to_png, create_go_back_button, create_close_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.player_profile.UpdatePlayerProfileView import UpdatePlayerProfileView
@@ -31,7 +31,7 @@ class PlayerProfileView(discord.ui.View):
         self.open_teams_panel_button = self.create_open_teams_panel_button()
         self.open_collections_panel_button = self.create_open_collections_panel_button()
 
-        self.close_button = self.create_close_button()
+        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.user_id, row=2)
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.user_id)
 
 
@@ -50,7 +50,6 @@ class PlayerProfileView(discord.ui.View):
         self.add_item(self.close_button)
         if self.original_view is not None:
             self.add_item(self.go_back_button)
-
 
 
     def update_button_states(self, change_tab_open_property=False):
@@ -154,29 +153,6 @@ class PlayerProfileView(discord.ui.View):
                 # Send updated view
                 file = convert_to_png(new_image, f'player_profile_page.png')
                 await interaction.message.edit(attachments=[file], view=self)
-
-        return callback
-
-
-    def create_close_button(self):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=2  # Place in third row
-        )
-        button.callback = self.close_callback()
-        return button
-    def close_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.user_id):
-                return
-
-            # For delete operation, we need a shorter lock
-            async with self.interaction_lock:
-                # Delete the message
-                await interaction.message.delete()
 
         return callback
 

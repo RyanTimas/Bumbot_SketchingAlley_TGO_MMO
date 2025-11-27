@@ -3,7 +3,7 @@ import asyncio
 import discord
 from PIL import Image
 
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, create_close_button
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, \
     create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -48,7 +48,7 @@ class TGOMMOMenuView(discord.ui.View):
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
         self.item_inventory_button = self.create_item_inventory_button(row=2)
 
-        self.close_button = self.create_close_button(row=3)
+        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=3)
 
         # Create view layout
         self.add_item(self.welcome_button)

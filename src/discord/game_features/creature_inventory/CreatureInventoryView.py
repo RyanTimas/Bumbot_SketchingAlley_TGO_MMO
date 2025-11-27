@@ -314,6 +314,7 @@ class CreatureInventoryView(discord.ui.View):
         self.new_box = int(interaction.data["values"][0])
         await interaction.response.defer()
 
+
     # FUNCTIONS FOR UPDATING VIEW STATE
     def refresh_view(self):
         self.update_button_states()

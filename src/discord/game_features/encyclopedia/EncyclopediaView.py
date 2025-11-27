@@ -69,7 +69,7 @@ class EncyclopediaView(discord.ui.View):
         if self.original_view is not None:
             self.add_item(self.go_back_button)
 
-        self.update_button_states()
+        self.refresh_view()
 
 
     # CREATE BUTTONS
@@ -115,7 +115,6 @@ class EncyclopediaView(discord.ui.View):
                 await interaction.message.edit(attachments=[file], view=self)
 
         return callback
-
 
     def create_toggle_button(self, button_type, row=1):
         labels = {
@@ -195,8 +194,10 @@ class EncyclopediaView(discord.ui.View):
         self.new_page = int(interaction.data["values"][0])
         await interaction.response.defer()
 
-
-    # handle button behavior
+    # FUNCTIONS FOR UPDATING VIEW STATE
+    def refresh_view(self):
+        self.update_button_states()
+        self.rebuild_view()
     def update_button_states(self):
         # Update navigation buttons
         current_page = self.encyclopedia_image_factory.page_num
@@ -215,3 +216,23 @@ class EncyclopediaView(discord.ui.View):
         self.mythics_button.style = discord.ButtonStyle.blurple if self.show_mythics else discord.ButtonStyle.gray
         self.night_only_button.style = discord.ButtonStyle.blurple if self.time == night else discord.ButtonStyle.gray
         self.day_only_button.style = discord.ButtonStyle.blurple if self.time == day else discord.ButtonStyle.gray
+    def rebuild_view(self):
+        for item in self.children.copy():
+            self.remove_item(item)
+
+        # Add buttons to view
+        self.add_item(self.page_jump_dropdown)
+        self.add_item(self.prev_button)
+        self.add_item(self.page_jump_button)
+        self.add_item(self.next_button)
+
+        self.add_item(self.verbose_button)
+        self.add_item(self.variants_button)
+        if get_tgommo_db_handler().get_server_mythical_count() > 0:
+            self.add_item(self.mythics_button)
+        self.add_item(self.day_only_button)
+        self.add_item(self.night_only_button)
+
+        self.add_item(self.close_button)
+        if self.original_view is not None:
+            self.add_item(self.go_back_button)

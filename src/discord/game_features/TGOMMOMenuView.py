@@ -50,26 +50,11 @@ class TGOMMOMenuView(discord.ui.View):
 
         self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=3)
 
-        # Create view layout
-        self.add_item(self.welcome_button)
-        self.add_item(self.help_button)
-
-        self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
-        self.add_item(self.open_user_encyclopedia_button)
-        self.add_item(self.open_server_encyclopedia_button)
-
-        self.add_item(self.open_player_profile_button)
-        self.add_item(self.avatar_board_button)
-        self.add_item(self.creature_inventory_button)
-        self.add_item(self.item_inventory_button)
-
-        self.add_item(self.close_button)
-
         # Update button states
-        self.update_button_states()
+        self.refresh_view()
 
-
-    # Handle Encyclopedia Buttons - opens encyclopedia view
+    # CREATE BUTTONS
+    # Open Screen Buttons
     def create_encyclopedia_button(self, button_type, row=1):
         labels = {
             "user_encyclopedia": "User",
@@ -126,7 +111,6 @@ class TGOMMOMenuView(discord.ui.View):
                 file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
 
                 # Update button states
-                self.update_button_states()
                 view.update_button_states()
 
                 # Send updated view
@@ -134,8 +118,6 @@ class TGOMMOMenuView(discord.ui.View):
 
         return callback
 
-
-    # Handle Player Profile Buttons - opens encyclopedia view
     def create_player_profile_button(self, tab_is_open=False, open_tab=TEAM, row=1):
         button = discord.ui.Button(
             label="Player Profile",
@@ -169,9 +151,6 @@ class TGOMMOMenuView(discord.ui.View):
                     original_view=self
                 )
 
-                # Update button states
-                self.update_button_states()
-
                 new_encyclopedia_page = player_profile_img_factory.build_player_profile_page_image(open_tab=TEAM)
                 file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
 
@@ -179,7 +158,6 @@ class TGOMMOMenuView(discord.ui.View):
                 await interaction.message.edit(attachments=[file], view=view)
 
         return callback
-
 
     def create_avatar_board_button(self, row=1):
         button = discord.ui.Button(
@@ -211,9 +189,6 @@ class TGOMMOMenuView(discord.ui.View):
                     open_tab=avatar_board_img_factory.open_tab,
                     original_view=self
                 )
-
-                # Update button states
-                self.update_button_states()
 
                 new_avatar_board_img = avatar_board_img_factory.build_avatar_board_page_image()
                 file = convert_to_png(new_avatar_board_img, f'avatar_board.png')
@@ -251,9 +226,6 @@ class TGOMMOMenuView(discord.ui.View):
                     creature_inventory_image_factory=creature_inventory_img_factory,
                     original_view=self
                 )
-
-                # Update button states
-                self.update_button_states()
 
                 creature_inventory_img = creature_inventory_img_factory.get_creature_inventory_page_image()
                 file = convert_to_png(creature_inventory_img, f'creature_inventory_img.png')
@@ -293,17 +265,12 @@ class TGOMMOMenuView(discord.ui.View):
                     discord_bot=self.discord_bot
                 )
 
-                # Update button states
-                self.update_button_states()
-
                 item_inventory_img = item_inventory_img_factory.generate_item_inventory_image()
                 file = convert_to_png(item_inventory_img, f'item_inventory_img.png')
 
                 # Send updated view
                 await interaction.message.edit(attachments=[file], view=item_inventory_view)
         return callback
-
-
 
 
     def create_welcome_button(self):
@@ -314,7 +281,6 @@ class TGOMMOMenuView(discord.ui.View):
         )
         button.callback = self.welcome_callback()
         return button
-
     def welcome_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -339,7 +305,6 @@ class TGOMMOMenuView(discord.ui.View):
 
         return callback
 
-
     def create_help_button(self):
         button = discord.ui.Button(
             label="Help & Commands",
@@ -348,7 +313,6 @@ class TGOMMOMenuView(discord.ui.View):
         )
         button.callback = self.help_callback()
         return button
-
     def help_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -374,57 +338,28 @@ class TGOMMOMenuView(discord.ui.View):
                 await interaction.followup.send(files=[convert_to_png(button_img, f'welcome_img.png')], ephemeral=True)
                 await interaction.followup.send(files=[convert_to_png(command_img_1, f'welcome_img.png')], ephemeral=True)
                 await interaction.followup.send(files=[convert_to_png(command_img_2, f'welcome_img.png')], ephemeral=True)
-
-                # Send help text messages (unused)
-                # mythics_unlocked = get_tgommo_db_handler().get_server_mythical_count() > 0
-                # help_text_header = (
-                #     TGOMMO_HELP_MENU_TITLE
-                # )
-                # help_text_buttons = (
-                #     TGOMMO_HELP_MENU_BUTTON_DESCRIPTION
-                #     + TGOMMO_HELP_MENU_BUTTON_OPTIONS
-                # )
-                # help_text_commands = (
-                #     TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_1
-                #     + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_1
-                #     + TGOMMO_HELP_MENU_COMMANDS_DESCRIPTION_2
-                #     + TGOMMO_HELP_MENU_COMMANDS_OPTIONS_2 if mythics_unlocked else ""
-                #
-                #     + TGOMMO_HELP_MENU_FOOTER
-                # )
-                #
-                # await interaction.followup.send(help_text_header, ephemeral=True)
-                # await interaction.followup.send(help_text_buttons, ephemeral=True)
-                # await interaction.followup.send(help_text_commands, ephemeral=True)
-
         return callback
 
 
-    # Handle Close Button
-    def create_close_button(self, row=2):
-        button = discord.ui.Button(
-            label="✘",
-            style=discord.ButtonStyle.red,
-            row=row,
-        )
-        button.callback = self.close_callback()
-        return button
-
-    def close_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
-            # For delete operation, we need a shorter lock
-            async with self.interaction_lock:
-                # Delete the message
-                await interaction.message.delete()
-
-        return callback
-
-
+    # FUNCTIONS FOR UPDATING VIEW STATE
+    def refresh_view(self):
+        self.update_button_states()
+        self.rebuild_view()
     def update_button_states(self):
         return
+    def rebuild_view(self):
+        # Create view layout
+        self.add_item(self.welcome_button)
+        self.add_item(self.help_button)
+
+        self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
+        self.add_item(self.open_user_encyclopedia_button)
+        self.add_item(self.open_server_encyclopedia_button)
+
+        self.add_item(self.open_player_profile_button)
+        self.add_item(self.avatar_board_button)
+        self.add_item(self.creature_inventory_button)
+        self.add_item(self.item_inventory_button)
+
+        self.add_item(self.close_button)
 

@@ -57,6 +57,7 @@ TGOMMO_CREATE_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_creature (
 
     img_root TEXT NOT NULL,
     encounter_rate INTEGER NOT NULL,
+    default_rarity TEXT NOT NULL,
     UNIQUE(dex_no, variant_no)
 )"""
 TGOMMO_CREATE_ENVIRONMENT_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment (

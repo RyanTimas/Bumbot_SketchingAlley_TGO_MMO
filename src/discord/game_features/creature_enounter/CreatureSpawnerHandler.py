@@ -1,25 +1,25 @@
 import asyncio
+import datetime
 import ssl
 import threading
 import time
 import traceback
 from copy import deepcopy
 from datetime import datetime
-import datetime
-import pytz
 
+import pytz
 from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import flip_coin
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
+from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
+from src.discord.objects import TGOPlayer
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
 from src.discord.objects.TGOCreature import TGOCreature
-from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHANNEL_ID, TGOMMO_ROLE
+from src.resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
 class CreatureSpawnerHandler:
@@ -70,7 +70,8 @@ class CreatureSpawnerHandler:
 
         self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no, convert_to_object=True)
         self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
-
+        if IS_EVENT:
+            self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
 
     '''FUNCTIONS TO HANDLE SPAWNER BEHAVIOR'''
     # kicks off the creature spawner
@@ -165,7 +166,6 @@ class CreatureSpawnerHandler:
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self, rarity= None):
-        # Determine default rarity based on active bonuses
         rarity = rarity if rarity else self.get_creature_rarity()
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity.name == rarity.name]
@@ -185,7 +185,7 @@ class CreatureSpawnerHandler:
     # Determines the rarity of the creature to spawn based on active bonuses and time of day
     def get_creature_rarity(self):
         # 1/8192 chance to spawn transcendant
-        if flip_coin(total_iterations=13):
+        if flip_coin(total_iterations= 7 if IS_EVENT else 13):
             return TRANSCENDANT
 
         bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)

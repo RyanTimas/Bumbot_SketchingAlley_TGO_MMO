@@ -1,5 +1,6 @@
 from src.database.handlers.QueryHandler import QueryHandler
 from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, MYTHICAL
+from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, TRANSCENDANT
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
@@ -174,6 +175,23 @@ class TGOMMODatabaseHandler:
                 creature = TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
                 creatures.append(creature)
             return creatures
+        return response
+
+    def get_event_creatures_from_environment(self, convert_to_object=False):
+        if not EVENT_SPAWN_POOL:
+            return []
+
+        # Create placeholders for each ID in the spawn pool
+        placeholders = ','.join(['?' for _ in EVENT_SPAWN_POOL])
+        query = f'{TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT} ({placeholders})'
+
+        response = self.QueryHandler.execute_query(query, params=tuple(EVENT_SPAWN_POOL))
+
+        if convert_to_object:
+            event_creatures = []
+            for creature_details in response:
+                event_creatures.append(TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10], rarity=get_rarity_by_name(creature_details[11])))
+            return event_creatures
         return response
 
 
@@ -975,6 +993,7 @@ class TGOMMODatabaseHandler:
             ('S7', 'Jesse Pinkman', AVATAR_TYPE_SECRET, 'JessePinkman', 'Breaking Bad',),
             ('S8', 'Mike Ehrmantraut', AVATAR_TYPE_SECRET, 'MikeEhrmantraut', 'Breaking Bad',),
             ('S9', 'Porky Pig', AVATAR_TYPE_SECRET, 'Porky', 'Looney Tunes',),
+            ('S10', 'Jason Vorhees', AVATAR_TYPE_SECRET, 'JasonVorhees', 'Friday the 13th',),
 
             # Event Avatars
             ('E1', 'Pim', AVATAR_TYPE_EVENT, 'Pim', 'Smiling Friends',),
@@ -1026,6 +1045,7 @@ class TGOMMODatabaseHandler:
             ('Q20', 'Bubsy', AVATAR_TYPE_QUEST, 'Bubsy', 'Bubsy',),
             ('Q21', 'Spider-Man', AVATAR_TYPE_QUEST, 'SpiderMan', 'Marvel',),
             ('Q22', 'Cynthia', AVATAR_TYPE_QUEST, 'Cynthia', 'Pokemon',),
+            ('Q23', 'Marceline', AVATAR_TYPE_QUEST, 'Marceline', 'Adventure Time',),
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),
@@ -1076,6 +1096,7 @@ class TGOMMODatabaseHandler:
             ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
             ('Spider-Man', ('Q21', AVATAR_SPIDERMAN_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
             ('Cynthia', ('Q22', AVATAR_CYNTHIA_QUEST_QUERY, 100)),
+            ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
             # WAVE 3.5
 
             # Transcendant Avatars

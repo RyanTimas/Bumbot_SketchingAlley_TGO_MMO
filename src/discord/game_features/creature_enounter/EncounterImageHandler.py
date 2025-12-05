@@ -23,6 +23,10 @@ class EncounterImageHandler:
         foreground_img = Image.open(fr"{IMAGE_FOLDER_CREATURES_PATH}\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         final_img, background_overlay_img = self.build_background_image()
 
+        if IS_EVENT:
+            event_glow = Image.open(ENCOUNTER_SCREEN_EVENT_GLOW_IMAGE)
+            final_img.paste(event_glow, (0, 0), event_glow)
+
         textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
         camera_overlay_img = Image.open(ENCOUNTER_SCREEN_CAMERA_OVERLAY_IMAGE)
         glow = self.get_glow_overlay()

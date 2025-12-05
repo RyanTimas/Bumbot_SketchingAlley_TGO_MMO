@@ -65,3 +65,19 @@ def get_rarity_hierarchy_value(rarity_name):
         TGOMMO_RARITY_OMNIPOTENT: 10,
     }
     return rarity_hierarchy.get(rarity_name, 0)
+
+def get_event_rarity():
+    roll = random.randint(1, 100)
+    # Select rarity based on defined probabilities
+    if roll <= 5:  # 5% chance for LEGENDARY (rolls 1-5)
+        selected_rarity = LEGENDARY
+    elif roll <= 15:  # 10% chance for EPIC (rolls 6-15)
+        selected_rarity = EPIC
+    elif roll <= 35:  # 20% chance for RARE (rolls 16-35)
+        selected_rarity = RARE
+    elif roll <= 65:  # 30% chance for UNCOMMON (rolls 36-65)
+        selected_rarity = UNCOMMON
+    else:  # 35% chance for COMMON (rolls 66-100)
+        selected_rarity = COMMON
+
+    return selected_rarity

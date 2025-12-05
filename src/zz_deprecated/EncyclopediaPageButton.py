@@ -1,15 +1,9 @@
-import asyncio
-import functools
-
-import aiohttp
 import discord
-from anyio import current_time
-from discord import Message
 from discord.ui import View
 
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.image_factories.EncyclopediaImageFactory import EncyclopediaImageFactory
+from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 
 
 class EncyclopediaPageButton(discord.ui.Button):

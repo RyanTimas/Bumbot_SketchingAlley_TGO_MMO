@@ -107,6 +107,9 @@ TGOMMO_CREATE_USER_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_cr
     is_mythical BOOLEAN DEFAULT 0,
     catch_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     nickname TEXT DEFAULT '',
+    
+    is_released BOOLEAN DEFAULT 0,
+    is_favorite BOOLEAN DEFAULT 0,
 
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (creature_id) REFERENCES tgommo_creature (creature_id),
@@ -139,6 +142,33 @@ TGOMMO_CREATE_USER_PROFILE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_pro
     UNIQUE(user_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 )"""
+
+TGOMMO_CREATE_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_inventory_item (
+    item_num INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id TEXT UNIQUE,
+    
+    item_name TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    item_description TEXT DEFAULT '',
+    
+    rarity TEXT NOT NULL,
+    is_rewardable BOOLEAN DEFAULT 0,
+    img_root TEXT NOT NULL,
+    default_uses INTEGER NOT NULL,
+    UNIQUE(item_id)
+)"""
+
+TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_item_inventory_link (
+    item_id TEXT,
+    user_id INTEGER NOT NULL,
+    item_quantity INTEGER NOT NULL DEFAULT 0,
+    last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(user_id, item_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (item_id) REFERENCES tgommo_inventory_item (item_id)
+)"""
+
 TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile_avatar_link (
     avatar_id TEXT,
     user_id INTEGER NOT NULL,

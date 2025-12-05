@@ -11,7 +11,7 @@ import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File
 
-from src.resources.constants.TGO_MMO_constants import BLACKBEAR_IMAGE_ROOT, FONT_COLOR_BLACK, FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
 from src.resources.constants.file_paths import PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE, PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
@@ -180,6 +180,114 @@ def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
 
         return current_font
 
+def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=10, allow_newlines=False, max_lines=5):
+    current_font = font
+    current_font_size = font.size
+    current_text = text
+
+    # Check if the text already fits on one line
+    text_width = draw.textlength(text, font=current_font)
+
+    if text_width <= max_width:
+        return current_font, text
+
+    # If newlines are allowed, try word wrapping first
+    if allow_newlines and max_lines > 1:
+        words = text.split()
+        lines = []
+        current_line = ""
+
+        for word in words:
+            test_line = current_line + (" " if current_line else "") + word
+            test_width = draw.textlength(test_line, font=current_font)
+
+            if test_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                    current_line = word
+
+                    # Check if we've reached max lines
+                    if len(lines) >= max_lines:
+                        # Truncate the last line if needed
+                        if len(lines) == max_lines:
+                            ellipsis = "..."
+                            last_line = lines[-1]
+                            while draw.textlength(last_line + ellipsis, font=current_font) > max_width and len(
+                                    last_line) > 0:
+                                last_line = last_line[:-1]
+                            lines[-1] = last_line + ellipsis if last_line else ellipsis
+                        break
+                else:
+                    # Single word is too long, handle it separately
+                    current_line = word
+
+        # Add the last line if we haven't exceeded max_lines
+        if current_line and len(lines) < max_lines:
+            lines.append(current_line)
+
+        # Check if wrapped text fits
+        wrapped_text = "\n".join(lines)
+        max_line_width = max(draw.textlength(line, font=current_font) for line in lines)
+
+        if max_line_width <= max_width and len(lines) <= max_lines:
+            return current_font, wrapped_text
+
+    # If text doesn't fit or newlines aren't allowed, try reducing font size
+    while text_width > max_width and current_font_size > min_font_size:
+        current_font_size -= 1
+
+        # Create a new font with smaller size
+        try:
+            current_font = ImageFont.truetype(font.path, current_font_size)
+        except IOError:
+            current_font = ImageFont.load_default()
+
+        # Re-check with newlines if allowed
+        if allow_newlines and max_lines > 1:
+            words = text.split()
+            lines = []
+            current_line = ""
+
+            for word in words:
+                test_line = current_line + (" " if current_line else "") + word
+                test_width = draw.textlength(test_line, font=current_font)
+
+                if test_width <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                        current_line = word
+                        if len(lines) >= max_lines:
+                            break
+                    else:
+                        current_line = word
+
+            if current_line and len(lines) < max_lines:
+                lines.append(current_line)
+
+            wrapped_text = "\n".join(lines[:max_lines])
+            max_line_width = max(draw.textlength(line, font=current_font) for line in lines[:max_lines])
+
+            if max_line_width <= max_width:
+                return current_font, wrapped_text
+        else:
+            text_width = draw.textlength(text, font=current_font)
+
+    # If reducing font size didn't work, truncate the text
+    if not allow_newlines or max_lines == 1:
+        if draw.textlength(text, font=current_font) > max_width:
+            ellipsis = "..."
+            truncated_text = text
+
+            while draw.textlength(truncated_text + ellipsis, font=current_font) > max_width and len(truncated_text) > 0:
+                truncated_text = truncated_text[:-1]
+
+            current_text = truncated_text + ellipsis if truncated_text else ellipsis
+
+    return current_font, current_text
 
 #************************************************************************************
 #-------------------------------DISCORD FUNCTIONS------------------------------------
@@ -192,13 +300,13 @@ def get_user_discord_profile_pic(user = None):
 #*********************
 # DISCORD VIEW HELPERS
 #*********************
-async def check_if_user_can_interact_with_view(interaction, interaction_lock, message_author):
+async def check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
     # Check if we're already processing an interaction
     if interaction_lock.locked():
         await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
         return False
 
-    if interaction.user.id != message_author:
+    if message_author_id and interaction.user.id != message_author_id:
         await interaction.response.send_message("You do not have permission to interact with this command, freak.", ephemeral=True)
         return False
 
@@ -251,28 +359,24 @@ def go_back_callback(original_view, interaction_lock=None, message_author_id=Non
         await interaction.message.edit(attachments=[], view=original_view)
     return callback
 
-# Button that deletes message when clicked
-def create_close_button(interaction_lock, message_author_id, row=2):
+
+def create_close_button(interaction_lock, message_author_id, row=1):
     button = discord.ui.Button(
         label="✘",
         style=discord.ButtonStyle.red,
-        row=row  # Place in third row
+        row=row
     )
-    button.callback = close_callback(interaction_lock, message_author_id)
-    return button
-def close_callback(interaction_lock, message_author_id):
+
     @retry_on_ssl_error(max_retries=3, delay=1)
-    async def callback(interaction):
-        # Check if we're already processing an interaction
+    async def close_callback(interaction):
         if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
             return
 
-        # For delete operation, we need a shorter lock
         async with interaction_lock:
-            # Delete the message
             await interaction.message.delete()
 
-    return callback
+    button.callback = close_callback
+    return button
 
 # Placeholder button that does nothing when clicked
 def create_dummy_label_button(label_text, row=1):

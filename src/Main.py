@@ -2,11 +2,9 @@ import asyncio
 import threading
 
 from src.database.handlers.DatabaseHandler import initialize_database
-from src.discord.commands import DiscordBotCommands
+from src.discord.general.commands import DiscordBotCommands
 from src.resources.constants.general_constants import *
 from src.discord.DiscordBot import DiscordBot
-from obs.OBSWebsocket import OBSWebSocket
-from twitch.TwitchBot import TwitchBot
 
 
 def initialize_discord_bot():

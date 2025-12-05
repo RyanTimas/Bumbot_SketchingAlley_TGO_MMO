@@ -1,8 +1,6 @@
 import random
-
 import discord
-
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_GOLD, FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureRarity:
@@ -23,8 +21,12 @@ LEGENDARY = CreatureRarity(name="Legendary", color=discord.Color.yellow(), emoji
 MYTHICAL = CreatureRarity(name="Mythical", color=discord.Color.gold(), emojii='⭐', font_color=(255, 215, 0), outline_color=(235, 233, 210))
 TRANSCENDANT = CreatureRarity(name="Transcendant", color=discord.Color.red(), emojii='⁉️', font_color=FONT_COLOR_BLACK, outline_color=(255, 0, 0))
 
+NORMAL = CreatureRarity(name="Normal", color=discord.Color(0xFFFFFF)  , emojii='⚪️', font_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_BLACK)
+EXOTIC = CreatureRarity(name="Exotic", color=discord.Color.teal(), emojii='💎️', font_color=(255, 215, 0), outline_color=FONT_COLOR_BLACK)
+OMNIPOTENT = CreatureRarity(name="Omnipotent", color=discord.Color.pink(), emojii='🌈', font_color=(255, 215, 0), outline_color=FONT_COLOR_BLACK)
+
 # List of all rarities for easy iteration
-ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT]
+ALL_RARITIES = [COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHICAL, TRANSCENDANT, NORMAL, EXOTIC, OMNIPOTENT]
 
 
 def get_rarity_by_name(name: str):
@@ -48,6 +50,21 @@ def get_rarity():
         selected_rarity = COMMON
 
     return selected_rarity
+
+def get_rarity_hierarchy_value(rarity_name):
+    rarity_hierarchy = {
+        TGOMMO_RARITY_NORMAL: 3,
+
+        TGOMMO_RARITY_COMMON: 1,
+        TGOMMO_RARITY_UNCOMMON: 2,
+        TGOMMO_RARITY_RARE: 3,
+        TGOMMO_RARITY_EPIC: 4,
+        TGOMMO_RARITY_LEGENDARY: 5,
+        TGOMMO_RARITY_MYTHICAL: 4,
+        TGOMMO_RARITY_TRANSCENDANT: 7,
+        TGOMMO_RARITY_OMNIPOTENT: 10,
+    }
+    return rarity_hierarchy.get(rarity_name, 0)
 
 def get_event_rarity():
     roll = random.randint(1, 100)

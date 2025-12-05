@@ -2,8 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
 
-from src.database.handlers.DatabaseHandler import DatabaseHandler
-from src.discord.handlers.CreatureSpawnerHandler import CreatureSpawnerHandler
+from src.discord.game_features.creature_enounter.CreatureSpawnerHandler import CreatureSpawnerHandler
 
 
 class DiscordBot:
@@ -30,6 +29,12 @@ class DiscordBot:
             return
         # Re-raise other errors so they aren't suppressed
         raise error
+
+    async def get_discord_user(self, user_id: int):
+        """Fetch the Discord user object based on user_id"""
+        if self.discord_bot and self.discord_bot.bot:
+            return await self.discord_bot.bot.fetch_user(user_id)
+        return None
 
 
     def run(self):

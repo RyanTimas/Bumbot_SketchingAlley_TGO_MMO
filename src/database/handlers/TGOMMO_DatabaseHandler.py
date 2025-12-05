@@ -1,11 +1,14 @@
 from src.database.handlers.QueryHandler import QueryHandler
+from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, MYTHICAL
 from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, TRANSCENDANT
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
+from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.TGO_MMO_creature_constants import *
 from src.resources.constants.queries.avatar_quest_db_queries import *
 from src.resources.constants.general_constants import *
 from src.resources.constants.queries.create_table_queries import *
@@ -84,14 +87,38 @@ class TGOMMODatabaseHandler:
         return response[0]
 
     def get_creature_by_catch_id(self, creature_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURE_BY_CATCH_ID, params=(creature_id,))
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID, params=(creature_id,))
 
         if not response:
             return None
 
         if convert_to_object:
-            creature_details = response[0]
-            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
+            creature_info = response[0]
+
+            return TGOCreature(
+                creature_id=creature_info[1],
+                catch_id=creature_info[0],
+
+                name=creature_info[2],
+                local_name = creature_info[3],
+                nickname=creature_info[4],
+                variant_name = creature_info[5],
+
+                dex_no=creature_info[6],
+                variant_no=creature_info[7],
+
+                full_name=creature_info[8],
+                scientific_name=creature_info[9],
+                kingdom=creature_info[10],
+                description=creature_info[11],
+
+                img_root=creature_info[12],
+                sub_environment=creature_info[13],
+                encounter_rate=creature_info[14],
+                rarity= MYTHICAL if creature_info[18] else get_rarity_by_name(creature_info[15]),
+
+                caught_date=creature_info[16],
+            )
         return response[0]
 
     def get_avatar_by_id(self, avatar_id, convert_to_object=False):
@@ -139,6 +166,17 @@ class TGOMMODatabaseHandler:
             return avatars
         return response
 
+    def get_creatures_released_by_user(self, user_id=-1, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_SELECT_RELEASED_CREATURES_BY_USER_ID, params=(user_id,))
+
+        if convert_to_object:
+            creatures = []
+            for creature_details in response:
+                creature = TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
+                creatures.append(creature)
+            return creatures
+        return response
+
     def get_event_creatures_from_environment(self, convert_to_object=False):
         if not EVENT_SPAWN_POOL:
             return []
@@ -181,8 +219,27 @@ class TGOMMODatabaseHandler:
         if environment_id == -1:
             environment_id = self.QueryHandler.execute_query(TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID, params=())[0][0]
 
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
-        return response
+        creature_data = self.QueryHandler.execute_query(TGOMMO_SELECT_CREATURES_FROM_SPECIFIED_ENVIRONMENT, params=(environment_id,))
+
+        if convert_to_object:
+            creatures = []
+            for creature_link in creature_data:
+                # load base creature
+                creature = self.get_creature_by_dex_and_variant_no(dex_no=creature_link[0], variant_no=creature_link[1], convert_to_object=True)
+
+                # update creature to load environment specific info
+                local_name = creature_link[2]
+                spawn_rarity = get_rarity_by_name(creature_link[3])
+                sub_environment_type = creature_link[4]
+
+                creature.name = local_name if local_name != '' else creature.name
+                creature.rarity = spawn_rarity
+                creature.sub_environment = sub_environment_type
+
+                creatures.append(creature)
+
+            return creatures
+        return creature_data
 
     def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0):
         # determine whether we should grab creatures for a specific environment or all environments
@@ -254,7 +311,109 @@ class TGOMMODatabaseHandler:
 
     # Get all creatures a user has caught
     def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_CREATURE_COLLECTION_BY_USER, params=(user_id,))
+        creature_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURES_BY_USER_ID, params=(user_id,))
+
+        if convert_to_object:
+            creatures = []
+            for creature in creature_data:
+                creatures.append(
+                    TGOCreature(
+                        creature_id=creature[1],
+                        catch_id=creature[0],
+
+                        name=creature[2],
+                        local_name=creature[3],
+                        nickname=creature[4],
+                        variant_name=creature[5],
+
+                        dex_no=creature[6],
+                        variant_no=creature[7],
+
+                        full_name=creature[8],
+                        scientific_name=creature[9],
+                        kingdom=creature[10],
+                        description=creature[11],
+
+                        img_root=creature[12],
+                        sub_environment=creature[13],
+                        encounter_rate=creature[14],
+                        rarity=MYTHICAL if creature[16] else get_rarity_by_name(creature[15]),
+
+                        caught_date=creature[17],
+                        is_favorite=bool(creature[18]),
+                        is_released=bool(creature[19]),
+                    )
+                )
+            return creatures
+        return creature_data
+
+    def get_user_item_by_user_id_and_item_id(self, user_id=0, item_id=0, convert_to_object=False):
+        item_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID, params=(user_id, item_id))[0]
+
+        if convert_to_object:
+            return TGOPlayerItem(
+                item_id=item_data[1],
+                item_num=item_data[0],
+
+                item_name=item_data[2],
+                 item_type=item_data[3],
+                 item_description=item_data[4],
+
+                rarity=get_rarity_by_name(item_data[5]),
+                is_rewardable=item_data[6],
+                img_root=item_data[7],
+                default_uses=item_data[8],
+
+                item_quantity=item_data[9],
+                last_used=item_data[10],
+            )
+        return item_data
+
+    def get_item_collection_by_user_id(self, user_id=0, convert_to_object=False):
+        item_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_ITEMS_BY_USER_ID, params=(user_id,))
+
+        if convert_to_object:
+            items = []
+            for item in item_data:
+                items.append(
+                    TGOPlayerItem(
+                        item_id=item[1],
+                        item_num=item[0],
+
+                        item_name=item[2],
+                        item_type=item[3],
+                        item_description=item[4],
+
+                        rarity=get_rarity_by_name(item[5]),
+                        is_rewardable=item[6],
+                        img_root=item[7],
+                        default_uses=item[8],
+
+                        item_quantity=item[9],
+                        last_used=item[10],
+                    )
+                )
+            return items
+        return item_data
+
+    def get_inventory_item_by_item_id(self, item_id=-1, convert_to_object=False):
+        item_details = self.QueryHandler.execute_query(TGOMMO_GET_INVENTORY_ITEM_BY_ITEM_ID, params=(item_id,))[0]
+
+        if convert_to_object:
+            return TGOPlayerItem(item_num=item_details[0], item_id=item_details[1], item_name=item_details[2], item_type=item_details[3], item_description=item_details[4], rarity=get_rarity_by_name(item_details[5]), is_rewardable=item_details[6], img_root=item_details[7], default_uses=item_details[8], )
+        return item_details
+
+
+    def get_rewardable_inventory_items(self, convert_to_object=False):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_ALL_REWARDABLE_INVENTORY_ITEMS, params=())
+
+        if convert_to_object:
+            items = []
+            for item_details in response:
+                rarity = get_rarity_by_name(item_details[5])
+                item = TGOPlayerItem(item_num=item_details[0], item_id=item_details[1], item_name=item_details[2], item_type=item_details[3], item_description=item_details[4], rarity=rarity, is_rewardable=item_details[6], img_root=item_details[7], default_uses=item_details[8], )
+                items.append(item)
+            return items
         return response
 
 
@@ -340,7 +499,7 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    ''' Update Queries '''
+    ''' UPDATE QUERIES '''
     def update_creature_nickname(self, creature_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
         return response
@@ -378,6 +537,19 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
         return response
 
+    def update_user_profile_currency(self, user_id, new_currency):
+        user_currency = self.QueryHandler.execute_query(TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID, params=(user_id,))[0][0]
+        user_currency += new_currency
+
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_id, user_currency))
+        return response
+
+    def update_user_profile_available_items(self, user_id, item_id, new_amount):
+        # add a dummy record in case user hasn't obtained this item before
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT, params=(new_amount, item_id, user_id))
+        return response
+
     def update_creature_display_index(self, user_id, creature_id, display_index):
         queries = [
             TGOMMO_UPDATE_USER_PROFILE_CREATURE_1,
@@ -391,6 +563,22 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(queries[display_index], params=(creature_id, user_id))
         return response
 
+    def update_user_creature_set_is_favorite(self, creature_ids, is_favorite=True):
+        for creature_id in creature_ids:
+            self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_FAVORITE, params=(1 if is_favorite else 0, creature_id))
+        return True
+
+    def update_user_creature_set_is_released(self, creature_ids, is_released=True):
+        # First check if any of the creatures are already released, if so don't release any creatures
+        for creature_id in creature_ids:
+            if self.QueryHandler.execute_query(TGOMMO_SELECT_USER_CREATURE_IS_RELEASED_BY_CREATURE_ID, params=(creature_id,))[0][0] == 1:
+                return False
+
+        # If none are released, proceed to release all creatures
+        for creature_id in creature_ids:
+                self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_RELEASED, params=(1 if is_released else 0, creature_id))
+        return True
+
     ''' Delete Queries '''
 
 
@@ -399,13 +587,21 @@ class TGOMMODatabaseHandler:
     '''"""""""""""""""""""""""""""""'''
     def init_tgommo_tables(self):
         # Create tables first
+        # Basic Object Tables
         self.QueryHandler.execute_query(TGOMMO_CREATE_CREATURE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_TABLE)
-        self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
-        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_PROFILE_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_INVENTORY_ITEM_TABLE)
+
+        # Link Tables
+        self.QueryHandler.execute_query(TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_CREATURE_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_USER_AVATAR_LINK_TABLE)
+        self.QueryHandler.execute_query(TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE)
+
         self.QueryHandler.execute_query(TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE)
         self.QueryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
 
@@ -416,6 +612,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_UNLOCK_CONDITIONS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
         self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_AVATAR, params=())
+        self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_INVENTORY_ITEM, params=())
         # self.QueryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
 
         self.insert_creature_records()
@@ -424,6 +621,7 @@ class TGOMMODatabaseHandler:
         self.insert_user_avatar_records()
         self.insert_user_avatar_unlock_condition_records()
         self.insert_collection_records()
+        self.insert_item_records()
 
         # Link creatures to environments
         self.insert_environment_creature_records()
@@ -620,7 +818,6 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(MOOSE_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(MOOSE_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
-
             self.format_creature_environment_link_params(CAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(CAT_DEX_NO, 2, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(CAT_DEX_NO, 3, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -633,7 +830,6 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(AMERICAN_CROW_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(RED_TAILED_HAWK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
             self.format_creature_environment_link_params(SNOWY_OWL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FIELD),
-
             self.format_creature_environment_link_params(SKINK_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(RED_SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(THIRTEEN_LINED_GROUND_SQUIRREL_DEX_NO, 1, EASTERN_US_FOREST_NO, 1, DAY,TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FIELD),
@@ -683,7 +879,6 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(BOBCAT_DEX_NO, 1, EASTERN_US_FOREST_NO, 2, NIGHT, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(BLACKBEAR_DEX_NO, 1, EASTERN_US_FOREST_NO, 2, NIGHT, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(WOLF_DEX_NO, 1, EASTERN_US_FOREST_NO, 2, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
-
             self.format_creature_environment_link_params(CAT_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(CAT_DEX_NO, 2, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(CAT_DEX_NO, 3, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -704,7 +899,6 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(PORCUPINE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(COYOTE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
-
             self.format_creature_environment_link_params(COPPERHEAD_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(EARTHWORM_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             self.format_creature_environment_link_params(EASTERN_MOLE_DEX_NO, 1, EASTERN_US_FOREST_NO,  2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -804,13 +998,16 @@ class TGOMMODatabaseHandler:
             # Event Avatars
             ('E1', 'Pim', AVATAR_TYPE_EVENT, 'Pim', 'Smiling Friends',),
             ('E2', 'Charlie', AVATAR_TYPE_EVENT, 'Charlie', 'Smiling Friends',),
-            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, 'Freddy', 'Smiling Friends',),
+            ('E3', 'Freddy Fazbear', AVATAR_TYPE_EVENT, 'FreddyFazbear', 'Five Nights at Freddy\'s',),
             ('E4', 'Allan', AVATAR_TYPE_EVENT, 'Allan', 'Smiling Friends',),
             ('E5', 'Glep', AVATAR_TYPE_EVENT, 'Glep', 'Smiling Friends',),
             ('E6', 'The Boss', AVATAR_TYPE_EVENT, 'TheBoss', 'Smiling Friends',),
             ('E7', 'Mr. Frog', AVATAR_TYPE_EVENT, 'MrFrog', 'Smiling Friends',),
             ('E8', 'Tyler', AVATAR_TYPE_EVENT, 'Tyler', 'Smiling Friends',),
             ('E9', 'Smormu', AVATAR_TYPE_EVENT, 'Smormu', 'Smiling Friends',),
+            ('E10', 'Blue Janitor Dude', AVATAR_TYPE_EVENT, 'BlueJanitorDude', 'Smiling Friends',),
+            ('E11', 'Dolly Dimpley', AVATAR_TYPE_EVENT, 'DollyDimpley', 'Smiling Friends',),
+            ('E12', 'Cool Autistic Gamer 774', AVATAR_TYPE_EVENT, 'CoolAutisticGamer774', 'Smiling Friends',),
 
             # ----QUEST AVATARS----
             #  COLLECTIONS
@@ -914,6 +1111,46 @@ class TGOMMODatabaseHandler:
                 avatar_params = avatar_params + (False,)
 
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION, params=avatar_params)
+
+    def insert_item_records(self):
+        item_data = [
+            # Name Tags
+            (f'{ITEM_TYPE_NAMETAG}_1', 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1),
+            # Baits
+            (ITEM_ID_BAIT, 'Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch.', TGOMMO_RARITY_NORMAL, True, '', 1),
+            (ITEM_ID_COMMON_BAIT, 'Common Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be common.', TGOMMO_RARITY_COMMON, True, '', 1),
+            (ITEM_ID_UNCOMMON_BAIT, 'Uncommon Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be uncommon.', TGOMMO_RARITY_UNCOMMON, True, '', 1),
+            (ITEM_ID_RARE_BAIT, 'Rare Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be rare.', TGOMMO_RARITY_RARE, True, '', 1),
+            (ITEM_ID_EPIC_BAIT, 'Epic Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be epic.', TGOMMO_RARITY_EPIC, True, '', 1),
+            (ITEM_ID_LEGENDARY_BAIT, 'Legendary Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be legendary.', TGOMMO_RARITY_LEGENDARY, True, '', 1),
+            (ITEM_ID_MYTHICAL_BAIT, 'Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '', 1),
+            (ITEM_ID_TRANSCENDANT_BAIT, 'Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (ITEM_ID_OMNIPOTENT_BAIT, 'Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+            # Megaphones
+            (ITEM_TYPE_MEGAPHONE, 'Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a new creature spawns.', TGOMMO_RARITY_NORMAL, False, '', -1),
+            (ITEM_ID_COMMON_MEGAPHONE, 'Common Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a common creature spawns.', TGOMMO_RARITY_COMMON, False, '', -1),
+            (ITEM_ID_UNCOMMON_MEGAPHONE, 'Uncommon Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a uncommon creature spawns.', TGOMMO_RARITY_UNCOMMON, False, '', -1),
+            (ITEM_ID_RARE_MEGAPHONE, 'Rare Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a rare creature spawns.', TGOMMO_RARITY_RARE, False, '', -1),
+            (ITEM_ID_EPIC_MEGAPHONE, 'Epic Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever an epic creature spawns.', TGOMMO_RARITY_EPIC, False, '', -1),
+            (ITEM_ID_LEGENDARY_MEGAPHONE, 'Legendary Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a legendary creature spawns.', TGOMMO_RARITY_LEGENDARY, False, '', -1),
+            (ITEM_ID_MYTHICAL_MEGAPHONE, 'Mythical Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a mythical creature spawns.', TGOMMO_RARITY_MYTHICAL, False, '', -1),
+            (ITEM_ID_TRANSCENDANT_MEGAPHONE, 'Transcendant Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a transcendant creature spawns. Breaks after a single catch, though', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (ITEM_ID_OMNIPOTENT_MEGAPHONE, 'Omnipotent Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you when any creature of your choice spawns. Breaks after a single catch, though.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+            # Charms
+            (ITEM_ID_CHARM, 'Charm', ITEM_TYPE_CHARM, 'Increases the amount of creatures that will spawn for the next 30 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1),
+            (ITEM_ID_COMMON_CHARM, 'Common Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 30 minutes', TGOMMO_RARITY_COMMON, True, '', 1),
+            (ITEM_ID_UNCOMMON_CHARM, 'Uncommon Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for uncommon creatures. Lasts for 30 minutes', TGOMMO_RARITY_UNCOMMON, True, '', 1),
+            (ITEM_ID_RARE_CHARM, 'Rare Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for rare creatures. Lasts for 30 minutes', TGOMMO_RARITY_RARE, True, '', 1),
+            (ITEM_ID_EPIC_CHARM, 'Epic Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for epic creatures. Lasts for 30 minutes', TGOMMO_RARITY_EPIC, True, '', 1),
+            (ITEM_ID_LEGENDARY_CHARM, 'Legendary Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for legendary creatures. Lasts for 30 minutes', TGOMMO_RARITY_LEGENDARY, True, '', 1),
+            (ITEM_ID_MYTHICAL_CHARM, 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 30 minutes', TGOMMO_RARITY_MYTHICAL, True, '', 1),
+            (ITEM_ID_TRANSCENDANT_CHARM, 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 30 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
+            (ITEM_ID_OMNIPOTENT_CHARM, 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 10 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+        ]
+
+        for index, item in enumerate(item_data):
+            item = (index + 1,) + item
+            self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_INVENTORY_ITEM, params=item)
 
 
     def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name='', sub_environment=SUB_ENVIRONMENT_FOREST):

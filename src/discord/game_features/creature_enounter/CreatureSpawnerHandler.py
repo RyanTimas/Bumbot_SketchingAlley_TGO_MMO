@@ -19,7 +19,7 @@ from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.general_constants import DISCORD_SA_CHANNEL_ID_TGOMMO, TGOMMO_ROLE
+from src.resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHANNEL_ID, TGOMMO_ROLE
 
 
 class CreatureSpawnerHandler:
@@ -125,7 +125,7 @@ class CreatureSpawnerHandler:
         creature = creature if creature else await self.creature_picker(rarity= rarity)
         creature_embed, creature_thumb_img, creature_encounter_img = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day, spawn_user=user, active_bonuses=self.active_bonuses).generate_spawn_embed()
 
-        spawn_message = await self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
+        spawn_message = await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
             content=TGOMMO_ROLE,
             view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user),
             files=[creature_thumb_img, creature_encounter_img],
@@ -211,7 +211,7 @@ class CreatureSpawnerHandler:
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
         asyncio.run_coroutine_threadsafe(
-            self.discord_bot.get_channel(DISCORD_SA_CHANNEL_ID_TGOMMO).send(
+            self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
                 files=[creature_embed[1]],
                 embed=creature_embed[0]
             ), self.discord_bot.loop

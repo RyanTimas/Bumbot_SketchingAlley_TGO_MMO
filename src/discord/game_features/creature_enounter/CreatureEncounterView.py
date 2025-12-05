@@ -26,8 +26,7 @@ class CreatureEncounterView(View):
         self.successful_catch_embed_handler = None
         self.successful_catch_message = None
 
-        catch_button = self.create_catch_button()
-        self.add_item(catch_button)
+        self.add_item(self.create_catch_button())
 
     def create_catch_button(self, row=0):
         button = discord.ui.Button(

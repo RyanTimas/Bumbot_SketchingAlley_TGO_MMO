@@ -27,9 +27,8 @@ class CreatureCaughtView(discord.ui.View):
         self.display_creature_index_input = TextInput(label="DisplayCreatureIndex", placeholder="Enter index of display slot (1-6)", max_length=1, required=True)
 
         # add items to view
-        self.add_item(self.create_nickname_button())
-        self.add_item(self.create_display_creature_index_dropdown())
-        self.add_item(self.create_display_creature_button())
+        self.refresh_view()
+
 
     # CREATE BUTTONS
     def create_nickname_button(self):
@@ -92,3 +91,15 @@ class CreatureCaughtView(discord.ui.View):
     async def display_creature_index_dropdown_callback(self, interaction: discord.Interaction):
         self.display_index = int(interaction.data["values"][0])
         await interaction.response.defer()
+
+
+    # FUNCTIONS FOR UPDATING VIEW STATE
+    def refresh_view(self):
+        self.update_button_states()
+        self.rebuild_view()
+    def update_button_states(self):
+        return
+    def rebuild_view(self):
+        self.add_item(self.create_nickname_button())
+        self.add_item(self.create_display_creature_index_dropdown())
+        self.add_item(self.create_display_creature_button())

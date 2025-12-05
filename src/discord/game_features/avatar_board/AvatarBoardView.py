@@ -31,29 +31,8 @@ class AvatarBoardView(discord.ui.View):
         self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
         self.close_button = create_close_button(row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
 
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
-        self.add_item(self.unlocked_avatar_tab_button)
-        self.add_item(self.avatar_quests_button)
+        self.refresh_view()
 
-        self.add_item(self.close_button)
-        if self.original_view:
-            self.add_item(self.go_back_button)
-
-        self.update_button_states()
-
-
-    def update_button_states(self):
-        quests_current_page = self.avatar_board_image_factory.page_num_avatar_quests
-        unlocked_avatars_current_page = self.avatar_board_image_factory.page_num_unlocked_avatar
-        quests_total_pages = self.avatar_board_image_factory.total_avatar_quest_pages
-        unlocked_avatars_total_pages = self.avatar_board_image_factory.total_unlocked_avatar_pages
-
-        self.prev_button.disabled = (quests_current_page == 1) if self.open_tab == AVATAR_QUESTS else (unlocked_avatars_current_page == 1)
-        self.next_button.disabled = (quests_current_page == quests_total_pages) if self.open_tab == AVATAR_QUESTS else (unlocked_avatars_current_page == unlocked_avatars_total_pages)
-
-        self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == UNLOCKED_AVATARS else discord.ButtonStyle.gray
-        self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_QUESTS else discord.ButtonStyle.gray
 
     def create_navigation_button(self, is_next, row=0):
         button = discord.ui.Button(
@@ -82,7 +61,7 @@ class AvatarBoardView(discord.ui.View):
                 new_image = self.avatar_board_image_factory.build_avatar_board_page_image()
 
                 # Update state and button appearance
-                self.update_button_states()
+                self.refresh_view()
 
                 # Send updated view
                 file = convert_to_png(new_image, f'avatar_board_page.png')
@@ -109,7 +88,7 @@ class AvatarBoardView(discord.ui.View):
 
                 new_image = self.avatar_board_image_factory.build_avatar_board_page_image(open_tab=UNLOCKED_AVATARS)
                 self.open_tab = UNLOCKED_AVATARS
-                self.update_button_states()
+                self.refresh_view()
 
                 # Send updated view
                 file = convert_to_png(new_image, f'player_profile_page.png')
@@ -136,10 +115,36 @@ class AvatarBoardView(discord.ui.View):
 
                 new_image = self.avatar_board_image_factory.build_avatar_board_page_image(open_tab=AVATAR_QUESTS)
                 self.open_tab = AVATAR_QUESTS
-                self.update_button_states()
+                self.refresh_view()
 
                 # Send updated view
                 file = convert_to_png(new_image, f'player_profile_page.png')
                 await interaction.message.edit(attachments=[file], view=self)
 
         return callback
+
+
+    # FUNCTIONS FOR UPDATING VIEW STATE
+    def refresh_view(self):
+        self.update_button_states()
+        self.rebuild_view()
+    def update_button_states(self):
+        quests_current_page = self.avatar_board_image_factory.page_num_avatar_quests
+        unlocked_avatars_current_page = self.avatar_board_image_factory.page_num_unlocked_avatar
+        quests_total_pages = self.avatar_board_image_factory.total_avatar_quest_pages
+        unlocked_avatars_total_pages = self.avatar_board_image_factory.total_unlocked_avatar_pages
+
+        self.prev_button.disabled = (quests_current_page == 1) if self.open_tab == AVATAR_QUESTS else (unlocked_avatars_current_page == 1)
+        self.next_button.disabled = (quests_current_page == quests_total_pages) if self.open_tab == AVATAR_QUESTS else (unlocked_avatars_current_page == unlocked_avatars_total_pages)
+
+        self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == UNLOCKED_AVATARS else discord.ButtonStyle.gray
+        self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_QUESTS else discord.ButtonStyle.gray
+    def rebuild_view(self):
+        self.add_item(self.prev_button)
+        self.add_item(self.next_button)
+        self.add_item(self.unlocked_avatar_tab_button)
+        self.add_item(self.avatar_quests_button)
+
+        self.add_item(self.close_button)
+        if self.original_view:
+            self.add_item(self.go_back_button)

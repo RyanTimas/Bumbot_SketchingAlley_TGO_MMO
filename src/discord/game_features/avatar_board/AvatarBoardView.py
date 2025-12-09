@@ -140,8 +140,12 @@ class AvatarBoardView(discord.ui.View):
         self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == UNLOCKED_AVATARS else discord.ButtonStyle.gray
         self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_QUESTS else discord.ButtonStyle.gray
     def rebuild_view(self):
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
+        self.clear_items()
+
+        if (len(self.avatar_board_image_factory.unlocked_avatars) > 75 and self.open_tab == UNLOCKED_AVATARS) or (len(self.avatar_board_image_factory.avatar_quests) > 16 and self.open_tab == AVATAR_QUESTS):
+            self.add_item(self.prev_button)
+            self.add_item(self.next_button)
+
         self.add_item(self.unlocked_avatar_tab_button)
         self.add_item(self.avatar_quests_button)
 

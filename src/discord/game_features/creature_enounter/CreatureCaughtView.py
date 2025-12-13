@@ -32,16 +32,16 @@ class CreatureCaughtView(discord.ui.View):
 
 
     # CREATE BUTTONS
-    def create_nickname_button(self):
-        button = Button(label="Set Nickname", style=discord.ButtonStyle.red)
+    def create_nickname_button(self, row=0):
+        button = Button(label="Set Nickname", style=discord.ButtonStyle.red, row=row)
         button.callback = self.nickname_button_callback
         return button
     async def nickname_button_callback(self, interaction: discord.Interaction):
         modal = self.create_nickname_modal()
         await interaction.response.send_modal(modal)
 
-    def create_display_creature_button(self):
-        button = Button(label="Set as display creature", style=discord.ButtonStyle.red)
+    def create_display_creature_button(self, row=0):
+        button = Button(label="Set as display creature", style=discord.ButtonStyle.red, row=row)
         button.callback = self.display_creature_button_callback
         return button
     async def display_creature_button_callback(self, interaction: discord.Interaction):
@@ -59,11 +59,10 @@ class CreatureCaughtView(discord.ui.View):
         self.display_creature_ids[self.display_index] = self.creature_id
         await interaction.response.send_message(f"Display index set to: {self.display_index+1}", ephemeral=True)
 
-    def create_release_button(self):
-        button = Button(label="Release Creature", style=discord.ButtonStyle.danger, emoji="🗑️")
+    def create_release_button(self, row=0):
+        button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
         button.callback = self.release_button_callback
         return button
-
     async def release_button_callback(self, interaction: discord.Interaction):
         # Remove from display slots if present
         for index, id in enumerate(self.display_creature_ids):
@@ -85,15 +84,8 @@ class CreatureCaughtView(discord.ui.View):
         await interaction.response.edit_message(view=self)
         await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
 
-    def create_favorite_button(self):
-        creature = get_tgommo_db_handler().get_creature_by_catch_id(self.creature_id, convert_to_object=True)
-        is_favorited = creature.is_favorite if creature else False
-
-        label = "Unfavorite" if is_favorited else "Favorite"
-        style = discord.ButtonStyle.secondary if is_favorited else discord.ButtonStyle.success
-        emoji = "💔" if is_favorited else "❤️"
-
-        button = Button(label=label, style=style, emoji=emoji)
+    def create_favorite_button(self, row=0):
+        button = Button(label="Favorite", style=discord.ButtonStyle.success, emoji="❤️", row=row)
         button.callback = self.favorite_button_callback
         return button
     async def favorite_button_callback(self, interaction: discord.Interaction):
@@ -151,8 +143,8 @@ class CreatureCaughtView(discord.ui.View):
         return
     def rebuild_view(self):
         self.clear_items()  # Clear existing items first
-        self.add_item(self.create_nickname_button())
-        self.add_item(self.create_display_creature_index_dropdown())
-        self.add_item(self.create_display_creature_button())
-        self.add_item(self.create_favorite_button())
-        self.add_item(self.create_release_button())
+        self.add_item(self.create_favorite_button(row=0))
+        self.add_item(self.create_release_button(row=0))
+        self.add_item(self.create_nickname_button(row=1))
+        self.add_item(self.create_display_creature_button(row=1))
+        self.add_item(self.create_display_creature_index_dropdown(row=2))

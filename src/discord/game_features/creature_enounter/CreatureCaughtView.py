@@ -4,6 +4,7 @@ from discord.ui import Button, Modal, TextInput, Select
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter import CreatureEmbedHandler
 from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.CreatureReleaseService.CreatureReleaseService import CreatureReleaseService
 from src.discord.objects.TGOPlayer import TGOPlayer
 
 
@@ -58,6 +59,55 @@ class CreatureCaughtView(discord.ui.View):
         self.display_creature_ids[self.display_index] = self.creature_id
         await interaction.response.send_message(f"Display index set to: {self.display_index+1}", ephemeral=True)
 
+    def create_release_button(self):
+        button = Button(label="Release Creature", style=discord.ButtonStyle.danger, emoji="🗑️")
+        button.callback = self.release_button_callback
+        return button
+
+    async def release_button_callback(self, interaction: discord.Interaction):
+        # Remove from display slots if present
+        for index, id in enumerate(self.display_creature_ids):
+            if id == self.creature_id:
+                get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=None, display_index=index)
+
+        currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_id], interaction=interaction)
+
+        if not currency_earned:
+            await interaction.response.send_message("Failed to release creature", ephemeral=True)
+            return
+
+        # Disable all buttons and create results file
+        for item in self.children:
+            item.disabled = True
+
+        release_results_file = CreatureReleaseService.create_release_results_file(user=self.interaction.user, currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
+
+    def create_favorite_button(self):
+        creature = get_tgommo_db_handler().get_creature_by_catch_id(self.creature_id, convert_to_object=True)
+        is_favorited = creature.is_favorite if creature else False
+
+        label = "Unfavorite" if is_favorited else "Favorite"
+        style = discord.ButtonStyle.secondary if is_favorited else discord.ButtonStyle.success
+        emoji = "💔" if is_favorited else "❤️"
+
+        button = Button(label=label, style=style, emoji=emoji)
+        button.callback = self.favorite_button_callback
+        return button
+    async def favorite_button_callback(self, interaction: discord.Interaction):
+        creature = get_tgommo_db_handler().get_creature_by_catch_id(self.creature_id, convert_to_object=True)
+
+        # Toggle favorite status
+        get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[self.creature_id,], is_favorite=not creature.is_favorite)
+
+        # Refresh view to update button state
+        self.refresh_view()
+
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send(f"Creature {"favorited" if not creature.is_favorite else "unfavorited"}!", ephemeral=True)
+
 
     # CREATE MODALS
     def create_nickname_modal(self):
@@ -100,6 +150,9 @@ class CreatureCaughtView(discord.ui.View):
     def update_button_states(self):
         return
     def rebuild_view(self):
+        self.clear_items()  # Clear existing items first
         self.add_item(self.create_nickname_button())
         self.add_item(self.create_display_creature_index_dropdown())
         self.add_item(self.create_display_creature_button())
+        self.add_item(self.create_favorite_button())
+        self.add_item(self.create_release_button())

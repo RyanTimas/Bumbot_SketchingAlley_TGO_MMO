@@ -3,8 +3,8 @@ from discord.ui import Select
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
-from src.discord.game_features.creature_inventory.CreatureReleaseRewardHandler import CreatureReleaseRewardHandler
-from src.discord.game_features.creature_inventory.ReleaseResultImageFactory import ReleaseResultImageFactory
+from src.discord.handlers.CreatureReleaseService.CreatureReleaseService import CreatureReleaseService
+from src.discord.handlers.CreatureReleaseService.ReleaseResultImageFactory import ReleaseResultImageFactory
 from src.resources.constants.TGO_MMO_constants import *
 
 
@@ -90,40 +90,36 @@ class CreatureInventoryManagementView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                perform_operation = {
-                    CREATURE_INVENTORY_MODE_RELEASE: lambda: get_tgommo_db_handler().update_user_creature_set_is_released(creature_ids=self.selected_ids),
-                    CREATURE_INVENTORY_MODE_FAVORITE: lambda: get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=self.selected_ids)
-                }
-
-                if not perform_operation[self.mode]():
+                # Route to appropriate handler based on mode - release or favorite
+                success, final_image_mode, extra_data = await self._handle_release_operation() if self.mode == CREATURE_INVENTORY_MODE_RELEASE else await self._handle_favorite_operation()
+                if not success:
                     await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
                     return
 
-                # if user chose to release creatures, give rewards
-                final_image_mode = CREATURE_INVENTORY_MODE_DEFAULT
-                if self.mode == CREATURE_INVENTORY_MODE_RELEASE:
-                    currency_earned, earned_items = self.handle_post_release_rewards()
+                self.refresh_view(view_state=VIEW_WORKFLOW_STATE_FINALIZED)
 
-                    get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.id, new_currency=currency_earned)
-                    for item, count in earned_items:
-                        get_tgommo_db_handler().update_user_profile_available_items(user_id=self.message_author.id, item_id=item.item_id, new_amount=count)
+                # Handle Response Messages
+                # Send success message
+                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", ephemeral=True)
 
-                    final_image_mode = CREATURE_INVENTORY_MODE_RELEASE_RESULTS
-
-                self.refresh_view(view_state = VIEW_WORKFLOW_STATE_FINALIZED)
-
-                # SEND MESSAGES
-                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", view=self, ephemeral=True)
-
-                # always update original message to reflect changes
-                updated_creature_inventory_image = self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT, )
+                # Update original message with refreshed inventory image
+                updated_creature_inventory_image = self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT)
                 await self.original_message.edit(content="", attachments=[updated_creature_inventory_image], view=self.original_view)
 
-                # if releasing, show results image
-                if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS:
-                    release_results_image = self.reload_release_results_image(currency_earned=currency_earned, earned_items=earned_items, count_released=len(self.selected_ids))
-                    await interaction.channel.send(files=[release_results_image])
+                # Show release results if releasing
+                if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS and extra_data:
+                    release_results_image = self.reload_release_results_image(currency_earned=extra_data['currency_earned'], earned_items=extra_data['earned_items'], count_released=len(self.selected_ids))
+                    await interaction.followup.send(content="Here are your release rewards:", files=[release_results_image], ephemeral=True)
         return callback
+    async def _handle_release_operation(self):
+        currency_earned, earned_items  = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.id, creature_ids=self.selected_ids, interaction=None)
+
+        if not currency_earned:
+            return False, None, None
+        return True, CREATURE_INVENTORY_MODE_RELEASE_RESULTS, {'currency_earned': currency_earned, 'earned_items': earned_items}
+    async def _handle_favorite_operation(self):
+        success = get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=self.selected_ids)
+        return success, CREATURE_INVENTORY_MODE_DEFAULT, None
 
     def create_select_all_button(self, row=4):
         button = discord.ui.Button(
@@ -265,7 +261,7 @@ class CreatureInventoryManagementView(discord.ui.View):
             # self.add_item(self.final_confirmation_button_no)
         elif self.view_state == VIEW_WORKFLOW_STATE_FINALIZED:
             for item in self.children:
-                self.remove_item(item)
+                item.disabled = True
 
 
     # SUPPORT FUNCTIONS
@@ -285,9 +281,3 @@ class CreatureInventoryManagementView(discord.ui.View):
     def reload_release_results_image(self, currency_earned=0, earned_items=None, count_released=0):
         new_image = self.release_result_image_factory.get_creature_inventory_page_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
         return convert_to_png(new_image, f'release_results.png')
-
-    # REWARD ITEM HANDLING
-    def handle_post_release_rewards(self):
-        reward_handler = CreatureReleaseRewardHandler(self.message_author.id)
-        return reward_handler.calculate_rewards(self.selected_ids)
-

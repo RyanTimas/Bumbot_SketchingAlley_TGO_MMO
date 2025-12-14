@@ -283,7 +283,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             if param3 and param3.isdigit():
                 variant_no = int(param3)
 
-        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_id=environment_id, variant_no=variant_no)
+        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_id=environment_id, environment_variant_no=variant_no)
         available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
 
         for creature in available_creatures:

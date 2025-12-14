@@ -22,6 +22,8 @@ class TGOCreature:
 
         self.dex_no = dex_no
         self.variant_no = variant_no
+        self.local_dex_no = dex_no
+        self.local_variant_no = variant_no
 
         self.full_name = full_name
         self.scientific_name = scientific_name

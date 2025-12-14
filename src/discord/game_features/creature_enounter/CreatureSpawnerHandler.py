@@ -37,7 +37,7 @@ class CreatureSpawnerHandler:
         self.active_bonuses = []
 
         self.define_time_of_day()
-        self.define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
+        self.define_environment_and_spawn_pool(environment_dex_no=2, environment_variant_no=1 if self.is_day else 2)
 
         self.spawn_event = asyncio.Event()
         self._spawner_running = False
@@ -65,11 +65,9 @@ class CreatureSpawnerHandler:
         else:
             self.time_of_day = DAY if self.is_day else NIGHT
 
-    def define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        environment_dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
-
-        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no, convert_to_object=True)
-        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
+    def define_environment_and_spawn_pool(self, environment_dex_no: int, environment_variant_no: int):
+        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no, convert_to_object=True)
+        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_current_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
 
@@ -278,6 +276,6 @@ class CreatureSpawnerHandler:
             if is_day_night_transition:
                 self.is_day = not self.is_day
 
-            self.define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=1 if self.is_day else 2)
+            self.define_environment_and_spawn_pool(environment_dex_no=self.current_environment.environment_id, environment_variant_no=1 if self.is_day else 2)
 
         self.last_spawn_time = current_time

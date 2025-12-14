@@ -89,6 +89,10 @@ TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_
     spawn_rarity TEXT NOT NULL,
     local_name TEXT DEFAULT '',
     sub_environment_type TEXT DEFAULT '',
+    
+    local_dex_no INTEGER DEFAULT 0,
+    local_variant_no INTEGER DEFAULT 0,
+    local_img_root TEXT DEFAULT '',
 
     UNIQUE(creature_id, environment_id),
 

@@ -5,12 +5,14 @@ import threading
 import time
 import traceback
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytz
+from PIL import Image
 from discord.ext.commands import Bot
+from sqlalchemy.util import await_only
 
-from src.commons.CommonFunctions import flip_coin
+from src.commons.CommonFunctions import flip_coin, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
@@ -19,6 +21,7 @@ from src.discord.objects.CreatureRarity import *
 from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
@@ -29,12 +32,14 @@ class CreatureSpawnerHandler:
 
         self.current_environment = None
         self.creature_spawn_pool = None
-        self.timezone = None
         self.last_spawn_time = None
         self.is_day = None
         self.time_of_day = None
 
         self.active_bonuses = []
+
+        self.pending_environment = None
+        self.environment_change_checked_for_today = False
 
         self.define_time_of_day()
         self.define_environment_and_spawn_pool(environment_dex_no=2, environment_variant_no=1 if self.is_day else 2)
@@ -45,17 +50,15 @@ class CreatureSpawnerHandler:
 
     '''FUNCTIONS TO INITIALIZE SPAWNER DATA'''
     def define_time_of_day(self):
-        # TODO: WILL PULL TIMEZONE FROM ENVIRONMENT IN FUTURE
-        self.timezone = pytz.timezone('US/Eastern')
+        timezone = self.current_environment.timezone if self.current_environment else BASE_TIMEZONE
+        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(timezone)
+        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(timezone)
+        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(timezone)
+        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(timezone)
+        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(timezone)
+        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(timezone)
 
-        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(self.timezone)
-        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(self.timezone)
-        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(self.timezone)
-        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(self.timezone)
-        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(self.timezone)
-        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(self.timezone)
-
-        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)
 
         self.last_spawn_time = current_time
         self.is_day = (7 <= current_time.hour < 19)
@@ -65,8 +68,9 @@ class CreatureSpawnerHandler:
         else:
             self.time_of_day = DAY if self.is_day else NIGHT
 
-    def define_environment_and_spawn_pool(self, environment_dex_no: int, environment_variant_no: int):
-        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no, convert_to_object=True)
+    def define_environment_and_spawn_pool(self, current_environment = None, environment_dex_no: int = 0, environment_variant_no: int = 0):
+        if not current_environment:
+            self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no, convert_to_object=True)
         self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_current_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
@@ -106,17 +110,20 @@ class CreatureSpawnerHandler:
 
                 min_spawn_interval = 1 if normal_charm_active else 3
                 max_spawn_interval = 3 if normal_charm_active else 5
+
+                # check if a new day has begun or if a day/night transition has occurred or if environment needs to change
+                await self.handle_post_spawn_events()
+
+                # cooldown for the next creature spawn
                 sleep_duration = random.uniform(min_spawn_interval, max_spawn_interval) * 60
                 try:
                     await asyncio.wait_for(self.spawn_event.wait(), timeout=sleep_duration)
                     self.spawn_event.clear()  # Reset the event for next time
                 except asyncio.TimeoutError:
                     pass  # Normal timeout, continue spawning
-
-                # check if a new day has begun or if a day/night transition has occurred
-                self._handle_time_change()
         finally:
             self._spawner_running = False
+
 
     '''FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC'''
     # Spawns a creature and sends a message to the discord channel
@@ -177,7 +184,7 @@ class CreatureSpawnerHandler:
             selected_creature.rarity = MYTHICAL
             selected_creature.img_root += '_S'
 
-        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
+        selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
         return selected_creature
 
     # Determines the rarity of the creature to spawn based on active bonuses and time of day
@@ -194,7 +201,6 @@ class CreatureSpawnerHandler:
         if bonus and random.randint(1, bonus.spawn_odds // (2 if is_dawn_or_dusk else 1)) == 1:
             return bonus.rarity
         return get_rarity() if (random.randint(1, 3) == 1 or is_dawn_or_dusk) else COMMON
-
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
@@ -249,17 +255,31 @@ class CreatureSpawnerHandler:
     def remove_spawn_bonus(self, bonus_type: str, ):
         self.active_bonuses = [bonus for bonus in self.active_bonuses if not (bonus.bonus_type == bonus_type)]
 
-    '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
-    # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
-    def _handle_time_change(self):
-        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
 
+    '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
+    async def handle_post_spawn_events(self):
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.current_environment.timezone)
+
+        self._handle_day_night_cycle(current_time=current_time)
+        await self._handle_environment_change_cycle(current_time=current_time)
+
+        self._handle_time_based_resets(current_time=current_time)
+
+    # Handles hourly and daily resets
+    def _handle_time_based_resets(self, current_time: datetime.datetime = None):
         # Clear user catches if the hour has changed
         if current_time.hour != self.last_spawn_time.hour:
             USER_CATCHES_HOURLY.clear()
 
-        is_new_day = current_time.date() > self.last_spawn_time.date()
+        # Clear daily user catches if a new day has begun & reset environment change check
+        if current_time.date() > self.last_spawn_time.date():
+            USER_CATCHES_DAILY.clear()
+            self.environment_change_checked_for_today = False
 
+        self.last_spawn_time = current_time
+
+    # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
+    def _handle_day_night_cycle(self, current_time: datetime.datetime = None):
         old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
         new_time_of_day = 'day' if 7 <= current_time.hour < 19 else 'night'
         is_day_night_transition = old_time_of_day != new_time_of_day
@@ -269,13 +289,67 @@ class CreatureSpawnerHandler:
         else:
             self.time_of_day = DAY if self.is_day else NIGHT
 
-        if is_new_day or is_day_night_transition:
-            USER_CATCHES_DAILY.clear()
-
-            # todo: implement in V 3.0
-            if is_day_night_transition:
-                self.is_day = not self.is_day
-
-            self.define_environment_and_spawn_pool(environment_dex_no=self.current_environment.environment_id, environment_variant_no=1 if self.is_day else 2)
+        if is_day_night_transition:
+            self.is_day = not self.is_day
+            self.define_environment_and_spawn_pool(current_environment=self.current_environment,)
 
         self.last_spawn_time = current_time
+
+    # Checks if the environment should change today, schedules the change for noon
+    async def _handle_environment_change_cycle(self, current_time: datetime.datetime = None):
+        environment_change_check_time = 11
+
+        # Check for environment change at 11 am
+        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today:
+            self.environment_change_checked_for_today = True
+
+            # Decide if we are staying in the same environment or switching, 50/50 chance
+            should_change_environment = flip_coin(total_iterations=1)
+            if not should_change_environment:
+                return
+
+            # If we are changing environments, get a new random environment
+            new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
+            while new_environment.dex_no == self.current_environment.dex_no:
+                new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
+            self.pending_environment = new_environment
+
+            # Schedule environment change for noon today in a separate thread
+            threading.Thread(target=self._schedule_environment_change, args=(), daemon=True).start()
+            self.environment_changed_today = current_time.date()
+
+            # Announce the environment change in the spawn channel
+            await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
+                f"🌍 **Environment Alert!** The environment will change to **{new_environment.name}** at noon!",
+                files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ]
+            )
+    def _schedule_environment_change(self):
+        current_time = datetime.datetime.now(self.pending_environment.timezone).astimezone(self.current_environment.timezone)
+        environment_change_time = current_time.replace(hour=12, minute=0, second=0, microsecond=0)
+
+        # Calculate seconds until environment change
+        time_until_environment_change = (environment_change_time - current_time).total_seconds()
+
+        # Sleep until environment change
+        time.sleep(time_until_environment_change)
+
+        # Execute environment change
+        if hasattr(self, 'pending_environment') and self.pending_environment:
+            self.current_environment = self.pending_environment
+
+            # Reset spawn pool with the new environment
+            self.define_environment_and_spawn_pool(current_environment=self.current_environment)
+
+            # Send message to channel about environment change
+            asyncio.run_coroutine_threadsafe(
+                self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
+                    f"🌍 **Environment Changed!** Now exploring **{self.current_environment.name}**!",
+                    files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{self.current_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")]
+                ), self.discord_bot.loop
+            )
+
+            # Clear the pending environment
+            self.pending_environment = None
+
+            # Interrupt current sleep to apply new environment immediately
+            self.spawn_event.set()

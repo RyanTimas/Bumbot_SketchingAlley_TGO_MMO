@@ -44,8 +44,11 @@ TGOMMO_SELECT_DISPLAY_CREATURE_FOR_PLAYER_PROFILE_PAGE = """SELECT c.creature_id
 TGOMMO_SELECT_RELEASED_CREATURES_BY_USER_ID = """SELECT uc.catch_id, uc.creature_id, ec.creature_name, ec.local_name, uc.nickname, c.variant_name, c.dex_no, c.variant_no, c.full_name, c.scientific_name, c.kingdom, c.description, c.img_root, ec.sub_environment_type, c.encounter_rate, ec.spawn_rarity, uc.creature_id, uc.creature_variant_no, uc.is_mythical, uc.catch_date FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id WHERE uc.user_id = ? AND uc.is_released = 1;"""
 
 # Environment Select Queries
+TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE in_circulation = 1 ORDER BY RANDOM() LIMIT 1;"""
+TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION_FOR_SPECIFIC_TIME_OF_DAY = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE in_circulation = 1 AND is_night_environment = ? ORDER BY RANDOM() LIMIT 1;"""
 TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
 TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM tgommo_environment WHERE in_circulation = 1 ORDER BY RANDOM() LIMIT 1"""
+TGOMMO_GET_ALL_ENVIRONMENT_DEX_NOS_IN_ROTATION = """SELECT DISTINCT dex_no FROM tgommo_environment WHERE in_circulation = 1;"""
 
 # Player Select Queries
 TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ? AND uil.item_id=?;"""

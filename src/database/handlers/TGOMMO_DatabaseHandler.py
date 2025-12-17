@@ -1,6 +1,5 @@
 from src.database.handlers.QueryHandler import QueryHandler
-from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, MYTHICAL
-from src.discord.objects.CreatureRarity import ALL_RARITIES, COMMON, get_rarity_by_name, TRANSCENDANT
+from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCollection import TGOCollection
 from src.discord.objects.TGOCreature import TGOCreature
@@ -206,6 +205,21 @@ class TGOMMODatabaseHandler:
 
     def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER, params=(dex_no, variant_no))
+
+        if convert_to_object:
+            environment_details = response[0]
+            return TGOEnvironment(environment_id=environment_details[0], name=environment_details[1], variant_name=environment_details[2], dex_no=environment_details[3], variant_no=environment_details[4], location=environment_details[5], description=environment_details[6], img_root=environment_details[7], is_night_environment=environment_details[8], in_circulation=environment_details[9], encounter_rate=environment_details[10])
+        return response[0]
+
+    def get_all_environment_dex_nos_in_rotation(self):
+        response = self.QueryHandler.execute_query(TGOMMO_GET_ALL_ENVIRONMENT_DEX_NOS_IN_ROTATION, params=())
+        return [row[0] for row in response]
+
+    def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
+        if is_night_environment:
+            response = self.QueryHandler.execute_query(TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION_FOR_SPECIFIC_TIME_OF_DAY, params=(is_night_environment,))
+        else:
+            response = self.QueryHandler.execute_query(TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION, params=())
 
         if convert_to_object:
             environment_details = response[0]
@@ -760,6 +774,7 @@ class TGOMMODatabaseHandler:
             ('Alligator', '', 100, 1, 'American Alligator', 'Alligator mississippiensis', REPTILE, '', ALLIGATOR_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # WAVE 4
             ('Spoonbill', '', 101, 1, 'Roseate Spoonbill', 'Platalea ajaja', BIRD, '', SPOONBILL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Flamingo', '', 102, 1, 'American Flamingo', 'Phoenicopterus ruber', BIRD, '', FLAMINGO_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
         ]
 
         for index, creature in enumerate(creature_data):
@@ -943,13 +958,13 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_RIVER),
 
             # Florida - Day Spawns
-            self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
-            self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, 67, 67, PANTHER_IMAGE_ROOT),
+            self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, FL_ALLIGATOR_IMAGE_ROOT),
+            self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, PANTHER_IMAGE_ROOT, 67, 67, ),
             self.format_creature_environment_link_params(SPOONBILL_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
 
             # Florida - Night Spawns
-            self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
-            self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, 67, 67, PANTHER_IMAGE_ROOT),
+            self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, FL_ALLIGATOR_IMAGE_ROOT),
+            self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, PANTHER_IMAGE_ROOT, 67, 67,),
             self.format_creature_environment_link_params(SPOONBILL_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
         ]
 
@@ -1171,7 +1186,7 @@ class TGOMMODatabaseHandler:
             self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_INVENTORY_ITEM, params=item)
 
 
-    def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name='', sub_environment=SUB_ENVIRONMENT_FOREST, local_dex_no=0, local_variant_no=0, local_image_root=''):
+    def format_creature_environment_link_params(self, creature_dex_no, creature_variant_no, environment_dex_no, environment_variant_no, spawn_time, rarity, local_name='', sub_environment=SUB_ENVIRONMENT_FOREST, local_image_root='', local_dex_no=0, local_variant_no=0):
         creature_info = self.get_creature_by_dex_and_variant_no(creature_dex_no, creature_variant_no)
         environment_info = self.get_environment_by_dex_and_variant_no(environment_dex_no, environment_variant_no)
 

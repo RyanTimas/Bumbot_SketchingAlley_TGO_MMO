@@ -1,5 +1,9 @@
 '''GENERAL_CONSTANTS'''
 import datetime
+import pytz
+
+
+BASE_TIMEZONE = pytz.timezone('US/Eastern')
 
 DEFAULT_CREATURE_SPAWN_RATE_LOW_END = 3
 DEFAULT_CREATURE_SPAWN_RATE_HIGH_END = 5

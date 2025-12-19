@@ -2,8 +2,6 @@ import random
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
 
-from PIL import Image, ImageFilter, ImageDraw, ImageFont
-
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOCreature import TGOCreature
@@ -20,11 +18,10 @@ class EncounterImageHandler:
 
     # handler for generating encounter image
     def create_encounter_image(self):
-        foreground_img = Image.open(fr"{IMAGE_FOLDER_CREATURES_PATH}\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         final_img, background_overlay_img = self.build_background_image()
 
         if IS_EVENT:
-            event_glow = Image.open(ENCOUNTER_SCREEN_EVENT_GLOW_IMAGE)
+            event_glow = Image.open(ENCOUNTER_SCREEN_EVENT_HALLOWEEN_GLOW_IMAGE)
             final_img.paste(event_glow, (0, 0), event_glow)
 
         textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
@@ -32,7 +29,7 @@ class EncounterImageHandler:
         glow = self.get_glow_overlay()
 
         # Resize the foreground image to 80% of its size
-        foreground_img = foreground_img.resize((int(foreground_img.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(foreground_img.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
+        foreground_img = self.creature.creature_image.resize((int(self.creature.creature_image.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.creature.creature_image.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
 
         # Paste the foreground onto the background
         foreground_image_with_border = self.add_outline_to_img(foreground_img)
@@ -93,7 +90,7 @@ class EncounterImageHandler:
 
 
     # set up text to add to encounter image
-    def add_text_to_image(self, base_img: Image, max_width:int):
+    def add_text_to_image(self, base_img, max_width:int):
         draw = ImageDraw.Draw(base_img)
 
         # Split text into words
@@ -153,7 +150,7 @@ class EncounterImageHandler:
 
 
     # Calculate position to center the foreground on the background And move it down by 50 pixels
-    def get_foreground_image_offset(self, foreground: Image, background_img: Image):
+    def get_foreground_image_offset(self, foreground, background_img):
         return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + ENCOUNTER_SCREEN_FOREGROUND_IMAGE_Y_OFFSET
 
 
@@ -182,7 +179,7 @@ class EncounterImageHandler:
 
 
     # adds a white outline with shadow to an image with transparency
-    def add_outline_to_img(self, base_img: Image):
+    def add_outline_to_img(self, base_img):
         outline_radius = 2
         outline_offset = 2
         outline_opacity = 255

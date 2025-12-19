@@ -30,7 +30,7 @@ class CreatureEmbedHandler:
 
 
     def generate_spawn_embed(self):
-        thumbnail_img = convert_to_png(image=Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"), file_name="thumbnail.png")
+        thumbnail_img = convert_to_png(image=self.creature.crea-+ture_image, file_name="thumbnail.png")
 
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
@@ -66,9 +66,6 @@ class CreatureEmbedHandler:
         return embed, thumbnail_img, encounter_img
 
     def generate_despawn_embed(self):
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
-        thumbnail_img = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
-
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
@@ -76,6 +73,8 @@ class CreatureEmbedHandler:
         embed.set_author(name = f"The {self.creature.name} has run away...", icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
         embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False, timestamp=int(self.creature.despawn_time.timestamp()))}", value=f'', inline=True)
+
+        thumbnail_img = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
         thumbnail_img = to_grayscale(thumbnail_img)
         thumbnail_img.filename = "thumbnail.png"
 
@@ -88,7 +87,6 @@ class CreatureEmbedHandler:
             self.interaction = interaction
             self.catch_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id, convert_to_object=True)
 
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         embed = discord.Embed(color=discord.Color.dark_green())
 
         embed.set_author(name = f'The {self.creature.name.upper()} was caught!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
@@ -109,7 +107,7 @@ class CreatureEmbedHandler:
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
         embed.add_field(name=f"✨ **Total {self.total_xp} xp** ✨", value=f"", inline=False)
 
-        thumbnail_png = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
+        thumbnail_png = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         embed.timestamp = discord.utils.utcnow()
 

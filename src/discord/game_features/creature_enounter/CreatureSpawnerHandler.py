@@ -160,8 +160,7 @@ class CreatureSpawnerHandler:
 
             critter_chain_multiplier += 1
             if random.randint(1, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
-                duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.img_root += '_S'
+                duplicate_creature.set_creature_rarity(MYTHICAL)
 
             await self.spawn_creature(duplicate_creature)
 
@@ -181,8 +180,7 @@ class CreatureSpawnerHandler:
         # Check if mythical spawn occurs
         mythical_odds = MYTHICAL_SPAWN_CHANCE // (2 if any(bonus.bonus_type == F'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_MYTHICAL}' for bonus in self.active_bonuses) else 1)
         if rarity.name != TRANSCENDANT.name and random.randint(0, mythical_odds) == 1:
-            selected_creature.rarity = MYTHICAL
-            selected_creature.img_root += '_S'
+            selected_creature.set_creature_rarity(MYTHICAL)
 
         selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
         return selected_creature

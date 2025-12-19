@@ -54,7 +54,8 @@ class EncyclopediaImageFactory:
             self.creatures = []
 
         # construct base layers, start with environment bg
-        encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{self.environment.dex_no}_{self.environment.variant_no}{IMAGE_FILE_EXTENSION}")
+        # todo: change bg based on environment
+        encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
         corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_page else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
@@ -78,7 +79,7 @@ class EncyclopediaImageFactory:
         return encyclopedia_img
 
 
-    def build_dex_section(self, encyclopedia_img: Image.Image):
+    def build_dex_section(self, encyclopedia_img: Image):
         if self.show_mythics:
             mythical_overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_SHINY_IMAGE)
             encyclopedia_img.paste(mythical_overlay_img, (0, 0), mythical_overlay_img)
@@ -195,7 +196,7 @@ class EncyclopediaImageFactory:
         return profile_pic
 
 
-    def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image.Image):
+    def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
         top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
         top_bar_camera_img = Image.open(ENCYCLOPEDIA_TOP_BAR_CAMERA_ICON_IMAGE)
         top_bar_encounter_img = Image.open(ENCYCLOPEDIA_TOP_BAR_ENCOUNTER_ICON_IMAGE)
@@ -207,7 +208,7 @@ class EncyclopediaImageFactory:
         return encyclopedia_img
 
 
-    def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image.Image):
+    def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image):
         bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
@@ -223,7 +224,7 @@ class EncyclopediaImageFactory:
         return encyclopedia_img
 
 
-    def add_text_to_encyclopedia_image(self, encyclopedia_img: Image.Image):
+    def add_text_to_encyclopedia_image(self, encyclopedia_img: Image):
         draw = ImageDraw.Draw(encyclopedia_img)
 
         name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50)

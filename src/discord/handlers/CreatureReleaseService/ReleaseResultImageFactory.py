@@ -1,10 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from sqlalchemy.sql.functions import count
 
-from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel
+from src.commons.CommonFunctions import center_text_on_pixel
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_inventory.CreatureInventoryIconImageFactory import \
-    CreatureInventoryIconImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryReleaseResultItemImageFactory import \
     CreatureInventoryReleaseResultItemImageFactory
 from src.resources.constants.TGO_MMO_constants import *
@@ -84,7 +81,7 @@ class ReleaseResultImageFactory:
         return imgs
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         navy_blue_color = (38, 36, 109)
 

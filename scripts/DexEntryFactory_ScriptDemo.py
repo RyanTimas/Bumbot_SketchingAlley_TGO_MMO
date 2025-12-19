@@ -55,7 +55,7 @@ def dex_entry_factory_script(rarity="Common", show_stats=False, creature_name="R
 
     add_text_to_image(image= final_img, dex_num= dex_num, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked).show()
 
-def add_text_to_image(image: Image.Image, dex_num: str, total_catches=0, total_mythical_catches=0, creature_is_locked=False):
+def add_text_to_image(image: Image, dex_num: str, total_catches=0, total_mythical_catches=0, creature_is_locked=False):
     image = add_dex_num_to_image(image, dex_num=dex_num)
 
     if not creature_is_locked:
@@ -63,7 +63,7 @@ def add_text_to_image(image: Image.Image, dex_num: str, total_catches=0, total_m
     return image
 
 
-def add_stats_to_image(image: Image.Image, total_catches=0, total_mythical_catches=0, color: tuple = (0, 0, 0)):
+def add_stats_to_image(image: Image, total_catches=0, total_mythical_catches=0, color: tuple = (0, 0, 0)):
     font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
     draw = ImageDraw.Draw(image)
     stats_num_font = ImageFont.truetype(font_path_bold, 12)
@@ -74,7 +74,7 @@ def add_stats_to_image(image: Image.Image, total_catches=0, total_mythical_catch
     return image
 
 
-def add_dex_num_to_image(image: Image.Image, dex_num ='01'):
+def add_dex_num_to_image(image: Image, dex_num ='01'):
     font_path_bold = r"/src/resources/fonts/NationalForestPrintBold.otf"
     draw = ImageDraw.Draw(image)
 
@@ -112,7 +112,7 @@ def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) 
     return os.path.join(os.path.join(path, image_name))
 
 
-def format_creature_image(dex_icon: Image.Image, creature_image: Image.Image) -> Image.Image:
+def format_creature_image(dex_icon: Image, creature_image: Image):
     # Resize the creature image to fit within the dex icon
     creature_image = creature_image.resize((128, 128))
 

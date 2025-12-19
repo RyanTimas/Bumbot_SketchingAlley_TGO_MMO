@@ -288,8 +288,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         for creature in available_creatures:
             if is_mythical:
-                creature.img_root += '_S'
-                creature.rarity = MYTHICAL
+                creature.set_rarity(MYTHICAL)
 
             max_retries = 3
             for attempt in range(max_retries):

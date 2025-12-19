@@ -57,7 +57,14 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             creature_details = response[0]
-            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
+            return TGOCreature(
+                creature_id=creature_details[0],
+                name=creature_details[1], variant_name=creature_details[2],
+                dex_no=creature_details[3], variant_no=creature_details[4],
+                full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8],
+                img_root=creature_details[9],
+                encounter_rate=creature_details[10]
+            )
         return response[0]
 
     def get_environment_by_id(self, environment_id=-1, convert_to_object=False):
@@ -95,28 +102,15 @@ class TGOMMODatabaseHandler:
             creature_info = response[0]
 
             return TGOCreature(
-                creature_id=creature_info[1],
-                catch_id=creature_info[0],
-
-                name=creature_info[2],
-                local_name = creature_info[3],
-                nickname=creature_info[4],
-                variant_name = creature_info[5],
-
-                dex_no=creature_info[6],
-                variant_no=creature_info[7],
-
-                full_name=creature_info[8],
-                scientific_name=creature_info[9],
-                kingdom=creature_info[10],
-                description=creature_info[11],
-
-                img_root=creature_info[12],
-                sub_environment=creature_info[13],
-                encounter_rate=creature_info[14],
-                rarity= MYTHICAL if creature_info[18] else get_rarity_by_name(creature_info[15]),
-
-                caught_date=creature_info[16],
+                catch_id=creature_info[0], creature_id=creature_info[1],
+                name=creature_info[2], local_name = creature_info[3], nickname=creature_info[4], variant_name = creature_info[5],
+                dex_no=creature_info[6], variant_no=creature_info[7], local_dex_no=creature_info[8], local_variant_no=creature_info[9],
+                full_name=creature_info[10], scientific_name=creature_info[11], kingdom=creature_info[12], description=creature_info[13],
+                img_root=creature_info[14], local_image_root=creature_info[15],
+                sub_environment=creature_info[16],
+                encounter_rate=creature_info[17],
+                rarity= MYTHICAL if creature_info[19] else get_rarity_by_name(creature_info[18]),
+                caught_date=creature_info[16], is_favorite=bool(creature_info[20]), is_released=bool(creature_info[21])
             )
         return response[0]
 
@@ -170,9 +164,21 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             creatures = []
-            for creature_details in response:
-                creature = TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
-                creatures.append(creature)
+            for creature in response:
+                creatures.append(
+                    TGOCreature(
+                        catch_id=creature[0], creature_id=creature[1],
+                        name=creature[2], local_name=creature[3], nickname=creature[4], variant_name=creature[5],
+                        dex_no=creature[6], variant_no=creature[7], local_dex_no=creature[8], local_variant_no=creature[9],
+                        full_name=creature[10], scientific_name=creature[11], kingdom=creature[12],
+                        description=creature[13],
+                        img_root=creature[14], local_image_root=creature[15],
+                        sub_environment=creature[16],
+                        encounter_rate=creature[17],
+                        rarity=MYTHICAL if creature[19] else get_rarity_by_name(creature[18]),
+                        caught_date=creature[20], is_favorite=bool(creature[21]), is_released=bool(creature[22]),
+                    )
+                )
             return creatures
         return response
 
@@ -181,17 +187,29 @@ class TGOMMODatabaseHandler:
             return []
 
         # Create placeholders for each ID in the spawn pool
-        placeholders = ','.join(['?' for _ in EVENT_SPAWN_POOL])
-        query = f'{TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT} ({placeholders})'
+        event_creatures = []
+        for event_pairing in EVENT_SPAWN_POOL:
+            creature_id = event_pairing[0]
+            environment_id = event_pairing[1]
 
-        response = self.QueryHandler.execute_query(query, params=tuple(EVENT_SPAWN_POOL))
+            creature_details = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID, params=(creature_id, environment_id))[0]
 
-        if convert_to_object:
-            event_creatures = []
-            for creature_details in response:
-                event_creatures.append(TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10], rarity=get_rarity_by_name(creature_details[11])))
-            return event_creatures
-        return response
+            if convert_to_object:
+                event_creatures.append(
+                    TGOCreature(
+                        creature_id=creature_details[0],
+                        name=creature_details[1], local_name=creature_details[2], variant_name=creature_details[2],
+                        dex_no=creature_details[3], variant_no=creature_details[4], local_dex_no=creature_details[5], local_variant_no=creature_details[6],
+                        full_name=creature_details[7], scientific_name=creature_details[8], kingdom=creature_details[9], description=creature_details[8],
+                        img_root=creature_details[9], local_image_root=creature_details[10],
+                        sub_environment=creature_details[11],
+                        encounter_rate=creature_details[12],
+                        rarity=get_rarity_by_name(creature_details[13])
+                    )
+                )
+            else:
+                event_creatures.append(creature_details)
+        return event_creatures
 
 
     ''' Get Objects By Dex No Queries'''
@@ -200,7 +218,14 @@ class TGOMMODatabaseHandler:
 
         if convert_to_object:
             creature_details = response[0]
-            return TGOCreature(creature_id=creature_details[0], name=creature_details[1], variant_name=creature_details[2], dex_no=creature_details[3], variant_no=creature_details[4], full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8], img_root=creature_details[9], encounter_rate=creature_details[10])
+            return TGOCreature(
+                creature_id=creature_details[0],
+                name=creature_details[1], variant_name=creature_details[2],
+                dex_no=creature_details[3], variant_no=creature_details[4],
+                full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7], description=creature_details[8],
+                img_root=creature_details[9],
+                encounter_rate=creature_details[10]
+            )
         return response[0]
 
     def get_environment_by_dex_and_variant_no(self, dex_no=0, variant_no=1, convert_to_object=False):
@@ -249,19 +274,19 @@ class TGOMMODatabaseHandler:
                 local_variant_no = creature_link[7]
                 local_img_root = creature_link[5]
 
-                creature.rarity = local_spawn_rarity
                 creature.sub_environment = local_sub_environment_type
                 creature.name = local_name if local_name != '' else creature.name
                 creature.local_dex_no = local_dex_no if local_dex_no != 0 else creature.dex_no
                 creature.local_variant_no = local_variant_no if local_variant_no != 0 else creature.variant_no
-                creature.img_root = local_img_root + f'_{creature.variant_no}' if local_img_root != '' else creature.img_root
+                creature.img_root = local_img_root if local_img_root != '' else creature.img_root
+                creature.set_creature_rarity(local_spawn_rarity)
 
                 creatures.append(creature)
 
             return creatures
         return creature_data
 
-    def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0):
+    def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0, convert_to_object=False):
         # determine whether we should grab creatures for a specific environment or all environments
         if environment_variant_no > 0:
             query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO
@@ -275,6 +300,7 @@ class TGOMMODatabaseHandler:
 
         creatures = self.QueryHandler.execute_query(query, params=params)
 
+        # exclude variants
         if not include_variants:
             seen_ids = {}  # Track creature IDs we've seen and their first index
             i = 0
@@ -308,6 +334,8 @@ class TGOMMODatabaseHandler:
                     seen_ids[creature_dex_no] = i
                     i += 1
 
+        if convert_to_object:
+            return creatures
         return creatures
 
     def get_creature_rarity_for_environment(self, creature_id=0, environment_id=None, dex_no=None):
@@ -325,9 +353,21 @@ class TGOMMODatabaseHandler:
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURES_FOR_PLAYER_PROFILE_PAGE, params=params)
         return response
 
-    def get_creature_for_player_profile(self, creature_id=(-1)):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURE_FOR_PLAYER_PROFILE_PAGE, params=(creature_id,))
-        return response[0]
+    def get_creature_for_player_profile(self, creature_id=(-1), convert_to_object=False):
+        creature_info = self.QueryHandler.execute_query(TGOMMO_SELECT_DISPLAY_CREATURE_FOR_PLAYER_PROFILE_PAGE, params=(creature_id,))[0]
+        if convert_to_object:
+            return TGOCreature(
+                catch_id=creature_info[0], creature_id=creature_info[1],
+                name=creature_info[2], local_name=creature_info[3],  nickname=creature_info[4], variant_name=creature_info[5],
+                dex_no=creature_info[6], variant_no=creature_info[7], local_dex_no=creature_info[8], local_variant_no=creature_info[9],
+                full_name=creature_info[10], scientific_name=creature_info[11], kingdom=creature_info[12], description=creature_info[13],
+                img_root=creature_info[14], local_image_root=creature_info[15],
+                sub_environment=creature_info[16],
+                encounter_rate=creature_info[17],
+                rarity=MYTHICAL if creature_info[19] else get_rarity_by_name(creature_info[18]),
+                caught_date=creature_info[20], is_favorite=bool(creature_info[21]), is_released=bool(creature_info[22]),
+            )
+        return creature_info
 
     # Get all creatures a user has caught
     def get_creature_collection_by_user(self, user_id=0, convert_to_object=False):
@@ -338,30 +378,15 @@ class TGOMMODatabaseHandler:
             for creature in creature_data:
                 creatures.append(
                     TGOCreature(
-                        creature_id=creature[1],
-                        catch_id=creature[0],
-
-                        name=creature[2],
-                        local_name=creature[3],
-                        nickname=creature[4],
-                        variant_name=creature[5],
-
-                        dex_no=creature[6],
-                        variant_no=creature[7],
-
-                        full_name=creature[8],
-                        scientific_name=creature[9],
-                        kingdom=creature[10],
-                        description=creature[11],
-
-                        img_root=creature[12],
-                        sub_environment=creature[13],
-                        encounter_rate=creature[14],
-                        rarity=MYTHICAL if creature[16] else get_rarity_by_name(creature[15]),
-
-                        caught_date=creature[17],
-                        is_favorite=bool(creature[18]),
-                        is_released=bool(creature[19]),
+                        catch_id=creature[0], creature_id=creature[1],
+                        name=creature[2], local_name=creature[3],  nickname=creature[4], variant_name=creature[5],
+                        dex_no=creature[6], variant_no=creature[7], local_dex_no=creature[8], local_variant_no=creature[9],
+                        full_name=creature[10], scientific_name=creature[11], kingdom=creature[12], description=creature[13],
+                        img_root=creature[14], local_image_root=creature[15],
+                        sub_environment=creature[16],
+                        encounter_rate=creature[17],
+                        rarity=MYTHICAL if creature[19] else get_rarity_by_name(creature[18]),
+                        caught_date=creature[20], is_favorite=bool(creature[21]), is_released=bool(creature[22]),
                     )
                 )
             return creatures

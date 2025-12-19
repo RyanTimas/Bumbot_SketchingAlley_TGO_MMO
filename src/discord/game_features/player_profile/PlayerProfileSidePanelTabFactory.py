@@ -9,13 +9,13 @@ from src.resources.constants.file_paths import *
 
 
 class PlayerProfileSidePanelTabFactory:
-    def __init__(self, tab_type: str, player: TGOPlayer, collection: TGOCollection = None, content_image_path: str = None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
+    def __init__(self, tab_type: str, player: TGOPlayer, collection: TGOCollection = None, tab_image: str = None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
         self.player = player
         self.collection = collection
 
         self.tab_type = tab_type
 
-        self.content_image_path = content_image_path
+        self.tab_image = tab_image
         self.background_image_path = background_image_path
         self.image_color_path = image_color_path
 
@@ -34,11 +34,8 @@ class PlayerProfileSidePanelTabFactory:
 
         tab_image.paste(tab_shadow_image, (0, 0), tab_shadow_image)
 
-        tab_content_image = Image.open(self.content_image_path)
-        # tab_background_image = Image.open(self.background_image_path)
-
         tab_image.paste(tab_overlay_shadow_image, (0, 0), tab_overlay_shadow_image)
-        tab_image.paste(tab_content_image, (-22, 3), tab_content_image)
+        tab_image.paste(self.tab_image, (-22, 3), self.tab_image)
         tab_image.paste(tab_overlay_image, (0, 0), tab_overlay_image)
 
         if self.tab_type == 'Biomes' or self.tab_type == 'Collections':
@@ -48,7 +45,7 @@ class PlayerProfileSidePanelTabFactory:
         tab_image = self.place_text_on_tab(tab_image=tab_image)
         return tab_image
 
-    def place_text_on_tab(self, tab_image: Image.Image):
+    def place_text_on_tab(self, tab_image: Image):
         draw = ImageDraw.Draw(tab_image)
 
         # place title text
@@ -72,7 +69,7 @@ class PlayerProfileSidePanelTabFactory:
 
         return tab_image
 
-    def place_stars_on_tab(self, tab_image: Image.Image):
+    def place_stars_on_tab(self, tab_image: Image):
         remove_variants_suffix = ' c.variant_no=1;'
 
         caught_query = self.collection.caught_count_query[:-1] + f"{get_query_connector(self.collection.caught_count_query)}{remove_variants_suffix}" if 'variant_no' not in self.collection.caught_count_query else self.collection.caught_count_query

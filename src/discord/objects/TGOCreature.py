@@ -1,15 +1,11 @@
-import datetime
-import pytz
-import random
-import time
-
-from src.discord.objects.CreatureRarity import COMMON, UNCOMMON, CreatureRarity, RARE, EPIC, LEGENDARY
+from src.discord.objects.CreatureRarity import *
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.TGO_MMO_creature_constants import *
-
+from src.resources.constants.file_paths import *
+from PIL import Image
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False):
+    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False, local_image_root: str = None, local_dex_no = None, local_variant_no = None):
         self.timezone = pytz.timezone('US/Eastern')
 
         self.creature_id = creature_id
@@ -22,28 +18,34 @@ class TGOCreature:
 
         self.dex_no = dex_no
         self.variant_no = variant_no
-        self.local_dex_no = dex_no
-        self.local_variant_no = variant_no
+        self.local_dex_no = local_dex_no if local_dex_no else dex_no
+        self.local_variant_no = local_variant_no if local_variant_no else variant_no
 
         self.full_name = full_name
         self.scientific_name = scientific_name
         self.kingdom = kingdom
         self.description = description
 
-        self.img_root = img_root + f'_{variant_no}'
+        self.img_root = img_root
+        self.local_img_root = local_image_root if local_image_root else None
+
         self.sub_environment = sub_environment
         self.encounter_rate = encounter_rate
 
         self.rarity = rarity
+
         self.caught_date = caught_date
+        self.is_favorite = is_favorite
+        self.is_released = is_released
+
+        self.creature_image = None
+        self.dex_icon_image = None
+        self.define_creature_images()
 
         self.spawn_time = None
         self.time_to_despawn = None
         self.despawn_time = None
         self.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=0)
-
-        self.is_favorite = is_favorite
-        self.is_released = is_released
 
 
     def refresh_spawn_and_despawn_time(self, timezone, minute_offset=None):
@@ -51,6 +53,21 @@ class TGOCreature:
         self.time_to_despawn = minute_offset if minute_offset else random.randint(3, 15)
         self.despawn_time = self.spawn_time + datetime.timedelta(minutes=self.time_to_despawn)
         self.time_to_despawn = self.time_to_despawn * 60  # convert to seconds
+
+    def define_creature_images(self):
+        img_root = self.local_img_root if self.local_img_root else self.img_root
+        full_creature_root = f"{img_root}_{self.variant_no}{"_S" if self.rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+
+        creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{full_creature_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        dex_icon_img_path = fr"{IMAGE_FOLDER_DEX_ICON_PATH}\{full_creature_root}{IMAGE_FILE_EXTENSION}"
+
+        self.creature_image = Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH)
+        self.dex_icon_image = Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH)
+
+    '''GETTERS AND SETTERS'''
+    def set_creature_rarity(self, new_rarity: CreatureRarity):
+        self.rarity = new_rarity
+        self.define_creature_images()
 
 
 CURRENT_SPAWN_POOL = [

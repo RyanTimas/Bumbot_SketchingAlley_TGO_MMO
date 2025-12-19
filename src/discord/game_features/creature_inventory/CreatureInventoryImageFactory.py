@@ -105,7 +105,7 @@ class CreatureInventoryImageFactory:
         return background_img
 
 
-    def place_box_icons_on_image(self, image: Image.Image):
+    def place_box_icons_on_image(self, image: Image):
         box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON).resize((100, 100))
         selected_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_SELECTED).resize((100, 100))
         locked_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_LOCKED).resize((100, 100))
@@ -166,7 +166,7 @@ class CreatureInventoryImageFactory:
         return imgs
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         # add box number text to image
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 58)

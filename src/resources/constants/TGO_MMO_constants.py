@@ -2,7 +2,6 @@
 import datetime
 import pytz
 
-
 BASE_TIMEZONE = pytz.timezone('US/Eastern')
 
 DEFAULT_CREATURE_SPAWN_RATE_LOW_END = 3
@@ -21,7 +20,7 @@ NEXT_EVENT_END_TIMESTAMP = datetime.datetime(2025, 10, 31, 23, 59, 59)
 IS_EVENT = NEXT_EVENT_START_TIMESTAMP <= datetime.datetime.now() <= NEXT_EVENT_END_TIMESTAMP
 
 EVENT_NAME = "Halloween"
-EVENT_SPAWN_POOL = [18, 20, 24, 32, 34, 37, 41, 46, 49, 55, 79, 9001]
+EVENT_SPAWN_POOL = [(18,5)]
 
 EVENT_MYTHICAL_SPAWN_CHANCE = 32
 EVENT_MYTHICAL_SPAWN_COIN_FLIPS = 6
@@ -40,8 +39,6 @@ VIEW_WORKFLOW_STATE_INITIAL = "initial"
 VIEW_WORKFLOW_STATE_INTERACTION = "interaction"
 VIEW_WORKFLOW_STATE_CONFIRMATION = "confirmation"
 VIEW_WORKFLOW_STATE_FINALIZED = "finalized"
-
-
 
 '''TIME OF DAY'''
 DAY = "Day"
@@ -121,6 +118,10 @@ CREATURE_INVENTORY_MODE_FAVORITE = "Favorite"
 CREATURE_INVENTORY_MODE_DEFAULT = "Default"
 CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
 
+
+'''------------------'''
+'''CREATURES'''
+'''------------------'''
 '''CREATURE KINGDOM NAMES'''
 MAMMAL = "Mammal"
 BIRD = "Bird"

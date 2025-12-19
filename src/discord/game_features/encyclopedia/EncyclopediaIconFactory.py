@@ -1,11 +1,9 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageDraw, ImageFont, Image
 
-from src.commons.CommonFunctions import get_image_path, load_font
-from src.discord.objects.CreatureRarity import CreatureRarity, TRANSCENDANT
-from src.discord.objects.TGOCreature import TGOCreature
+from src.commons.CommonFunctions import get_image_path
+from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import *
 
 
 class EncyclopediaIconFactory:
@@ -21,7 +19,6 @@ class EncyclopediaIconFactory:
         self.total_catches = total_catches
         self.total_mythical_catches = total_mythical_catches
         self.show_mythics = show_mythics
-
 
 
     def generate_dex_entry_image(self):
@@ -49,7 +46,7 @@ class EncyclopediaIconFactory:
         return self.add_text_to_image(image=dex_icon_img)
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         if self.rarity.name == TRANSCENDANT.name:
             return image
 
@@ -58,9 +55,7 @@ class EncyclopediaIconFactory:
         if self.show_stats:
             image = self.add_stats_to_image(image)
         return image
-
-
-    def add_stats_to_image(self, image: Image.Image):
+    def add_stats_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         stats_num_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)
 
@@ -68,9 +63,7 @@ class EncyclopediaIconFactory:
         draw.text((81, 64), f"{self.total_catches}", fill=(0, 0, 0), font=stats_num_font, anchor="mm")
         draw.text((58, 64), f"{self.total_mythical_catches}", fill=(255, 255, 255), font=stats_num_font, anchor="mm")
         return image
-
-
-    def add_dex_num_to_image(self, image: Image.Image):
+    def add_dex_num_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         dex_num_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 26)
         # dex_num_font = load_font(font_path=get_image_path(FONT_FOREST_BOLD_FILE, IMAGE_FOLDER_FONTS), font_size=26)

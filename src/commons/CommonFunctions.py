@@ -62,7 +62,7 @@ def convert_to_png(image: Image, file_name):
         return png_img
 
 
-def add_text_to_image(image: Image.Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):
+def add_text_to_image(image: Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):
     draw = ImageDraw.Draw(image)
     draw.text(position, text= text, font=font, fill=color, anchor="mm")
     return image
@@ -89,7 +89,7 @@ def open_image_from_url(image_url):
 
 
 # puts a colored border around an input image
-def add_border_to_image(base_image: Image.Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
+def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)
 
     # Draw border - the color #006891 with alpha
@@ -104,7 +104,7 @@ def add_border_to_image(base_image: Image.Image, text: str, font: ImageFont, bor
 
 
 # adds a gaussian blur mask to the edges of an image
-def add_blur_mask_to_image(self, image: Image.Image):
+def add_blur_mask_to_image(image: Image):
         # Create an alpha mask based on the image's alpha channel
         r, g, b, a = image.split()
 

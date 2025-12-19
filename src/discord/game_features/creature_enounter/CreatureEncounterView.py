@@ -82,13 +82,13 @@ class CreatureEncounterView(View):
         return callback
 
     async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
-        nickname_view = CreatureCaughtView(interaction=interaction, creature_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
+        nickname_view = CreatureCaughtView(interaction=interaction, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
         await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
 
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
         # check if user has space in their creature inventory
-        if len(get_tgommo_db_handler().get_creature_collection_by_user(user_id=user_id)) >= 800:
+        if len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=user_id)) >= 800:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
         # Mythical creatures can always be caught

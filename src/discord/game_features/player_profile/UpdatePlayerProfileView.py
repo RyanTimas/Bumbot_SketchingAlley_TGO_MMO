@@ -41,7 +41,7 @@ class UpdatePlayerProfileView(discord.ui.View):
         self.creature_id_5 = player.creature_slot_id_5 if player.creature_slot_id_5 != -1 else ''
         self.creature_id_6 = player.creature_slot_id_6 if player.creature_slot_id_6 != -1 else ''
 
-        self.user_creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(self.user_id, convert_to_object=True,)
+        self.user_creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user_id, convert_to_object=True, )
 
         self.player_profile_image_factory = player_profile_image_factory
         self.original_view = original_view
@@ -254,7 +254,7 @@ class UpdatePlayerProfileView(discord.ui.View):
             creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
             nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
 
-            newlines = f'{'\n' if creature.creature_id != ordered_creatures[creature_index - 1].creature_id else ''}\n'
+            newlines = f'{'\n' if creature.catch_id != ordered_creatures[creature_index - 1].catch_id else ''}\n'
             new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"
 
             if len(current_page) + len(new_entry) > 1900:

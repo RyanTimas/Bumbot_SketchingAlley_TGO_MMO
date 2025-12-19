@@ -31,7 +31,7 @@ class CreatureReleaseRewardHandler:
 
         # for each released creature, roll for random items
         for selected_id in selected_creature_ids:
-            creature = get_tgommo_db_handler().get_creature_by_catch_id(selected_id, convert_to_object=True)
+            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(selected_id, convert_to_object=True)
             earned_items.extend(self.get_random_items(creature= creature))
             # todo: roll for default items
         return self.convert_items_to_count_map(earned_items)

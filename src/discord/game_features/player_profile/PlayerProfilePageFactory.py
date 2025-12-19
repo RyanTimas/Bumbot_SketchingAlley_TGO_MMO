@@ -39,11 +39,7 @@ class PlayerProfilePageFactory:
             if slot_id == -1:
                 self.creature_team.append(PLACEHOLDER_CREATURE)
             else:
-                creature_info = get_tgommo_db_handler().get_creature_for_player_profile(creature_id=slot_id)
-                creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]
-                rarity = MYTHICAL if creature_info[14] else get_rarity_by_name(creature_info[13])
-
-                creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], caught_date=creature_info[15], rarity = rarity, local_image_root=creature_info[16])
+                creature = get_tgommo_db_handler().get_user_creature_by_catch_id(catch_id=slot_id, convert_to_object=True)
                 self.creature_team.append(creature)
 
 
@@ -75,7 +71,7 @@ class PlayerProfilePageFactory:
 
     def _place_creatures_on_image(self, player_profile_img: Image):
         for index, creature in enumerate(self.creature_team):
-            if creature.creature_id == -1:
+            if creature.catch_id == -1:
                 continue
 
             creature_image = creature.creature_image.resize((int(creature.creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature.creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
@@ -154,7 +150,7 @@ class PlayerProfilePageFactory:
         current_offset = (1097,70)
 
         for index, creature in enumerate(self.creature_team):
-            if creature.creature_id == -1:
+            if creature.catch_id == -1:
                 continue
 
             title = creature.nickname if creature.nickname != "" else creature.name
@@ -210,7 +206,7 @@ class PlayerProfilePageFactory:
 
 
 async def build_user_creature_collection(author, ctx):
-    creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(author.id, convert_to_object=True)
+    creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(author.id, convert_to_object=True)
 
     page_num = 0
     pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
@@ -222,7 +218,7 @@ async def build_user_creature_collection(author, ctx):
         is_mythical = creature.rarity.name == TGOMMO_RARITY_MYTHICAL
         nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if is_mythical else '')
 
-        newlines = f'{'\n' if creature.creature_id != creature_collection[creature_index - 1].creature_id else ''}\n'
+        newlines = f'{'\n' if creature.catch_id != creature_collection[creature_index - 1].catch_id else ''}\n'
         new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature.name, 20)}) \t {pad_text(nickname, 20)}"
 
         if len(current_page) + len(new_entry) > 1900:

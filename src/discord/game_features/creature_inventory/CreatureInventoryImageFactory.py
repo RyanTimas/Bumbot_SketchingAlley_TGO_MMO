@@ -26,7 +26,7 @@ class CreatureInventoryImageFactory:
 
 
         # define creature management items
-        self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
+        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id, )
         self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
@@ -60,7 +60,7 @@ class CreatureInventoryImageFactory:
 
         # define creature management items
         if refresh_creatures:
-            self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
+            self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id)
             self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()

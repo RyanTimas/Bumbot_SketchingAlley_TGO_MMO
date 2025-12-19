@@ -9,10 +9,10 @@ from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class CreatureCaughtView(discord.ui.View):
-    def __init__(self, interaction: discord.Interaction, creature_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
+    def __init__(self, interaction: discord.Interaction, creature_catch_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
         super().__init__(timeout=None)
 
-        self.creature_id = creature_id
+        self.creature_catch_id = creature_catch_id
         self.interaction = interaction
         self.display_index = None
 
@@ -51,12 +51,12 @@ class CreatureCaughtView(discord.ui.View):
 
         # if creature was already set as display creature, remove it from the display list
         for index, id in enumerate(self.display_creature_ids):
-            if id == self.creature_id:
+            if id == self.creature_catch_id:
                 get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id,creature_id=self.original_display_creature_ids[index], display_index=index)
 
-        get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=self.creature_id, display_index=self.display_index)
+        get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=self.creature_catch_id, display_index=self.display_index)
 
-        self.display_creature_ids[self.display_index] = self.creature_id
+        self.display_creature_ids[self.display_index] = self.creature_catch_id
         await interaction.response.send_message(f"Display index set to: {self.display_index+1}", ephemeral=True)
 
     def create_release_button(self, row=0):
@@ -66,10 +66,10 @@ class CreatureCaughtView(discord.ui.View):
     async def release_button_callback(self, interaction: discord.Interaction):
         # Remove from display slots if present
         for index, id in enumerate(self.display_creature_ids):
-            if id == self.creature_id:
+            if id == self.creature_catch_id:
                 get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=None, display_index=index)
 
-        currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_id], interaction=interaction)
+        currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
         if not currency_earned:
             await interaction.response.send_message("Failed to release creature", ephemeral=True)
@@ -89,10 +89,10 @@ class CreatureCaughtView(discord.ui.View):
         button.callback = self.favorite_button_callback
         return button
     async def favorite_button_callback(self, interaction: discord.Interaction):
-        creature = get_tgommo_db_handler().get_creature_by_catch_id(self.creature_id, convert_to_object=True)
+        creature = get_tgommo_db_handler().get_user_creature_by_catch_id(self.creature_catch_id, convert_to_object=True)
 
         # Toggle favorite status
-        get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[self.creature_id,], is_favorite=not creature.is_favorite)
+        get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[self.creature_catch_id, ], is_favorite=not creature.is_favorite)
 
         # Refresh view to update button state
         self.refresh_view()
@@ -109,7 +109,7 @@ class CreatureCaughtView(discord.ui.View):
         user_details_modal.on_submit = self.nickname_modal_on_submit
         return user_details_modal
     async def nickname_modal_on_submit(self, interaction: discord.Interaction):
-        get_tgommo_db_handler().update_creature_nickname(self.creature_id, self.nickname_input.value)
+        get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
         self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
         await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
         await interaction.response.send_message(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
@@ -122,7 +122,7 @@ class CreatureCaughtView(discord.ui.View):
     def create_display_creature_index_dropdown(self, row=1):
         options = []
         for index, display_creature_id in enumerate(self.display_creature_ids):
-            creature = get_tgommo_db_handler().get_creature_by_catch_id(display_creature_id, convert_to_object=True)
+            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_creature_id, convert_to_object=True) if display_creature_id != -1 else None
 
             label = f"{index+1} - [EMPTY]" if creature is None else f"{index+1} - {creature.nickname} ({creature.name})"
             options.append(discord.SelectOption(label=label, value=str(index)))

@@ -1,5 +1,7 @@
 '''*******************'''
-'''   USER Queries    '''
+'''*******************'''
+'''     USER Queries       '''
+'''*******************'''
 '''*******************'''
 SA_USERS_INSERT_NEW_RECORD = """INSERT INTO users (user_id, user_name, total_xp, level, guts, hearts, smarts, will) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"""
 
@@ -14,13 +16,85 @@ SA_USERS_DELETE_BY_USERID = "DELETE FROM users WHERE user_id=?"
 
 
 '''*******************'''
-''' TGO MMO Queries  '''
+'''*******************'''
+''' TGO MMO QUERIES  '''
+'''*******************'''
 '''*******************'''
 
 '''============='''
 '''SELECT QUERIES'''
 '''============='''
-# Get Creature/Environments By IDs Queries
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# CREATURE QUERIES
+TGOMMO_SELECT_CREATURE_BASE = '''
+    SELECT 
+        c.creature_id, 
+        c.name, c.variant_name, 
+        c.dex_no, c.variant_no, 
+        c.full_name, c.scientific_name, c.kingdom, c.description, 
+        c.img_root, 
+        c.encounter_rate, c.default_rarity
+    FROM tgommo_creature c
+    WHERE
+'''
+
+TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE = """
+    SELECT 
+        c.creature_id, 
+        c.name, c.variant_name, ec.local_name,
+        c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
+        c.full_name, c.scientific_name, c.kingdom, c.description, 
+        c.img_root, ec.local_img_root,
+        ec.sub_environment_type, 
+        c.encounter_rate, 
+        ec.spawn_rarity 
+    FROM tgommo_environment_creature ec 
+        LEFT JOIN tgommo_creature c 
+            ON c.creature_id = ec.creature_id 
+    WHERE 
+"""
+
+TGOMMO_SELECT_USER_CREATURE_BASE = """
+    SELECT 
+        DISTINCT(uc.catch_id), c.creature_id, 
+        c.name, c.variant_name, ec.local_name, uc.nickname, 
+        c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
+        c.full_name, c.scientific_name, c.kingdom, c.description, 
+        c.img_root, ec.local_img_root,
+        ec.sub_environment_type, 
+        c.encounter_rate, 
+        ec.spawn_rarity, uc.is_mythical, 
+        uc.catch_date, uc.is_favorite, uc.is_released 
+    FROM tgommo_user_creature uc 
+        LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id 
+        LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id 
+    WHERE 
+"""
+
+# WHERE suffixes
+TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX = "c.creature_id = ?"
+TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX = "c.dex_no = ?"
+TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX = "c.variant_no = ?"
+
+TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX = "ec.environment_id = ?"
+
+TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX = "uc.catch_id = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX = "uc.user_id = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_IS_FAVORITE_SUFFIX = "uc.is_favorite = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX = "uc.is_released = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX = "uc.is_mythical = ?"
+
+# ORDER BY suffixes
+TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY c.dex_no, c.variant_no"
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT QUERIES
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 TGOMMO_SELECT_CREATURE_BY_ID = """
     SELECT 
         creature_id, 
@@ -52,7 +126,7 @@ TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT_BASE = """
 
 TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID = """
     SELECT 
-        DISTINCT(uc.catch_id), 
+        ec.creature_id, 
         ec.creature_name, ec.local_name, c.variant_name, 
         c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
         c.full_name, c.scientific_name, c.kingdom, c.description, 
@@ -171,7 +245,7 @@ TGOMMO_SELECT_USER_ITEMS_BY_USER_ID = """SELECT ui.item_num, ui.item_id, ui.item
 TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
 
 
-# ENCYCLOPEDIA QUERIES'
+# ENCYCLOPEDIA QUERIES
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO = """
     SELECT 
         c.creature_id, 

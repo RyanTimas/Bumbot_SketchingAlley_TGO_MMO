@@ -78,27 +78,8 @@ class TGOMMODatabaseHandler:
         return self.get_user_creatures_from_database(query=query, params=(user_id, 0), convert_to_object=convert_to_object, expect_multiple=True)
 
     def get_released_user_creatures_by_user_id(self, user_id=-1, convert_to_object=False):
-        response = self.QueryHandler.execute_query(TGOMMO_SELECT_RELEASED_CREATURES_BY_USER_ID, params=(user_id,))
-
-        if convert_to_object:
-            creatures = []
-            for creature in response:
-                creatures.append(
-                    TGOCreature(
-                        catch_id=creature[0], creature_id=creature[1],
-                        name=creature[2], local_name=creature[3], nickname=creature[4], variant_name=creature[5],
-                        dex_no=creature[6], variant_no=creature[7], local_dex_no=creature[8], local_variant_no=creature[9],
-                        full_name=creature[10], scientific_name=creature[11], kingdom=creature[12],
-                        description=creature[13],
-                        img_root=creature[14], local_image_root=creature[15],
-                        sub_environment=creature[16],
-                        encounter_rate=creature[17],
-                        rarity=MYTHICAL if creature[19] else get_rarity_by_name(creature[18]),
-                        caught_date=creature[20], is_favorite=bool(creature[21]), is_released=bool(creature[22]),
-                    )
-                )
-            return creatures
-        return response
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
+        return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)
 
 
     # ---------------------------------------------------------------------------

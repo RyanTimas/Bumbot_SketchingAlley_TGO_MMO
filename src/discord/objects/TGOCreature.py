@@ -11,9 +11,12 @@ class TGOCreature:
         self.creature_id = creature_id
         self.catch_id = catch_id
 
-        self.name = name
+        self.creature_name = name
         self.local_name = local_name
         self.variant_name = variant_name
+        # todo: streamline this so that the name is only set once
+        self.name = local_name if local_name else variant_name if variant_name else self.creature_name
+
         self.nickname = nickname
 
         self.dex_no = dex_no
@@ -59,7 +62,7 @@ class TGOCreature:
         full_creature_root = f"{img_root}_{self.variant_no}{"_S" if self.rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
 
         creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{full_creature_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
-        dex_icon_img_path = fr"{IMAGE_FOLDER_DEX_ICON_PATH}\{full_creature_root}{IMAGE_FILE_EXTENSION}"
+        dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{full_creature_root}{IMAGE_FILE_EXTENSION}"
 
         self.creature_image = Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH)
         self.dex_icon_image = Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH)

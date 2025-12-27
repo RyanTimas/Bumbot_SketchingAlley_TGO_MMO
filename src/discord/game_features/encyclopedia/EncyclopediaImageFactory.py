@@ -8,6 +8,7 @@ from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
 from src.discord.objects.CreatureRarity import TRANSCENDANT
+from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
 from src.resources.constants.file_paths import *
@@ -141,7 +142,7 @@ class EncyclopediaImageFactory:
             self.page_num = 1
 
             environment_variant_no = 1 if self.show_only_day_spawns else (2 if self.show_only_night_spawns else -1)
-            self.creatures = get_tgommo_db_handler().get_all_creatures_caught_for_encyclopedia(user_id=self.user.id, include_variants=self.show_variants, is_server_page=self.is_server_page, include_mythics=self.show_mythics, environment_id=self.environment.dex_no, environment_variant_no=environment_variant_no)
+            self.creatures = get_tgommo_db_handler().get_all_creatures_for_encyclopedia(user_id=self.user.id, environment_id=self.environment.dex_no, environment_variant_no=environment_variant_no, include_variants=self.show_variants, include_mythics=self.show_mythics)
 
         self.page_num += page_swap
 
@@ -153,26 +154,23 @@ class EncyclopediaImageFactory:
 
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
-            creature = self.creatures[i]
-            creature_name = creature[1]
-            variant_name = creature[2]
-            dex_no = creature[3]
-            variant_no = creature[4] if len(creature) == 8 else  creature[8][0]
-            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], dex_no=self.environment.dex_no)
-            total_catches = creature[5]
-            total_mythical_catches = creature[6]
-            img_root = creature[7]
+            creature_info = self.creatures[i]
 
+            creature: TGOCreature = creature_info[0]
+            total_catches = creature_info[1]
+            total_mythical_catches = creature_info[2]
+
+            rarity = get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature.creature_id, dex_no=self.environment.dex_no)
             creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
 
             if creature_is_locked and rarity.name == TRANSCENDANT.name:
                 continue
 
-            dex_icon = EncyclopediaIconFactory(creature_name=creature_name, dex_no=dex_no, variant_no=variant_no, rarity=rarity, creature_is_locked=creature_is_locked, show_stats=self.verbose, total_catches=total_catches, total_mythical_catches=total_mythical_catches, show_mythics=self.show_mythics, img_root=img_root)
+            dex_icon = EncyclopediaIconFactory(creature= creature,  total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.verbose, rarity=rarity, )
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)
-            imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature[3]}_{variant_no}.png'))
+            imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
 
 
         # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
@@ -246,7 +244,7 @@ class EncyclopediaImageFactory:
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
 
-        creature_count = len([creature for creature in self.creatures if get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0], dex_no=self.environment.dex_no).name != TRANSCENDANT.name])
+        creature_count = len([creature for creature in self.creatures if get_tgommo_db_handler().get_creature_rarity_for_environment(creature_id=creature[0].creature_id, dex_no=self.environment.dex_no).name != TRANSCENDANT.name])
         text = f"{'0' if self.distinct_catches < 10 else ''} {self.distinct_catches} / {'0' if creature_count < 10 else ''} {creature_count}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)

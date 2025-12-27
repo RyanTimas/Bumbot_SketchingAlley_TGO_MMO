@@ -1,45 +1,44 @@
 from PIL import ImageDraw, ImageFont, Image
 
 from src.commons.CommonFunctions import get_image_path
+from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
 class EncyclopediaIconFactory:
-    def __init__(self, creature_name = '', dex_no = 1, variant_no=1, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False, total_catches=0, total_mythical_catches=0, show_mythics=False, img_root=''):
-        self.creature_name = creature_name
-        self.rarity = rarity
-        self.dex_no = f'{"0" if dex_no <10 else ""}{dex_no}'
-        self.variant_no = variant_no
-        self.img_root = img_root
+    def __init__(self, creature = None, total_catches=0, total_mythical_catches=0, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False):
+        self.creature: TGOCreature = creature
+        self.total_catches = total_catches
+        self.total_mythical_catches = total_mythical_catches
+
+        self.dex_no = f'{"0" if self.creature.dex_no <10 else ""}{self.creature.dex_no}'
 
         self.creature_is_locked = creature_is_locked
         self.show_stats = False if creature_is_locked else show_stats
-        self.total_catches = total_catches
-        self.total_mythical_catches = total_mythical_catches
-        self.show_mythics = show_mythics
+
+        self.rarity = rarity
 
 
     def generate_dex_entry_image(self):
         # Create a copy of the background to serve as the canvas
-        dex_icon_img = Image.open(get_image_path(image_name=f"{DEX_ICON_BACKGROUND_BASE}_{self.rarity.name}.png", folder_location=IMAGE_FOLDER_DEX_ICON_PATH))
+        dex_icon_img = Image.open(f"{DEX_ICON_BACKGROUND_BASE}_{self.creature.rarity.name}{IMAGE_FILE_EXTENSION}")
 
         # Paste the shadow onto the final image
         shadow_img = Image.open(DEX_ICON_SHADOW_IMAGE)
         dex_icon_img.paste(shadow_img, (0, 0), shadow_img)
 
         # Paste the creature icon onto the final image
-        creature_img_path = DEX_ICON_CREATURE_LOCKED_ICON_IMAGE if self.creature_is_locked else DEX_ICON_CREATURE_BASE + f"_{self.img_root}_{self.variant_no}" + f"{"_S" if self.show_mythics else ""}" + IMAGE_FILE_EXTENSION
-        creature_img = Image.open(get_image_path(image_name=f"{creature_img_path}", folder_location=IMAGE_FOLDER_DEX_ICON_PATH))
-        dex_icon_img.paste(creature_img, (0, 0), creature_img)
+        creature_icon_img = Image.open(DEX_ICON_CREATURE_LOCKED_ICON_IMAGE) if self.creature_is_locked else self.creature.dex_icon_image
+        dex_icon_img.paste(creature_icon_img, (0, 0), creature_icon_img)
 
         if self.show_stats:
             icon_stats_overlay = Image.open(DEX_ICON_STATS_BAR_IMAGE)
             dex_icon_img.paste(icon_stats_overlay, (0, 0), icon_stats_overlay)
 
         # add the final overlay on top
-        icon_overlay = Image.open(DEX_ICON_OVERLAY if self.rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)
+        icon_overlay = Image.open(DEX_ICON_OVERLAY if self.creature.rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)
         dex_icon_img.paste(icon_overlay, (0, 0), icon_overlay)
 
         # self.add_text_to_image(image=dex_icon_img).show()
@@ -47,7 +46,7 @@ class EncyclopediaIconFactory:
 
 
     def add_text_to_image(self, image: Image):
-        if self.rarity.name == TRANSCENDANT.name:
+        if self.creature.name == TRANSCENDANT.name:
             return image
 
         image = self.add_dex_num_to_image(image)

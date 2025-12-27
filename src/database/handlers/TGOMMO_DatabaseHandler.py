@@ -82,6 +82,97 @@ class TGOMMODatabaseHandler:
         return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)
 
 
+    def get_all_creatures_for_encyclopedia(self, user_id=0, environment_id=0, environment_variant_no=0, include_variants=False, include_mythics=False):
+        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE if environment_id != 0 else TGOMMO_SELECT_CREATURE_BASE}"
+        params = []
+
+        # update query / params to remove creatures that don't qualify for display
+        # add environment filter if applicable
+        if environment_id != 0:
+            query += " AND " if len(params) > 0 else ""
+
+            query += f" {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX}"
+            params.append(environment_id)
+
+            # add time of day filter if applicable
+            if environment_variant_no != -1:
+                query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
+                params.append(DAY if environment_variant_no == 0 else NIGHT)
+
+        # add variant filter if applicable
+        if not include_variants:
+            query += " AND " if len(params) > 0 else ""
+            query += f" {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
+            params.append(1)
+
+        # add failsafe for cases where no creatures need to be excluded
+        query += f"{TGOMMO_SELECT_CREATURE_PLACEHOLDER_SUFFIX} " if len(params) == 0 else ""
+        # add ordering for environment or national dex
+        query += f"{TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX if environment_id == 0 else TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX}"
+
+        encyclopedia_creatures = self.get_environment_creatures_from_database(query=query, params=params, convert_to_object=True, expect_multiple=True)
+
+        # get counts for how many times the user has caught each creature
+        creatures_for_display_info = []
+        for encyclopedia_creature in encyclopedia_creatures:
+            total_creature_catches, total_mythical_catches = self.QueryHandler.execute_query(TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER, params=(user_id, encyclopedia_creature.creature_id))[0]
+            creatures_for_display_info.append((encyclopedia_creature, total_creature_catches, total_mythical_catches))
+        return creatures_for_display_info
+
+
+    def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0, convert_to_object=False):
+        # determine whether we should grab creatures for a specific environment or all environments
+        if environment_variant_no > 0:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO
+            params = (user_id, environment_id, environment_variant_no) if not is_server_page else (environment_id, environment_variant_no)
+        elif environment_id > 0:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM
+            params = (user_id, environment_id) if not is_server_page else (environment_id,)
+        else:
+            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER
+            params = (user_id,) if not is_server_page else ()
+
+        creatures = self.QueryHandler.execute_query(query, params=params)
+
+        # exclude variants
+        if not include_variants:
+            seen_ids = {}  # Track creature IDs we've seen and their first index
+            i = 0
+            while i < len(creatures):
+                creature_dex_no = creatures[i][3]
+
+                if creature_dex_no in seen_ids:
+                    # We've seen this ID before, add counts to the first occurrence
+                    first_idx = seen_ids[creature_dex_no]
+
+                    creatures[first_idx] = list(creatures[first_idx])  # Convert tuple to list for modification
+
+                    # logic to handle when a user has one variant but not the 0th variant
+                    catch_signifier = 6 if include_mythics else 5
+                    if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 8:
+                        creatures[first_idx].append([])
+                        for creature in creatures:
+                            if creature[3] == creature_dex_no and creature[catch_signifier] > 0:
+                                creatures[first_idx][8].append(creature[4])
+                        if len(creatures[first_idx][8]) == 0:
+                            creatures[first_idx].pop(8)
+
+                    creatures[first_idx][5] += creatures[i][5]
+                    creatures[first_idx][6] += creatures[i][6]
+                    creatures[first_idx] = tuple(creatures[first_idx])  # Convert back to tuple
+
+                    # Remove this duplicate
+                    creatures.pop(i)
+                else:
+                    # First time seeing this ID, record its position
+                    seen_ids[creature_dex_no] = i
+                    i += 1
+
+        if convert_to_object:
+            return creatures
+        return creatures
+
+
     # ---------------------------------------------------------------------------
     # BASE FUNCTIONS FOR RETRIEVING CREATURES FROM THE DATABASE
     # ---------------------------------------------------------------------------
@@ -104,7 +195,6 @@ class TGOMMODatabaseHandler:
                     )
                 )
         return creatures if expect_multiple else creatures[0]
-
     def get_environment_creatures_from_database(self, query, params=(), convert_to_object=True, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -125,7 +215,6 @@ class TGOMMODatabaseHandler:
                     )
                 )
         return creatures if expect_multiple else creatures[0]
-
     def get_user_creatures_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -249,7 +338,7 @@ class TGOMMODatabaseHandler:
             creature_id = event_pairing[0]
             environment_id = event_pairing[1]
 
-            creature_details = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID, params=(creature_id, environment_id))[0]
+            creature_details = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID, params=(creature_id, environment_id))[0]
 
             if convert_to_object:
                 event_creatures.append(
@@ -336,57 +425,7 @@ class TGOMMODatabaseHandler:
 
 
     ''' Encyclopedia Queries '''
-    def get_all_creatures_caught_for_encyclopedia(self, user_id=0, include_variants=False, is_server_page=False, include_mythics=False, environment_id=0, environment_variant_no=0, convert_to_object=False):
-        # determine whether we should grab creatures for a specific environment or all environments
-        if environment_variant_no > 0:
-            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO
-            params = (user_id, environment_id, environment_variant_no) if not is_server_page else (environment_id, environment_variant_no)
-        elif environment_id > 0:
-            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM
-            params = (user_id, environment_id) if not is_server_page else (environment_id,)
-        else:
-            query = TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER if is_server_page else TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER
-            params = (user_id,) if not is_server_page else ()
 
-        creatures = self.QueryHandler.execute_query(query, params=params)
-
-        # exclude variants
-        if not include_variants:
-            seen_ids = {}  # Track creature IDs we've seen and their first index
-            i = 0
-            while i < len(creatures):
-                creature_dex_no = creatures[i][3]
-
-                if creature_dex_no in seen_ids:
-                    # We've seen this ID before, add counts to the first occurrence
-                    first_idx = seen_ids[creature_dex_no]
-
-                    creatures[first_idx] = list(creatures[first_idx])  # Convert tuple to list for modification
-
-                    # logic to handle when a user has one variant but not the 0th variant
-                    catch_signifier = 6 if include_mythics else 5
-                    if creatures[first_idx][catch_signifier] == 0 and len(creatures[first_idx]) == 8:
-                        creatures[first_idx].append([])
-                        for creature in creatures:
-                            if creature[3] == creature_dex_no and creature[catch_signifier] > 0:
-                                creatures[first_idx][8].append(creature[4])
-                        if len(creatures[first_idx][8]) == 0:
-                            creatures[first_idx].pop(8)
-
-                    creatures[first_idx][5] += creatures[i][5]
-                    creatures[first_idx][6] += creatures[i][6]
-                    creatures[first_idx] = tuple(creatures[first_idx])  # Convert back to tuple
-
-                    # Remove this duplicate
-                    creatures.pop(i)
-                else:
-                    # First time seeing this ID, record its position
-                    seen_ids[creature_dex_no] = i
-                    i += 1
-
-        if convert_to_object:
-            return creatures
-        return creatures
 
     def get_creature_rarity_for_environment(self, creature_id=0, environment_id=None, dex_no=None):
         query = TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID if environment_id is not None else TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_DEX_NO
@@ -1154,8 +1193,12 @@ class TGOMMODatabaseHandler:
 
         return (
             creature_info[0],
+
             environment_info[0],
             spawn_time,
+            environment_info[3],
+            environment_info[4],
+
             creature_info[1],
             environment_info[1],
             rarity,

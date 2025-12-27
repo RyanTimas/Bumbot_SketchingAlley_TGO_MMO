@@ -41,7 +41,7 @@ TGOMMO_SELECT_CREATURE_BASE = '''
 
 TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE = """
     SELECT 
-        c.creature_id, 
+        DISTINCT(c.creature_id), 
         c.name, c.variant_name, ec.local_name,
         c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
         c.full_name, c.scientific_name, c.kingdom, c.description, 
@@ -73,11 +73,15 @@ TGOMMO_SELECT_USER_CREATURE_BASE = """
 """
 
 # WHERE suffixes
+TGOMMO_SELECT_CREATURE_PLACEHOLDER_SUFFIX = "true"
 TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX = "c.creature_id = ?"
 TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX = "c.dex_no = ?"
 TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX = "c.variant_no = ?"
 
 TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX = "ec.environment_id = ?"
+TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX = "ec.environment_dex_no = ?"
+TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_VARIANT_NO_SUFFIX = "ec.environment_variant_no = ?"
+TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX = "ec.spawn_time = ?"
 
 TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX = "uc.catch_id = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX = "uc.user_id = ?"
@@ -87,29 +91,27 @@ TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX = "uc.is_mythical = ?"
 
 # ORDER BY suffixes
 TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY c.dex_no, c.variant_no"
+TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY ec.local_dex_no, ec.local_variant_no"
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# ENVIRONMENT QUERIES
-
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-TGOMMO_SELECT_CREATURE_BY_ID = """
+'''ENCYCLOPEDIA QUERIES'''
+TGOMMO_SELECT_COUNT_FOR_DISTINCT_CREATURES_CAUGHT_BY_USER = """
     SELECT 
-        creature_id, 
-        name, variant_name, 
-        dex_no, variant_no, 
-        full_name, scientific_name, kingdom, description, 
-        img_root, 
-        encounter_rate 
-    FROM tgommo_creature 
-    WHERE creature_id = ?
+        COUNT(DISTINCT uc.creature_id) as total_distinct_creatures,
+        COUNT(DISTINCT CASE WHEN uc.is_mythical = 1 THEN uc.creature_id END) as mythical_distinct_creatures
+    FROM tgommo_user_creature uc
+    WHERE uc.user_id = ?;
 """
-TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
-TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_AND_VARIANT_NO = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?;"""
-TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""
 
+TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER = """
+    SELECT 
+        COUNT(DISTINCT uc.creature_id) as total_distinct_creatures,
+        COUNT(DISTINCT CASE WHEN uc.is_mythical = 1 THEN uc.creature_id END) as mythical_distinct_creatures
+    FROM tgommo_user_creature uc
+    WHERE uc.user_id = ?
+        AND uc.creature_id = ?;
+"""
+
+'''EVENT QUERIES'''
 TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT_BASE = """
     SELECT 
         creature_id, 
@@ -123,8 +125,7 @@ TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT_BASE = """
     WHERE creature_id 
     IN 
 """
-
-TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID = """
+TGOMMO_SELECT_ENVENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID = """
     SELECT 
         ec.creature_id, 
         ec.creature_name, ec.local_name, c.variant_name, 
@@ -139,6 +140,90 @@ TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID = """
             ON c.creature_id = ec.creature_id 
     WHERE ec.creature_id = ? AND ec.environment_id = ?;
 """
+
+
+'''OLD ENCYCLOPEDIA QUERIES'''
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO = """
+    SELECT 
+        c.creature_id, 
+        c.name, 
+        c.variant_name, 
+        c.dex_no, 
+        c.variant_no, 
+        COUNT(uc.creature_id) as total_catches, 
+        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
+        c.img_root 
+    FROM tgommo_creature c 
+        LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id 
+        LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
+        LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id 
+    WHERE e.dex_no  = ? AND e.variant_no = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;
+"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO = """
+    SELECT 
+        c.creature_id, 
+        c.name, 
+        c.variant_name, 
+        c.dex_no, 
+        c.variant_no, 
+        COUNT(uc.creature_id) as total_catches, 
+        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
+        c.img_root 
+    FROM tgommo_creature c 
+        LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? 
+        LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
+        LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id 
+    WHERE e.dex_no  = ? AND e.variant_no = ? 
+    GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO = """
+    SELECT 
+        c.creature_id, 
+        c.name, 
+        c.variant_name, 
+        c.dex_no, 
+        c.variant_no, 
+        COUNT(uc.creature_id) as total_catches, 
+        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
+        c.img_root 
+    FROM tgommo_creature c 
+    LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id 
+    LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
+    LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id 
+    WHERE e.dex_no  = ? 
+    GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;
+"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root  FROM tgommo_creature c  LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id  LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id WHERE e.dex_no  = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """
+    SELECT 
+        c.creature_id, 
+        c.name, 
+        c.variant_name, 
+        c.dex_no, 
+        c.variant_no, 
+        COUNT(uc.creature_id) as total_catches, 
+        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
+        c.img_root 
+    FROM 
+        tgommo_creature c 
+        LEFT JOIN tgommo_user_creature uc ON 
+            c.creature_id = uc.creature_id 
+        AND uc.user_id = ? 
+        GROUP BY 
+            c.creature_id, 
+            c.name, 
+            c.variant_name, 
+            c.dex_no, 
+            c.variant_no 
+        ORDER BY c.dex_no, c.variant_no;"""
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT QUERIES
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
+TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_AND_VARIANT_NO = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?;"""
+TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""
 
 
 ''' Get Creature/Environments By Dex No Queries'''
@@ -243,67 +328,6 @@ TGOMMO_GET_ALL_ENVIRONMENT_DEX_NOS_IN_ROTATION = """SELECT DISTINCT dex_no FROM 
 TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ? AND uil.item_id=?;"""
 TGOMMO_SELECT_USER_ITEMS_BY_USER_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ?;"""
 TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
-
-
-# ENCYCLOPEDIA QUERIES
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO_AND_VARIANT_NO = """
-    SELECT 
-        c.creature_id, 
-        c.name, 
-        c.variant_name, 
-        c.dex_no, 
-        c.variant_no, 
-        COUNT(uc.creature_id) as total_catches, 
-        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
-        c.img_root 
-    FROM tgommo_creature c 
-        LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id 
-        LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
-        LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id 
-    WHERE e.dex_no  = ? AND e.variant_no = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;
-"""
-
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM_AND_VARIANT_NO = """
-    SELECT 
-        c.creature_id, 
-        c.name, 
-        c.variant_name, 
-        c.dex_no, 
-        c.variant_no, 
-        COUNT(uc.creature_id) as total_catches, 
-        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
-        c.img_root 
-    FROM tgommo_creature c 
-        LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? 
-        LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
-        LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id 
-    WHERE e.dex_no  = ? AND e.variant_no = ? 
-    GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
-
-
-# Encyclopedia & Statistics Queries
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER_BY_DEX_NUM = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root  FROM tgommo_creature c  LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id AND uc.user_id = ? LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id  LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id WHERE e.dex_no  = ? GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
-
-# Encyclopedia & Statistics Queries - Server Wide
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER = """SELECT c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no, COUNT(uc.creature_id) as total_catches, SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, c.img_root FROM tgommo_creature c LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;"""
-TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_SERVER_FOR_ENVIRONMENT_DEX_NO = """
-    SELECT 
-        c.creature_id, 
-        c.name, 
-        c.variant_name, 
-        c.dex_no, 
-        c.variant_no, 
-        COUNT(uc.creature_id) as total_catches, 
-        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as mythical_catches, 
-        c.img_root 
-    FROM tgommo_creature c 
-    LEFT JOIN tgommo_user_creature uc ON c.creature_id = uc.creature_id 
-    LEFT JOIN tgommo_environment_creature ec ON c.creature_id = ec.creature_id 
-    LEFT JOIN tgommo_environment e ON ec.environment_id  = e.environment_id 
-    WHERE e.dex_no  = ? 
-    GROUP BY c.creature_id, c.name, c.variant_name, c.dex_no, c.variant_no ORDER BY c.dex_no, c.variant_no;
-"""
 
 
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ?;"""
@@ -426,7 +450,7 @@ TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num
 TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?);"""
 
 # Link Tables
-TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, creature_name, environment_name, spawn_rarity, local_name, sub_environment_type, local_dex_no, local_variant_no, local_img_root) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, environment_dex_no, environment_variant_no, creature_name, environment_name, spawn_rarity, local_name, sub_environment_type, local_dex_no, local_variant_no, local_img_root) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
 
 TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used) VALUES (?, ?, ?, ?);"""

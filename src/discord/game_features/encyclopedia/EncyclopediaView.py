@@ -37,7 +37,7 @@ class EncyclopediaView(discord.ui.View):
         self.new_page = 1
 
         # Initialize the buttons once
-        self.page_jump_dropdown = self.create_avatar_picker_dropdown(row=0)
+        self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
 
         self.prev_button = self.create_navigation_button(is_next=False, row=1)
         self.page_jump_button = self.create_advanced_navigation_button(row=1)
@@ -184,13 +184,12 @@ class EncyclopediaView(discord.ui.View):
 
 
     # CREATE DROPDOWNS
-    def create_avatar_picker_dropdown(self, row=1):
+    def create_page_jump_dropdown(self, row=1):
         options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.encyclopedia_image_factory.total_pages)]
         dropdown = Select(placeholder="Skip to Page", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.avatar_dropdown_callback
+        dropdown.callback = self.page_jump_callback
         return dropdown
-
-    async def avatar_dropdown_callback(self, interaction: discord.Interaction):
+    async def page_jump_callback(self, interaction: discord.Interaction):
         self.new_page = int(interaction.data["values"][0])
         await interaction.response.defer()
 
@@ -203,7 +202,10 @@ class EncyclopediaView(discord.ui.View):
         current_page = self.encyclopedia_image_factory.page_num
         total_pages = self.encyclopedia_image_factory.total_pages
 
+        # Update Options
         self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, total_pages + 1)]
+
+        # Update Enabled/Disabled States
         self.page_jump_dropdown.disabled = total_pages == 1
         self.prev_button.disabled = current_page == 1
         self.page_jump_button.disabled = total_pages == 1

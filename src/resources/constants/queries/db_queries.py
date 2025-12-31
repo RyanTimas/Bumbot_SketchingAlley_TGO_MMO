@@ -72,7 +72,7 @@ TGOMMO_SELECT_USER_CREATURE_BASE = """
     WHERE 
 """
 
-# WHERE suffixes
+# creature WHERE suffixes
 TGOMMO_SELECT_CREATURE_PLACEHOLDER_SUFFIX = "true"
 TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX = "c.creature_id = ?"
 TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX = "c.dex_no = ?"
@@ -84,12 +84,13 @@ TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_VARIANT_NO_SUFFIX = "ec.enviro
 TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX = "ec.spawn_time = ?"
 
 TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX = "uc.catch_id = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_ENVIRONMENT_ID_SUFFIX = "uc.environment_id = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX = "uc.user_id = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_FAVORITE_SUFFIX = "uc.is_favorite = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX = "uc.is_released = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX = "uc.is_mythical = ?"
 
-# ORDER BY suffixes
+# creature ORDER BY suffixes
 TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY c.dex_no, c.variant_no"
 TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY ec.local_dex_no, ec.local_variant_no"
 
@@ -101,7 +102,6 @@ TGOMMO_SELECT_COUNT_FOR_DISTINCT_CREATURES_CAUGHT_BY_USER = """
     FROM tgommo_user_creature uc
     WHERE uc.user_id = ?;
 """
-
 TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER = """
     SELECT 
         COUNT(DISTINCT uc.creature_id) as total_distinct_creatures,
@@ -109,6 +109,26 @@ TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER = """
     FROM tgommo_user_creature uc
     WHERE uc.user_id = ?
         AND uc.creature_id = ?;
+"""
+
+TGOMMO_SELECT_USER_CATCHES_FOR_ENCYCLOPEDIA_BASE = """
+    SELECT 
+        COUNT(DISTINCT(c.dex_no)) as base_creatures_count,
+        COUNT(DISTINCT(uc.creature_id)) as total_variants_count,
+        COUNT(DISTINCT CASE WHEN uc.is_mythical = 1 THEN c.dex_no END) as mythical_base_creatures_count
+    FROM tgommo_user_creature uc 
+    LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id
+    WHERE true
+"""
+
+TGOMMO_SELECT_POSSIBLE_CATCHES_FOR_ENCYCLOPEDIA_BASE = """
+    SELECT 
+        COUNT(DISTINCT(c.dex_no)) as base_creatures_count,
+        COUNT(DISTINCT(ec.creature_id)) as total_variants_count,
+        COUNT(DISTINCT(c.dex_no)) as mythical_base_creatures_count
+    FROM tgommo_environment_creature ec 
+    LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id
+    WHERE true
 """
 
 '''EVENT QUERIES'''
@@ -140,6 +160,8 @@ TGOMMO_SELECT_ENVENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID = """
             ON c.creature_id = ec.creature_id 
     WHERE ec.creature_id = ? AND ec.environment_id = ?;
 """
+
+
 
 
 '''OLD ENCYCLOPEDIA QUERIES'''
@@ -221,6 +243,31 @@ TGOMMO_SELECT_ALL_CREATURES_CAUGHT_BY_USER = """
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ENVIRONMENT QUERIES
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TGOMMO_SELECT_ENVIRONMENT_BASE = """
+    SELECT 
+        e.environment_id, 
+        e.name, e.variant_name,
+        e.dex_no, e.variant_no,
+        e.location, e.description,
+        e.img_root,
+        e.is_night_environment, 
+        e.in_circulation,
+        e.encounter_rate
+    FROM tgommo_environment e
+    WHERE
+"""
+
+# environment WHERE suffixes
+TGOMMO_SELECT_ENVIRONMENT_BY_ENVIRONMENT_ID_SUFFIX = " e.environment_id = ?"
+TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX = " e.dex_no = ?"
+TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX = " e.variant_no = ?"
+TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX = " e.in_circulation = ?"
+TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX = " e.is_night_environment = ?"
+
+# environment ORDER BY suffixes
+TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY e.dex_no, e.variant_no"
+TGOMMO_ORDER_BY_RANDOM_SUFFIX = " ORDER BY RANDOM() LIMIT 1;"
+
 TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
 TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_AND_VARIANT_NO = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?;"""
 TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""
@@ -322,7 +369,7 @@ TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION = """SELECT environment_id, name, vari
 TGOMMO_GET_RANDOM_ENVIRONMENT_IN_ROTATION_FOR_SPECIFIC_TIME_OF_DAY = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE in_circulation = 1 AND is_night_environment = ? ORDER BY RANDOM() LIMIT 1;"""
 TGOMMO_SELECT_ENVIRONMENT_BY_DEX_AND_VARIANT_NUMBER = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?"""
 TGOMMO_SELECT_RANDOM_ENVIRONMENT_ID = """SELECT environment_id FROM tgommo_environment WHERE in_circulation = 1 ORDER BY RANDOM() LIMIT 1"""
-TGOMMO_GET_ALL_ENVIRONMENT_DEX_NOS_IN_ROTATION = """SELECT DISTINCT dex_no FROM tgommo_environment WHERE in_circulation = 1;"""
+TGOMMO_GET_ALL_ENVIRONMENTS_IN_ROTATION = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE in_circulation = 1 AND variant_no = 1;"""
 
 # Player Select Queries
 TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ? AND uil.item_id=?;"""

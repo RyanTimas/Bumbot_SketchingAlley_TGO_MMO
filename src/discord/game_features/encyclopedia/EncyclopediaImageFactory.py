@@ -56,7 +56,7 @@ class EncyclopediaImageFactory:
 
         # construct base layers, start with environment bg
         # todo: change bg based on environment
-        encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_ROOT}{IMAGE_FILE_EXTENSION}")
+        encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
         corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_page else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)

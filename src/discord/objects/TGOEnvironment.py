@@ -21,6 +21,7 @@ class TGOEnvironment:
         self.encounter_rate = encounter_rate
         self.timezone = pytz.timezone('US/Eastern')
 
+NATIONAL_ENV = TGOEnvironment(environment_id=0, name='National Encyclopedia', variant_name='', dex_no=0, variant_no=0, location='Global', description='', img_root='national_env', is_night_environment=False, in_circulation=False, encounter_rate=0)
 
 TEST_ENV = TGOEnvironment(environment_id=1, name='Test Environment - Forest', variant_name='Summer - Day', dex_no=1, variant_no=1, location='Eastern United States', description='', img_root='forest_est', is_night_environment=False, in_circulation=True, encounter_rate=5)
 TEST_SPAWN_POOL = [TEST_ENV]

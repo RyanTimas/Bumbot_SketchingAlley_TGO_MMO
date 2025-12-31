@@ -12,6 +12,8 @@ from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory 
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
@@ -43,6 +45,7 @@ class TGOMMOMenuView(discord.ui.View):
 
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
+
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
         self.avatar_board_button = self.create_avatar_board_button(row=2)
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
@@ -89,26 +92,37 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                encyclopedia_img_factory = EncyclopediaImageFactory(
-                    user=self.message_author,
-                    environment=self.discord_bot.creature_spawner_handler.current_environment,
-                    verbose=is_verbose,
-                    is_server_page=button_type == "server_encyclopedia",
-                    show_variants=show_variants,
-                    show_mythics=show_mythics
+                # encyclopedia_img_factory = EncyclopediaImageFactory(
+                #     user=self.message_author,
+                #     environment=self.discord_bot.creature_spawner_handler.current_environment,
+                #     verbose=is_verbose,
+                #     is_server_page=button_type == "server_encyclopedia",
+                #     show_variants=show_variants,
+                #     show_mythics=show_mythics
+                # )
+                #
+                # view = EncyclopediaView(
+                #     encyclopedia_image_factory=encyclopedia_img_factory,
+                #     is_verbose=is_verbose,
+                #     show_variants=show_variants,
+                #     show_mythics=show_mythics,
+                #     message_author=self.message_author,
+                #     original_view=self
+                # )
+
+                encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(
+                    user=self.message_author if button_type == "user_encyclopedia" else None,
                 )
 
-                view = EncyclopediaView(
-                    encyclopedia_image_factory=encyclopedia_img_factory,
-                    is_verbose=is_verbose,
-                    show_variants=show_variants,
-                    show_mythics=show_mythics,
-                    message_author=self.message_author,
+                view = EncyclopediaLocationIndexView(
+                    message_author= self.message_author,
+                    target_user= self.message_author if button_type == "user_encyclopedia" else None,
+                    encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory,
                     original_view=self
                 )
 
-                new_encyclopedia_page = encyclopedia_img_factory.build_encyclopedia_page_image()
-                file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
+                new_encyclopedia_location_index_page = encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image()
+                file = convert_to_png(new_encyclopedia_location_index_page, f'encyclopedia_location_index_page.png')
 
                 # Update button states
                 view.update_button_states()
@@ -129,7 +143,7 @@ class TGOMMOMenuView(discord.ui.View):
     def player_profile_callback(self, tab_is_open=False, open_tab=TEAM):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            if not await check_if_user_can_interact_with_view(interaction=interaction, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id):
                 return
 
             # Acquire lock to prevent concurrent actions

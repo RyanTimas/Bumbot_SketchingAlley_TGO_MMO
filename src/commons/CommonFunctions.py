@@ -296,6 +296,18 @@ def get_user_discord_profile_pic(user = None):
     avatar_url = user.display_avatar.url if hasattr(user,'display_avatar') else user.avatar.url if user.avatar else user.default_avatar.url
     return avatar_url
 
+def build_user_profile_pic(user, size=(600, 600)):
+    # get user's profile pic
+    profile_pic_avatar_url = get_user_discord_profile_pic(user)
+    response = requests.get(profile_pic_avatar_url)
+
+    profile_pic = Image.open(io.BytesIO(response.content)).convert("RGBA")
+    profile_pic = profile_pic.resize(size, Image.LANCZOS)
+
+    # profile_pic = self.add_blur_mask_to_image(profile_pic)
+
+    return profile_pic
+
 
 #*********************
 # DISCORD VIEW HELPERS

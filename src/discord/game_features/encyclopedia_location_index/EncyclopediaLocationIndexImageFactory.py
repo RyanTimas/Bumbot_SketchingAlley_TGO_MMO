@@ -116,7 +116,7 @@ class EncyclopediaLocationIndexImageFactory:
         # Only process within our page range
         for i in range(starting_index, ending_index):
             location = self.locations[i]
-            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=None if not self.player else self.player.user_id, environment_id=location.environment_id)
+            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=None if not self.player else self.player.user_id, environment_dex_no=location.dex_no)
 
             icon = EncyclopediaLocationIndexIconFactory(environment=location, user_unique_catches=user_catches, possible_unique_catches=possible_catches)
             icon_img = icon.generate_location_tab_icon_image()

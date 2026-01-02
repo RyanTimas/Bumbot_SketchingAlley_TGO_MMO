@@ -43,15 +43,10 @@ class EncyclopediaImageFactory:
 
         self.page_num = 1 if show_variants or show_mythics or time_of_day else self.page_num
 
-        # load total catches and distinct catches if not already loaded
-        if not self.total_user_catches or not self.distinct_user_catches:
-            encyclopedia_info = get_tgommo_db_handler().get_encyclopedia_page_info(user_id=None if not self.target_user else self.target_user.id if self.target_user else -1, is_server_page=self.target_user.id is None, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
-            self.total_user_catches = encyclopedia_info[0]
-            self.distinct_user_catches = encyclopedia_info[1]
-
         # if any of these values changed, we need to reload the creatures list
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number:
-            self.creatures = get_tgommo_db_handler().get_all_creatures_for_encyclopedia(user_id=self.target_user.id, environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants, include_mythics=self.show_mythics)
+            self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
+            self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(user_id=self.target_user.id, environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
             self.dex_icons = self.get_dex_icons()
 
     def build_encyclopedia_page_image(self, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, new_page_number = None):
@@ -149,7 +144,9 @@ class EncyclopediaImageFactory:
             total_mythical_catches = creature_info[2]
 
             creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
-            if creature_is_locked and creature.local_rarity.name == TRANSCENDANT.name:
+
+           # if creature is locked and is transcendant, skip it & don't display the icon
+            if creature_is_locked and creature.default_rarity.name == TRANSCENDANT.name:
                 continue
 
             if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
@@ -178,7 +175,6 @@ class EncyclopediaImageFactory:
         encyclopedia_img.paste(top_bar_encounter_img, (0, 0), top_bar_encounter_img)
 
         return encyclopedia_img
-
     def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image):
         bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
@@ -193,6 +189,7 @@ class EncyclopediaImageFactory:
         # encyclopedia_img.paste(bottom_bar_environment_icon_img, (0, 0), bottom_bar_environment_icon_img)
 
         return encyclopedia_img
+
 
     def add_text_to_encyclopedia_image(self, encyclopedia_img: Image):
         draw = ImageDraw.Draw(encyclopedia_img)
@@ -215,8 +212,8 @@ class EncyclopediaImageFactory:
 
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
+        creature_count = len([creature for creature in self.creatures if creature[0].local_rarity.name != TRANSCENDANT.name])
 
-        creature_count = len([creature for creature in self.creatures if creature[0].name != TRANSCENDANT.name])
         text = f"{'0' if self.distinct_user_catches < 10 else ''} {self.distinct_user_catches} / {'0' if creature_count < 10 else ''} {creature_count}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)

@@ -97,68 +97,26 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
     # OPEN SCREEN COMMANDS
     @discord_bot.discord_bot.command(name='encyclopedia', help="List all creatures caught. Use 'verbose' for detailed stats.")
-    async def encyclopedia(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
+    async def encyclopedia(ctx, param1: str = None):
         # Initialize defaults
-        verbose = False
-        is_server_stats = False
         target_user_id = None
-        show_variants = False
-        show_mythics = False
 
         if param1:
-            if param1.lower() == "verbose":
-                verbose = True
-            elif param1.lower() == "server":
-                is_server_stats = True
-            elif param1.lower() == "variants":
-                show_variants = True
-            elif param1.lower() == "mythics":
-                show_mythics = True
+            if param1.lower() == "server":
+                target_user_id = "server"
             elif param1.isdigit():
                 target_user_id = int(param1)
-        if param2:
-            if param2.lower() == "verbose":
-                verbose = True
-            elif param2.lower() == "server":
-                is_server_stats = True
-            elif param2.lower() == "variants":
-                show_variants = True
-            elif param2.lower() == "mythics":
-                show_mythics = True
-            elif param2.isdigit():
-                target_user_id = int(param2)
-        if param3:
-            if param3.lower() == "verbose":
-                verbose = True
-            elif param3.lower() == "server":
-                is_server_stats = True
-            elif param3.lower() == "variants":
-                show_variants = True
-            elif param3.lower() == "mythics":
-                show_mythics = True
-            elif param3.isdigit():
-                target_user_id = int(param3)
-        if param4:
-            if param4.lower() == "verbose":
-                verbose = True
-            elif param4.lower() == "server":
-                is_server_stats = True
-            elif param4.lower() == "mythics":
-                show_mythics = True
-            elif param4.lower() == "variants":
-                show_variants = True
-            elif param4.isdigit():
-                target_user_id = int(param4)
 
-        target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
+        if target_user_id == "server":
+            target_user = None
+        else:
+            target_user = ctx.guild.get_member(target_user_id if target_user_id else ctx.author.id)
 
-        encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats, show_variants=show_variants, show_mythics=show_mythics)
-        encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
-
-        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author)
+        encyclopedia_img_factory = EncyclopediaImageFactory(environment=discord_bot.creature_spawner_handler.current_environment, message_author=ctx.author, target_user=target_user)
+        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=ctx.author)
 
         await ctx.message.delete()
-        await ctx.send('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
+        await ctx.send('', files=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_test.png')], view=view)
 
     @discord_bot.discord_bot.command(name='player-profile', help="Shows User's Profile Page.")
     async def player_profile(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):

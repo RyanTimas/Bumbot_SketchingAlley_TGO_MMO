@@ -48,7 +48,7 @@ TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE = """
         c.img_root, ec.local_img_root,
         ec.sub_environment_type, 
         c.encounter_rate, 
-        ec.spawn_rarity 
+        c.default_rarity, ec.spawn_rarity 
     FROM tgommo_environment_creature ec 
         LEFT JOIN tgommo_creature c 
             ON c.creature_id = ec.creature_id 
@@ -64,7 +64,7 @@ TGOMMO_SELECT_USER_CREATURE_BASE = """
         c.img_root, ec.local_img_root,
         ec.sub_environment_type, 
         c.encounter_rate, 
-        ec.spawn_rarity, uc.is_mythical, 
+        c.default_rarity, ec.spawn_rarity, uc.is_mythical, 
         uc.catch_date, uc.is_favorite, uc.is_released 
     FROM tgommo_user_creature uc 
         LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id 
@@ -385,9 +385,12 @@ TGOMMO_GET_SERVER_MYTHICAL_COUNT = '''SELECT COUNT(*) FROM  tgommo_user_creature
 TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id = ?;"""
 
 TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE user_id = ?;"""
-TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID = """select spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
+
+TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID = """select ec.spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
 TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_DEX_NO = """SELECT spawn_rarity FROM tgommo_environment_creature ec LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id where ec.creature_id = ? and e.dex_no = ?;"""
+
 TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_DEX_NO = """select spawn_rarity from tgommo_environment_creature where creature_id = ? and environment_id = ?;"""
+
 TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES = """select creature_id from tgommo_creature where variant_no = 1;"""
 TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES_IN_ENVIRONMENT = """select ec.creature_id from tgommo_environment_creature ec join tgommo_creature c WHERE c.creature_id = ec.creature_id and ec.environment_id = ? and c.variant_no = 1;"""
 TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID = """SELECT COUNT(*), COUNT(DISTINCT creature_id) FROM tgommo_user_creature WHERE user_id =? and is_mythical=?;"""

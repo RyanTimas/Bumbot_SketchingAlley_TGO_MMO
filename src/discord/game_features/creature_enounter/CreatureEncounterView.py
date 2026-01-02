@@ -49,7 +49,7 @@ class CreatureEncounterView(View):
                     return
 
                 # can always catch mythical creatures or if spawned using bait
-                can_catch = self.creature.rarity != MYTHICAL or self.spawn_user
+                can_catch = self.creature.local_rarity != MYTHICAL or self.spawn_user
                 if not can_catch:
                     can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
                 self.caught = can_catch
@@ -64,7 +64,7 @@ class CreatureEncounterView(View):
             total_xp = successful_catch_embed[2]
 
             # insert record of user catching the creature & give user xp for catching the creature
-            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
+            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.local_rarity == MYTHICAL))
             get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
             # send a message to the channel announcing the successful catch
@@ -92,7 +92,7 @@ class CreatureEncounterView(View):
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
         # Mythical creatures can always be caught
-        if self.creature.rarity.name == MYTHICAL.name:
+        if self.creature.local_rarity.name == MYTHICAL.name:
             return True, ""
 
         # handle hourly catch limits
@@ -108,15 +108,15 @@ class CreatureEncounterView(View):
         if user_id in USER_CATCHES_DAILY:
             count_for_creature = sum(1 for cid in USER_CATCHES_DAILY[user_id] if cid == creature_id)
             too_many_catches = False
-            if self.creature.rarity.name == LEGENDARY.name:
+            if self.creature.local_rarity.name == LEGENDARY.name:
                 too_many_catches = count_for_creature >= 1
-            elif self.creature.rarity.name == EPIC.name:
+            elif self.creature.local_rarity.name == EPIC.name:
                 too_many_catches = count_for_creature >= 1
-            elif self.creature.rarity.name == RARE.name:
+            elif self.creature.local_rarity.name == RARE.name:
                 too_many_catches = count_for_creature >= 3
-            elif self.creature.rarity.name == UNCOMMON.name:
+            elif self.creature.local_rarity.name == UNCOMMON.name:
                 too_many_catches = count_for_creature >= 5
-            elif self.creature.rarity.name == COMMON.name:
+            elif self.creature.local_rarity.name == COMMON.name:
                 too_many_catches = count_for_creature >= 10
 
             if too_many_catches:

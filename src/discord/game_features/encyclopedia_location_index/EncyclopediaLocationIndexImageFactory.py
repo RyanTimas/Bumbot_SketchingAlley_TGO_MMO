@@ -3,17 +3,11 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic, center_text_on_pixel, \
-    resize_text_to_fit, build_user_profile_pic
+from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import \
-    EncyclopediaLocationIndexIconFactory
-from src.discord.objects.CreatureRarity import TRANSCENDANT
-from src.discord.objects.TGOCreature import TGOCreature
-from src.discord.objects.TGOEnvironment import TGOEnvironment, NATIONAL_ENV
-from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
+from src.discord.objects.TGOEnvironment import NATIONAL_ENV
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
 
 
@@ -122,7 +116,7 @@ class EncyclopediaLocationIndexImageFactory:
         # Only process within our page range
         for i in range(starting_index, ending_index):
             location = self.locations[i]
-            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=self.player.user_id, environment_id=location.environment_id)
+            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=None if not self.player else self.player.user_id, environment_id=location.environment_id)
 
             icon = EncyclopediaLocationIndexIconFactory(environment=location, user_unique_catches=user_catches, possible_unique_catches=possible_catches)
             icon_img = icon.generate_location_tab_icon_image()

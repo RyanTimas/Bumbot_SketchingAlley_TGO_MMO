@@ -185,7 +185,7 @@ class CreatureInventoryImageFactory:
         filtered_creature_icons = []
 
         for i, creature in enumerate(self.caught_creatures):
-            if self.show_mythics_only and (creature.rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.rarity.name == TGOMMO_RARITY_MYTHICAL):
+            if self.show_mythics_only and (creature.local_rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL):
                 continue
             if self.show_nicknames_only and (creature.nickname == '' if not self.is_exclusive_mode else creature.nickname != ''):
                 continue

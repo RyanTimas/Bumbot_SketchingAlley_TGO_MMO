@@ -139,7 +139,7 @@ class CreatureSpawnerHandler:
         )
 
         # Create separate task for despawn
-        if creature.rarity.name != TRANSCENDANT.name and creature.rarity.name != MYTHICAL.name:
+        if creature.local_rarity.name != TRANSCENDANT.name and creature.local_rarity.name != MYTHICAL.name:
             thread = threading.Thread(target=self._handle_despawn, args=(creature, spawn_message))
             thread.daemon = True
             thread.start()
@@ -153,7 +153,7 @@ class CreatureSpawnerHandler:
         critter_chain_multiplier = 1
 
         # 12% chance to spawn a duplicate
-        spawn_duplicate = flip_coin(total_iterations=3) and creature.rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
+        spawn_duplicate = flip_coin(total_iterations=3) and creature.local_rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
         while spawn_duplicate:
             # 6% chance to spawn more duplicates
             duplicate_creature = deepcopy(creature)
@@ -172,7 +172,7 @@ class CreatureSpawnerHandler:
     async def creature_picker(self, rarity= None):
         rarity = rarity if rarity else self.get_creature_rarity()
 
-        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity.name == rarity.name]
+        available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity.name]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
@@ -191,7 +191,7 @@ class CreatureSpawnerHandler:
         if flip_coin(total_iterations= 7 if IS_EVENT else 13):
             return TRANSCENDANT
 
-        bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
+        bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.local_rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
 
         # IF DUSK OR DAWN, INCREASE CHANCE OF NORMAL RARITY ROLL
         is_dawn_or_dusk = self.time_of_day in (DUSK, DAWN)

@@ -270,7 +270,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         nickname = f'{creature.nickname}' if creature.nickname != '' else creature.name
 
         creature_symbols =  '❗' if len(creature.nickname) > 0 else ''
-        creature_symbols +=  '✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else ''
+        creature_symbols +=  '✨' if creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ''
 
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 

@@ -49,8 +49,8 @@ class CreatureReleaseRewardHandler:
             TGOMMO_RARITY_OMNIPOTENT: 1
         }
 
-        if random.randint(1, rarity_item_drop_rates[creature.rarity.name]) == 1:
-            if creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
+        if random.randint(1, rarity_item_drop_rates[creature.local_rarity.name]) == 1:
+            if creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL:
 
                 # guaranteed drops for mythical creatures - Legendary Bait OR Epic Bait, Rare Charm
                 bait_type_id = ITEM_ID_LEGENDARY_BAIT if random.randint(1,5) == 1 else ITEM_ID_EPIC_BAIT
@@ -58,7 +58,7 @@ class CreatureReleaseRewardHandler:
                     get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=bait_type_id, convert_to_object=True),
                     get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_RARE_CHARM, convert_to_object=True),
                 ]
-            if creature.rarity.name == TGOMMO_RARITY_TRANSCENDANT:
+            if creature.local_rarity.name == TGOMMO_RARITY_TRANSCENDANT:
                 # guaranteed drops for mythical creatures - Mythical Bait, Legendary Bait, Epic Charm
                 return [
                     get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_MYTHICAL_BAIT, convert_to_object=True),
@@ -71,7 +71,7 @@ class CreatureReleaseRewardHandler:
         return []
     def roll_for_random_item(self, creature):
         reward_pool = []
-        creature_rarity_hierarchy_value = get_rarity_hierarchy_value(creature.rarity.name)
+        creature_rarity_hierarchy_value = get_rarity_hierarchy_value(creature.local_rarity.name)
 
         rarity_bonuses_rates = {
             TGOMMO_RARITY_COMMON: 25,
@@ -94,7 +94,7 @@ class CreatureReleaseRewardHandler:
                     rate = 1 * rarity_bonuses_rates[item.rarity.name] * (.1 if item.item_type == ITEM_TYPE_CHARM else 1)
 
                     # perform rarity matching bonus
-                    if creature.rarity.name == item.rarity.name:
+                    if creature.local_rarity.name == item.rarity.name:
                         rate = 50
 
                     reward_pool.extend([item] * math.floor(rate))

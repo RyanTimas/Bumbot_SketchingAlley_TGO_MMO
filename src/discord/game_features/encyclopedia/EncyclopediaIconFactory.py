@@ -3,12 +3,13 @@ from PIL import ImageDraw, ImageFont, Image
 from src.commons.CommonFunctions import get_image_path
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import TRANSCENDANT
+from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
 class EncyclopediaIconFactory:
-    def __init__(self, creature = None, total_catches=0, total_mythical_catches=0, rarity =TGOMMO_RARITY_COMMON, creature_is_locked=True, show_stats=False):
+    def __init__(self, creature = None, total_catches=0, total_mythical_catches=0, creature_is_locked=True, show_stats=False, environment:TGOEnvironment = None):
         self.creature: TGOCreature = creature
         self.total_catches = total_catches
         self.total_mythical_catches = total_mythical_catches
@@ -18,12 +19,11 @@ class EncyclopediaIconFactory:
         self.creature_is_locked = creature_is_locked
         self.show_stats = False if creature_is_locked else show_stats
 
-        self.rarity = rarity
-
+        self.environment = environment
 
     def generate_dex_entry_image(self):
         # Create a copy of the background to serve as the canvas
-        dex_icon_img = Image.open(f"{DEX_ICON_BACKGROUND_BASE}_{self.creature.rarity.name}{IMAGE_FILE_EXTENSION}")
+        dex_icon_img = Image.open(f"{DEX_ICON_BACKGROUND_BASE}_{self.creature.local_rarity.name if self.environment.environment_id > 0 or self.creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL else self.creature.kingdom}{IMAGE_FILE_EXTENSION}")
 
         # Paste the shadow onto the final image
         shadow_img = Image.open(DEX_ICON_SHADOW_IMAGE)
@@ -38,7 +38,7 @@ class EncyclopediaIconFactory:
             dex_icon_img.paste(icon_stats_overlay, (0, 0), icon_stats_overlay)
 
         # add the final overlay on top
-        icon_overlay = Image.open(DEX_ICON_OVERLAY if self.creature.rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)
+        icon_overlay = Image.open(DEX_ICON_OVERLAY if self.creature.default_rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)
         dex_icon_img.paste(icon_overlay, (0, 0), icon_overlay)
 
         # self.add_text_to_image(image=dex_icon_img).show()
@@ -46,7 +46,7 @@ class EncyclopediaIconFactory:
 
 
     def add_text_to_image(self, image: Image):
-        if self.creature.name == TRANSCENDANT.name:
+        if self.creature.default_rarity.name == TRANSCENDANT.name:
             return image
 
         image = self.add_dex_num_to_image(image)

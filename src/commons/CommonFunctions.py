@@ -352,11 +352,11 @@ def retry_on_ssl_error(max_retries=3, delay=1):
 #-------------------------------BUTTON FUNCTIONS------------------------------------
 #************************************************************************************
 # Button that goes back to parent view when clicked
-def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None):
+def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None, files=None):
     button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
-    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id,)
+    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id, files=files)
     return button
-def go_back_callback(original_view, interaction_lock=None, message_author_id=None):
+def go_back_callback(original_view, interaction_lock=None, message_author_id=None, files=None):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):
         # Check if we're already processing an interaction
@@ -368,7 +368,7 @@ def go_back_callback(original_view, interaction_lock=None, message_author_id=Non
             await interaction.response.defer()
 
     # Go back to the previous view or state
-        await interaction.message.edit(attachments=[], view=original_view)
+        await interaction.message.edit(attachments=files if files else [], view=original_view)
     return callback
 
 

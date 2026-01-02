@@ -27,7 +27,7 @@ class CreatureInventoryIconImageFactory:
         if self.creature.nickname != '':
             nickname_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_NICKNAME_STAMP_IMAGE)
             icon_img.paste(nickname_overlay, (0, 0), nickname_overlay)
-        if self.creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
+        if self.creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL:
             mythical_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_MYTHICAL_STAMP_IMAGE)
             icon_img.paste(mythical_overlay, (0, 0), mythical_overlay)
 

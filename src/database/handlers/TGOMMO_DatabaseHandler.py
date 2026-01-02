@@ -82,7 +82,7 @@ class TGOMMODatabaseHandler:
         return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)
 
 
-    def get_all_creatures_for_encyclopedia(self, user_id=0, environment_id=0, environment_variant_no=0, include_variants=False, include_mythics=False):
+    def get_all_creatures_for_encyclopedia(self, user_id=0, environment_id=0, environment_variant_type=None, include_variants=False, include_mythics=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE if environment_id != 0 else TGOMMO_SELECT_CREATURE_BASE}"
         params = []
 
@@ -95,9 +95,9 @@ class TGOMMODatabaseHandler:
             params.append(environment_id)
 
             # add time of day filter if applicable
-            if environment_variant_no != -1:
+            if environment_variant_type != BOTH:
                 query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
-                params.append(DAY if environment_variant_no == 0 else NIGHT)
+                params.append(environment_variant_type)
 
         # add variant filter if applicable
         if not include_variants:
@@ -198,7 +198,7 @@ class TGOMMODatabaseHandler:
                         img_root=creature_details[9], local_image_root=creature_details[10],
                         sub_environment=creature_details[11],
                         encounter_rate=creature_details[12],
-                        rarity=get_rarity_by_name(creature_details[13])
+                        default_rarity=get_rarity_by_name(creature_details[13])
                     )
                 )
             else:
@@ -246,7 +246,8 @@ class TGOMMODatabaseHandler:
                         full_name=creature_details[5], scientific_name=creature_details[6], kingdom=creature_details[7],
                         description=creature_details[8],
                         img_root=creature_details[9],
-                        encounter_rate=creature_details[10]
+                        encounter_rate=creature_details[10],
+                        default_rarity=get_rarity_by_name(creature_details[11])
                     )
                 )
         return creatures if expect_multiple else creatures[0]
@@ -266,7 +267,7 @@ class TGOMMODatabaseHandler:
                         img_root=creature_details[12], local_image_root=creature_details[13],
                         sub_environment=creature_details[14],
                         encounter_rate=creature_details[15],
-                        rarity=get_rarity_by_name(creature_details[16])
+                        default_rarity=get_rarity_by_name(creature_details[16]), local_rarity=get_rarity_by_name(creature_details[17])
                     )
                 )
         return creatures if expect_multiple else creatures[0]
@@ -286,8 +287,8 @@ class TGOMMODatabaseHandler:
                         img_root=creature_details[14], local_image_root=creature_details[15],
                         sub_environment=creature_details[16],
                         encounter_rate=creature_details[17],
-                        rarity=MYTHICAL if creature_details[19] else get_rarity_by_name(creature_details[18]),
-                        caught_date=creature_details[20], is_favorite=bool(creature_details[21]),  is_released=bool(creature_details[22]),
+                        default_rarity=get_rarity_by_name(creature_details[18]), local_rarity=MYTHICAL if creature_details[20] else get_rarity_by_name(creature_details[19]),
+                        caught_date=creature_details[21], is_favorite=bool(creature_details[22]),  is_released=bool(creature_details[23]),
                     )
                 )
         return creatures if expect_multiple else creatures[0]
@@ -508,6 +509,7 @@ class TGOMMODatabaseHandler:
 
     # Gets encyclopedia page info for a user or server page
     def get_encyclopedia_page_info(self, user_id=0, is_server_page=False, include_variants=False, include_mythics=False, environment:TGOEnvironment = None,  time_of_day=DAY):
+        # todo: dynamically build query based on parameters
         # GET TOTAL FOR CREATURES THAT CAN BE CAUGHT
         if include_variants:
             creature_count_query = TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_USER_BY_ID if not is_server_page else TGOMMO_GET_ENCYCLOPEDIA_PAGE_INFO_FOR_SERVER_BY_ID
@@ -880,7 +882,7 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(MANTIS_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
             self.format_creature_environment_link_params(GARTERSNAKE_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(BOXTURTLE_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
-            self.format_creature_environment_link_params(TOAD_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_POND),
+            self.format_creature_environment_link_params(TOAD_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             self.format_creature_environment_link_params(DUCK_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
             self.format_creature_environment_link_params(DUCK_DEX_NO, 2, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
             self.format_creature_environment_link_params(TURKEY_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
@@ -920,7 +922,7 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(SPOTTED_LANTERNFLY_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
             self.format_creature_environment_link_params(DRAGONFLY_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_POND),
             self.format_creature_environment_link_params(POND_SKATER_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
-            self.format_creature_environment_link_params(BULL_FROG_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_POND),
+            self.format_creature_environment_link_params(BULL_FROG_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             self.format_creature_environment_link_params(PAINTED_TURTLE_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             self.format_creature_environment_link_params(SEAGULL_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_BEACH),
             self.format_creature_environment_link_params(CORMORANT_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_BEACH),

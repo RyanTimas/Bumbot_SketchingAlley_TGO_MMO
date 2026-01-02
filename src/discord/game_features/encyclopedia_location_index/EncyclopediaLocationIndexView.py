@@ -7,13 +7,9 @@ from src.commons.CommonFunctions import convert_to_png, create_go_back_button, c
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
+from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView, next_, previous, jump
 from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
-
-next_ = "next"
-previous = "previous"
-jump = "jump"
 
 class EncyclopediaLocationIndexView(discord.ui.View):
     def __init__(self, message_author, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, target_user=None, original_view=None):
@@ -22,14 +18,18 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         self.target_user = target_user if target_user else None
 
         self.encyclopedia_location_index_image_factory = encyclopedia_location_index_image_factory
+        self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image()
 
         self.original_view = original_view
         self.interaction_lock = asyncio.Lock()
 
         self.new_page = 1
-        self.selected_environment = None
 
-        # Initialize the buttons once
+        self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation()
+        self.selectable_environments.insert(0, NATIONAL_ENV)
+        self.selected_environment = self.selectable_environments[0] if self.selectable_environments else None
+
+        # INITIALIZE BUTTONS AND DROPDOWNS
         self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
 
         self.prev_button = self.create_navigation_button(is_next=False, row=1)
@@ -107,25 +107,10 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             await interaction.response.defer()
 
             # Create encyclopedia view for the selected environment
-            encyclopedia_img_factory = EncyclopediaImageFactory(
-                user=self.target_user,
-                environment=self.selected_environment if self.selected_environment else NATIONAL_ENV,
-                verbose=False,
-                is_server_page= self.target_user is None,
-                show_variants=False,
-                show_mythics=False
-            )
+            encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
+            encyclopedia_view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=self.message_author, original_view=self, original_image_files=[convert_to_png(self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index_page.png')],)
 
-            # Generate the encyclopedia image & replace view
-            file = convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_page.png')
-
-            encyclopedia_view = EncyclopediaView(
-                encyclopedia_image_factory=encyclopedia_img_factory,
-                message_author=self.message_author,
-                original_view=self
-            )
-
-            await interaction.message.edit(attachments=[file], view=encyclopedia_view)
+            await interaction.message.edit(attachments=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_page.png')], view=encyclopedia_view)
 
     # CREATE DROPDOWNS
     def create_page_jump_dropdown(self, row=1):
@@ -138,24 +123,17 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         await interaction.response.defer()
 
     def create_environments_dropdown(self, row=0):
-        environments = get_tgommo_db_handler().get_all_environments_in_rotation()
-        environments.insert(0, NATIONAL_ENV)
-
-        # Auto-select the first environment
-        if environments:
-            self.selected_environment = environments[0]
-
         options = [
             discord.SelectOption(
                 label=env.name,  # name
                 value=str(env.environment_id),
                 description=env.location
             )
-            for env in environments[:25]  # Discord limit of 25 options
+            for env in self.selectable_environments[:25]  # Discord limit of 25 options
         ]
 
         dropdown = Select(
-            placeholder=environments[0].name if environments else "No Environments Available",
+            placeholder=self.selectable_environments[0].name if self.selectable_environments else "No Environments Available",
             options=options,
             min_values=0,
             max_values=1,
@@ -194,14 +172,14 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             self.remove_item(item)
 
         # Add buttons to view
-        self.add_item(self.page_jump_dropdown)
+        if len(self.selectable_environments) > 8:
+            self.add_item(self.page_jump_dropdown)
 
-        self.add_item(self.prev_button)
-        self.add_item(self.page_jump_button)
-        self.add_item(self.next_button)
+            self.add_item(self.prev_button)
+            self.add_item(self.page_jump_button)
+            self.add_item(self.next_button)
 
         self.add_item(self.environment_dropdown)
-
         self.add_item(self.view_environment_button)
 
         self.add_item(self.close_button)

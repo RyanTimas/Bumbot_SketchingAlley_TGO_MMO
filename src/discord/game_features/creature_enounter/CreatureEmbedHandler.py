@@ -35,22 +35,22 @@ class CreatureEmbedHandler:
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
-        embed = discord.Embed(color=self.creature.rarity.color)
+        embed = discord.Embed(color=self.creature.local_rarity.color)
 
-        creature_name = self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"
+        creature_name = self.creature.name if self.creature.local_rarity.name != TRANSCENDANT.name else "❓❓❓"
         message = f'{self.spawn_user.nickname} has attracted a wild {creature_name}!' if self.spawn_user else f'A wild {creature_name} has appeared!'
 
         embed.set_author(name = message, icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
-        embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
+        embed.add_field(name="Rarity", value=f"{self.creature.local_rarity.emojii} **{self.creature.local_rarity.name}**", inline=True)
 
-        if self.creature.rarity.name != MYTHICAL.name and self.creature.rarity.name != TRANSCENDANT.name:
+        if self.creature.local_rarity.name != MYTHICAL.name and self.creature.local_rarity.name != TRANSCENDANT.name:
             embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp(timestamp=int(self.creature.despawn_time.timestamp()))}*", inline=True)
 
         # add active bonuses to embed
         bonus_description = ''
         for bonus in self.active_bonuses:
-            bonus_description += f"-#\t{bonus.rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
+            bonus_description += f"-#\t{bonus.local_rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
         if len(self.active_bonuses) > 0:
             embed.add_field(name=f"", value=f"", inline=False)
             embed.add_field(name=f"Active Bonuses", value=f"{bonus_description}", inline=False)
@@ -136,7 +136,7 @@ class CreatureEmbedHandler:
             self.add_xp_field_to_embed(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000
-        if self.creature.rarity == MYTHICAL:
+        if self.creature.local_rarity == MYTHICAL:
             self.add_xp_field_to_embed(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             total_xp += 10000

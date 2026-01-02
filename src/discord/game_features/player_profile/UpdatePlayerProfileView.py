@@ -252,7 +252,7 @@ class UpdatePlayerProfileView(discord.ui.View):
             current_page = pages[page_num]
 
             creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
-            nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if creature.rarity.name == TGOMMO_RARITY_MYTHICAL else '')
+            nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL else '')
 
             newlines = f'{'\n' if creature.catch_id != ordered_creatures[creature_index - 1].catch_id else ''}\n'
             new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(nickname, 20)}"

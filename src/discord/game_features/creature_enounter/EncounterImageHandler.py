@@ -42,7 +42,7 @@ class EncounterImageHandler:
         if glow:
             final_img.paste(glow, (0, 0), glow)
 
-        if self.creature.rarity.name == TRANSCENDANT.name:
+        if self.creature.local_rarity.name == TRANSCENDANT.name:
             transcendant_glow =Image.open(ENCOUNTER_SCREEN_TRANSCENDANT_GLOW_IMAGE)
             transcendant_glow = Image.blend(Image.new('RGBA', transcendant_glow.size, (0, 0, 0, 0)), transcendant_glow, 0.6)
             final_img.paste(transcendant_glow, (0, 0), transcendant_glow)
@@ -103,7 +103,7 @@ class EncounterImageHandler:
         support_font_2 = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 18)
 
         # Draw each line of text
-        self.place_text_on_image(lines=[self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else '???'], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.rarity.font_color, outline_color=self.creature.rarity.outline_color)
+        self.place_text_on_image(lines=[self.creature.name if self.creature.local_rarity.name != TRANSCENDANT.name else '???'], font=main_font, outline_width=2, draw=draw, padding=(0, self.get_y_offset_to_center_text(main_font)), add_border=True, center_text=True, text_box_width=base_img.width, text_color=self.creature.local_rarity.font_color, outline_color=self.creature.local_rarity.outline_color)
         self.place_text_on_image(lines=['A Wild'], font=support_font_2, outline_width=2, draw=draw, padding=(-140, 128), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
         self.place_text_on_image(lines=['Appears'], font=support_font, outline_width=2, draw=draw, padding=(140, 130), add_border=False, center_text=True, text_box_width=base_img.width, text_color=FONT_COLOR_WHITE, outline_color=FONT_COLOR_WHITE)
 

@@ -154,7 +154,7 @@ class PlayerProfilePageFactory:
                 continue
 
             title = creature.nickname if creature.nickname != "" else creature.name
-            image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.rarity.name}{IMAGE_FILE_EXTENSION}'
+            image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.local_rarity.name}{IMAGE_FILE_EXTENSION}'
             catch_date = convert_date_format_to_month_name(creature.caught_date)
 
             team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, tab_image=creature.dex_icon_image, background_image_path=None, image_color_path=image_color_path, tab_title=title, tab_subtitle=creature.full_name, tab_footer=catch_date)
@@ -215,7 +215,7 @@ async def build_user_creature_collection(author, ctx):
     for creature_index, creature in enumerate(creature_collection):
         current_page = pages[page_num]
 
-        is_mythical = creature.rarity.name == TGOMMO_RARITY_MYTHICAL
+        is_mythical = creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL
         nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if is_mythical else '')
 
         newlines = f'{'\n' if creature.catch_id != creature_collection[creature_index - 1].catch_id else ''}\n'

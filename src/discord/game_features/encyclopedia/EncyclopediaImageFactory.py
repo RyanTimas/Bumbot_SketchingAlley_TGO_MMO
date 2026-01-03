@@ -15,12 +15,12 @@ from src.resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory:
-    def __init__(self, environment: TGOEnvironment, message_author= None, target_user= None, verbose= False, show_variants= False, show_mythics= False, time_of_day= BOTH):
+    def __init__(self, environment: TGOEnvironment, message_author= None, target_user= None, is_verbose= False, show_variants= False, show_mythics= False, time_of_day= BOTH):
         self.environment = environment
         self.message_author = message_author
         self.target_user = target_user
 
-        self.verbose = verbose
+        self.is_verbose = is_verbose
         self.show_variants = show_variants
         self.show_mythics = show_mythics
         self.time_of_day = time_of_day
@@ -35,7 +35,9 @@ class EncyclopediaImageFactory:
         self.load_relevant_info(show_variants= show_variants, show_mythics= show_mythics, time_of_day= time_of_day)
 
 
-    def load_relevant_info(self, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
+    def load_relevant_info(self, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
+        self.is_verbose = self.is_verbose if is_verbose is None else is_verbose
+
         self.page_num = self.page_num if new_page_number is None else new_page_number
         self.show_variants = self.show_variants if show_variants is None else show_variants
         self.show_mythics = self.show_mythics if show_mythics is None else show_mythics
@@ -47,11 +49,12 @@ class EncyclopediaImageFactory:
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number:
             self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
             self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(user_id=self.target_user.id, environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
+        if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
 
     def build_encyclopedia_page_image(self, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, new_page_number = None):
         # set new values in case button was clicked
-        self.load_relevant_info(show_variants= show_variants, show_mythics= show_mythics, time_of_day= time_of_day, new_page_number= new_page_number)
+        self.load_relevant_info(is_verbose=is_verbose, show_variants= show_variants, show_mythics= show_mythics, time_of_day= time_of_day, new_page_number= new_page_number)
 
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
@@ -152,7 +155,7 @@ class EncyclopediaImageFactory:
             if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
                 creature.set_creature_rarity(MYTHICAL)
 
-            dex_icon = EncyclopediaIconFactory(creature= creature,  environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.verbose)
+            dex_icon = EncyclopediaIconFactory(creature= creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
             dex_icon_img = dex_icon.generate_dex_entry_image()
 
             raw_imgs.append(dex_icon_img)

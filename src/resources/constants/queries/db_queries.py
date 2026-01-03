@@ -94,24 +94,28 @@ TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY e
 
 '''ENCYCLOPEDIA QUERIES'''
 # retrieves the total number of catches and distinct creatures caught by a user
-TGOMMO_SELECT_COUNT_FOR_ALL_CAUGHT_CREATURES_BY_USER_BASE = """
+TGOMMO_SELECT_ALL_CREATURES_CAUGHT_TOTALS_BASE = """
     SELECT 
         COUNT(*),
         COUNT(DISTINCT ec.creature_id)
     FROM tgommo_user_creature uc
+    LEFT JOIN  tgommo_creature c
+        ON uc.creature_id = c.creature_id
     LEFT JOIN tgommo_environment_creature ec 
         ON uc.creature_id = ec.creature_id
-    WHERE 
-        true
+    WHERE true
 """
 # retrieves how many catches and mythical catches a user has for a particular creature
-TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER = """
+TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE = """
     SELECT 
-        COUNT(DISTINCT uc.creature_id) as total_distinct_creatures,
-        COUNT(DISTINCT CASE WHEN uc.is_mythical = 1 THEN uc.creature_id END) as mythical_distinct_creatures
+        COUNT(*) as total_catches,
+        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as total_mythical_catches
     FROM tgommo_user_creature uc
-    WHERE uc.user_id = ?
-        AND uc.creature_id = ?;
+    LEFT JOIN tgommo_environment e 
+        ON uc.environment_id = e.environment_id
+    LEFT JOIN tgommo_creature c
+        ON uc.creature_id = c.creature_id
+    WHERE true
 """
 
 # retrieves how many unique creatures, how many unique variants, and how many unique mythical creatures a user has caught for a particular environment
@@ -195,8 +199,6 @@ TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX = " e.is_night_environm
 TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY e.dex_no, e.variant_no"
 TGOMMO_ORDER_BY_RANDOM_SUFFIX = " ORDER BY RANDOM() LIMIT 1;"
 
-TGOMMO_SELECT_ENVIRONMENT_BY_ID = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE environment_id = ?"""
-TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_AND_VARIANT_NO = """SELECT environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate FROM tgommo_environment WHERE dex_no = ? AND variant_no = ?;"""
 TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""
 
 

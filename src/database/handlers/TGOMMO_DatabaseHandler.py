@@ -113,9 +113,32 @@ class TGOMMODatabaseHandler:
         # get counts for how many times the user has caught each creature
         creatures_for_display_info = []
         for encyclopedia_creature in encyclopedia_creatures:
-            total_creature_catches, total_mythical_catches = self.QueryHandler.execute_query(TGOMMO_SELECT_COUNT_FOR_CREATURE_CAUGHT_BY_USER, params=(user_id, encyclopedia_creature.creature_id))[0]
+            total_creature_catches, total_mythical_catches = self.get_total_catches_for_creature_by_user(creature=encyclopedia_creature, user_id=user_id, environment_dex_no=environment_id if environment_id != 0 else None, environment_variant_type=1 if environment_variant_type == DAY else 2 if environment_variant_type == NIGHT else None, group_variants=not include_variants,)
             creatures_for_display_info.append((encyclopedia_creature, total_creature_catches, total_mythical_catches))
         return creatures_for_display_info
+
+    def get_total_catches_for_creature_by_user(self, creature=None, user_id=0, environment_dex_no=None, environment_variant_type=None, group_variants=False,):
+        query = f"{TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX if group_variants else TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX}"
+        params = [creature.creature_id]
+
+
+
+        if user_id is not None:
+            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
+            params.append(user_id)
+        if not group_variants:
+            query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
+            params.append(creature.variant_no)
+
+        if environment_dex_no is not None:
+            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
+            params.append(environment_dex_no)
+            if environment_variant_type is not None:
+                query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX}"
+                params.append(environment_variant_type)
+
+        response = self.QueryHandler.execute_query(query, params=tuple(params))
+        return response[0]
 
     # Event Creature Queries
     def get_event_creatures_from_environment(self, convert_to_object=False):
@@ -451,8 +474,8 @@ class TGOMMODatabaseHandler:
         return response[0][0]
 
     # Gets encyclopedia page info for a user or server page
-    def get_user_catch_totals_for_environment(self, user_id=0, include_variants=False, include_mythics=False, environment:TGOEnvironment = None, time_of_day=DAY):
-        query = f"{TGOMMO_SELECT_COUNT_FOR_ALL_CAUGHT_CREATURES_BY_USER_BASE}"
+    def get_user_catch_totals_for_environment(self, user_id=0, include_variants=False, include_mythics=False, environment:TGOEnvironment = None, time_of_day=None):
+        query = f"{TGOMMO_SELECT_ALL_CREATURES_CAUGHT_TOTALS_BASE}"
         params = []
 
         if user_id:
@@ -467,8 +490,9 @@ class TGOMMODatabaseHandler:
         if environment.dex_no > 0:
             query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX}"
             params.append(environment.dex_no)
-        if time_of_day != BOTH:
+        if time_of_day:
             query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
+            params.append(time_of_day)
 
         return self.QueryHandler.execute_query(query, params=params)[0]
 

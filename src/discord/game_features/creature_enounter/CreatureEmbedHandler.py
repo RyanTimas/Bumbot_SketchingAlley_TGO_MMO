@@ -122,8 +122,8 @@ class CreatureEmbedHandler:
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
         total_xp = randint(10, 50)
 
-        user_has_caught_species = get_tgommo_db_handler().user_has_caught_species(user_id=interaction.user.id, creature_id=self.creature.creature_id)
-        total_server_catches = get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id)
+        user_has_caught_species = get_tgommo_db_handler().get_total_catches_for_species(user_id=interaction.user.id, creature=self.creature)[0]
+        total_server_catches = get_tgommo_db_handler().get_total_catches_for_species(creature=self.creature)[0]
 
         self.add_xp_field_to_embed(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)

@@ -11,15 +11,15 @@ from src.resources.constants.file_paths import *
 class EncyclopediaIconFactory:
     def __init__(self, creature = None, total_catches=0, total_mythical_catches=0, creature_is_locked=True, show_stats=False, environment:TGOEnvironment = None):
         self.creature: TGOCreature = creature
-        self.total_catches = total_catches
-        self.total_mythical_catches = total_mythical_catches
-
         self.dex_no = f'{"0" if self.creature.dex_no <10 else ""}{self.creature.dex_no}'
 
+        self.total_catches = total_catches
+        self.total_mythical_catches = total_mythical_catches
         self.creature_is_locked = creature_is_locked
-        self.show_stats = False if creature_is_locked else show_stats
 
+        self.show_stats = False if creature_is_locked else show_stats
         self.environment = environment
+
 
     def generate_dex_entry_image(self):
         # Create a copy of the background to serve as the canvas

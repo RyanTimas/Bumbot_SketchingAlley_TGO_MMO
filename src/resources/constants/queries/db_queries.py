@@ -96,8 +96,9 @@ TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY e
 # retrieves the total number of catches and distinct creatures caught by a user
 TGOMMO_SELECT_ALL_CREATURES_CAUGHT_TOTALS_BASE = """
     SELECT 
-        COUNT(*),
-        COUNT(DISTINCT ec.creature_id)
+        COUNT(*) as total_catches,
+        COUNT(DISTINCT c.dex_no) as distinct_creatures_caught,
+        COUNT(DISTINCT ec.creature_id) as distinct_creature_variants_caught
     FROM tgommo_user_creature uc
     LEFT JOIN  tgommo_creature c
         ON uc.creature_id = c.creature_id
@@ -109,7 +110,7 @@ TGOMMO_SELECT_ALL_CREATURES_CAUGHT_TOTALS_BASE = """
 TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE = """
     SELECT 
         COUNT(*) as total_catches,
-        SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END) as total_mythical_catches
+        COALESCE(SUM(CASE WHEN uc.is_mythical = 1 THEN 1 ELSE 0 END), 0) as total_mythical_catches
     FROM tgommo_user_creature uc
     LEFT JOIN tgommo_environment e 
         ON uc.environment_id = e.environment_id
@@ -138,6 +139,17 @@ TGOMMO_SELECT_POSSIBLE_CATCHES_FOR_ENCYCLOPEDIA_BASE = """
     FROM tgommo_environment_creature ec 
     LEFT JOIN tgommo_creature c ON ec.creature_id = c.creature_id
     WHERE true
+"""
+
+TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE = """
+    SELECT 
+        MIN(uc.creature_variant_no) as min_variant_no
+    FROM tgommo_user_creature uc
+    LEFT JOIN tgommo_creature c 
+        ON uc.creature_id = c.creature_id
+    LEFT JOIN tgommo_environment e
+        ON uc.environment_id = e.environment_id
+    WHERE c.dex_no = ?
 """
 
 '''EVENT QUERIES'''

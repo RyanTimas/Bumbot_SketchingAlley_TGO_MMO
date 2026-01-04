@@ -25,8 +25,7 @@ class EncyclopediaImageFactory:
         self.show_mythics = show_mythics
         self.time_of_day = time_of_day
 
-        self.total_user_catches = None
-        self.distinct_user_catches = None
+        self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
         self.creatures = []
         self.dex_icons = []
         self.page_num = 1
@@ -48,7 +47,7 @@ class EncyclopediaImageFactory:
         # if any of these values changed, we need to reload the creatures list
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number:
             self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
-            self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(user_id=self.target_user.id, environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
+            self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
 
@@ -74,8 +73,6 @@ class EncyclopediaImageFactory:
         encyclopedia_img = self.build_dex_section(encyclopedia_img)
 
         return self.add_text_to_encyclopedia_image(encyclopedia_img)
-
-
     def build_dex_section(self, encyclopedia_img: Image):
         if self.show_mythics:
             mythical_overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_SHINY_IMAGE)
@@ -141,31 +138,33 @@ class EncyclopediaImageFactory:
 
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
-            creature_info = self.creatures[i]
-            creature: TGOCreature = creature_info[0]
-            total_catches = creature_info[1]
-            total_mythical_catches = creature_info[2]
-
-            creature_is_locked = total_mythical_catches == 0 if self.show_mythics else total_catches == 0
+            creature: TGOCreature = self.creatures[i]
+            total_catches_for_species, total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species(creature=creature, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no, environment_variant_no=self.time_of_day, group_variants=not self.show_variants)
+            creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_species == 0
 
            # if creature is locked and is transcendant, skip it & don't display the icon
-            if creature_is_locked and creature.default_rarity.name == TRANSCENDANT.name:
-                continue
-
-            if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
-                creature.set_creature_rarity(MYTHICAL)
-
-            dex_icon = EncyclopediaIconFactory(creature= creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
-            dex_icon_img = dex_icon.generate_dex_entry_image()
-
-            raw_imgs.append(dex_icon_img)
-            imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
+            if not (creature_is_locked and creature.default_rarity.name == TRANSCENDANT.name):
+                dex_icon_img = self.build_dex_icon(creature=creature, total_catches=total_catches_for_species, total_mythical_catches=total_mythical_catches_for_species, creature_is_locked=creature_is_locked)
+                raw_imgs.append(dex_icon_img)
+                imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
 
         # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
         if self.total_pages != (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0):
             self.total_pages = (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0)
 
         return raw_imgs  #, imgs
+
+    def build_dex_icon(self, creature: TGOCreature, total_catches: int, total_mythical_catches: int, creature_is_locked: bool):
+        if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
+            creature.set_creature_rarity(MYTHICAL)
+        if not self.show_variants:
+            first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no)
+            if first_caught_variant != 1:
+                creature.variant_no = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no)
+                creature.define_creature_images()
+
+        dex_icon = EncyclopediaIconFactory(creature=creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
+        return dex_icon.generate_dex_entry_image()
 
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
@@ -193,7 +192,6 @@ class EncyclopediaImageFactory:
 
         return encyclopedia_img
 
-
     def add_text_to_encyclopedia_image(self, encyclopedia_img: Image):
         draw = ImageDraw.Draw(encyclopedia_img)
 
@@ -215,7 +213,7 @@ class EncyclopediaImageFactory:
 
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
-        creature_count = len([creature for creature in self.creatures if creature[0].local_rarity.name != TRANSCENDANT.name])
+        creature_count = len([creature for creature in self.creatures if creature.local_rarity.name != TRANSCENDANT.name])
 
         text = f"{'0' if self.distinct_user_catches < 10 else ''} {self.distinct_user_catches} / {'0' if creature_count < 10 else ''} {creature_count}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))

@@ -77,12 +77,10 @@ class TGOMMODatabaseHandler:
         return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)
 
     # Encyclopedia Creature Queries
-    def get_creatures_to_display_for_encyclopedia(self, user_id=0, environment_id=0, environment_variant_type=None, include_variants=False):
+    def get_creatures_to_display_for_encyclopedia(self, environment_id=0, environment_variant_type=None, include_variants=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE if environment_id != 0 else TGOMMO_SELECT_CREATURE_BASE}"
         params = []
 
-        # update query / params to remove creatures that don't qualify for display
-        # add environment filter if applicable
         if environment_id != 0:
             query += " AND " if len(params) > 0 else ""
 
@@ -93,8 +91,6 @@ class TGOMMODatabaseHandler:
             if environment_variant_type != BOTH:
                 query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
                 params.append(environment_variant_type)
-
-        # add variant filter if applicable
         if not include_variants:
             query += " AND " if len(params) > 0 else ""
             query += f" {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
@@ -109,19 +105,11 @@ class TGOMMODatabaseHandler:
             encyclopedia_creatures = self.get_creatures_from_database(query=query, params=params, convert_to_object=True, expect_multiple=True)
         else:
             encyclopedia_creatures = self.get_environment_creatures_from_database(query=query, params=params, convert_to_object=True, expect_multiple=True)
-
-        # get counts for how many times the user has caught each creature
-        creatures_for_display_info = []
-        for encyclopedia_creature in encyclopedia_creatures:
-            total_creature_catches, total_mythical_catches = self.get_total_catches_for_creature_by_user(creature=encyclopedia_creature, user_id=user_id, environment_dex_no=environment_id if environment_id != 0 else None, environment_variant_type=1 if environment_variant_type == DAY else 2 if environment_variant_type == NIGHT else None, group_variants=not include_variants,)
-            creatures_for_display_info.append((encyclopedia_creature, total_creature_catches, total_mythical_catches))
-        return creatures_for_display_info
+        return encyclopedia_creatures
 
     def get_total_catches_for_creature_by_user(self, creature=None, user_id=0, environment_dex_no=None, environment_variant_type=None, group_variants=False,):
         query = f"{TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX if group_variants else TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX}"
         params = [creature.creature_id]
-
-
 
         if user_id is not None:
             query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
@@ -142,35 +130,15 @@ class TGOMMODatabaseHandler:
 
     # Event Creature Queries
     def get_event_creatures_from_environment(self, convert_to_object=False):
-        #todo: rebuild event spawn pool suffix
         if not EVENT_SPAWN_POOL:
             return []
 
         # Create placeholders for each ID in the spawn pool
         event_creatures = []
         for event_pairing in EVENT_SPAWN_POOL:
-            creature_id = event_pairing[0]
-            environment_id = event_pairing[1]
-
-            creature_details = self.QueryHandler.execute_query(TGOMMO_SELECT_ENVENT_CREATURE_BY_ENVIRONMENT_ID_AND_CREATURE_ID, params=(creature_id, environment_id))[0]
-
-            if convert_to_object:
-                event_creatures.append(
-                    TGOCreature(
-                        creature_id=creature_details[0],
-                        name=creature_details[1], local_name=creature_details[2], variant_name=creature_details[2],
-                        dex_no=creature_details[3], variant_no=creature_details[4], local_dex_no=creature_details[5], local_variant_no=creature_details[6],
-                        full_name=creature_details[7], scientific_name=creature_details[8], kingdom=creature_details[9], description=creature_details[8],
-                        img_root=creature_details[9], local_image_root=creature_details[10],
-                        sub_environment=creature_details[11],
-                        encounter_rate=creature_details[12],
-                        default_rarity=get_rarity_by_name(creature_details[13])
-                    )
-                )
-            else:
-                event_creatures.append(creature_details)
+            query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX};"
+            event_creatures.append(self.get_creatures_from_database(query=query, params=(event_pairing[0], event_pairing[1]), convert_to_object=convert_to_object, expect_multiple=False))
         return event_creatures
-
     def get_environment_catch_stats_for_user(self, user_id=None, environment_dex_no=None):
         # grab actual user catches
         query = f"{TGOMMO_SELECT_USER_CATCHES_FOR_ENCYCLOPEDIA_BASE}"
@@ -193,10 +161,7 @@ class TGOMMODatabaseHandler:
 
         return user_unique_catches, possible_unique_catches
 
-
-    # ---------------------------------------------------------------------------
     # BASE FUNCTIONS FOR RETRIEVING CREATURES FROM THE DATABASE
-    # ---------------------------------------------------------------------------
     def get_creatures_from_database(self, query, params=(), convert_to_object=True, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -260,17 +225,13 @@ class TGOMMODatabaseHandler:
         return creatures if expect_multiple else creatures[0]
 
 
-    """"""""""""""""""""""""""""""""
     ''' Environment Queries '''
-    """"""""""""""""""""""""""""""""
     def get_environment_by_id(self, environment_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_ENVIRONMENT_ID_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(environment_id,), convert_to_object=convert_to_object, expect_multiple=False)
-
     def get_environment_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(dex_no, variant_no if variant_no != 0 else 1), convert_to_object=convert_to_object, expect_multiple=False)
-
     def get_environments_by_dex_no(self, dex_no=0, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX} {TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(dex_no, ), convert_to_object=convert_to_object, expect_multiple=True)
@@ -278,14 +239,11 @@ class TGOMMODatabaseHandler:
     def get_all_environments_in_rotation(self, is_day_night=1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
-
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=True)
 
-    # ---------------------------------------------------------------------------
     # BASE FUNCTIONS FOR RETRIEVING ENVIRONMENTS FROM THE DATABASE
-    # ---------------------------------------------------------------------------
     def get_environments_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -308,9 +266,8 @@ class TGOMMODatabaseHandler:
 
         return environments if expect_multiple else environments[0]
 
-    """"""""""""""""""""""""""""""""
+
     ''' Player Profile Queries '''
-    """"""""""""""""""""""""""""""""
     def get_user_profile_by_user_id(self, user_id=0, convert_to_object=False, nickname=None):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,))
         if response is None or len(response) == 0:
@@ -325,9 +282,8 @@ class TGOMMODatabaseHandler:
             return TGOPlayer(player_id=player_details[0], user_id=player_details[1], nickname=player_details[2], avatar=avatar, background_id=player_details[4], creature_slot_id_1=player_details[5], creature_slot_id_2=player_details[6], creature_slot_id_3=player_details[7], creature_slot_id_4=player_details[8],  creature_slot_id_5=player_details[9],creature_slot_id_6=player_details[10],currency=player_details[11], available_catches=player_details[12],rod_level=player_details[13], rod_amount=player_details[14], trap_level=player_details[15],trap_amount=player_details[16])
         return response[0]
 
-    """"""""""""""""""""""""""""""""
+
     ''' Avatar Queries '''
-    """"""""""""""""""""""""""""""""
     def get_avatar_by_id(self, avatar_id, convert_to_object=False):
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_AVATAR_BY_ID, params=(avatar_id,))
 
@@ -368,7 +324,6 @@ class TGOMMODatabaseHandler:
                 avatars.append(avatar)
             return avatars
         return response
-
 
     ''' Item Queries '''
     def get_user_item_by_user_id_and_item_id(self, user_id=0, item_id=0, convert_to_object=True):
@@ -437,24 +392,28 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    ''' Encyclopedia Queries '''
-
-
-    def get_creature_rarity_for_environment(self, creature_id=0, environment_id=None, dex_no=None):
-        query = TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_ID if environment_id is not None else TGOMMO_GET_RARITY_FOR_CREATURE_BY_CREATURE_ID_AND_ENVIRONMENT_DEX_NO
-        params = (creature_id, environment_id) if environment_id is not None else (creature_id, dex_no)
-        response = self.QueryHandler.execute_query(query, params=params)
-
-        for rarity in ALL_RARITIES:
-            if rarity.name == response[0][0]:
-                return rarity
-        return COMMON
-
-
     ''' Encyclopedia & Statistics Queries '''
-    def get_total_user_catches_for_species(self, user_id=0, dex_no=0, variant_no=0):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM, params=(user_id, dex_no))
-        return response[0][0]
+    # get total catches & mythicals for species
+    def get_total_catches_for_species(self, creature=None, user_id=None, environment_dex_no=0, environment_variant_no=BOTH, group_variants=False, ):
+        query = f"{TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX if group_variants else TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX}"
+        params = [creature.dex_no if group_variants else creature.creature_id]
+
+        if user_id is not None:
+            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
+            params.append(user_id)
+        if not group_variants:
+            query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
+            params.append(creature.variant_no)
+
+        if environment_dex_no != 0:
+            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
+            params.append(environment_dex_no)
+            if environment_variant_no != BOTH:
+                query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX}"
+                params.append(1 if environment_variant_no == DAY else 2)
+
+        response = self.QueryHandler.execute_query(query, params=tuple(params))
+        return response[0]
 
     def user_has_caught_species(self, user_id=0, creature_id=0):
         response = self.QueryHandler.execute_query(TGOMMO_HAS_USER_CAUGHT_SPECIES, params=(user_id, creature_id))
@@ -481,25 +440,35 @@ class TGOMMODatabaseHandler:
         if user_id:
             query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
             params.append(user_id)
-        if not include_variants:
-            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_VARIANT_NO_SUFFIX}"
-            params.append(1)
+        # if not include_variants:
+        #     query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_VARIANT_NO_SUFFIX}"
+        #     params.append(1)
         if include_mythics:
             query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX}"
             params.append(1)
         if environment.dex_no > 0:
             query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX}"
             params.append(environment.dex_no)
-        if time_of_day:
+        if time_of_day != BOTH:
             query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
             params.append(time_of_day)
 
-        return self.QueryHandler.execute_query(query, params=params)[0]
+        results = self.QueryHandler.execute_query(query, params=tuple(params))[0]
+        return results[0], results[2 if include_variants else 1]
 
 
-    def get_ids_for_unique_creatures(self):
-        response = self.QueryHandler.execute_query(TGOMMO_GET_IDS_FOR_UNIQUE_CREATURES, params=())
-        return response[0]
+    def get_first_caught_variant_for_creature(self, creature_dex_no, user_id= None, environment_dex_no= 0):
+        query = f"{TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE}"
+        params = [creature_dex_no]
+
+        if user_id is not None:
+            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
+            params.append(user_id)
+        if environment_dex_no != 0:
+            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
+            params.append(environment_dex_no)
+
+        return self.QueryHandler.execute_query(query, params=params)[0][0]
 
     """ Player Profile Collection Queries """
     def get_active_collections(self, convert_to_object=False):
@@ -515,7 +484,7 @@ class TGOMMODatabaseHandler:
         return response
 
 
-    """ Player Avatar Unlock Queries """
+    """ Avatar Unlock Queries """
     def get_users_who_played_during_time_range(self, min_timestamp='1900-01-01 00:00:00', max_timestamp='2100-01-01 00:00:00'):
         response = self.QueryHandler.execute_query(TGOMMO_GET_USERS_WHO_PLAYED_IN_TIMERANGE, params=(min_timestamp, max_timestamp))
         return response[0]
@@ -531,12 +500,15 @@ class TGOMMODatabaseHandler:
             return avatars
         return response
 
-
-    ''' UPDATE QUERIES '''
+    '''**************'''
+    ''' UPDATE Queries '''
+    '''**************'''
+    # Creature Queries
     def update_creature_nickname(self, creature_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
         return response
 
+    # Player Profile Queries
     def update_user_profile(self, params=( '', 1, 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0, -1)):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE, params=params)
         return response
@@ -544,7 +516,6 @@ class TGOMMODatabaseHandler:
     def update_user_profile_display_name(self, user_id, nickname):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_NICKNAME, params=(nickname, user_id))
         return response
-
     def update_user_profile_creature(self, user_id, creature_id, creature_number):
         # check to make sure creature is not already featured on user profile
         response = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id))
@@ -565,7 +536,6 @@ class TGOMMODatabaseHandler:
 
         response = self.QueryHandler.execute_query(query_map[creature_number], params=(creature_id, user_id))
         return True if response else False
-
     def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
         return response
@@ -576,7 +546,6 @@ class TGOMMODatabaseHandler:
 
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_id, user_currency))
         return response
-
     def update_user_profile_available_items(self, user_id, item_id, new_amount):
         # add a dummy record in case user hasn't obtained this item before
         self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
@@ -600,7 +569,6 @@ class TGOMMODatabaseHandler:
         for creature_id in creature_ids:
             self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_FAVORITE, params=(1 if is_favorite else 0, creature_id))
         return True
-
     def update_user_creature_set_is_released(self, creature_ids, is_released=True):
         # First check if any of the creatures are already released, if so don't release any creatures
         for creature_id in creature_ids:
@@ -611,8 +579,6 @@ class TGOMMODatabaseHandler:
         for creature_id in creature_ids:
                 self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_RELEASED, params=(1 if is_released else 0, creature_id))
         return True
-
-    ''' Delete Queries '''
 
 
     '''"""""""""""""""""""""""""""""'''
@@ -971,11 +937,15 @@ class TGOMMODatabaseHandler:
             self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_RIVER),
 
             # Florida - Day Spawns
+            self.format_creature_environment_link_params(DEER_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, DEER_IMAGE_ROOT),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 2, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, DEER_IMAGE_ROOT),
             self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, FL_ALLIGATOR_IMAGE_ROOT),
             self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, PANTHER_IMAGE_ROOT, 67, 67, ),
             self.format_creature_environment_link_params(SPOONBILL_DEX_NO, 1, FLORIDA_NO, 1, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
 
             # Florida - Night Spawns
+            self.format_creature_environment_link_params(DEER_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, DEER_IMAGE_ROOT),
+            self.format_creature_environment_link_params(DEER_DEX_NO, 2, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, DEER_IMAGE_ROOT),
             self.format_creature_environment_link_params(ALLIGATOR_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER, FL_ALLIGATOR_IMAGE_ROOT),
             self.format_creature_environment_link_params(MOUNTAIN_LION_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, 'Panther', SUB_ENVIRONMENT_FOREST, PANTHER_IMAGE_ROOT, 67, 67,),
             self.format_creature_environment_link_params(SPOONBILL_DEX_NO, 1, FLORIDA_NO, 2, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),

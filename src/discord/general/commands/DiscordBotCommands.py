@@ -216,12 +216,16 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
     # MOD COMMANDS
     @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.", hidden=True)
-    async def spawn_creature(ctx):
+    async def spawn_creature(ctx, param1: str = None):
         if ctx.author.id not in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
             return
 
+        is_mythical = param1.lower() == "mythical" if param1 else False
+
         creature = await discord_bot.creature_spawner_handler.creature_picker()
+        creature.set_creature_rarity(MYTHICAL) if is_mythical else None
+
         await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
         await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
         await ctx.message.delete()

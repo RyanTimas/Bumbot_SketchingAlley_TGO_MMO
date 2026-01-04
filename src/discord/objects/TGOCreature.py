@@ -59,11 +59,17 @@ class TGOCreature:
         self.time_to_despawn = self.time_to_despawn * 60  # convert to seconds
 
     def define_creature_images(self):
-        img_root = self.local_img_root if self.local_img_root else self.img_root
-        full_creature_root = f"{img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+        # always try local first
+        local_img_root = f"{self.local_img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+        img_root = f"{self.img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
 
-        creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{full_creature_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
-        dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{full_creature_root}{IMAGE_FILE_EXTENSION}"
+        creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{local_img_root}{IMAGE_FILE_EXTENSION}"
+
+        if not os.path.exists(creature_thumb_img_path):
+            creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        if not os.path.exists(dex_icon_img_path):
+            dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
 
         self.creature_image = Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH)
         self.dex_icon_image = Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH)

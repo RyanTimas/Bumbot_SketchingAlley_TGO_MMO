@@ -11,6 +11,10 @@ from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory 
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
+    EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import \
+    EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
@@ -112,11 +116,11 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
         else:
             target_user = ctx.guild.get_member(target_user_id if target_user_id else ctx.author.id)
 
-        encyclopedia_img_factory = EncyclopediaImageFactory(environment=discord_bot.creature_spawner_handler.current_environment, message_author=ctx.author, target_user=target_user)
-        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=ctx.author)
+        encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(user=target_user,)
+        view = EncyclopediaLocationIndexView(message_author=ctx.author, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory,)
 
         await ctx.message.delete()
-        await ctx.send('', files=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_test.png')], view=view)
+        await ctx.send('', files=[convert_to_png(encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index.png')], view=view)
 
     @discord_bot.discord_bot.command(name='player-profile', help="Shows User's Profile Page.")
     async def player_profile(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):

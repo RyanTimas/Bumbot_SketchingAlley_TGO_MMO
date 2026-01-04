@@ -19,13 +19,14 @@ class EncyclopediaImageFactory:
         self.environment = environment
         self.message_author = message_author
         self.target_user = target_user
+        self.target_user_id = None if not self.target_user else self.target_user.id
 
         self.is_verbose = is_verbose
         self.show_variants = show_variants
         self.show_mythics = show_mythics
         self.time_of_day = time_of_day
 
-        self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
+        self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=self.target_user_id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
         self.creatures = []
         self.dex_icons = []
         self.page_num = 1
@@ -46,7 +47,7 @@ class EncyclopediaImageFactory:
 
         # if any of these values changed, we need to reload the creatures list
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number:
-            self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=None if not self.target_user else self.target_user.id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
+            self.total_user_catches, self.distinct_user_catches = get_tgommo_db_handler().get_user_catch_totals_for_environment(user_id=self.target_user_id, include_variants=self.show_variants, include_mythics=self.show_mythics, environment=self.environment, time_of_day=self.time_of_day)
             self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
         if show_variants is not None or show_mythics is not None or time_of_day is not None or new_page_number or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
@@ -139,7 +140,7 @@ class EncyclopediaImageFactory:
         # Only process creatures within our page range
         for i in range(starting_index, ending_index):
             creature: TGOCreature = self.creatures[i]
-            total_catches_for_species, total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species(creature=creature, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no, environment_variant_no=self.time_of_day, group_variants=not self.show_variants)
+            total_catches_for_species, total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species(creature=creature, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no, environment_variant_no=self.time_of_day, group_variants=not self.show_variants)
             creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_species == 0
 
            # if creature is locked and is transcendant, skip it & don't display the icon
@@ -158,9 +159,9 @@ class EncyclopediaImageFactory:
         if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
             creature.set_creature_rarity(MYTHICAL)
         if not self.show_variants:
-            first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no)
+            first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no)
             if first_caught_variant != 1:
-                creature.variant_no = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=None if not self.target_user else self.target_user.id, environment_dex_no=self.environment.dex_no)
+                creature.variant_no = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no)
                 creature.define_creature_images()
 
         dex_icon = EncyclopediaIconFactory(creature=creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)

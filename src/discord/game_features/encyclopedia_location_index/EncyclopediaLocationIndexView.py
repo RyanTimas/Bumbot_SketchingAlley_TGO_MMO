@@ -109,8 +109,10 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             # Create encyclopedia view for the selected environment
             encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
             encyclopedia_view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=self.message_author, original_view=self, original_image_files=[convert_to_png(self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index_page.png')],)
-
             await interaction.message.edit(attachments=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_page.png')], view=encyclopedia_view)
+
+            self.selected_environment = NATIONAL_ENV
+
 
     # CREATE DROPDOWNS
     def create_page_jump_dropdown(self, row=1):
@@ -149,8 +151,7 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             await interaction.response.defer()
 
             environment_id = int(interaction.data["values"][0]) if interaction.data["values"] else None
-            if environment_id:
-                self.selected_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id)
+            self.selected_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id) if environment_id > 0 else NATIONAL_ENV
 
 
     # FUNCTIONS FOR UPDATING VIEW STATE

@@ -69,9 +69,15 @@ class TGOMMODatabaseHandler:
     def get_user_creature_by_catch_id(self, catch_id=0, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(catch_id,), convert_to_object=convert_to_object, expect_multiple=False)
-    def get_user_creatures_by_user_id(self, user_id=0, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
-        return self.get_user_creatures_from_database(query=query, params=(user_id, 0), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_user_creatures_by_user_id(self, user_id=0, is_released=False, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
+        params = [user_id,]
+
+        if is_released is not None:
+            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
+            params.append(1 if is_released else 0)
+
+        return self.get_user_creatures_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
     def get_released_user_creatures_by_user_id(self, user_id=-1, convert_to_object=False):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)

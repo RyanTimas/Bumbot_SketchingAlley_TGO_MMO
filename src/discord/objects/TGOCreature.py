@@ -15,7 +15,7 @@ class TGOCreature:
         self.local_name = local_name
         self.variant_name = variant_name
         # todo: streamline this so that the name is only set once
-        self.name = local_name if local_name else variant_name if variant_name else self.creature_name
+        self.name = local_name if local_name else self.creature_name
 
         self.nickname = nickname
 

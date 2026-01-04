@@ -206,7 +206,7 @@ class PlayerProfilePageFactory:
 
 
 async def build_user_creature_collection(author, ctx):
-    creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(author.id, convert_to_object=True)
+    creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(author.id, )
 
     page_num = 0
     pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
@@ -218,7 +218,7 @@ async def build_user_creature_collection(author, ctx):
         is_mythical = creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL
         nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if is_mythical else '')
 
-        newlines = f'{'\n' if creature.catch_id != creature_collection[creature_index - 1].catch_id else ''}\n'
+        newlines = f'{'\n' if creature.creature_id != creature_collection[creature_index - 1].catch_id else ''}\n'
         new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature.name, 20)}) \t {pad_text(nickname, 20)}"
 
         if len(current_page) + len(new_entry) > 1900:

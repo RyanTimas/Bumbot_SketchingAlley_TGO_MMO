@@ -1,7 +1,5 @@
 import asyncio
-
-import discord
-from discord.ui import Select
+from discord.ui import Select, Modal
 
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
@@ -23,12 +21,16 @@ class CreatureInventoryView(discord.ui.View):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.owner_id = owner_id
+        self.owner_player_profile = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.owner_id, convert_to_object=True)
+
+        self.author_matches_owner = self.message_author.id == self.owner_id
 
         self.creature_inventory_image_factory = creature_inventory_image_factory
         self.original_view = original_view
 
         self.interaction_lock = asyncio.Lock()
         self.new_box = 1
+        self.max_boxes = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=owner_id)
 
         self.show_only_mythics = False
         self.show_only_favorites = False
@@ -103,8 +105,6 @@ class CreatureInventoryView(discord.ui.View):
                 return
 
             async with self.interaction_lock:
-                await interaction.response.defer()
-
                 # Update page number
                 page_options = {
                     next_: self.creature_inventory_image_factory.current_box_num + 1,
@@ -112,9 +112,18 @@ class CreatureInventoryView(discord.ui.View):
                     jump: self.new_box
                 }
 
-                update_image = self.reload_image(new_box_number=page_options[new_page])
-                self.refresh_view()
-                await interaction.message.edit(attachments=[update_image], view=self)
+                # prompt user to expand storage if at the end
+                if page_options[new_page] > MAX_CREATURE_STORAGE_EXPANSIONS:
+                    await interaction.response.send_message("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
+                if page_options[new_page] > self.max_boxes and self.author_matches_owner:
+                    await interaction.response.send_modal(self.create_inventory_expansion_confirmation_modal())
+                    return
+                else:
+                    await interaction.response.defer()
+
+                    update_image = self.reload_image(new_box_number=page_options[new_page])
+                    self.refresh_view()
+                    await interaction.message.edit(attachments=[update_image], view=self)
         return callback
 
     def create_filter_button(self, row=2, button_type=MYTHIC_KEY):
@@ -306,13 +315,45 @@ class CreatureInventoryView(discord.ui.View):
 
     # CREATE DROPDOWNS
     def create_box_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Box {i}", value=str(i)) for i in range(1, self.creature_inventory_image_factory.total_unlocked_box_num + 1)]
+        options = [discord.SelectOption(label=f"Box {i}", value=str(i)) for i in range(1, self.max_boxes + 1)]
         dropdown = Select(placeholder="Skip to Box", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.creature_box_dropdown_callback
         return dropdown
     async def creature_box_dropdown_callback(self, interaction: discord.Interaction):
         self.new_box = int(interaction.data["values"][0])
         await interaction.response.defer()
+
+
+    # CREATE MODALS
+    def create_inventory_expansion_confirmation_modal(self):
+        user_details_modal = Modal(title=f"You currently have {self.owner_player_profile.currency} coins")
+        user_details_modal.add_item(discord.ui.TextInput(label=f"Expand Storage? It will cost {self.get_expansion_cost()}. ", placeholder="Type 'confirm' to expand your creature storage", required=True, max_length=8))
+
+        user_details_modal.on_submit = self.inventory_expansion_confirmation_modal_submit_callback
+        return user_details_modal
+    async def inventory_expansion_confirmation_modal_submit_callback(self, interaction: discord.Interaction):
+        if interaction.data['components'][0]['components'][0]['value'].lower() == 'confirm':
+            if self.owner_player_profile.currency >= self.get_expansion_cost():
+                # Update DB Values
+                get_tgommo_db_handler().update_user_profile_available_items(user_id=self.owner_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, new_amount=self.max_boxes + 1)
+                get_tgommo_db_handler().update_user_profile_currency(user_id=self.owner_id, new_currency=self.get_expansion_cost() * -1)
+
+                # Update local values
+                self.owner_player_profile.currency -= self.get_expansion_cost()
+                self.max_boxes += 1
+                self.creature_inventory_image_factory.total_unlocked_box_num += 1
+
+                # Refresh View
+                self.refresh_view()
+                update_image = self.reload_image(new_box_number=self.new_box)
+                await interaction.message.edit(attachments=[update_image], view=self)
+            else:
+                await interaction.response.send_message("❌ You do not have enough coins to expand your creature storage.", ephemeral=True)
+                return
+            await interaction.response.send_message("✅ Your creature storage has been expanded by 100 slots!", ephemeral=True)
+        else:
+            await interaction.response.send_message("Storage expansion cancelled.", ephemeral=True)
+        pass
 
 
     # FUNCTIONS FOR UPDATING VIEW STATE
@@ -322,11 +363,12 @@ class CreatureInventoryView(discord.ui.View):
     def update_button_states(self):
         # UPDATE ENABLED/DISABLED STATES
         self.prev_button.disabled = self.creature_inventory_image_factory.current_box_num <= 1
-        self.next_button.disabled = self.creature_inventory_image_factory.current_box_num >= self.creature_inventory_image_factory.total_unlocked_box_num
+        self.next_button.disabled = self.creature_inventory_image_factory.current_box_num >= self.max_boxes+(1 if self.author_matches_owner else 0)
 
         # UPDATE BUTTON LABELS
         self.exclusive_mode_button.label = "❌" if self.is_exclusive_mode else "✅"
         self.ascending_order_button.label = "⬆️" if self.is_ascending_order else "⬇️"
+        self.next_button.label = "To Next Page➡️" if self.creature_inventory_image_factory.current_box_num < self.max_boxes else "Expand Storage ➕" if self.author_matches_owner else "To Next Page➡️"
 
         # UPDATE BUTTON STYLES
         self.expand_order_options_button.style = discord.ButtonStyle.green if self.expanded_display == ORDER_EXPANSION_KEY else discord.ButtonStyle.gray
@@ -337,11 +379,15 @@ class CreatureInventoryView(discord.ui.View):
         self.show_only_mythics_button.style = discord.ButtonStyle.green if self.show_only_mythics else discord.ButtonStyle.gray
         self.show_only_favorites_button.style = discord.ButtonStyle.green if self.show_only_favorites else discord.ButtonStyle.gray
         self.show_only_nicknames_button.style = discord.ButtonStyle.green if self.show_only_nicknames else discord.ButtonStyle.gray
+        self.next_button.style = discord.ButtonStyle.blurple if self.creature_inventory_image_factory.current_box_num < self.max_boxes else discord.ButtonStyle.green if self.author_matches_owner else discord.ButtonStyle.blurple
 
         self.ascending_order_button.style = discord.ButtonStyle.green if self.is_ascending_order else discord.ButtonStyle.red
         self.order_alphabetically_button.style = discord.ButtonStyle.green if self.order_type == ALPHABETICAL_ORDER else discord.ButtonStyle.gray
         self.order_catch_date_button.style = discord.ButtonStyle.green if self.order_type == DEX_NO_ORDER else discord.ButtonStyle.gray
         self.order_dex_no_button.style = discord.ButtonStyle.green if self.order_type == CAUGHT_DATE_ORDER else discord.ButtonStyle.gray
+
+        # UPDATE DROPDOWN OPTIONS
+        self.box_jump_dropdown.options = [discord.SelectOption(label=f"Box {i}", value=str(i), default=(i == self.creature_inventory_image_factory.current_box_num)) for i in range(1, self.max_boxes + 1)]
     def rebuild_view(self):
         for item in self.children.copy():
             self.remove_item(item)
@@ -356,7 +402,10 @@ class CreatureInventoryView(discord.ui.View):
         # row 2
         self.add_item(self.expand_filter_options_button)
         self.add_item(self.expand_order_options_button)
-        self.add_item(self.expand_creature_management_options_button)
+
+        if self.author_matches_owner:
+            self.add_item(self.expand_creature_management_options_button)
+
         # row 3a
         if self.expanded_display == FILTER_EXPANSION_KEY:
             self.add_item(self.exclusive_mode_button)
@@ -373,6 +422,7 @@ class CreatureInventoryView(discord.ui.View):
         elif self.expanded_display == CREATURE_MANAGEMENT_EXPANSION_KEY:
             self.add_item(self.release_button)
             self.add_item(self.favorite_button)
+
         # row 4
         self.add_item(self.close_button)
         if self.original_view is not None:
@@ -384,3 +434,7 @@ class CreatureInventoryView(discord.ui.View):
         reload_icons = self.creature_inventory_image_factory.image_mode == CREATURE_INVENTORY_MODE_RELEASE
         new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(refresh_creatures= reload_icons,order_type=self.order_type, new_box_number=new_box_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )
         return convert_to_png(new_image, f'player_boxes_page.png')
+
+    def get_expansion_cost(self):
+        already_purchased_expansions = self.max_boxes - BASE_CREATURE_STORAGE_EXPANSIONS
+        return (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_COST

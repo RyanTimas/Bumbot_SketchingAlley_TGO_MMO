@@ -397,6 +397,11 @@ class TGOMMODatabaseHandler:
             return items
         return response
 
+    def get_creature_inventory_expansions_by_user_id(self, user_id=0):
+        # Add Dummy Entry if User Doesn't Have Item Yet
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00'))
+        return self.get_user_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION).item_quantity
+
 
     ''' Encyclopedia & Statistics Queries '''
     # get total catches & mythicals for species
@@ -550,7 +555,7 @@ class TGOMMODatabaseHandler:
         user_currency = self.QueryHandler.execute_query(TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID, params=(user_id,))[0][0]
         user_currency += new_currency
 
-        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_id, user_currency))
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_CURRENCY, params=(user_currency, user_id))
         return response
     def update_user_profile_available_items(self, user_id, item_id, new_amount):
         # add a dummy record in case user hasn't obtained this item before
@@ -758,8 +763,8 @@ class TGOMMODatabaseHandler:
             ('Seal', '', 99, 1, 'Harbor Seal', 'Phoca vitulina', MAMMAL, '', HARBOR_SEAL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Alligator', '', 100, 1, 'American Alligator', 'Alligator mississippiensis', REPTILE, '', ALLIGATOR_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # WAVE 4
-            ('Spoonbill', '', 101, 1, 'Roseate Spoonbill', 'Platalea ajaja', BIRD, '', SPOONBILL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
-            ('Flamingo', '', 102, 1, 'American Flamingo', 'Phoenicopterus ruber', BIRD, '', FLAMINGO_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Spoonbill', '', 131, 1, 'Roseate Spoonbill', 'Platalea ajaja', BIRD, '', SPOONBILL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Flamingo', '', 102, 1, 'American Flamingo', 'Phoenicopterus ruber', BIRD, '', AMERICAN_FLAMINGO_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
         ]
 
         for index, creature in enumerate(creature_data):
@@ -1136,6 +1141,8 @@ class TGOMMODatabaseHandler:
 
     def insert_item_records(self):
         item_data = [
+            # Creature Inventory Storage
+            (ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, 'Creature Storage Upgrade', ITEM_TYPE_GAMEPLAY_MECHANICS, 'Increases your creature storage capacity by 100.', TGOMMO_RARITY_NORMAL, False, '', 1),
             # Name Tags
             (f'{ITEM_TYPE_NAMETAG}_1', 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1),
             # Baits

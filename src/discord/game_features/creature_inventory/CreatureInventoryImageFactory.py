@@ -35,8 +35,7 @@ class CreatureInventoryImageFactory:
         self.starting_index = 0
         self.ending_index = min(0, len(self.filtered_creatures))
         self.current_box_num = 1
-        self.total_unlocked_box_num = 8
-        self.total_box_num = 15
+        self.total_unlocked_box_num = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(self.user.id)
 
         # define image mode
         self.image_mode = CREATURE_INVENTORY_MODE_DEFAULT
@@ -113,7 +112,7 @@ class CreatureInventoryImageFactory:
         current_coordinates = (200, 127)
         x_offset = 100
 
-        for box_num in range(1, self.total_box_num + 1):
+        for box_num in range(1, MAX_CREATURE_STORAGE_EXPANSIONS + 1):
             if box_num > self.total_unlocked_box_num:
                 current_box_icon = locked_box_icon_img
             else:

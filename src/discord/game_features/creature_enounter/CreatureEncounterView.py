@@ -49,10 +49,7 @@ class CreatureEncounterView(View):
                     await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                # can always catch mythical creatures or if spawned using bait
-                can_catch = self.creature.local_rarity != MYTHICAL or self.spawn_user
-                if not can_catch:
-                    can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
+                can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
                 self.caught = can_catch
 
                 if not can_catch:
@@ -126,12 +123,12 @@ class CreatureEncounterView(View):
 
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
-        # check if user has space in their creature inventory
-        if len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=user_id, is_released=False)) >= 800:
+        # Storage being full always takes precedence
+        if len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=user_id, is_released=False)) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
-        # Mythical creatures can always be caught
-        if self.creature.local_rarity.name == MYTHICAL.name:
+        # Mythical creatures & spawned creatures can always be caught
+        if self.creature.local_rarity.name == MYTHICAL.name or self.spawn_user:
             return True, ""
 
         # handle hourly catch limits

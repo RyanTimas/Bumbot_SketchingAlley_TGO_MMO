@@ -26,11 +26,7 @@ class CreatureReleaseService:
         # Update user currency and items
         get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=currency_earned)
         for item, count in earned_items:
-            get_tgommo_db_handler().update_user_profile_available_items(
-                user_id=user_id,
-                item_id=item.item_id,
-                new_amount=count
-            )
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user_id, convert_to_object=True).item_quantity + count)
 
         return currency_earned, earned_items
 

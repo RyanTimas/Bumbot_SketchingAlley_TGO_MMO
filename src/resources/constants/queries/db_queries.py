@@ -314,7 +314,25 @@ TGOMMO_GET_ALL_ENVIRONMENTS_IN_ROTATION = """SELECT environment_id, name, varian
 
 # Player Select Queries
 TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ? AND uil.item_id=?;"""
-TGOMMO_SELECT_USER_ITEMS_BY_USER_ID = """SELECT ui.item_num, ui.item_id, ui.item_name, ui.item_type, ui.item_description, ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, uil.item_quantity, uil.last_used FROM tgommo_user_item_inventory_link uil LEFT JOIN tgommo_inventory_item ui ON uil.item_id == ui.item_id WHERE uil.user_id = ?;"""
+TGOMMO_SELECT_USER_ITEMS_BY_USER_ID = """
+    SELECT 
+        ui.item_num, 
+        ui.item_id, 
+        ui.item_name, 
+        ui.item_type, 
+        ui.item_description, 
+        ui.rarity, 
+        ui.is_rewardable, 
+        ui.img_root, 
+        ui.default_uses, 
+        uil.item_quantity, 
+        uil.last_used 
+    FROM tgommo_user_item_inventory_link uil 
+    LEFT JOIN tgommo_inventory_item ui 
+        ON uil.item_id == ui.item_id 
+    WHERE uil.user_id = ?
+        AND ui.item_type not in ('Gameplay Mechanics');
+"""
 TGOMMO_USER_PROFILE_GET_CURRENCY_BY_USER_ID = """SELECT currency FROM tgommo_user_profile WHERE user_id = ?;"""
 
 TGOMMO_GET_COUNT_FOR_USER_CATCHES_FOR_CREATURE_BY_DEX_NUM = """SELECT COUNT(*) FROM tgommo_user_creature uc JOIN tgommo_creature c ON c.creature_id = uc.creature_id WHERE uc.user_id = ? AND c.dex_no = ?;"""

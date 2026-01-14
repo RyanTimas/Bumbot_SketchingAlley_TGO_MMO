@@ -249,10 +249,11 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             if param3 and param3.isdigit():
                 variant_no = int(param3)
 
-        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=environment_dex_no, environment_variant_no=variant_no)
-        available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
+        # discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=environment_dex_no, environment_variant_no=variant_no)
+        environment  = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no)
+        spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment.dex_no)
 
-        for creature in available_creatures:
+        for creature in spawn_pool:
             if is_mythical:
                 creature.set_rarity(MYTHICAL)
 

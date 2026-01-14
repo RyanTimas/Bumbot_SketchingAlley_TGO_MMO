@@ -57,7 +57,7 @@ class CreatureEmbedHandler:
 
 
         if self.time_of_day:
-            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
+            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}  |  🌎 {self.environment.name}')
 
         embed.timestamp = discord.utils.utcnow()
         embed.set_image(url=f"attachment://{encounter_img.filename}")

@@ -237,19 +237,19 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             return
 
         is_mythical = "mythical" in [param1.lower() if param1 else "", param3.lower() if param3 else ""]
-        environment_id = 1
+        environment_dex_no = 1
         variant_no = 1
 
         if param1 and param1.isdigit():
-            environment_id = int(param1)
+            environment_dex_no = int(param1)
             if param2 and param2.isdigit():
                 variant_no = int(param2)
         elif param2 and param2.isdigit():
-            environment_id = int(param2)
+            environment_dex_no = int(param2)
             if param3 and param3.isdigit():
                 variant_no = int(param3)
 
-        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_id=environment_id, environment_variant_no=variant_no)
+        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=environment_dex_no, environment_variant_no=variant_no)
         available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
 
         for creature in available_creatures:

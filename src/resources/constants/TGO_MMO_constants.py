@@ -130,10 +130,14 @@ AMPHIBIAN = "Amphibian"
 INSECT = "Insect"
 BUG = "Bug"
 FISH = "Fish"
+
 MOLLUSK = "Mollusk"
 CRUSTACEAN = "Crustacean"
 ARACHNID = "Arachnid"
 CLITELLATA = "Clitellata"
+MYRIAPOD = "Myriapod"
+ARTHROPOD = "Arthropod"
+
 MYSTICAL = "Mystical"
 
 '''CREATURE RARITY NAMES'''

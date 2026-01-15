@@ -309,6 +309,9 @@ class CreatureSpawnerHandler:
 
             # Decide if we are staying in the same environment or switching, 50/50 chance
             should_change_environment = flip_coin(total_iterations=1)
+
+            # todo: REMOVE THIS AFTER FORCING ENVIRONMENT CHANGE FOR LAUNCH - CHANGE ON MONDAY
+            should_change_environment = get_game_state_manager().load_current_environment()[0] == 1
             if not should_change_environment:
                 return
 

@@ -250,7 +250,7 @@ class TGOMMODatabaseHandler:
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=True)
+        return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=False)
 
     # BASE FUNCTIONS FOR RETRIEVING ENVIRONMENTS FROM THE DATABASE
     def get_environments_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):

@@ -383,7 +383,13 @@ DOMESTIC_DOG_DEX_NO = 176
 BIGFOOT_IMAGE_ROOT = r"transcendant\Bigfoot"
 MOTHMAN_IMAGE_ROOT = r"transcendant\Mothman"
 FROGMAN_IMAGE_ROOT = r"transcendant\Frogman"
+SKUNK_APE_IMAGE_ROOT = r"transcendant\SkunkApe"
+CHUPACABRA_IMAGE_ROOT = r"transcendant\Chupacabra"
+WAMPUS_CAT_IMAGE_ROOT = r"transcendant\WampusCat"
 
 BIGFOOT_DEX_NO = 9001
 MOTHMAN_DEX_NO = 9002
 FROGMAN_DEX_NO = 9003
+SKUNK_APE_DEX_NO = 9004
+CHUPACABRA_DEX_NO = 9005
+WAMPUS_CAT_DEX_NO = 9006

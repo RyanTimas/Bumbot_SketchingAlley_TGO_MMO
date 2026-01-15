@@ -49,7 +49,7 @@ class TGOMMODatabaseInitializer:
     def insert_db_table_data(self):
         # insert creature records
         self.insert_creature_records()
-        # self.insert_transcendant_creature_records()
+        self.insert_transcendant_creature_records()
         
         self.insert_environment_records()
         
@@ -60,7 +60,7 @@ class TGOMMODatabaseInitializer:
 
         # Link creatures to environments
         self.insert_environment_creature_records()
-        # self.insert_transcendant_environment_creature_records()
+        self.insert_transcendant_environment_creature_records()
 
     # ---- INSERT RECORD HELPERS ---- # 
     def insert_creature_records(self):
@@ -297,7 +297,9 @@ class TGOMMODatabaseInitializer:
             ('Bigfoot', '', BIGFOOT_DEX_NO, 1, 'Sasquatch', 'N/A', MYSTICAL, '', BIGFOOT_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
             ('Mothman', '', MOTHMAN_DEX_NO, 1, 'Mothman', 'N/A', MYSTICAL, '', MOTHMAN_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
             ('Frogman', '', FROGMAN_DEX_NO, 1, 'Loveland Frogman', 'N/A', MYSTICAL, '', FROGMAN_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
-            # ('Chupacabra', '', CHUPACABRA_DEX_NO, 1, 'Chupacabra', 'N/A', REPTILE, '', CHUPACABRA_IMAGE_ROOT, 5),
+            ('Skunk Ape', '', SKUNK_APE_DEX_NO, 1, 'Skunk Ape', 'N/A', MYSTICAL, '', SKUNK_APE_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
+            ('Chupacabra', '', CHUPACABRA_DEX_NO, 1, 'Chupacabra', 'N/A', MYSTICAL, '', CHUPACABRA_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
+            ('Wampus Cat', '', WAMPUS_CAT_DEX_NO, 1, 'Wampus Cat', 'N/A', MYSTICAL, '', WAMPUS_CAT_IMAGE_ROOT, 5, TGOMMO_RARITY_TRANSCENDANT),
             # ('Jersey Devil', '', JERSEY_DEVIL_DEX_NO, 1, 'Jersey Devil', 'N/A', MAMMAL, '', JERSEY_DEVIL_IMAGE_ROOT, 5),
             # ('Thunderbird', '', THUNDERBIRD_DEX_NO, 1, 'Thunderbird', 'N/A', BIRD, '', THUNDERBIRD_IMAGE_ROOT, 5),
         ]
@@ -526,20 +528,31 @@ class TGOMMODatabaseInitializer:
                 self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=_create_environment_creature_params(creature_info, environment_info, spawn_time, ec_link))
 
     def insert_transcendant_environment_creature_records(self):
-        environment_creature_data = [
-            # EST US - Day Spawns
-             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
-            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-
-            # EST US - Night Spawns
-            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
-            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+        eastern_us_environment_creature_data = [
+            EnvironmentCreatureLink(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST, ),
+            EnvironmentCreatureLink(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER, ),
+            EnvironmentCreatureLink(FROGMAN_DEX_NO, 1, EASTERN_US_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER,),
         ]
-
+        everglades_environment_creature_data = [
+             EnvironmentCreatureLink(BIGFOOT_DEX_NO, 1, FLORIDA_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST, ),
+            EnvironmentCreatureLink(SKUNK_APE_DEX_NO, 1, FLORIDA_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST, ),
+            EnvironmentCreatureLink(CHUPACABRA_DEX_NO, 1, FLORIDA_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FIELD, ),
+            EnvironmentCreatureLink(WAMPUS_CAT_DEX_NO, 1, FLORIDA_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FIELD, ),
+        ]
+        environment_creature_data = eastern_us_environment_creature_data + everglades_environment_creature_data
         for ec_link in environment_creature_data:
-            self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
+            creature_info = self.db_handler.get_creature_by_dex_and_variant_no(ec_link.creature_dex_no, ec_link.creature_variant_no)
+            environment_info = self.db_handler.get_environments_by_dex_no(dex_no=ec_link.environment_dex_no)
+
+            spawn_times = []
+            if ec_link.spawn_time != NIGHT:
+                spawn_times.append(DAY)
+            if ec_link.spawn_time != DAY:
+                spawn_times.append(NIGHT)
+
+            for spawn_time in spawn_times:
+                self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=_create_environment_creature_params(creature_info, environment_info, spawn_time, ec_link))
+
 
     def insert_collection_records(self):
         collections_data = [

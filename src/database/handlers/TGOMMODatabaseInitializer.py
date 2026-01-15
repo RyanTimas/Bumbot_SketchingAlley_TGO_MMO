@@ -516,55 +516,30 @@ class TGOMMODatabaseInitializer:
             creature_info = self.db_handler.get_creature_by_dex_and_variant_no(ec_link.creature_dex_no, ec_link.creature_variant_no)
             environment_info = self.db_handler.get_environments_by_dex_no(dex_no=ec_link.environment_dex_no)
 
+            spawn_times = []
             if ec_link.spawn_time != NIGHT:
-                day_params = [
-                    creature_info.creature_id,
-                    environment_info[0].environment_id,
-                    DAY,
-                    environment_info[0].dex_no,
-                    environment_info[0].variant_no,
-                    creature_info.creature_name,
-                    environment_info[0].name,
-                    ec_link.local_rarity,
-                    ec_link.local_name,
-                    ec_link.sub_environment,
-                    ec_link.local_dex_no if ec_link.local_dex_no != 0 else ec_link.creature_dex_no,
-                    ec_link.local_variant_no if ec_link.local_variant_no != 0 else ec_link.creature_variant_no,
-                    ec_link.local_img_root
-                ]
-                self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=day_params)
+                spawn_times.append(DAY)
             if ec_link.spawn_time != DAY:
-                night_params = [
-                    creature_info.creature_id,
-                    environment_info[1].environment_id,
-                    NIGHT,
-                    environment_info[1].dex_no,
-                    environment_info[1].variant_no,
-                    creature_info.creature_name,
-                    environment_info[1].name,
-                    ec_link.local_rarity,
-                    ec_link.local_name,
-                    ec_link.sub_environment,
-                    ec_link.local_dex_no if ec_link.local_dex_no != 0 else ec_link.creature_dex_no,
-                    ec_link.local_variant_no if ec_link.local_variant_no != 0 else ec_link.creature_variant_no,
-                    ec_link.local_img_root
-                ]
-                self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=night_params)
-    # def insert_transcendant_environment_creature_records(self):
-    #     environment_creature_data = [
-    #         # EST US - Day Spawns
-    #          self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
-    #         self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-    #         self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-    #
-    #         # EST US - Night Spawns
-    #         self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
-    #         self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-    #         self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
-    #     ]
-    #
-    #     for ec_link in environment_creature_data:
-    #         self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
+                spawn_times.append(NIGHT)
+
+            for spawn_time in spawn_times:
+                self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=_create_environment_creature_params(creature_info, environment_info, spawn_time, ec_link))
+
+    def insert_transcendant_environment_creature_records(self):
+        environment_creature_data = [
+            # EST US - Day Spawns
+             self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 1, DAY, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+
+            # EST US - Night Spawns
+            self.format_creature_environment_link_params(BIGFOOT_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST),
+            self.format_creature_environment_link_params(MOTHMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+            self.format_creature_environment_link_params(FROGMAN_DEX_NO, 1, EASTERN_US_NO, 2, NIGHT, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER),
+        ]
+
+        for ec_link in environment_creature_data:
+            self.queryHandler.execute_query(TGOMMO_INSERT_ENVIRONMENT_CREATURE, params=ec_link)
 
     def insert_collection_records(self):
         collections_data = [
@@ -727,8 +702,10 @@ class TGOMMODatabaseInitializer:
         item_data = [
             # Creature Inventory Storage
             (ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, 'Creature Storage Upgrade', ITEM_TYPE_GAMEPLAY_MECHANICS, 'Increases your creature storage capacity by 100.', TGOMMO_RARITY_NORMAL, False, '', 1),
+
             # Name Tags
             (f'{ITEM_TYPE_NAMETAG}_1', 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1),
+
             # Baits
             (ITEM_ID_BAIT, 'Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch.', TGOMMO_RARITY_NORMAL, True, '', 1),
             (ITEM_ID_COMMON_BAIT, 'Common Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be common.', TGOMMO_RARITY_COMMON, True, '', 1),
@@ -739,6 +716,7 @@ class TGOMMODatabaseInitializer:
             (ITEM_ID_MYTHICAL_BAIT, 'Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '', 1),
             (ITEM_ID_TRANSCENDANT_BAIT, 'Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
             (ITEM_ID_OMNIPOTENT_BAIT, 'Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+
             # Megaphones
             (ITEM_TYPE_MEGAPHONE, 'Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a new creature spawns.', TGOMMO_RARITY_NORMAL, False, '', -1),
             (ITEM_ID_COMMON_MEGAPHONE, 'Common Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a common creature spawns.', TGOMMO_RARITY_COMMON, False, '', -1),
@@ -749,6 +727,7 @@ class TGOMMODatabaseInitializer:
             (ITEM_ID_MYTHICAL_MEGAPHONE, 'Mythical Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a mythical creature spawns.', TGOMMO_RARITY_MYTHICAL, False, '', -1),
             (ITEM_ID_TRANSCENDANT_MEGAPHONE, 'Transcendant Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a transcendant creature spawns. Breaks after a single catch, though', TGOMMO_RARITY_TRANSCENDANT, False, '', 1),
             (ITEM_ID_OMNIPOTENT_MEGAPHONE, 'Omnipotent Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you when any creature of your choice spawns. Breaks after a single catch, though.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1),
+
             # Charms
             (ITEM_ID_CHARM, 'Charm', ITEM_TYPE_CHARM, 'Increases the amount of creatures that will spawn for the next 30 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1),
             (ITEM_ID_COMMON_CHARM, 'Common Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 30 minutes', TGOMMO_RARITY_COMMON, True, '', 1),
@@ -764,3 +743,24 @@ class TGOMMODatabaseInitializer:
         for index, item in enumerate(item_data):
             item = (index + 1,) + item
             self.queryHandler.execute_query(TGOMMO_INSERT_NEW_INVENTORY_ITEM, params=item)
+
+
+'''HELPER METHODS FOR TGOMMO DATABASE INITIALIZER CLASS BELOW'''
+def _create_environment_creature_params(creature_info, environment_info, spawn_time, ec_link):
+    """Helper method to create environment creature parameters."""
+    env_index = 0 if spawn_time == DAY else 1
+    return [
+        creature_info.creature_id,
+        environment_info[env_index].environment_id,
+        spawn_time,
+        environment_info[env_index].dex_no,
+        environment_info[env_index].variant_no,
+        creature_info.creature_name,
+        environment_info[env_index].name,
+        ec_link.local_rarity,
+        ec_link.local_name,
+        ec_link.sub_environment,
+        ec_link.local_dex_no if ec_link.local_dex_no != 0 else ec_link.creature_dex_no,
+        ec_link.local_variant_no if ec_link.local_variant_no != 0 else ec_link.creature_variant_no,
+        ec_link.local_img_root
+    ]

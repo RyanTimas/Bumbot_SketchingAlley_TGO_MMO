@@ -238,7 +238,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         is_mythical = "mythical" in [param1.lower() if param1 else "", param3.lower() if param3 else ""]
         environment_dex_no = 1
-        variant_no = 1
+        variant_no = None
 
         if param1 and param1.isdigit():
             environment_dex_no = int(param1)
@@ -249,9 +249,12 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             if param3 and param3.isdigit():
                 variant_no = int(param3)
 
-        # discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=environment_dex_no, environment_variant_no=variant_no)
-        environment  = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no)
-        spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment.dex_no)
+        if variant_no:
+            environment  = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no)
+            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment.environment_id)
+        else:
+            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment_dex_no)
+
 
         for creature in spawn_pool:
             if is_mythical:

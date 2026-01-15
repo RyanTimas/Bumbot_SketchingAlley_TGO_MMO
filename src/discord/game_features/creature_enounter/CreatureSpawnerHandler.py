@@ -13,6 +13,7 @@ from discord.ext.commands import Bot
 from sqlalchemy.util import await_only
 
 from src.commons.CommonFunctions import flip_coin, convert_to_png
+from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
@@ -42,7 +43,11 @@ class CreatureSpawnerHandler:
         self.environment_change_checked_for_today = False
 
         self.define_time_of_day()
-        self.define_environment_and_spawn_pool(environment_dex_no=2, environment_variant_no=1 if self.is_day else 2)
+
+        # pull environment from last run
+        saved_env = get_game_state_manager().load_current_environment()
+        env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
+        self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
 
         self.spawn_event = asyncio.Event()
         self._spawner_running = False
@@ -70,7 +75,8 @@ class CreatureSpawnerHandler:
 
     def define_environment_and_spawn_pool(self, current_environment = None, environment_dex_no: int = 0, environment_variant_no: int = 0):
         if not current_environment:
-            self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
+            self.current_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
+            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
         self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=self.current_environment.environment_id)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
@@ -334,6 +340,7 @@ class CreatureSpawnerHandler:
         # Execute environment change
         if hasattr(self, 'pending_environment') and self.pending_environment:
             self.current_environment = self.pending_environment
+            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
 
             # Reset spawn pool with the new environment
             self.define_environment_and_spawn_pool(current_environment=self.current_environment)

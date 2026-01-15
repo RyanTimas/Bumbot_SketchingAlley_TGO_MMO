@@ -15,3 +15,5 @@ class EnvironmentCreatureLink:
         self.local_img_root = local_img_root
         self.local_dex_no = local_dex_no
         self.local_variant_no = local_variant_no
+
+dummy_ec_link = EnvironmentCreatureLink(creature_dex_no=0, creature_variant_no=0, environment_dex_no=0, spawn_time="", local_rarity=0, local_name="", sub_environment=SUB_ENVIRONMENT_RIVER, local_img_root="", local_dex_no=0, local_variant_no=0)

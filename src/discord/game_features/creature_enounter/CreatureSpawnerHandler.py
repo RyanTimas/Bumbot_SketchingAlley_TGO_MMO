@@ -327,7 +327,7 @@ class CreatureSpawnerHandler:
 
             # Announce the environment change in the spawn channel
             await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-                f"🌍 **Environment Alert!** The environment will change to **{new_environment.name}** at noon!",
+                f"\n\n# __⚠️✈️ **Travel Advisory️** ✈️⚠️__ \n The environment will change to: \n## **🌍 {new_environment.name} at noon! 🌍**",
                 files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ]
             )
     def _schedule_environment_change(self):
@@ -351,7 +351,7 @@ class CreatureSpawnerHandler:
             # Send message to channel about environment change
             asyncio.run_coroutine_threadsafe(
                 self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-                    f"🌍 **Environment Changed!** Now exploring **{self.current_environment.name}**!",
+                    f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {self.current_environment.name}** 🌍",
                     files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{self.current_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")]
                 ), self.discord_bot.loop
             )

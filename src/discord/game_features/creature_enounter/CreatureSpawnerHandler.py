@@ -304,7 +304,8 @@ class CreatureSpawnerHandler:
         environment_change_check_time = 11
 
         # Check for environment change at 11 am
-        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today:
+        # todo: REMOVE THIS AFTER FORCING ENVIRONMENT CHANGE FOR LAUNCH - CHANGE ON MONDAY
+        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today or True:
             self.environment_change_checked_for_today = True
 
             # Decide if we are staying in the same environment or switching, 50/50 chance

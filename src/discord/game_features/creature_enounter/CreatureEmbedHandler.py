@@ -50,7 +50,7 @@ class CreatureEmbedHandler:
         # add active bonuses to embed
         bonus_description = ''
         for bonus in self.active_bonuses:
-            bonus_description += f"-#\t{bonus.local_rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
+            bonus_description += f"-#\t{bonus.rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
         if len(self.active_bonuses) > 0:
             embed.add_field(name=f"", value=f"", inline=False)
             embed.add_field(name=f"Active Bonuses", value=f"{bonus_description}", inline=False)

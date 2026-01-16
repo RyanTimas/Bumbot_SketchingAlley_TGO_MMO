@@ -332,8 +332,9 @@ class CreatureSpawnerHandler:
                 files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ]
             )
     def _schedule_environment_change(self):
-        current_time = datetime.datetime.now(self.pending_environment.timezone).astimezone(self.current_environment.timezone)
-        environment_change_time = current_time.replace(hour=12, minute=0, second=0, microsecond=0)
+        est = pytz.timezone('US/Eastern')
+        current_time = datetime.datetime.now(est)
+        environment_change_time = current_time.astimezone(est).replace(hour=12, minute=0, second=0, microsecond=0)
 
         # Calculate seconds until environment change
         time_until_environment_change = (environment_change_time - current_time).total_seconds()

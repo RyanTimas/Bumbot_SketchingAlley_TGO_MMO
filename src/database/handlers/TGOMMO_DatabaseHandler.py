@@ -336,6 +336,7 @@ class TGOMMODatabaseHandler:
 
     ''' Item Queries '''
     def get_user_item_by_user_id_and_item_id(self, user_id=0, item_id=0, convert_to_object=True):
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
         item_data = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_ITEM_BY_USER_ID_AND_ITEM_ID, params=(user_id, item_id))[0]
 
         if convert_to_object:

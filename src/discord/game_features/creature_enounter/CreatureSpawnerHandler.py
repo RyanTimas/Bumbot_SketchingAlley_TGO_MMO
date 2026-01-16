@@ -197,7 +197,7 @@ class CreatureSpawnerHandler:
         if flip_coin(total_iterations= 7 if IS_EVENT else 13):
             return TRANSCENDANT
 
-        bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.local_rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
+        bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
 
         # IF DUSK OR DAWN, INCREASE CHANCE OF NORMAL RARITY ROLL
         is_dawn_or_dusk = self.time_of_day in (DUSK, DAWN)

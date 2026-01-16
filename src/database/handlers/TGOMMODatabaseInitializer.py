@@ -747,6 +747,19 @@ class TGOMMODatabaseInitializer:
             ('E10', 'Blue Janitor Dude', AVATAR_TYPE_EVENT, 'BlueJanitorDude', 'Smiling Friends',),
             ('E11', 'Dolly Dimpley', AVATAR_TYPE_EVENT, 'DollyDimpley', 'Smiling Friends',),
             ('E12', 'Cool Autistic Gamer 774', AVATAR_TYPE_EVENT, 'CoolAutisticGamer774', 'Smiling Friends',),
+            # WAVE 2
+            ('E13', 'Yuji Itadori', AVATAR_TYPE_EVENT, 'YujiItadori', 'Jujutsu Kaisen',),
+            ('E14', 'Megumi Fushiguro', AVATAR_TYPE_EVENT, 'MegumiFushiguro', 'Jujutsu Kaisen',),
+            ('E15', 'Nobara Kugisaki', AVATAR_TYPE_EVENT, 'NobaraKugisaki', 'Jujutsu Kaisen',),
+            ('E16', 'Satoru Gojo', AVATAR_TYPE_EVENT, 'SatoruGojo', 'Jujutsu Kaisen',),
+            ('E17', 'Kento Nanami', AVATAR_TYPE_EVENT, 'KentoNanami', 'Jujutsu Kaisen',),
+            ('E18', 'Maki Zen\'in', AVATAR_TYPE_EVENT, 'MakiZenin', 'Jujutsu Kaisen',),
+            ('E19', 'Suguru Geto', AVATAR_TYPE_EVENT, 'SuguruGeto', 'Jujutsu Kaisen',),
+            ('E20', 'Toji Fushiguro', AVATAR_TYPE_EVENT, 'TojiFushiguro', 'Jujutsu Kaisen',),
+            ('E21', 'Mahito', AVATAR_TYPE_EVENT, 'Mahito', 'Jujutsu Kaisen',),
+            ('E22', 'Panda', AVATAR_TYPE_EVENT, 'Panda', 'Jujutsu Kaisen',),
+            ('E23', 'Jogo', AVATAR_TYPE_EVENT, 'Jogo', 'Jujutsu Kaisen',),
+            ('E24', 'Ryomen Sukuna', AVATAR_TYPE_EVENT, 'RyomenSukuna', 'Jujutsu Kaisen',),
 
             # ----QUEST AVATARS----
             #  COLLECTIONS
@@ -785,11 +798,14 @@ class TGOMMODatabaseInitializer:
             ('Q21', 'Spider-Man', AVATAR_TYPE_QUEST, 'SpiderMan', 'Marvel',),
             ('Q22', 'Cynthia', AVATAR_TYPE_QUEST, 'Cynthia', 'Pokemon',),
             ('Q23', 'Marceline', AVATAR_TYPE_QUEST, 'Marceline', 'Adventure Time',),
+            # WAVE 4
+
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),
             ('T2', 'Mothman', AVATAR_TYPE_TRANSCENDANT, 'Mothman', 'Cryptid',),
             ('T3', 'Frogman', AVATAR_TYPE_TRANSCENDANT, 'Frogman', 'Cryptid',),
+            ('T4', 'SkunkApe', AVATAR_TYPE_TRANSCENDANT, 'SkunkApe', 'Cryptid',),
 
             # Fallback Avatars
             ('F1', 'Fallback-1', AVATAR_TYPE_FALLBACK, 'DefaultM', '',),
@@ -834,13 +850,14 @@ class TGOMMODatabaseInitializer:
             ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
             ('Spider-Man', ('Q21', AVATAR_SPIDERMAN_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
             ('Cynthia', ('Q22', AVATAR_CYNTHIA_QUEST_QUERY, 100)),
-            ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
             # WAVE 3.5
+            ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
 
             # Transcendant Avatars
             ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY,1, True)),
             ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY,1, True)),
             ('Frogman', ('T3', AVATAR_FROGMAN_QUEST_QUERY,1, True)),
+            ('SkunkApe', ('T4', AVATAR_SKUNK_APE_QUEST_QUERY,1, True)),
         ]
 
         for index, avatar in enumerate(avatar_data):

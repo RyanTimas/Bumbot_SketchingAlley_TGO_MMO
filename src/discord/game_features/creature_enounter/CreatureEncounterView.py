@@ -134,7 +134,9 @@ class CreatureEncounterView(View):
         # handle hourly catch limits
         if user_id in USER_CATCHES_HOURLY:
             if USER_CATCHES_HOURLY[user_id] >= 12:
-                return False, "You're catching guys too fast save some for the rest of us! Try again at the top of the hour.",
+                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
+                return True, "",
+                # return False, "You're catching guys too fast save some for the rest of us! Try again at the top of the hour.",
             else:
                 USER_CATCHES_HOURLY[user_id] += 1
         else:
@@ -156,7 +158,9 @@ class CreatureEncounterView(View):
                 too_many_catches = count_for_creature >= 10
 
             if too_many_catches:
-                return False, f"You've reached the {self.creature.name} catch limit today! You can more again tomorrow.",
+                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
+                return True, "",
+                # return False, f"You've reached the {self.creature.name} catch limit today! You can more again tomorrow.",
             else:
                 USER_CATCHES_DAILY[user_id] += (creature_id,)
                 return True, ""

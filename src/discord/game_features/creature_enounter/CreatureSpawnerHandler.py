@@ -284,19 +284,15 @@ class CreatureSpawnerHandler:
 
     # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
     def _handle_day_night_cycle(self, current_time: datetime.datetime = None):
-        old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
-        new_time_of_day = 'day' if 7 <= current_time.hour < 19 else 'night'
+        old_time_of_day = DAY if self.is_day else NIGHT
+        new_time_of_day = DAY if 7 <= current_time.hour < 19 else NIGHT
         is_day_night_transition = old_time_of_day != new_time_of_day
 
-        if current_time.hour in (6, 7, 18, 19):
-            self.time_of_day = DAWN if current_time.hour in (6, 7) else DUSK
-        else:
-            self.time_of_day = DAY if self.is_day else NIGHT
+        self.time_of_day = (DAWN if current_time.hour in (6, 7) else DUSK) if current_time.hour in (6, 7, 18, 19) else new_time_of_day
 
         if is_day_night_transition:
             self.is_day = not self.is_day
-            self.define_environment_and_spawn_pool(current_environment=self.current_environment,)
-
+            self.define_environment_and_spawn_pool(environment_dex_no=self.current_environment.dex_no, environment_variant_no=1 if self.is_day else 2)
         self.last_spawn_time = current_time
 
     # Checks if the environment should change today, schedules the change for noon

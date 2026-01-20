@@ -60,29 +60,40 @@ class CreatureCaughtView(discord.ui.View):
         await interaction.response.send_message(f"Display index set to: {self.display_index+1}", ephemeral=True)
 
     def create_release_button(self, row=0):
-        button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
+        if hasattr(self, '_release_confirmed') and self._release_confirmed:
+            button = Button(label="ARE YOU SURE? THIS CANNOT BE UNDONE!", style=discord.ButtonStyle.danger, emoji="⚠️", row=row)
+        else:
+            button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
         button.callback = self.release_button_callback
         return button
     async def release_button_callback(self, interaction: discord.Interaction):
-        # Remove from display slots if present
-        for index, id in enumerate(self.display_creature_ids):
-            if id == self.creature_catch_id:
-                get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=None, display_index=index)
+        # Check if this is the confirmation click
+        if hasattr(self, '_release_confirmed') and self._release_confirmed:
+            # Remove from display slots if present
+            for index, id in enumerate(self.display_creature_ids):
+                if id == self.creature_catch_id:
+                    get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=None, display_index=index)
 
-        currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
+            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(
+                user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
-        if not currency_earned:
-            await interaction.response.send_message("Failed to release creature", ephemeral=True)
-            return
+            if not currency_earned:
+                await interaction.response.send_message("Failed to release creature", ephemeral=True)
+                return
 
-        # Disable all buttons and create results file
-        for item in self.children:
-            item.disabled = True
+            # Disable all buttons and create results file
+            for item in self.children:
+                item.disabled = True
 
-        release_results_file = CreatureReleaseService.create_release_results_file(user=self.interaction.user, currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+            release_results_file = CreatureReleaseService.create_release_results_file(user=self.interaction.user, currency_earned=currency_earned, earned_items=earned_items, count_released=1)
 
-        await interaction.response.edit_message(view=self)
-        await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
+            await interaction.response.edit_message(view=self)
+            await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
+        else:
+            # First click - show confirmation
+            self._release_confirmed = True
+            self.refresh_view()
+            await interaction.response.edit_message(view=self)
 
     def create_favorite_button(self, row=0):
         button = Button(label="Favorite", style=discord.ButtonStyle.success, emoji="❤️", row=row)

@@ -176,7 +176,8 @@ class CreatureSpawnerHandler:
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self, rarity= None):
-        rarity = rarity if rarity else self.get_creature_rarity()
+        mythical = rarity and rarity.name == TGOMMO_RARITY_MYTHICAL
+        rarity = rarity if rarity and rarity.name != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity.name]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
@@ -185,7 +186,7 @@ class CreatureSpawnerHandler:
 
         # Check if mythical spawn occurs
         mythical_odds = MYTHICAL_SPAWN_CHANCE // (2 if any(bonus.bonus_type == F'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_MYTHICAL}' for bonus in self.active_bonuses) else 1)
-        if rarity.name != TRANSCENDANT.name and random.randint(0, mythical_odds) == 1:
+        if mythical or rarity.name != TRANSCENDANT.name and random.randint(0, mythical_odds) == 1:
             selected_creature.set_creature_rarity(MYTHICAL)
 
         selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
@@ -300,14 +301,13 @@ class CreatureSpawnerHandler:
         environment_change_check_time = 11
 
         # Check for environment change at 11 am
-        # todo: REMOVE THIS AFTER FORCING ENVIRONMENT CHANGE FOR LAUNCH - CHANGE ON MONDAY
-        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today or True:
+        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today:
             self.environment_change_checked_for_today = True
 
             # Decide if we are staying in the same environment or switching, 50/50 chance
             should_change_environment = flip_coin(total_iterations=1)
 
-            # todo: REMOVE THIS AFTER FORCING ENVIRONMENT CHANGE FOR LAUNCH - CHANGE ON MONDAY
+            # USE THIS FOR FORCING SPECIFIC ENVIRONMENT
             should_change_environment = get_game_state_manager().load_current_environment()[0] == 1
             if not should_change_environment:
                 return

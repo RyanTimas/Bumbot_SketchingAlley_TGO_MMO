@@ -40,6 +40,7 @@ class CreatureEncounterView(View):
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
+            await interaction.response.defer(ephemeral=True)
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
@@ -119,8 +120,7 @@ class CreatureEncounterView(View):
 
     async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
         nickname_view = CreatureCaughtView(interaction=interaction, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
-        await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
-
+        await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}",  view=nickname_view, ephemeral=True)
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence

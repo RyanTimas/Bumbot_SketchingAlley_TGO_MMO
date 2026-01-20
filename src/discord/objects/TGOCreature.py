@@ -71,8 +71,10 @@ class TGOCreature:
         if not os.path.exists(dex_icon_img_path):
             dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
 
-        self.creature_image = Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH)
-        self.dex_icon_image = Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH)
+        with Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH) as img:
+            self.creature_image = img.copy()
+        with Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH) as img:
+            self.dex_icon_image = img.copy()
 
     '''GETTERS AND SETTERS'''
     def set_creature_rarity(self, new_rarity: CreatureRarity):

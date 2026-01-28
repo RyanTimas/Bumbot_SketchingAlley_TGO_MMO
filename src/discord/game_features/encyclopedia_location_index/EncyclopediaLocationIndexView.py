@@ -33,7 +33,6 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
 
         self.prev_button = self.create_navigation_button(is_next=False, row=1)
-        self.page_jump_button = self.create_advanced_navigation_button(row=1)
         self.next_button = self.create_navigation_button(is_next=True, row=1)
 
         self.environment_dropdown = self.create_environments_dropdown(row=2)
@@ -56,14 +55,6 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         )
         button.callback = self.nav_callback(new_page=next_ if is_next else previous)
         return button
-    def create_advanced_navigation_button(self, row):
-        button = discord.ui.Button(
-            label="⬆️ Jump To Page ⬆️️",
-            style=discord.ButtonStyle.blurple,
-            row=row
-        )
-        button.callback = self.nav_callback(new_page=jump)
-        return button
     def nav_callback(self, new_page,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
@@ -77,7 +68,7 @@ class EncyclopediaLocationIndexView(discord.ui.View):
                 page_options = {
                     next_: self.encyclopedia_location_index_image_factory.page_num + 1,
                     previous: self.encyclopedia_location_index_image_factory.page_num -1,
-                   jump: self.new_page
+                    jump: self.new_page
                 }
 
                 new_image = self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=page_options[new_page])
@@ -121,8 +112,17 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         dropdown.callback = self.page_jump_callback
         return dropdown
     async def page_jump_callback(self, interaction: discord.Interaction):
-        self.new_page = int(interaction.data["values"][0])
-        await interaction.response.defer()
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            return
+
+        async with self.interaction_lock:
+            await interaction.response.defer()
+
+            self.new_page = int(interaction.data["values"][0])
+            new_image = self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=self.new_page)
+            self.update_button_states()
+
+            await interaction.message.edit(attachments=[convert_to_png(new_image, f'encyclopedia_page.png')], view=self)
 
     def create_environments_dropdown(self, row=0):
         options = [
@@ -164,9 +164,10 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         total_pages = self.encyclopedia_location_index_image_factory.total_pages
 
         self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, total_pages + 1)]
+        self.page_jump_dropdown.placeholder = f"Page {current_page}"
         self.page_jump_dropdown.disabled = total_pages == 1
+
         self.prev_button.disabled = current_page == 1
-        self.page_jump_button.disabled = total_pages == 1
         self.next_button.disabled = current_page == total_pages
     def rebuild_view(self):
         for item in self.children.copy():
@@ -177,7 +178,6 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             self.add_item(self.page_jump_dropdown)
 
             self.add_item(self.prev_button)
-            self.add_item(self.page_jump_button)
             self.add_item(self.next_button)
 
         self.add_item(self.environment_dropdown)

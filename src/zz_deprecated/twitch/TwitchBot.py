@@ -2,7 +2,7 @@ from twitchAPI.chat import Chat, EventData, ChatMessage
 from twitchAPI.type import AuthScope, ChatEvent
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.twitch import Twitch
-from src.obs.OBSWebsocket import OBSWebSocket
+from src.zz_deprecated.obs.OBSWebsocket import OBSWebSocket
 
 
 class TwitchBot:

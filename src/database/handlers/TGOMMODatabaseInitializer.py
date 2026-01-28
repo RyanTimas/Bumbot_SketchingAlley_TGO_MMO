@@ -583,7 +583,7 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(LAUGHING_GULL_DEX_NO,                        1, FLORIDA_NO,        BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_PIER),
             EnvironmentCreatureLink(BROWN_PELICAN_DEX_NO,                        1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_PIER),
             EnvironmentCreatureLink(AMERICAN_WHITE_PELICAN_DEX_NO,        1, FLORIDA_NO,        DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_RIVER),
-            EnvironmentCreatureLink(MAGNIFICENT_FRIGATEBIRD_DEX_NO,       1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_BEACH),
+            EnvironmentCreatureLink(MAGNIFICENT_FRIGATEBIRD_DEX_NO,       1, FLORIDA_NO,        DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(MAGNIFICENT_FRIGATEBIRD_DEX_NO,       2, FLORIDA_NO,        DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(SNAIL_DEX_NO,                                          5, FLORIDA_NO,        NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_POND),
             EnvironmentCreatureLink(FLORIDA_TREE_SNAIL_DEX_NO,                  1, FLORIDA_NO,        NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_POND),

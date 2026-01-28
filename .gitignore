@@ -192,3 +192,12 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+/src/database/scripts/bumbot.db
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/shelf/Uncommitted_changes_before_Merge_at_12_5_2025_4_21_PM_[Changes]/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Merge_at_12_5_2025_4_21_PM_[Changes]/shelved.patch
+/.idea/.gitignore
+/.idea/Bumbot_SketchingAlley_TGO_MMO.iml
+/src/resources/configs/config_local.ini

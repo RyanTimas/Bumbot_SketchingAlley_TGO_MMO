@@ -62,7 +62,7 @@ def convert_to_png(image: Image, file_name):
         return png_img
 
 
-def add_text_to_image(image: Image.Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):
+def add_text_to_image(image: Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):
     draw = ImageDraw.Draw(image)
     draw.text(position, text= text, font=font, fill=color, anchor="mm")
     return image
@@ -89,7 +89,7 @@ def open_image_from_url(image_url):
 
 
 # puts a colored border around an input image
-def add_border_to_image(base_image: Image.Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
+def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)
 
     # Draw border - the color #006891 with alpha
@@ -104,7 +104,7 @@ def add_border_to_image(base_image: Image.Image, text: str, font: ImageFont, bor
 
 
 # adds a gaussian blur mask to the edges of an image
-def add_blur_mask_to_image(self, image: Image.Image):
+def add_blur_mask_to_image(image: Image):
         # Create an alpha mask based on the image's alpha channel
         r, g, b, a = image.split()
 
@@ -296,6 +296,18 @@ def get_user_discord_profile_pic(user = None):
     avatar_url = user.display_avatar.url if hasattr(user,'display_avatar') else user.avatar.url if user.avatar else user.default_avatar.url
     return avatar_url
 
+def build_user_profile_pic(user, size=(600, 600)):
+    # get user's profile pic
+    profile_pic_avatar_url = get_user_discord_profile_pic(user)
+    response = requests.get(profile_pic_avatar_url)
+
+    profile_pic = Image.open(io.BytesIO(response.content)).convert("RGBA")
+    profile_pic = profile_pic.resize(size, Image.LANCZOS)
+
+    # profile_pic = self.add_blur_mask_to_image(profile_pic)
+
+    return profile_pic
+
 
 #*********************
 # DISCORD VIEW HELPERS
@@ -340,11 +352,11 @@ def retry_on_ssl_error(max_retries=3, delay=1):
 #-------------------------------BUTTON FUNCTIONS------------------------------------
 #************************************************************************************
 # Button that goes back to parent view when clicked
-def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None):
+def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None, files=None):
     button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
-    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id,)
+    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id, files=files)
     return button
-def go_back_callback(original_view, interaction_lock=None, message_author_id=None):
+def go_back_callback(original_view, interaction_lock=None, message_author_id=None, files=None):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):
         # Check if we're already processing an interaction
@@ -356,7 +368,7 @@ def go_back_callback(original_view, interaction_lock=None, message_author_id=Non
             await interaction.response.defer()
 
     # Go back to the previous view or state
-        await interaction.message.edit(attachments=[], view=original_view)
+        await interaction.message.edit(attachments=files if files else [], view=original_view)
     return callback
 
 

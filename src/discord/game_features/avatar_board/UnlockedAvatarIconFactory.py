@@ -21,7 +21,7 @@ class UnlockedAvatarIconFactory:
         self.add_text_to_image(image=avatar_background_img)
         return avatar_background_img
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
 
         font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)

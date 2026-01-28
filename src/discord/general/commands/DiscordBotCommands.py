@@ -11,6 +11,10 @@ from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory 
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
+    EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import \
+    EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
@@ -97,68 +101,26 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
     # OPEN SCREEN COMMANDS
     @discord_bot.discord_bot.command(name='encyclopedia', help="List all creatures caught. Use 'verbose' for detailed stats.")
-    async def encyclopedia(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
+    async def encyclopedia(ctx, param1: str = None):
         # Initialize defaults
-        verbose = False
-        is_server_stats = False
         target_user_id = None
-        show_variants = False
-        show_mythics = False
 
         if param1:
-            if param1.lower() == "verbose":
-                verbose = True
-            elif param1.lower() == "server":
-                is_server_stats = True
-            elif param1.lower() == "variants":
-                show_variants = True
-            elif param1.lower() == "mythics":
-                show_mythics = True
+            if param1.lower() == "server":
+                target_user_id = "server"
             elif param1.isdigit():
                 target_user_id = int(param1)
-        if param2:
-            if param2.lower() == "verbose":
-                verbose = True
-            elif param2.lower() == "server":
-                is_server_stats = True
-            elif param2.lower() == "variants":
-                show_variants = True
-            elif param2.lower() == "mythics":
-                show_mythics = True
-            elif param2.isdigit():
-                target_user_id = int(param2)
-        if param3:
-            if param3.lower() == "verbose":
-                verbose = True
-            elif param3.lower() == "server":
-                is_server_stats = True
-            elif param3.lower() == "variants":
-                show_variants = True
-            elif param3.lower() == "mythics":
-                show_mythics = True
-            elif param3.isdigit():
-                target_user_id = int(param3)
-        if param4:
-            if param4.lower() == "verbose":
-                verbose = True
-            elif param4.lower() == "server":
-                is_server_stats = True
-            elif param4.lower() == "mythics":
-                show_mythics = True
-            elif param4.lower() == "variants":
-                show_variants = True
-            elif param4.isdigit():
-                target_user_id = int(param4)
 
-        target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
+        if target_user_id == "server":
+            target_user = None
+        else:
+            target_user = ctx.guild.get_member(target_user_id if target_user_id else ctx.author.id)
 
-        encyclopedia_img_factory = EncyclopediaImageFactory(user = target_user, environment=discord_bot.creature_spawner_handler.current_environment, verbose=verbose, is_server_page=is_server_stats, show_variants=show_variants, show_mythics=show_mythics)
-        encyclopedia_img = encyclopedia_img_factory.build_encyclopedia_page_image()
-
-        view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, is_verbose=verbose, show_variants=show_variants, show_mythics=show_mythics, message_author=ctx.author)
+        encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(user=target_user,)
+        view = EncyclopediaLocationIndexView(message_author=ctx.author, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory,)
 
         await ctx.message.delete()
-        await ctx.send('', files=[convert_to_png(encyclopedia_img, f'encyclopedia_test.png')], view=view)
+        await ctx.send('', files=[convert_to_png(encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index.png')], view=view)
 
     @discord_bot.discord_bot.command(name='player-profile', help="Shows User's Profile Page.")
     async def player_profile(ctx, param1: str = None, param2: str = None, param3: str = None, param4: str = None):
@@ -254,12 +216,16 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
     # MOD COMMANDS
     @discord_bot.discord_bot.command(name='spawn_creature', help="Manually spawn a creature.", hidden=True)
-    async def spawn_creature(ctx):
+    async def spawn_creature(ctx, param1: str = None):
         if ctx.author.id not in USER_WHITELIST:
             await ctx.followup.send("You don't have permission to use this command.", delete_after=5)
             return
 
+        is_mythical = param1.lower() == "mythical" if param1 else False
+
         creature = await discord_bot.creature_spawner_handler.creature_picker()
+        creature.set_creature_rarity(MYTHICAL) if is_mythical else None
+
         await discord_bot.creature_spawner_handler.spawn_creature(creature=creature)
         await ctx.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
         await ctx.message.delete()
@@ -271,25 +237,28 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
             return
 
         is_mythical = "mythical" in [param1.lower() if param1 else "", param3.lower() if param3 else ""]
-        environment_id = 1
-        variant_no = 1
+        environment_dex_no = 1
+        variant_no = None
 
         if param1 and param1.isdigit():
-            environment_id = int(param1)
+            environment_dex_no = int(param1)
             if param2 and param2.isdigit():
                 variant_no = int(param2)
         elif param2 and param2.isdigit():
-            environment_id = int(param2)
+            environment_dex_no = int(param2)
             if param3 and param3.isdigit():
                 variant_no = int(param3)
 
-        discord_bot.creature_spawner_handler.define_environment_and_spawn_pool(environment_id=environment_id, variant_no=variant_no)
-        available_creatures = discord_bot.creature_spawner_handler.creature_spawn_pool
+        if variant_no:
+            environment  = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no)
+            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment.environment_id)
+        else:
+            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment_dex_no)
 
-        for creature in available_creatures:
+
+        for creature in spawn_pool:
             if is_mythical:
-                creature.img_root += '_S'
-                creature.rarity = MYTHICAL
+                creature.set_rarity(MYTHICAL)
 
             max_retries = 3
             for attempt in range(max_retries):

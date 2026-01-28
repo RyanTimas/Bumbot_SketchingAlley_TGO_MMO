@@ -39,11 +39,7 @@ class PlayerProfilePageFactory:
             if slot_id == -1:
                 self.creature_team.append(PLACEHOLDER_CREATURE)
             else:
-                creature_info = get_tgommo_db_handler().get_creature_for_player_profile(creature_id=slot_id)
-                creature_name = creature_info[3] if creature_info[3] != '' else creature_info[2]
-                rarity = MYTHICAL if creature_info[14] else get_rarity_by_name(creature_info[13])
-
-                creature = TGOCreature(creature_id=creature_info[0],nickname=creature_info[1],name=creature_name,variant_name=creature_info[4],dex_no=creature_info[5],variant_no=creature_info[6],full_name=creature_info[7],scientific_name=creature_info[8],kingdom=creature_info[9],description=creature_info[10], img_root=creature_info[11], encounter_rate=creature_info[12], caught_date=creature_info[15], rarity = rarity,)
+                creature = get_tgommo_db_handler().get_user_creature_by_catch_id(catch_id=slot_id, convert_to_object=True)
                 self.creature_team.append(creature)
 
 
@@ -73,13 +69,12 @@ class PlayerProfilePageFactory:
         return player_profile_image
 
 
-    def _place_creatures_on_image(self, player_profile_img: Image.Image):
+    def _place_creatures_on_image(self, player_profile_img: Image):
         for index, creature in enumerate(self.creature_team):
-            if creature.creature_id == -1:
+            if creature.catch_id == -1:
                 continue
 
-            creature_image = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{creature.img_root}{'_S' if creature.rarity is MYTHICAL else ''}_THUMB{IMAGE_FILE_EXTENSION}")
-            creature_image = creature_image.resize((int(creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
+            creature_image = creature.creature_image.resize((int(creature.creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature.creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
 
             x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][0] - (creature_image.width // 2)
             y_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][1] - (creature_image.height // 2)
@@ -88,12 +83,12 @@ class PlayerProfilePageFactory:
 
         return player_profile_img
 
-    def _place_avatar_on_image(self, player_profile_image: Image.Image):
+    def _place_avatar_on_image(self, player_profile_image: Image):
         player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.player.avatar.avatar_type}_{self.player.avatar.img_root}{IMAGE_FILE_EXTENSION}")
         player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
         return player_profile_image
 
-    def place_username_on_image(self, player_profile_img: Image.Image):
+    def place_username_on_image(self, player_profile_img: Image):
         draw = ImageDraw.Draw(player_profile_img)
 
         font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50)
@@ -119,7 +114,7 @@ class PlayerProfilePageFactory:
 
 
     # side panel functions
-    def build_side_panel_content(self, player_profile_img: Image.Image):
+    def build_side_panel_content(self, player_profile_img: Image):
         side_drawer_border_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_IMAGE}")
         side_drawer_background_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_BACKGROUND_IMAGE}")
 
@@ -151,19 +146,18 @@ class PlayerProfilePageFactory:
         return player_profile_img
 
 
-    def _build_team_tab(self, background_img: Image.Image):
+    def _build_team_tab(self, background_img: Image):
         current_offset = (1097,70)
 
         for index, creature in enumerate(self.creature_team):
-            if creature.creature_id == -1:
+            if creature.catch_id == -1:
                 continue
 
             title = creature.nickname if creature.nickname != "" else creature.name
-            creature_img_path = DEX_ICON_CREATURE_BASE + f"_{creature.img_root}" + f"{"_S" if creature.rarity == MYTHICAL else ""}" + IMAGE_FILE_EXTENSION
-            image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.rarity.name}{IMAGE_FILE_EXTENSION}'
+            image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.local_rarity.name}{IMAGE_FILE_EXTENSION}'
             catch_date = convert_date_format_to_month_name(creature.caught_date)
 
-            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, content_image_path=creature_img_path, background_image_path=None,image_color_path=image_color_path, tab_title=title,tab_subtitle=creature.full_name, tab_footer=catch_date)
+            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, tab_image=creature.dex_icon_image, background_image_path=None, image_color_path=image_color_path, tab_title=title, tab_subtitle=creature.full_name, tab_footer=catch_date)
             team_tab_image = team_tab.create_tab()
 
             background_img.paste(team_tab_image, current_offset, team_tab_image)
@@ -171,7 +165,7 @@ class PlayerProfilePageFactory:
 
         return background_img
 
-    def build_collections_tab(self, background_img: Image.Image):
+    def build_collections_tab(self, background_img: Image):
         current_offset = (1097,70)
 
         active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
@@ -189,7 +183,7 @@ class PlayerProfilePageFactory:
             total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
             subtitle = f"{caught_number}/{total_number}"
 
-            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, content_image_path=collection.image_path,background_image_path=None,image_color_path=collection.background_color_path, tab_title=collection.title,tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=collection.image_path, background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
             collections_tab_image = collections_tab.create_tab()
 
             background_img.paste(collections_tab_image, current_offset, collections_tab_image)
@@ -198,7 +192,7 @@ class PlayerProfilePageFactory:
         return background_img
 
 
-    def _build_environments_tab(self, player_profile_img: Image.Image):
+    def _build_environments_tab(self, player_profile_img: Image):
         content_image_path=""
         background_image_path = ""
         image_color_path = ""
@@ -206,13 +200,13 @@ class PlayerProfilePageFactory:
         tab_subtitle = ""
         tab_footer = ""
 
-        environments_tab = PlayerProfileSidePanelTabFactory(tab_type="Environments", player=self.player, content_image_path=content_image_path, background_image_path=background_image_path, image_color_path=image_color_path, tab_title=tab_title, tab_subtitle=tab_subtitle, tab_footer=tab_footer)
+        environments_tab = PlayerProfileSidePanelTabFactory(tab_type="Environments", player=self.player, tab_image=content_image_path, background_image_path=background_image_path, image_color_path=image_color_path, tab_title=tab_title, tab_subtitle=tab_subtitle, tab_footer=tab_footer)
 
         return player_profile_img
 
 
 async def build_user_creature_collection(author, ctx):
-    creature_collection = get_tgommo_db_handler().get_creature_collection_by_user(author.id, convert_to_object=True)
+    creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(author.id, )
 
     page_num = 0
     pages = [f"Total Unique Creatures Caught: {len(creature_collection)}"]
@@ -221,10 +215,10 @@ async def build_user_creature_collection(author, ctx):
     for creature_index, creature in enumerate(creature_collection):
         current_page = pages[page_num]
 
-        is_mythical = creature.rarity.name == TGOMMO_RARITY_MYTHICAL
+        is_mythical = creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL
         nickname = f'**__{creature.nickname}❗__**' if creature.nickname != '' else creature.name + ('✨' if is_mythical else '')
 
-        newlines = f'{'\n' if creature.creature_id != creature_collection[creature_index - 1].creature_id else ''}\n'
+        newlines = f'{'\n' if creature.creature_id != creature_collection[creature_index - 1].catch_id else ''}\n'
         new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature.name, 20)}) \t {pad_text(nickname, 20)}"
 
         if len(current_page) + len(new_entry) > 1900:

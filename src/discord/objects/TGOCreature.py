@@ -1,47 +1,55 @@
-import datetime
-import pytz
-import random
-import time
-
-from src.discord.objects.CreatureRarity import COMMON, UNCOMMON, CreatureRarity, RARE, EPIC, LEGENDARY
+from src.discord.objects.CreatureRarity import *
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.TGO_MMO_creature_constants import *
-
+from src.resources.constants.file_paths import *
+from PIL import Image
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, rarity: CreatureRarity = COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False):
+    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, default_rarity: CreatureRarity= COMMON, local_rarity= COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False, local_image_root: str = None, local_dex_no = None, local_variant_no = None):
         self.timezone = pytz.timezone('US/Eastern')
 
         self.creature_id = creature_id
         self.catch_id = catch_id
 
-        self.name = name
+        self.creature_name = name
         self.local_name = local_name
         self.variant_name = variant_name
+        # todo: streamline this so that the name is only set once
+        self.name = local_name if local_name else self.creature_name
+
         self.nickname = nickname
 
         self.dex_no = dex_no
         self.variant_no = variant_no
+        self.local_dex_no = local_dex_no if local_dex_no else dex_no
+        self.local_variant_no = local_variant_no if local_variant_no else variant_no
 
         self.full_name = full_name
         self.scientific_name = scientific_name
         self.kingdom = kingdom
         self.description = description
 
-        self.img_root = img_root + f'_{variant_no}'
+        self.img_root = img_root
+        self.local_img_root = local_image_root if local_image_root else None
+
         self.sub_environment = sub_environment
         self.encounter_rate = encounter_rate
 
-        self.rarity = rarity
+        self.default_rarity = default_rarity
+        self.local_rarity = local_rarity if local_rarity else default_rarity
+
         self.caught_date = caught_date
+        self.is_favorite = is_favorite
+        self.is_released = is_released
+
+        self.creature_image = None
+        self.dex_icon_image = None
+        self.define_creature_images()
 
         self.spawn_time = None
         self.time_to_despawn = None
         self.despawn_time = None
         self.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=0)
-
-        self.is_favorite = is_favorite
-        self.is_released = is_released
 
 
     def refresh_spawn_and_despawn_time(self, timezone, minute_offset=None):
@@ -50,18 +58,41 @@ class TGOCreature:
         self.despawn_time = self.spawn_time + datetime.timedelta(minutes=self.time_to_despawn)
         self.time_to_despawn = self.time_to_despawn * 60  # convert to seconds
 
+    def define_creature_images(self):
+        # always try local first
+        local_img_root = f"{self.local_img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+        img_root = f"{self.img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+
+        creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{local_img_root}{IMAGE_FILE_EXTENSION}"
+
+        if not os.path.exists(creature_thumb_img_path):
+            creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        if not os.path.exists(dex_icon_img_path):
+            dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
+
+        with Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH) as img:
+            self.creature_image = img.copy()
+        with Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH) as img:
+            self.dex_icon_image = img.copy()
+
+    '''GETTERS AND SETTERS'''
+    def set_creature_rarity(self, new_rarity: CreatureRarity):
+        self.local_rarity = new_rarity
+        self.define_creature_images()
+
 
 CURRENT_SPAWN_POOL = [
 
 ]
 
-PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=0, variant_no=0, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, rarity=COMMON)
+PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=0, variant_no=0, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, default_rarity=COMMON)
 
-TEST_CREATURE_COMMON = TGOCreature(creature_id= 1, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=COMMON)
-TEST_CREATURE_UNCOMMON = TGOCreature(creature_id= 2, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=UNCOMMON)
-TEST_CREATURE_RARE = TGOCreature(creature_id= 3, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=RARE)
-TEST_CREATURE_EPIC = TGOCreature(creature_id= 4, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=EPIC)
-TEST_CREATURE_LEGENDARY = TGOCreature(creature_id= 5, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, rarity=LEGENDARY)
+TEST_CREATURE_COMMON = TGOCreature(creature_id= 1, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=COMMON)
+TEST_CREATURE_UNCOMMON = TGOCreature(creature_id= 2, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=UNCOMMON)
+TEST_CREATURE_RARE = TGOCreature(creature_id= 3, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=RARE)
+TEST_CREATURE_EPIC = TGOCreature(creature_id= 4, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=EPIC)
+TEST_CREATURE_LEGENDARY = TGOCreature(creature_id= 5, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=LEGENDARY)
 
 TEST_SPAWN_POOL = [TEST_CREATURE_COMMON, TEST_CREATURE_UNCOMMON, TEST_CREATURE_RARE, TEST_CREATURE_EPIC, TEST_CREATURE_LEGENDARY]
 

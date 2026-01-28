@@ -36,7 +36,7 @@ class AvatarQuestTabFactory:
         base_img.paste(quest_content_img, (0, 0), quest_content_img)
         return base_img
 
-    def place_progress_bar_on_image(self, base_image: Image.Image):
+    def place_progress_bar_on_image(self, base_image: Image):
         green_border_img = Image.open(AVATAR_QUEST_TAB_GREEN_BORDER_IMAGE)
         progress_indicator_img = Image.open(AVATAR_QUEST_TAB_PROGRESS_TAB_IMAGE)
 
@@ -52,7 +52,7 @@ class AvatarQuestTabFactory:
         base_image.paste(progress_indicator_img, (indicator_offset, 0), progress_indicator_img)
         return base_image
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         stats_num_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 20)
 

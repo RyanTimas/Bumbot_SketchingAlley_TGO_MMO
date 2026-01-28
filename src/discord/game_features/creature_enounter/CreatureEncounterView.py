@@ -1,7 +1,7 @@
 import asyncio
 from discord.ui import View
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
@@ -27,6 +27,7 @@ class CreatureEncounterView(View):
         self.successful_catch_message = None
 
         self.add_item(self.create_catch_button())
+        self.add_item(self.is_creature_caught_button())
 
     def create_catch_button(self, row=0):
         button = discord.ui.Button(
@@ -39,6 +40,7 @@ class CreatureEncounterView(View):
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
+            await interaction.response.defer(ephemeral=True)
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
@@ -48,10 +50,7 @@ class CreatureEncounterView(View):
                     await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                # can always catch mythical creatures or if spawned using bait
-                can_catch = self.creature.rarity != MYTHICAL or self.spawn_user
-                if not can_catch:
-                    can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
+                can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
                 self.caught = can_catch
 
                 if not can_catch:
@@ -64,7 +63,7 @@ class CreatureEncounterView(View):
             total_xp = successful_catch_embed[2]
 
             # insert record of user catching the creature & give user xp for catching the creature
-            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.rarity == MYTHICAL))
+            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.local_rarity == MYTHICAL))
             get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
             # send a message to the channel announcing the successful catch
@@ -81,24 +80,63 @@ class CreatureEncounterView(View):
                 print('Message was already deleted, do nothing')
         return callback
 
-    async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
-        nickname_view = CreatureCaughtView(interaction=interaction, creature_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
-        await interaction.response.send_message(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
+    def is_creature_caught_button(self, row=0):
+        button = discord.ui.Button(
+            label="Analyze Creature",
+            style=discord.ButtonStyle.gray,
+            emoji="🔎",
+            row=row
+        )
+        button.callback = self.creature_caught_button_callback()
+        return button
+    def creature_caught_button_callback(self):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
+                return
 
+            # Get user's creatures and count this species
+            user_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=interaction.user.id, is_released=None)
+
+            total_catches_for_species = sum(1 for creature in user_creatures if creature.dex_no == self.creature.dex_no)
+            total_catches_for_variant = sum(1 for creature in user_creatures if creature.dex_no == self.creature.dex_no and creature.variant_no == self.creature.variant_no)
+            total_mythical_catches_for_species = sum(1 for creature in user_creatures if creature.creature_id == self.creature.creature_id and creature.local_rarity == MYTHICAL)
+
+            message = (
+                f"You have caught **{total_catches_for_species}** {self.creature.name}(s) \n"
+                f"You have caught **{total_catches_for_variant}** of this variant! \n"
+                f"You have caught **{total_mythical_catches_for_species}** Mythical {self.creature.name}(s)!"
+            )
+
+            if total_catches_for_species == 0:
+                message = f"# ‼️You've never caught this creature before!‼️"
+            elif total_catches_for_variant == 0:
+                message = f"🔥You never caught this form for this creature before!🔥"
+            elif total_mythical_catches_for_species == 0 and self.creature.local_rarity == MYTHICAL:
+                message = f"# ⭐You've never caught the Mythical form of this creature before!⭐"
+            await interaction.response.send_message(message, files=[convert_to_png(self.creature.creature_image, file_name="creature_img.png")], ephemeral=True)
+
+        return callback
+
+    async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
+        nickname_view = CreatureCaughtView(interaction=interaction, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
+        await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}",  view=nickname_view, ephemeral=True)
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
-        # check if user has space in their creature inventory
-        if len(get_tgommo_db_handler().get_creature_collection_by_user(user_id=user_id)) >= 800:
+        # Storage being full always takes precedence
+        if len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=user_id, is_released=False)) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
-        # Mythical creatures can always be caught
-        if self.creature.rarity.name == MYTHICAL.name:
+        # Mythical creatures & spawned creatures can always be caught
+        if self.creature.local_rarity.name == MYTHICAL.name or self.spawn_user:
             return True, ""
 
         # handle hourly catch limits
         if user_id in USER_CATCHES_HOURLY:
             if USER_CATCHES_HOURLY[user_id] >= 12:
-                return False, "You're catching guys too fast save some for the rest of us! Try again at the top of the hour.",
+                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
+                return True, "",
+                # return False, "You're catching guys too fast save some for the rest of us! Try again at the top of the hour.",
             else:
                 USER_CATCHES_HOURLY[user_id] += 1
         else:
@@ -108,19 +146,21 @@ class CreatureEncounterView(View):
         if user_id in USER_CATCHES_DAILY:
             count_for_creature = sum(1 for cid in USER_CATCHES_DAILY[user_id] if cid == creature_id)
             too_many_catches = False
-            if self.creature.rarity.name == LEGENDARY.name:
+            if self.creature.local_rarity.name == LEGENDARY.name:
                 too_many_catches = count_for_creature >= 1
-            elif self.creature.rarity.name == EPIC.name:
+            elif self.creature.local_rarity.name == EPIC.name:
                 too_many_catches = count_for_creature >= 1
-            elif self.creature.rarity.name == RARE.name:
+            elif self.creature.local_rarity.name == RARE.name:
                 too_many_catches = count_for_creature >= 3
-            elif self.creature.rarity.name == UNCOMMON.name:
+            elif self.creature.local_rarity.name == UNCOMMON.name:
                 too_many_catches = count_for_creature >= 5
-            elif self.creature.rarity.name == COMMON.name:
+            elif self.creature.local_rarity.name == COMMON.name:
                 too_many_catches = count_for_creature >= 10
 
             if too_many_catches:
-                return False, f"You've reached the {self.creature.name} catch limit today! You can more again tomorrow.",
+                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
+                return True, "",
+                # return False, f"You've reached the {self.creature.name} catch limit today! You can more again tomorrow.",
             else:
                 USER_CATCHES_DAILY[user_id] += (creature_id,)
                 return True, ""

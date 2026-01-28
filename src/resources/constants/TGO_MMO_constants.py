@@ -1,5 +1,8 @@
 '''GENERAL_CONSTANTS'''
 import datetime
+import pytz
+
+BASE_TIMEZONE = pytz.timezone('US/Eastern')
 
 DEFAULT_CREATURE_SPAWN_RATE_LOW_END = 3
 DEFAULT_CREATURE_SPAWN_RATE_HIGH_END = 5
@@ -17,7 +20,7 @@ NEXT_EVENT_END_TIMESTAMP = datetime.datetime(2025, 10, 31, 23, 59, 59)
 IS_EVENT = NEXT_EVENT_START_TIMESTAMP <= datetime.datetime.now() <= NEXT_EVENT_END_TIMESTAMP
 
 EVENT_NAME = "Halloween"
-EVENT_SPAWN_POOL = [18, 20, 24, 32, 34, 37, 41, 46, 49, 55, 79, 9001]
+EVENT_SPAWN_POOL = [(18,5)]
 
 EVENT_MYTHICAL_SPAWN_CHANCE = 32
 EVENT_MYTHICAL_SPAWN_COIN_FLIPS = 6
@@ -36,8 +39,6 @@ VIEW_WORKFLOW_STATE_INITIAL = "initial"
 VIEW_WORKFLOW_STATE_INTERACTION = "interaction"
 VIEW_WORKFLOW_STATE_CONFIRMATION = "confirmation"
 VIEW_WORKFLOW_STATE_FINALIZED = "finalized"
-
-
 
 '''TIME OF DAY'''
 DAY = "Day"
@@ -58,9 +59,9 @@ TGOMMO_CREATURE_EMBED_CLOCK_ICON = "https://cdn-icons-png.flaticon.com/512/4305/
 '''CREATURE CATCH XP LINES'''
 CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
 CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               "
-CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+2500 xp*"
-CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+10000 xp*"
-MYTHICAL_CATCH_LINE = "Mythical Creature                                         *+10000 xp*"
+CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+250 xp*"
+CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+1000 xp*"
+MYTHICAL_CATCH_LINE = "Mythical Creature                                         *+1000 xp*"
 CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
 # todo: user caught new form of this species +2500 xp
 # todo: user caught 10 of this species +5000 xp
@@ -117,6 +118,10 @@ CREATURE_INVENTORY_MODE_FAVORITE = "Favorite"
 CREATURE_INVENTORY_MODE_DEFAULT = "Default"
 CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
 
+
+'''------------------'''
+'''CREATURES'''
+'''------------------'''
 '''CREATURE KINGDOM NAMES'''
 MAMMAL = "Mammal"
 BIRD = "Bird"
@@ -125,10 +130,14 @@ AMPHIBIAN = "Amphibian"
 INSECT = "Insect"
 BUG = "Bug"
 FISH = "Fish"
+
 MOLLUSK = "Mollusk"
 CRUSTACEAN = "Crustacean"
 ARACHNID = "Arachnid"
 CLITELLATA = "Clitellata"
+MYRIAPOD = "Myriapod"
+ARTHROPOD = "Arthropod"
+
 MYSTICAL = "Mystical"
 
 '''CREATURE RARITY NAMES'''
@@ -149,8 +158,8 @@ TGOMMO_RARITY_OMNIPOTENT = "Omnipotent"
 '''ENVIRONMENTS'''
 '''------------------'''
 '''ENVIRONMENT DEX NUMBERS'''
-EASTERN_US_FOREST_NO = 1
-EVERGLADES_NO = 2
+EASTERN_US_NO = 1
+FLORIDA_NO = 2
 
 '''SUB ENVIRONMENT TYPES'''
 SUB_ENVIRONMENT_FOREST = "forest"
@@ -159,6 +168,11 @@ SUB_ENVIRONMENT_POND = "pond"
 SUB_ENVIRONMENT_GARDEN = "garden"
 SUB_ENVIRONMENT_RIVER = "river"
 SUB_ENVIRONMENT_BEACH = "beach"
+SUB_ENVIRONMENT_SWAMP = "swamp"
+SUB_ENVIRONMENT_CITY = "city"
+SUB_ENVIRONMENT_PIER = "pier"
+SUB_ENVIRONMENT_OCEAN = "ocean"
+SUB_ENVIRONMENT_MOUNTAIN = "mountain"
 
 '''----------'''
 '''AVATARS'''
@@ -177,12 +191,15 @@ AVATAR_TYPE_FALLBACK = "Fallback"
 '''------------------------------'''
 '''INVENTORY ITEMS'''
 '''------------------------------'''
+ITEM_TYPE_GAMEPLAY_MECHANICS = 'Gameplay Mechanics'
 ITEM_TYPE_NAMETAG = 'NameTag'
 ITEM_TYPE_BAIT = 'Bait'
 ITEM_TYPE_MEGAPHONE = 'Megaphone'
 ITEM_TYPE_CHARM = 'Charm'
 
 # ITEM IDS
+ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION = 'Creature_Inventory_Storage_Expansion'
+
 ITEM_ID_NAMETAG  = f"{ITEM_TYPE_NAMETAG}_0"
 
 ITEM_ID_BAIT  = f"{ITEM_TYPE_BAIT}_0"
@@ -214,6 +231,11 @@ ITEM_ID_LEGENDARY_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_5"
 ITEM_ID_MYTHICAL_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_6"
 ITEM_ID_TRANSCENDANT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_7"
 ITEM_ID_OMNIPOTENT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_8"
+
+'''CREATURE INVENTORY'''
+BASE_CREATURE_STORAGE_EXPANSIONS = 8
+MAX_CREATURE_STORAGE_EXPANSIONS = 15
+CREATURE_STORAGE_EXPANSION_COST = 250
 
 '''HELP MENU STRINGS'''
 TGOMMO_HELP_MENU_TITLE = (

@@ -1,6 +1,7 @@
 import asyncio
 import threading
 
+from src.commons.GameStateManager import initialize_game_state_manager
 from src.database.handlers.DatabaseHandler import initialize_database
 from src.discord.general.commands import DiscordBotCommands
 from src.resources.constants.general_constants import *
@@ -19,6 +20,7 @@ def initialize_discord_bot():
 async def main():
     threads = []
     initialize_database()
+    initialize_game_state_manager()
 
     if RUN_DISCORD_BOT:
         discord_thread = threading.Thread(target=initialize_discord_bot, args=(), daemon=True)

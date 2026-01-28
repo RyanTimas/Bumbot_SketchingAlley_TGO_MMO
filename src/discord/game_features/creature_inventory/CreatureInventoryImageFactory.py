@@ -26,7 +26,7 @@ class CreatureInventoryImageFactory:
 
 
         # define creature management items
-        self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
+        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id, )
         self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
@@ -35,8 +35,7 @@ class CreatureInventoryImageFactory:
         self.starting_index = 0
         self.ending_index = min(0, len(self.filtered_creatures))
         self.current_box_num = 1
-        self.total_unlocked_box_num = 8
-        self.total_box_num = 15
+        self.total_unlocked_box_num = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(self.user.id)
 
         # define image mode
         self.image_mode = CREATURE_INVENTORY_MODE_DEFAULT
@@ -60,7 +59,7 @@ class CreatureInventoryImageFactory:
 
         # define creature management items
         if refresh_creatures:
-            self.caught_creatures = get_tgommo_db_handler().get_creature_collection_by_user(self.user.id, convert_to_object=True,)
+            self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id)
             self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
@@ -105,7 +104,7 @@ class CreatureInventoryImageFactory:
         return background_img
 
 
-    def place_box_icons_on_image(self, image: Image.Image):
+    def place_box_icons_on_image(self, image: Image):
         box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON).resize((100, 100))
         selected_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_SELECTED).resize((100, 100))
         locked_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_LOCKED).resize((100, 100))
@@ -113,7 +112,7 @@ class CreatureInventoryImageFactory:
         current_coordinates = (200, 127)
         x_offset = 100
 
-        for box_num in range(1, self.total_box_num + 1):
+        for box_num in range(1, MAX_CREATURE_STORAGE_EXPANSIONS + 1):
             if box_num > self.total_unlocked_box_num:
                 current_box_icon = locked_box_icon_img
             else:
@@ -166,7 +165,7 @@ class CreatureInventoryImageFactory:
         return imgs
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         # add box number text to image
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 58)
@@ -185,7 +184,7 @@ class CreatureInventoryImageFactory:
         filtered_creature_icons = []
 
         for i, creature in enumerate(self.caught_creatures):
-            if self.show_mythics_only and (creature.rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.rarity.name == TGOMMO_RARITY_MYTHICAL):
+            if self.show_mythics_only and (creature.local_rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL):
                 continue
             if self.show_nicknames_only and (creature.nickname == '' if not self.is_exclusive_mode else creature.nickname != ''):
                 continue

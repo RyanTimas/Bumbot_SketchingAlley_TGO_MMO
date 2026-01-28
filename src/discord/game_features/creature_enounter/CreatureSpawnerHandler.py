@@ -5,12 +5,15 @@ import threading
 import time
 import traceback
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytz
+from PIL import Image
 from discord.ext.commands import Bot
+from sqlalchemy.util import await_only
 
-from src.commons.CommonFunctions import flip_coin
+from src.commons.CommonFunctions import flip_coin, convert_to_png
+from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
@@ -19,6 +22,7 @@ from src.discord.objects.CreatureRarity import *
 from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
+from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
@@ -29,15 +33,21 @@ class CreatureSpawnerHandler:
 
         self.current_environment = None
         self.creature_spawn_pool = None
-        self.timezone = None
         self.last_spawn_time = None
         self.is_day = None
         self.time_of_day = None
 
         self.active_bonuses = []
 
+        self.pending_environment = None
+        self.environment_change_checked_for_today = False
+
         self.define_time_of_day()
-        self.define_environment_and_spawn_pool(environment_id=1, variant_no=1 if self.is_day else 2)
+
+        # pull environment from last run
+        saved_env = get_game_state_manager().load_current_environment()
+        env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
+        self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
 
         self.spawn_event = asyncio.Event()
         self._spawner_running = False
@@ -45,17 +55,15 @@ class CreatureSpawnerHandler:
 
     '''FUNCTIONS TO INITIALIZE SPAWNER DATA'''
     def define_time_of_day(self):
-        # TODO: WILL PULL TIMEZONE FROM ENVIRONMENT IN FUTURE
-        self.timezone = pytz.timezone('US/Eastern')
+        timezone = self.current_environment.timezone if self.current_environment else BASE_TIMEZONE
+        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(timezone)
+        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(timezone)
+        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(timezone)
+        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(timezone)
+        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(timezone)
+        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(timezone)
 
-        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(self.timezone)
-        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(self.timezone)
-        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(self.timezone)
-        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(self.timezone)
-        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(self.timezone)
-        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(self.timezone)
-
-        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)
 
         self.last_spawn_time = current_time
         self.is_day = (7 <= current_time.hour < 19)
@@ -65,11 +73,11 @@ class CreatureSpawnerHandler:
         else:
             self.time_of_day = DAY if self.is_day else NIGHT
 
-    def define_environment_and_spawn_pool(self, environment_id: int, variant_no: int):
-        environment_dex_no = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id, convert_to_object=True).dex_no
-
-        self.current_environment  = get_tgommo_db_handler().get_environment_by_dex_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no, convert_to_object=True)
-        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_from_environment(environment_id=self.current_environment.environment_id, convert_to_object=True)
+    def define_environment_and_spawn_pool(self, current_environment = None, environment_dex_no: int = 0, environment_variant_no: int = 0):
+        if not current_environment:
+            self.current_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
+            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
+        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=self.current_environment.environment_id)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
 
@@ -108,17 +116,20 @@ class CreatureSpawnerHandler:
 
                 min_spawn_interval = 1 if normal_charm_active else 3
                 max_spawn_interval = 3 if normal_charm_active else 5
+
+                # check if a new day has begun or if a day/night transition has occurred or if environment needs to change
+                await self.handle_post_spawn_events()
+
+                # cooldown for the next creature spawn
                 sleep_duration = random.uniform(min_spawn_interval, max_spawn_interval) * 60
                 try:
                     await asyncio.wait_for(self.spawn_event.wait(), timeout=sleep_duration)
                     self.spawn_event.clear()  # Reset the event for next time
                 except asyncio.TimeoutError:
                     pass  # Normal timeout, continue spawning
-
-                # check if a new day has begun or if a day/night transition has occurred
-                self._handle_time_change()
         finally:
             self._spawner_running = False
+
 
     '''FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC'''
     # Spawns a creature and sends a message to the discord channel
@@ -134,7 +145,7 @@ class CreatureSpawnerHandler:
         )
 
         # Create separate task for despawn
-        if creature.rarity.name != TRANSCENDANT.name and creature.rarity.name != MYTHICAL.name:
+        if creature.local_rarity.name != TRANSCENDANT.name and creature.local_rarity.name != MYTHICAL.name:
             thread = threading.Thread(target=self._handle_despawn, args=(creature, spawn_message))
             thread.daemon = True
             thread.start()
@@ -148,15 +159,14 @@ class CreatureSpawnerHandler:
         critter_chain_multiplier = 1
 
         # 12% chance to spawn a duplicate
-        spawn_duplicate = flip_coin(total_iterations=3) and creature.rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
+        spawn_duplicate = flip_coin(total_iterations=3) and creature.local_rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
         while spawn_duplicate:
             # 6% chance to spawn more duplicates
             duplicate_creature = deepcopy(creature)
 
             critter_chain_multiplier += 1
             if random.randint(1, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
-                duplicate_creature.rarity = MYTHICAL
-                duplicate_creature.img_root += '_S'
+                duplicate_creature.set_creature_rarity(MYTHICAL)
 
             await self.spawn_creature(duplicate_creature)
 
@@ -166,20 +176,20 @@ class CreatureSpawnerHandler:
 
     # Picks a random creature from the spawn pool
     async def creature_picker(self, rarity= None):
-        rarity = rarity if rarity else self.get_creature_rarity()
+        mythical = rarity and rarity.name == TGOMMO_RARITY_MYTHICAL
+        rarity = rarity if rarity and rarity.name != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
 
-        available_creatures = [creature for creature in self.creature_spawn_pool if creature.rarity.name == rarity.name]
+        available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity.name]
         selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
 
         selected_creature = deepcopy(available_creatures[selected_index])
 
         # Check if mythical spawn occurs
         mythical_odds = MYTHICAL_SPAWN_CHANCE // (2 if any(bonus.bonus_type == F'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_MYTHICAL}' for bonus in self.active_bonuses) else 1)
-        if rarity.name != TRANSCENDANT.name and random.randint(0, mythical_odds) == 1:
-            selected_creature.rarity = MYTHICAL
-            selected_creature.img_root += '_S'
+        if mythical or rarity.name != TRANSCENDANT.name and random.randint(0, mythical_odds) == 1:
+            selected_creature.set_creature_rarity(MYTHICAL)
 
-        selected_creature.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
+        selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity.name == MYTHICAL.name or rarity.name == TRANSCENDANT.name) else 0)
         return selected_creature
 
     # Determines the rarity of the creature to spawn based on active bonuses and time of day
@@ -196,7 +206,6 @@ class CreatureSpawnerHandler:
         if bonus and random.randint(1, bonus.spawn_odds // (2 if is_dawn_or_dusk else 1)) == 1:
             return bonus.rarity
         return get_rarity() if (random.randint(1, 3) == 1 or is_dawn_or_dusk) else COMMON
-
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
@@ -251,33 +260,102 @@ class CreatureSpawnerHandler:
     def remove_spawn_bonus(self, bonus_type: str, ):
         self.active_bonuses = [bonus for bonus in self.active_bonuses if not (bonus.bonus_type == bonus_type)]
 
-    '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
-    # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
-    def _handle_time_change(self):
-        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.timezone)
 
+    '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
+    async def handle_post_spawn_events(self):
+        current_time = datetime.datetime.now(pytz.UTC).astimezone(self.current_environment.timezone)
+
+        self._handle_day_night_cycle(current_time=current_time)
+        await self._handle_environment_change_cycle(current_time=current_time)
+
+        self._handle_time_based_resets(current_time=current_time)
+
+    # Handles hourly and daily resets
+    def _handle_time_based_resets(self, current_time: datetime.datetime = None):
         # Clear user catches if the hour has changed
         if current_time.hour != self.last_spawn_time.hour:
             USER_CATCHES_HOURLY.clear()
 
-        is_new_day = current_time.date() > self.last_spawn_time.date()
-
-        old_time_of_day = 'day' if 7 <= self.last_spawn_time.hour < 19 else 'night'
-        new_time_of_day = 'day' if 7 <= current_time.hour < 19 else 'night'
-        is_day_night_transition = old_time_of_day != new_time_of_day
-
-        if current_time.hour in (6, 7, 18, 19):
-            self.time_of_day = DAWN if current_time.hour in (6, 7) else DUSK
-        else:
-            self.time_of_day = DAY if self.is_day else NIGHT
-
-        if is_new_day or is_day_night_transition:
+        # Clear daily user catches if a new day has begun & reset environment change check
+        if current_time.date() > self.last_spawn_time.date():
             USER_CATCHES_DAILY.clear()
-
-            # todo: implement in V 3.0
-            if is_day_night_transition:
-                self.is_day = not self.is_day
-
-            self.define_environment_and_spawn_pool(environment_id=self.current_environment.environment_id, variant_no=1 if self.is_day else 2)
+            self.environment_change_checked_for_today = False
 
         self.last_spawn_time = current_time
+
+    # Checks if a new day has begun or if a day/night transition has occurred, and if so, reloads the environment and spawn pool
+    def _handle_day_night_cycle(self, current_time: datetime.datetime = None):
+        old_time_of_day = DAY if self.is_day else NIGHT
+        new_time_of_day = DAY if 7 <= current_time.hour < 19 else NIGHT
+        is_day_night_transition = old_time_of_day != new_time_of_day
+
+        self.time_of_day = (DAWN if current_time.hour in (6, 7) else DUSK) if current_time.hour in (6, 7, 18, 19) else new_time_of_day
+
+        if is_day_night_transition:
+            self.is_day = not self.is_day
+            self.define_environment_and_spawn_pool(environment_dex_no=self.current_environment.dex_no, environment_variant_no=1 if self.is_day else 2)
+        self.last_spawn_time = current_time
+
+    # Checks if the environment should change today, schedules the change for noon
+    async def _handle_environment_change_cycle(self, current_time: datetime.datetime = None):
+        environment_change_check_time = 11
+
+        # Check for environment change at 11 am
+        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today:
+            self.environment_change_checked_for_today = True
+
+            # Decide if we are staying in the same environment or switching, 50/50 chance
+            should_change_environment = flip_coin(total_iterations=1)
+
+            # USE THIS FOR FORCING SPECIFIC ENVIRONMENT
+            should_change_environment = get_game_state_manager().load_current_environment()[0] == 1
+            if not should_change_environment:
+                return
+
+            # If we are changing environments, get a new random environment
+            new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
+            while new_environment.dex_no == self.current_environment.dex_no:
+                new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
+            self.pending_environment = new_environment
+
+            # Schedule environment change for noon today in a separate thread
+            threading.Thread(target=self._schedule_environment_change, args=(), daemon=True).start()
+            self.environment_changed_today = current_time.date()
+
+            # Announce the environment change in the spawn channel
+            await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
+                f"\n\n# __⚠️✈️ **Travel Advisory️** ✈️⚠️__ \n The environment will change to: \n## **🌍 {new_environment.name} at noon! 🌍**",
+                files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ]
+            )
+    def _schedule_environment_change(self):
+        est = pytz.timezone('US/Eastern')
+        current_time = datetime.datetime.now(est)
+        environment_change_time = current_time.astimezone(est).replace(hour=12, minute=0, second=0, microsecond=0)
+
+        # Calculate seconds until environment change
+        time_until_environment_change = (environment_change_time - current_time).total_seconds()
+
+        # Sleep until environment change
+        time.sleep(time_until_environment_change)
+
+        # Execute environment change
+        if hasattr(self, 'pending_environment') and self.pending_environment:
+            self.current_environment = self.pending_environment
+            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
+
+            # Reset spawn pool with the new environment
+            self.define_environment_and_spawn_pool(current_environment=self.current_environment)
+
+            # Send message to channel about environment change
+            asyncio.run_coroutine_threadsafe(
+                self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
+                    f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {self.current_environment.name}** 🌍",
+                    files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{self.current_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")]
+                ), self.discord_bot.loop
+            )
+
+            # Clear the pending environment
+            self.pending_environment = None
+
+            # Interrupt current sleep to apply new environment immediately
+            self.spawn_event.set()

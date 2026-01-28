@@ -68,8 +68,10 @@ class AvatarUnlockHandler:
     # EVENT-BASED UNLOCK HANDLERS
     async  def timeline_based_avatar_unlocks(self):
         timeline_params = [
+            # Holidays
             ("Freddy Fazbear", "3", datetime.datetime(2025, 10, 31, 0, 0, 1, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 31, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
 
+            # Wave 1
             ("Charlie", "2", datetime.datetime(2025, 9, 10, 12, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 16, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Allan", "4", datetime.datetime(2025, 10, 17, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 23, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Glep", "5", datetime.datetime(2025, 10, 24, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 30, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
@@ -80,6 +82,20 @@ class AvatarUnlockHandler:
             ("Blue Janitor Dude", "10", datetime.datetime(2025, 11, 28, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 4, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Dolly Dimpley", "11", datetime.datetime(2025, 12, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 11, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Cool Autistic Gamer 774", "12", datetime.datetime(2025, 12, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2025, 12, 18, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+
+            # Wave 2
+            ("Yuji Itadori", "13", datetime.datetime(2026, 1, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Megumi Fushiguro", "14", datetime.datetime(2026, 1, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Nobara Kugisaki", "15", datetime.datetime(2026, 1, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Satoru Gojo", "16", datetime.datetime(2026, 1, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 29, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Kento Nanami", "17", datetime.datetime(2026, 1, 29, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Maki Zen'in", "18", datetime.datetime(2026, 2, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Suguru Geto", "19", datetime.datetime(2026, 2, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Toji Fushiguro", "20", datetime.datetime(2026, 2, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Mahito", "21", datetime.datetime(2026, 2, 26, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Ryomen Sukuna", "24", datetime.datetime(2026, 3, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
         for timeline_param in timeline_params:

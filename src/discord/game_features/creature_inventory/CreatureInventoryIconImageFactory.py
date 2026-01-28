@@ -16,10 +16,9 @@ class CreatureInventoryIconImageFactory:
 
         dex_icon_background = Image.open(DEX_ICON_BACKGROUND_BASE + f"_{self.creature.kingdom}" + IMAGE_FILE_EXTENSION)
         dex_icon_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_TAB_WHITE_BORDER_IMAGE)
-        creature_img = Image.open(DEX_ICON_CREATURE_BASE + f"_{self.creature.img_root}" + f"{"_S" if self.creature.rarity.name == TGOMMO_RARITY_MYTHICAL else ""}" + IMAGE_FILE_EXTENSION)
 
         icon_img.paste(dex_icon_background, (-22, 2), dex_icon_background)
-        icon_img.paste(creature_img, (-22, 2), creature_img)
+        icon_img.paste(self.creature.dex_icon_image, (-22, 2), self.creature.dex_icon_image)
         icon_img.paste(dex_icon_overlay, (0, 0), dex_icon_overlay)
 
         if self.creature.is_favorite:
@@ -28,14 +27,14 @@ class CreatureInventoryIconImageFactory:
         if self.creature.nickname != '':
             nickname_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_NICKNAME_STAMP_IMAGE)
             icon_img.paste(nickname_overlay, (0, 0), nickname_overlay)
-        if self.creature.rarity.name == TGOMMO_RARITY_MYTHICAL:
+        if self.creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL:
             mythical_overlay = Image.open(CREATURE_INVENTORY_INDIVIDUAL_CREATURE_MYTHICAL_STAMP_IMAGE)
             icon_img.paste(mythical_overlay, (0, 0), mythical_overlay)
 
         return self.add_text_to_image(image=icon_img)
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 16)
         max_width = 64

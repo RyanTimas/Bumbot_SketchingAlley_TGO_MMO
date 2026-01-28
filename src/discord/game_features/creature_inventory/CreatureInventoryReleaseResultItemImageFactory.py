@@ -21,7 +21,7 @@ class CreatureInventoryReleaseResultItemImageFactory:
         return self.add_text_to_image(image=tab_img)
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         max_width = 300
 

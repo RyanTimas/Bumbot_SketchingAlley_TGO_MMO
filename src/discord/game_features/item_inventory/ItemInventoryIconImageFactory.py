@@ -18,7 +18,7 @@ class ItemInventoryIconImageFactory:
         return self.add_text_to_image(image=dex_icon_img)
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
         max_width = 300
 

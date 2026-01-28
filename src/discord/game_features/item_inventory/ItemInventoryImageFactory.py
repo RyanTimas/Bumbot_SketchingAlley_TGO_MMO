@@ -76,10 +76,10 @@ class ItemInventoryImageFactory:
         return imgs
 
 
-    def add_text_to_image(self, image: Image.Image):
+    def add_text_to_image(self, image: Image):
         return self.place_username_on_image(item_inventory_img=image)
 
-    def place_username_on_image(self, item_inventory_img: Image.Image):
+    def place_username_on_image(self, item_inventory_img: Image):
         draw = ImageDraw.Draw(item_inventory_img)
 
         font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 75)

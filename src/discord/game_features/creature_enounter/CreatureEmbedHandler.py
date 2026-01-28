@@ -30,21 +30,21 @@ class CreatureEmbedHandler:
 
 
     def generate_spawn_embed(self):
-        thumbnail_img = convert_to_png(image=Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"), file_name="thumbnail.png")
+        thumbnail_img = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
 
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
-        embed = discord.Embed(color=self.creature.rarity.color)
+        embed = discord.Embed(color=self.creature.local_rarity.color)
 
-        creature_name = self.creature.name if self.creature.rarity.name != TRANSCENDANT.name else "❓❓❓"
+        creature_name = self.creature.name if self.creature.local_rarity.name != TRANSCENDANT.name else "❓❓❓"
         message = f'{self.spawn_user.nickname} has attracted a wild {creature_name}!' if self.spawn_user else f'A wild {creature_name} has appeared!'
 
         embed.set_author(name = message, icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
-        embed.add_field(name="Rarity", value=f"{self.creature.rarity.emojii} **{self.creature.rarity.name}**",inline=True)
+        embed.add_field(name="Rarity", value=f"{self.creature.local_rarity.emojii} **{self.creature.local_rarity.name}**", inline=True)
 
-        if self.creature.rarity.name != MYTHICAL.name and self.creature.rarity.name != TRANSCENDANT.name:
+        if self.creature.local_rarity.name != MYTHICAL.name and self.creature.local_rarity.name != TRANSCENDANT.name:
             embed.add_field(name="Despawn Timer", value=f"🕒 *Despawns {self.get_despawn_timestamp(timestamp=int(self.creature.despawn_time.timestamp()))}*", inline=True)
 
         # add active bonuses to embed
@@ -57,7 +57,7 @@ class CreatureEmbedHandler:
 
 
         if self.time_of_day:
-            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}')
+            embed.set_footer(text=f'{'🌙 Night' if self.environment.is_night_environment else '☀️ Day'}  |  🌎 {self.environment.name}')
 
         embed.timestamp = discord.utils.utcnow()
         embed.set_image(url=f"attachment://{encounter_img.filename}")
@@ -66,9 +66,6 @@ class CreatureEmbedHandler:
         return embed, thumbnail_img, encounter_img
 
     def generate_despawn_embed(self):
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
-        thumbnail_img = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
-
         encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
@@ -76,6 +73,8 @@ class CreatureEmbedHandler:
         embed.set_author(name = f"The {self.creature.name} has run away...", icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
 
         embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False, timestamp=int(self.creature.despawn_time.timestamp()))}", value=f'', inline=True)
+
+        thumbnail_img = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
         thumbnail_img = to_grayscale(thumbnail_img)
         thumbnail_img.filename = "thumbnail.png"
 
@@ -88,7 +87,6 @@ class CreatureEmbedHandler:
             self.interaction = interaction
             self.catch_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id, convert_to_object=True)
 
-        thumbnail_img = Image.open(f"{IMAGE_FOLDER_CREATURES_PATH}\\{self.creature.img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         embed = discord.Embed(color=discord.Color.dark_green())
 
         embed.set_author(name = f'The {self.creature.name.upper()} was caught!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
@@ -109,7 +107,7 @@ class CreatureEmbedHandler:
         embed.add_field(name=CREATURE_DIVIDER_LINE, value=f"", inline=False)
         embed.add_field(name=f"✨ **Total {self.total_xp} xp** ✨", value=f"", inline=False)
 
-        thumbnail_png = convert_to_png(image=thumbnail_img, file_name="thumbnail.png")
+        thumbnail_png = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         embed.timestamp = discord.utils.utcnow()
 
@@ -124,8 +122,8 @@ class CreatureEmbedHandler:
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
         total_xp = randint(10, 50)
 
-        user_has_caught_species = get_tgommo_db_handler().user_has_caught_species(user_id=interaction.user.id, creature_id=self.creature.creature_id)
-        total_server_catches = get_tgommo_db_handler().get_total_server_catches_for_species(creature_id=self.creature.creature_id)
+        user_has_caught_species = get_tgommo_db_handler().get_total_catches_for_species(user_id=interaction.user.id, creature=self.creature)[0]
+        total_server_catches = get_tgommo_db_handler().get_total_catches_for_species(creature=self.creature)[0]
 
         self.add_xp_field_to_embed(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
@@ -133,15 +131,15 @@ class CreatureEmbedHandler:
         if not user_has_caught_species:
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
-            total_xp += 2500
+            total_xp += 250
         if 0 == total_server_catches:
             self.add_xp_field_to_embed(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
-            total_xp += 10000
-        if self.creature.rarity == MYTHICAL:
+            total_xp += 1000
+        if self.creature.local_rarity == MYTHICAL:
             self.add_xp_field_to_embed(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=MYTHICAL_CATCH_LINE, value=f"", inline=False)
-            total_xp += 10000
+            total_xp += 1000
 
         return total_xp, catch_embed
 

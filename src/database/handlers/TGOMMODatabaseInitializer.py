@@ -550,7 +550,7 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(DRAGONFLY_DEX_NO,                               1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             EnvironmentCreatureLink(EASTERN_PONDHAWK_DEX_NO,                 1, FLORIDA_NO,       DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             EnvironmentCreatureLink(LUBBER_GRASSHOPPER_DEX_NO,              1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(HONEYBEE_DEX_NO,                                  1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
+            EnvironmentCreatureLink(HONEYBEE_DEX_NO,                                  1, FLORIDA_NO,        DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             EnvironmentCreatureLink(BUMBLEBEE_MILLIPEDE_DEX_NO,              1, FLORIDA_NO,        NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(BLACK_WIDOW_DEX_NO,                            1, FLORIDA_NO,        NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
             EnvironmentCreatureLink(GOLDEN_ORB_WEAVER_DEX_NO,               1, FLORIDA_NO,        NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),

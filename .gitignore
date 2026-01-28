@@ -201,3 +201,5 @@ cython_debug/
 /.idea/.gitignore
 /.idea/Bumbot_SketchingAlley_TGO_MMO.iml
 /src/resources/configs/config_local.ini
+/scripts/UPDATE_tgommo_user_profile_script
+/.idea/vcs.xml

@@ -51,7 +51,6 @@ class CreatureInventoryView(discord.ui.View):
 
         # row 1
         self.prev_button = self.create_navigation_button(is_next=False, row=1)
-        self.page_jump_button = self.create_advanced_navigation_button(row=1)
         self.next_button = self.create_navigation_button(is_next=True, row=1)
 
         # row 2
@@ -89,14 +88,6 @@ class CreatureInventoryView(discord.ui.View):
             row=row
         )
         button.callback = self.nav_callback(new_page=next_ if is_next else previous)
-        return button
-    def create_advanced_navigation_button(self, row):
-        button = discord.ui.Button(
-            label="⬆️ Jump To Page ⬆️️",
-            style=discord.ButtonStyle.blurple,
-            row=row
-        )
-        button.callback = self.nav_callback(new_page=jump)
         return button
     def nav_callback(self, new_page, ):
         @retry_on_ssl_error(max_retries=3, delay=1)
@@ -320,8 +311,17 @@ class CreatureInventoryView(discord.ui.View):
         dropdown.callback = self.creature_box_dropdown_callback
         return dropdown
     async def creature_box_dropdown_callback(self, interaction: discord.Interaction):
-        self.new_box = int(interaction.data["values"][0])
-        await interaction.response.defer()
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            return
+
+        async with self.interaction_lock:
+            await interaction.response.defer()
+
+            self.new_box = int(interaction.data["values"][0])
+            new_img = self.reload_image(new_box_number=self.new_box)
+            self.refresh_view()
+            await interaction.message.edit(attachments=[new_img], view=self)
+
 
 
     # CREATE MODALS
@@ -397,7 +397,6 @@ class CreatureInventoryView(discord.ui.View):
         self.add_item(self.box_jump_dropdown)
         # row 1
         self.add_item(self.prev_button)
-        self.add_item(self.page_jump_button)
         self.add_item(self.next_button)
         # row 2
         self.add_item(self.expand_filter_options_button)

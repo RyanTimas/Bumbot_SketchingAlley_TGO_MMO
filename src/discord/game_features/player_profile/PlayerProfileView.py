@@ -2,8 +2,9 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import convert_to_png, create_go_back_button, create_close_button
+from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonViewComponents import create_go_back_button, create_close_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.alert_center.AlertCenterView import AlertCenterView
 from src.discord.game_features.player_profile.UpdatePlayerProfileView import UpdatePlayerProfileView

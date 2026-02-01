@@ -3,8 +3,9 @@ import discord
 from discord.ui import Select
 from sqlalchemy import false
 
-from src.commons.CommonFunctions import convert_to_png, create_go_back_button, create_close_button
+from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView, next_, previous, jump
@@ -32,8 +33,8 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         # INITIALIZE BUTTONS AND DROPDOWNS
         self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
 
-        self.prev_button = self.create_navigation_button(is_next=False, row=1)
-        self.next_button = self.create_navigation_button(is_next=True, row=1)
+        self.prev_button = create_navigation_button(is_next=False, view_instance=self, row=1)
+        self.next_button = create_navigation_button(is_next=True, view_instance=self, row=1)
 
         self.environment_dropdown = self.create_environments_dropdown(row=2)
 
@@ -47,41 +48,6 @@ class EncyclopediaLocationIndexView(discord.ui.View):
 
 
     # CREATE BUTTONS
-    def create_navigation_button(self, is_next, row=0):
-        button = discord.ui.Button(
-            label="To Next Page➡️" if is_next else "⬅️To Previous Page",
-            style=discord.ButtonStyle.blurple,
-            row=row
-        )
-        button.callback = self.nav_callback(new_page=next_ if is_next else previous)
-        return button
-    def nav_callback(self, new_page,):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                # Update page number
-                page_options = {
-                    next_: self.encyclopedia_location_index_image_factory.page_num + 1,
-                    previous: self.encyclopedia_location_index_image_factory.page_num -1,
-                    jump: self.new_page
-                }
-
-                new_image = self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=page_options[new_page])
-
-                # Update state and button appearance
-                self.update_button_states()
-
-                # Send updated view
-                file = convert_to_png(new_image, f'encyclopedia_page.png')
-                await interaction.message.edit(attachments=[file], view=self)
-
-        return callback
-
     def create_view_environment_button(self, row=4):
         button = discord.ui.Button(
             label="View Environment Encyclopedia",
@@ -103,7 +69,6 @@ class EncyclopediaLocationIndexView(discord.ui.View):
             await interaction.message.edit(attachments=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_page.png')], view=encyclopedia_view)
 
             self.selected_environment = NATIONAL_ENV
-
 
     # CREATE DROPDOWNS
     def create_page_jump_dropdown(self, row=1):

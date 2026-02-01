@@ -86,9 +86,6 @@ def open_image_from_url(image_url):
     else:
         return Image.open(PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE)
 
-
-
-# puts a colored border around an input image
 def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)
 
@@ -102,8 +99,6 @@ def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_si
     image_draw.text((border_size, border_size), text, font=font, fill=font_color)
     return base_image
 
-
-# adds a gaussian blur mask to the edges of an image
 def add_blur_mask_to_image(image: Image):
         # Create an alpha mask based on the image's alpha channel
         r, g, b, a = image.split()
@@ -132,6 +127,7 @@ def add_blur_mask_to_image(image: Image):
 
         return image
 
+
 #************************************************************************************
 #-------------------------------FONT FUNCTIONS-------------------------------------
 #************************************************************************************
@@ -141,7 +137,6 @@ def load_font(font_path, font_size):
     except IOError:
         font = ImageFont.load_default()
     return font
-
 
 def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
         current_font = font
@@ -289,6 +284,7 @@ def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=
 
     return current_font, current_text
 
+
 #************************************************************************************
 #-------------------------------DISCORD FUNCTIONS------------------------------------
 #************************************************************************************
@@ -324,7 +320,6 @@ async def check_if_user_can_interact_with_view(interaction, interaction_lock, me
 
     return True
 
-
 # Retry decorator for handling SSL errors
 def retry_on_ssl_error(max_retries=3, delay=1):
     def decorator(func):
@@ -346,77 +341,6 @@ def retry_on_ssl_error(max_retries=3, delay=1):
                         raise
         return wrapper
     return decorator
-
-
-#************************************************************************************
-#-------------------------------BUTTON FUNCTIONS------------------------------------
-#************************************************************************************
-# Button that goes back to parent view when clicked
-def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None, files=None):
-    button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
-    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id, files=files)
-    return button
-def go_back_callback(original_view, interaction_lock=None, message_author_id=None, files=None):
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def callback(interaction):
-        # Check if we're already processing an interaction
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-    # Acquire lock to prevent concurrent actions
-        async with interaction_lock:
-            await interaction.response.defer()
-
-    # Go back to the previous view or state
-        await interaction.message.edit(attachments=files if files else [], view=original_view)
-    return callback
-
-
-def create_close_button(interaction_lock, message_author_id, row=1):
-    button = discord.ui.Button(
-        label="✘",
-        style=discord.ButtonStyle.red,
-        row=row
-    )
-
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def close_callback(interaction):
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-        async with interaction_lock:
-            await interaction.message.delete()
-
-    button.callback = close_callback
-    return button
-
-# Placeholder button that does nothing when clicked
-def create_dummy_label_button(label_text, row=1):
-    button = discord.ui.Button(
-        label=f"{label_text}",
-        style=discord.ButtonStyle.gray,
-        row=row
-    )
-    button.callback = dummy_callback()
-    return button
-def dummy_callback():
-    async def callback(interaction):
-        # Just acknowledge the interaction to prevent the "interaction failed" message
-        # Without doing anything else
-        await interaction.response.defer(ephemeral=True, thinking=False)
-    return callback
-
-# Creates an invisible button that serves as a spacer
-def create_spacer_button(row=0):
-    button = discord.ui.Button(
-        label="\u200b",  # Zero-width space character
-        style=discord.ButtonStyle.gray,
-        disabled=True,
-        row=row
-    )
-    # Make the button almost invisible
-    button.callback = dummy_callback()
-    return button
 
 #************************************************************************************
 #-------------------------------SQL FUNCTIONS------------------------------------

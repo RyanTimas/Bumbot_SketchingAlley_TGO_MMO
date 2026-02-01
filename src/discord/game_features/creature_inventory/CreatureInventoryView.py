@@ -2,6 +2,7 @@ import asyncio
 from discord.ui import Select, Modal
 
 from src.commons.CommonFunctions import *
+from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button, create_page_jump_dropdown
 from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryManagementView import CreatureInventoryManagementView
@@ -47,11 +48,11 @@ class CreatureInventoryView(discord.ui.View):
 
         # DEFINE VIEW COMPONENTS
         # row 0
-        self.box_jump_dropdown = self.create_box_jump_dropdown(row=0)
+        self.box_jump_dropdown = create_page_jump_dropdown(view_instance=self, row=0, option_prefix="Box")
 
         # row 1
-        self.prev_button = self.create_navigation_button(is_next=False, row=1)
-        self.next_button = self.create_navigation_button(is_next=True, row=1)
+        self.prev_button = create_navigation_button(is_next=False, view_instance=self, row=1)
+        self.next_button = create_navigation_button(is_next=True, view_instance=self, row=1)
 
         # row 2
         self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=FILTER_EXPANSION_KEY)
@@ -81,6 +82,35 @@ class CreatureInventoryView(discord.ui.View):
         self.refresh_view()
 
     # CREATE BUTTONS
+    def create_storage_expansion_button(self, row=0):
+        button = discord.ui.Button(
+            label="Expand Storage ➕",
+            style=discord.ButtonStyle.green,
+            row=row
+        )
+        button.callback = self.storage_expansion_callback()
+        return button
+    def storage_expansion_callback(self, ):
+        @retry_on_ssl_error(max_retries=3, delay=1)
+        async def callback(interaction):
+            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+                return
+
+            async with self.interaction_lock:
+
+                if self.creature_inventory_image_factory.current_box_num + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
+                    await interaction.response.send_message("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
+                if self.creature_inventory_image_factory.current_box_num + 1 > self.max_boxes and self.author_matches_owner:
+                    await interaction.response.send_modal(self.create_inventory_expansion_confirmation_modal())
+                    return
+                else:
+                    await interaction.response.defer()
+
+                    update_image = self.reload_image(new_box_number=page_options[new_page])
+                    self.refresh_view()
+                    await interaction.message.edit(attachments=[update_image], view=self)
+        return callback
+
     def create_navigation_button(self, is_next, row=0):
         button = discord.ui.Button(
             label="To Next Page➡️" if is_next else "⬅️To Previous Page",
@@ -321,8 +351,6 @@ class CreatureInventoryView(discord.ui.View):
             new_img = self.reload_image(new_box_number=self.new_box)
             self.refresh_view()
             await interaction.message.edit(attachments=[new_img], view=self)
-
-
 
     # CREATE MODALS
     def create_inventory_expansion_confirmation_modal(self):

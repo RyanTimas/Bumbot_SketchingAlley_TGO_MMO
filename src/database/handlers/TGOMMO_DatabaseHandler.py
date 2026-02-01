@@ -85,6 +85,32 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(user_id, 1), convert_to_object=convert_to_object, expect_multiple=True)
 
+    # analyze button queries
+    def get_total_catches_for_creature_by_user(self, user_id=0, dex_no=0):
+        query = f"{TGOMMO_SELECT_TOTAL_CATCHES_FOR_SPECIES_BY_USER};"
+        result = self.execute_query(query, params=(user_id, dex_no))
+        return result[0][0] if result else 0
+    def get_total_catches_for_variants_by_user(self, user_id=0, dex_no=0, variant_no=0):
+        query = f"{TGOMMO_SELECT_TOTAL_CATCHES_FOR_VARIANT_BY_USER};"
+        result = self.execute_query(query, params=(user_id, dex_no, variant_no))
+        return result[0][0] if result else 0
+    def get_total_mythicals_for_creature_by_user(self, creature_id=0, user_id=0):
+        query = f"{TGOMMO_SELECT_TOTAL_MYTHICAL_CATCHES_FOR_SPECIES_BY_USER};"
+        result = self.execute_query(query, params=(user_id, creature_id))
+        return result[0][0] if result else 0
+
+
+    def count_user_creatures_by_dex_no(self, user_id: int, dex_no: int, is_released: bool = None) -> int:
+        query = "SELECT COUNT(*) FROM user_creatures uc JOIN creatures c ON uc.creature_id = c.creature_id WHERE uc.user_id = ? AND c.dex_no = ?"
+        params = [user_id, dex_no]
+
+        if is_released is not None:
+            query += " AND uc.is_released = ?"
+            params.append(is_released)
+
+        result = self.execute_query(query, params)
+        return result[0][0] if result else 0
+
     # Encyclopedia Creature Queries
     def get_creatures_to_display_for_encyclopedia(self, environment_id=0, environment_variant_type=None, include_variants=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE if environment_id != 0 else TGOMMO_SELECT_CREATURE_BASE}"
@@ -115,27 +141,6 @@ class TGOMMODatabaseHandler:
         else:
             encyclopedia_creatures = self.get_environment_creatures_from_database(query=query, params=params, convert_to_object=True, expect_multiple=True)
         return encyclopedia_creatures
-
-    def get_total_catches_for_creature_by_user(self, creature=None, user_id=0, environment_dex_no=None, environment_variant_type=None, group_variants=False,):
-        query = f"{TGOMMO_SELECT_CREATURE_CAUGHT_TOTAL_BASE} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX if group_variants else TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX}"
-        params = [creature.creature_id]
-
-        if user_id is not None:
-            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
-            params.append(user_id)
-        if not group_variants:
-            query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
-            params.append(creature.variant_no)
-
-        if environment_dex_no is not None:
-            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
-            params.append(environment_dex_no)
-            if environment_variant_type is not None:
-                query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX}"
-                params.append(environment_variant_type)
-
-        response = self.QueryHandler.execute_query(query, params=tuple(params))
-        return response[0]
 
     # Event Creature Queries
     def get_event_creatures_from_environment(self, convert_to_object=False):

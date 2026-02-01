@@ -87,20 +87,18 @@ class CreatureEncounterView(View):
             emoji="🔎",
             row=row
         )
-        button.callback = self.creature_caught_button_callback()
+        button.callback = self.creature_analyze_button_callback()
         return button
-    def creature_caught_button_callback(self):
+    def creature_analyze_button_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
             # Get user's creatures and count this species
-            user_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=interaction.user.id, is_released=None)
-
-            total_catches_for_species = sum(1 for creature in user_creatures if creature.dex_no == self.creature.dex_no)
-            total_catches_for_variant = sum(1 for creature in user_creatures if creature.dex_no == self.creature.dex_no and creature.variant_no == self.creature.variant_no)
-            total_mythical_catches_for_species = sum(1 for creature in user_creatures if creature.creature_id == self.creature.creature_id and creature.local_rarity == MYTHICAL)
+            total_catches_for_species = get_tgommo_db_handler().get_total_catches_for_creature_by_user(user_id=interaction.user.id, dex_no=self.creature.dex_no)
+            total_catches_for_variant = get_tgommo_db_handler().get_total_catches_for_variants_by_user(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no)
+            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_mythicals_for_creature_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
 
             message = (
                 f"You have caught **{total_catches_for_species}** {self.creature.name}(s) \n"

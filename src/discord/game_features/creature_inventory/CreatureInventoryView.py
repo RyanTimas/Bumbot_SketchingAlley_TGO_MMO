@@ -106,7 +106,7 @@ class CreatureInventoryView(discord.ui.View):
                 else:
                     await interaction.response.defer()
 
-                    update_image = self.reload_image(new_box_number=page_options[new_page])
+                    update_image = self.reload_image(new_box_number=self.creature_inventory_image_factory.current_box_num+1)
                     self.refresh_view()
                     await interaction.message.edit(attachments=[update_image], view=self)
         return callback

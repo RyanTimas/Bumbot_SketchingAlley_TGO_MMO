@@ -20,7 +20,7 @@ from src.discord.game_features.item_inventory.ItemInventoryView import ItemInven
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.TGOMMOMenuView import TGOMMOMenuView
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory,  build_user_creature_collection
+from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory,  build_user_creature_collection
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import UNLOCKED_AVATARS, AVATAR_QUESTS, \
     AvatarBoardImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
@@ -144,7 +144,7 @@ def _assign_tgo_mmo_discord_commands(discord_bot: DiscordBot):
 
         target_user = ctx.guild.get_member(ctx.author.id if target_user_id is None else target_user_id)
 
-        player_profile_image_factory = PlayerProfilePageFactory(user_id=ctx.author.id,target_user = target_user, tab_is_open=tab_is_open, open_tab=open_tab)
+        player_profile_image_factory = PlayerProfileImageFactory(user_id=ctx.author.id, target_user = target_user, tab_is_open=tab_is_open, open_tab=open_tab)
         player_profile_img = player_profile_image_factory.build_player_profile_page_image()
 
         view = PlayerProfileView(user=ctx.author, profile_user_id=target_user_id, player_profile_image_factory=player_profile_image_factory,tab_is_open=False,open_tab=open_tab)

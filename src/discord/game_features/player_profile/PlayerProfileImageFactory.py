@@ -10,9 +10,8 @@ from src.resources.constants.file_paths import *
 
 TEAM = "Team"
 COLLECTIONS = "Collections"
-ENVIRONMENTS = "Environments"
 
-class PlayerProfilePageFactory:
+class PlayerProfileImageFactory:
     def __init__(self, user_id, target_user, tab_is_open: bool = False, open_tab: str = TEAM):
         self.user_id = user_id
         self.target_user = target_user
@@ -26,7 +25,6 @@ class PlayerProfilePageFactory:
 
         self.left_button_enabled = False
         self.right_button_enabled = False
-
 
     def load_player_info(self):
         player_info = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id, nickname=self.target_user.display_name)
@@ -68,7 +66,6 @@ class PlayerProfilePageFactory:
 
         return player_profile_image
 
-
     def _place_creatures_on_image(self, player_profile_img: Image):
         for index, creature in enumerate(self.creature_team):
             if creature.catch_id == -1:
@@ -82,12 +79,10 @@ class PlayerProfilePageFactory:
             player_profile_img.paste(creature_image, (x_offset, y_offset), creature_image)
 
         return player_profile_img
-
     def _place_avatar_on_image(self, player_profile_image: Image):
         player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.player.avatar.avatar_type}_{self.player.avatar.img_root}{IMAGE_FILE_EXTENSION}")
         player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
         return player_profile_image
-
     def place_username_on_image(self, player_profile_img: Image):
         draw = ImageDraw.Draw(player_profile_img)
 
@@ -124,14 +119,9 @@ class PlayerProfilePageFactory:
             side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TEAM_OVERLAY_IMAGE}")
             side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
         elif self.open_tab == COLLECTIONS:
-            side_drawer_background_image = self.build_collections_tab(side_drawer_background_image)
+            side_drawer_background_image = self._build_collections_tab(side_drawer_background_image)
 
             side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_OVERLAY_IMAGE}")
-            side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
-        elif self.open_tab == ENVIRONMENTS:
-            side_drawer_background_image = self._build_environments_tab(side_drawer_background_image)
-
-            side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_BIOMES_OVERLAY_IMAGE}")
             side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
 
         left_button_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_LEFT_BUTTON_IMAGE if self.left_button_enabled else PLAYER_PROFILE_SIDE_PANEL_LEFT_BUTTON_DISABLED_IMAGE}")
@@ -144,7 +134,6 @@ class PlayerProfilePageFactory:
         player_profile_img.paste(side_drawer_border_image, (0, 0), side_drawer_border_image)
 
         return player_profile_img
-
 
     def _build_team_tab(self, background_img: Image):
         current_offset = (1097,70)
@@ -164,8 +153,7 @@ class PlayerProfilePageFactory:
             current_offset = (current_offset[0], current_offset[1] + team_tab_image.height + 17)
 
         return background_img
-
-    def build_collections_tab(self, background_img: Image):
+    def _build_collections_tab(self, background_img: Image):
         current_offset = (1097,70)
 
         active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
@@ -190,8 +178,6 @@ class PlayerProfilePageFactory:
             current_offset = (current_offset[0], current_offset[1] + collections_tab_image.height + 17)
 
         return background_img
-
-
     def _build_environments_tab(self, player_profile_img: Image):
         content_image_path=""
         background_image_path = ""

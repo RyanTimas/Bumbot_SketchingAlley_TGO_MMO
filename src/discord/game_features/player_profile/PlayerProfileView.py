@@ -8,11 +8,11 @@ from src.commons.CommonViewComponents import create_go_back_button, create_close
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.alert_center.AlertCenterView import AlertCenterView
 from src.discord.game_features.player_profile.UpdatePlayerProfileView import UpdatePlayerProfileView
-from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM, COLLECTIONS
+from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, TEAM, COLLECTIONS
 
 
 class PlayerProfileView(discord.ui.View):
-    def __init__(self, user, player_profile_image_factory: PlayerProfilePageFactory, tab_is_open=False, open_tab=TEAM, original_view=None, profile_user_id=None):
+    def __init__(self, user, player_profile_image_factory: PlayerProfileImageFactory, tab_is_open=False, open_tab=TEAM, original_view=None, profile_user_id=None):
         super().__init__(timeout=None)
         self.user = user
         self.user_id = user.id

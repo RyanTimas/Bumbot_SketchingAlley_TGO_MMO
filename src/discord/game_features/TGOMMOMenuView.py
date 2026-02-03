@@ -18,7 +18,7 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.game_features.player_profile.PlayerProfilePageFactory import PlayerProfilePageFactory, TEAM
+from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, TEAM
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
 from src.resources.constants.file_paths import *
 
@@ -150,7 +150,7 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                player_profile_img_factory = PlayerProfilePageFactory(
+                player_profile_img_factory = PlayerProfileImageFactory(
                     user_id=self.message_author.id,
                     target_user=self.message_author,
                     tab_is_open=tab_is_open,

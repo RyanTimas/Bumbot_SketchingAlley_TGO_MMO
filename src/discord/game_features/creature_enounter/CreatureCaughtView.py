@@ -3,7 +3,7 @@ from discord.ui import Button, Modal, TextInput, Select
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.handlers.CreatureReleaseService.CreatureReleaseService import CreatureReleaseService
 from src.discord.objects.TGOPlayer import TGOPlayer
 

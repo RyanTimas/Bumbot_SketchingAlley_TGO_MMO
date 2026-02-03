@@ -152,6 +152,33 @@ TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE = """
     WHERE c.dex_no = ?
 """
 
+'''ANALYZE BUTTON QUERIES'''
+TGOMMO_SELECT_TOTAL_CATCHES_FOR_SPECIES_BY_USER = '''
+    SELECT COUNT(*) 
+    FROM tgommo_user_creature uc 
+    JOIN tgommo_creature c 
+        ON uc.creature_id = c.creature_id 
+    WHERE uc.user_id = ? 
+        AND c.dex_no = ?
+'''
+TGOMMO_SELECT_TOTAL_CATCHES_FOR_VARIANT_BY_USER = '''
+    SELECT COUNT(*) 
+    FROM tgommo_user_creature uc 
+    JOIN tgommo_creature c 
+        ON uc.creature_id = c.creature_id 
+    WHERE uc.user_id = ? 
+        AND c.dex_no = ? 
+        AND uc.creature_variant_no = ?
+'''
+
+TGOMMO_SELECT_TOTAL_MYTHICAL_CATCHES_FOR_SPECIES_BY_USER = '''
+    SELECT COUNT(*) 
+    FROM tgommo_user_creature 
+    WHERE user_id = ? 
+        AND creature_id = ? 
+        AND is_mythical = 1
+'''
+
 '''EVENT QUERIES'''
 TGOMMO_SELECT_EVENT_CREATURES_FROM_ENVIRONMENT_BASE = """
     SELECT 

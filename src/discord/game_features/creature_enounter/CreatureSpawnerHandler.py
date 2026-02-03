@@ -45,7 +45,7 @@ class CreatureSpawnerHandler:
         self.define_time_of_day()
 
         # pull environment from last run
-        saved_env = get_game_state_manager().load_current_environment()
+        saved_env = get_game_state_manager().get_current_environment()
         env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
         self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
 
@@ -76,7 +76,7 @@ class CreatureSpawnerHandler:
     def define_environment_and_spawn_pool(self, current_environment = None, environment_dex_no: int = 0, environment_variant_no: int = 0):
         if not current_environment:
             self.current_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
-            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
+            get_game_state_manager().set_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
         self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=self.current_environment.environment_id)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
@@ -308,7 +308,8 @@ class CreatureSpawnerHandler:
             should_change_environment = flip_coin(total_iterations=1)
 
             # USE THIS FOR FORCING SPECIFIC ENVIRONMENT
-            should_change_environment = get_game_state_manager().load_current_environment()[0] == 1
+            # should_change_environment = get_game_state_manager().get_current_environment()[0] == 1
+
             if not should_change_environment:
                 return
 
@@ -341,7 +342,7 @@ class CreatureSpawnerHandler:
         # Execute environment change
         if hasattr(self, 'pending_environment') and self.pending_environment:
             self.current_environment = self.pending_environment
-            get_game_state_manager().save_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
+            get_game_state_manager().set_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
 
             # Reset spawn pool with the new environment
             self.define_environment_and_spawn_pool(current_environment=self.current_environment)

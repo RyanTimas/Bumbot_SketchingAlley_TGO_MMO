@@ -1,5 +1,10 @@
 import asyncio
 import threading
+import os
+import certifi
+
+# Point Python's SSL to certifi bundle before any network libs import
+os.environ['SSL_CERT_FILE'] = certifi.where()
 
 from src.commons.GameStateManager import initialize_game_state_manager
 from src.database.handlers.DatabaseHandler import initialize_database

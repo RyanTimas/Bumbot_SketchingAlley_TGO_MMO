@@ -47,7 +47,8 @@ TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE = """
         c.img_root, ec.local_img_root,
         ec.sub_environment_type, 
         c.encounter_rate, 
-        c.default_rarity, ec.spawn_rarity 
+        c.default_rarity, ec.spawn_rarity,
+        ec.environment_id
     FROM tgommo_environment_creature ec 
         LEFT JOIN tgommo_creature c 
             ON c.creature_id = ec.creature_id 
@@ -63,7 +64,8 @@ TGOMMO_SELECT_USER_CREATURE_BASE = """
         ec.sub_environment_type, 
         c.encounter_rate, 
         c.default_rarity, ec.spawn_rarity, uc.is_mythical, 
-        uc.catch_date, uc.is_favorite, uc.is_released 
+        uc.catch_date, uc.is_favorite, uc.is_released,
+        ec.environment_id
     FROM tgommo_user_creature uc 
         LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id 
         LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id 

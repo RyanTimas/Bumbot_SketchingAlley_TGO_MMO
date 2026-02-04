@@ -5,24 +5,37 @@ from src.resources.constants.file_paths import *
 from PIL import Image
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, default_rarity: CreatureRarity= COMMON, local_rarity= COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False, local_image_root: str = None, local_dex_no = None, local_variant_no = None):
+    def __init__(
+            self,
+            catch_id=-1, creature_id=-1,
+            name='', variant_name='', local_name ='', nickname ='',
+            dex_no=-1, variant_no=-1, local_dex_no=None, local_variant_no=None,
+            environment_id=-1, sub_environment='',
+            full_name='', scientific_name='', kingdom='', description='',
+            img_root='', local_image_root=None,
+            encounter_rate=-1,
+            default_rarity=COMMON, local_rarity=COMMON,
+            caught_date='', is_favorite=False, is_released=False,
+    ):
         self.timezone = pytz.timezone('US/Eastern')
 
-        self.creature_id = creature_id
         self.catch_id = catch_id
+        self.creature_id = creature_id
 
         self.creature_name = name
         self.local_name = local_name
         self.variant_name = variant_name
+        self.nickname = nickname
         # todo: streamline this so that the name is only set once
         self.name = local_name if local_name else self.creature_name
-
-        self.nickname = nickname
 
         self.dex_no = dex_no
         self.variant_no = variant_no
         self.local_dex_no = local_dex_no if local_dex_no else dex_no
         self.local_variant_no = local_variant_no if local_variant_no else variant_no
+
+        self.environment_id = environment_id
+        self.sub_environment = sub_environment
 
         self.full_name = full_name
         self.scientific_name = scientific_name
@@ -30,9 +43,8 @@ class TGOCreature:
         self.description = description
 
         self.img_root = img_root
-        self.local_img_root = local_image_root if local_image_root else None
+        self.local_img_root = local_image_root
 
-        self.sub_environment = sub_environment
         self.encounter_rate = encounter_rate
 
         self.default_rarity = default_rarity

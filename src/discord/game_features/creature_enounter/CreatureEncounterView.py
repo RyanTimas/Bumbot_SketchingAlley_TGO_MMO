@@ -63,7 +63,7 @@ class CreatureEncounterView(View):
             total_xp = successful_catch_embed[2]
 
             # insert record of user catching the creature & give user xp for catching the creature
-            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.environment.environment_id, self.creature.local_rarity == MYTHICAL))
+            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.creature.environment_id, self.creature.local_rarity == MYTHICAL))
             get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
 
             # send a message to the channel announcing the successful catch

@@ -31,31 +31,32 @@ class CreatureSpawnerHandler:
         self.discord_bot = discord_bot
         self.are_creatures_spawning = True
 
+        # pull environment from last run
         self.current_environment = None
-        self.creature_spawn_pool = None
-        self.last_spawn_time = None
-        self.is_day = None
-        self.time_of_day = None
-
-        self.active_bonuses = []
+        saved_env = get_game_state_manager().get_current_environment()
+        env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
 
         self.pending_environment = None
         self.environment_change_checked_for_today = False
 
-        self.define_time_of_day()
+        self.creature_spawn_pool = None
+        self.last_spawn_time = None
 
-        # pull environment from last run
-        saved_env = get_game_state_manager().get_current_environment()
-        env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
-        self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
+        self.is_day = None
+        self.time_of_day = None
+        self.active_bonuses = []
 
         self.spawn_event = asyncio.Event()
         self._spawner_running = False
+
+        self.define_time_of_day()
+        self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
 
 
     '''FUNCTIONS TO INITIALIZE SPAWNER DATA'''
     def define_time_of_day(self):
         timezone = self.current_environment.timezone if self.current_environment else BASE_TIMEZONE
+
         dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(timezone)
         dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(timezone)
         day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(timezone)
@@ -63,6 +64,7 @@ class CreatureSpawnerHandler:
         dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(timezone)
         night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(timezone)
 
+        # todo: update to pull from environment timezone
         current_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)
 
         self.last_spawn_time = current_time
@@ -96,37 +98,31 @@ class CreatureSpawnerHandler:
     async def _creature_spawner(self):
         if self._spawner_running:
             return  # Prevent multiple spawners
-
         self._spawner_running = True
 
         try:
             while self.are_creatures_spawning:
-
                 try:
                     await self.spawn_creature()
                 except (ssl.SSLError, Exception) as e:
-                    # Handle all errors in a single block
-                    error_type = "SSL Error" if isinstance(e, ssl.SSLError) else "Error"
-                    print(f"{error_type} occurred during creature spawning- skipping to next creature - {e}")
+                    print(f"{"SSL Error" if isinstance(e, ssl.SSLError) else "Error"} occurred during creature spawning- skipping to next creature - {e}")
                     traceback.print_exc()
                     await asyncio.sleep(5)
 
-                # wait between 3 and 5 minutes before spawning another creature - will spawn 288 - 480 creatures a day
-                normal_charm_active = any(bonus.bonus_type == f'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_NORMAL}' for bonus in self.active_bonuses)
-
-                min_spawn_interval = 1 if normal_charm_active else 3
-                max_spawn_interval = 3 if normal_charm_active else 5
-
-                # check if a new day has begun or if a day/night transition has occurred or if environment needs to change
+                # check if a post spawn event has occurred - includes a new day has begun, day/night transition, or environment change.
                 await self.handle_post_spawn_events()
 
-                # cooldown for the next creature spawn
-                sleep_duration = random.uniform(min_spawn_interval, max_spawn_interval) * 60
+                # cooldown for the next creature spawn. wait between 3 and 5 minutes before spawning another creature - will spawn 288 - 480 creatures a day
                 try:
+                    normal_charm_active = any(bonus.bonus_type == f'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_NORMAL}' for bonus in self.active_bonuses)
+                    min_spawn_interval = 1 if normal_charm_active else 3
+                    max_spawn_interval = 3 if normal_charm_active else 5
+                    sleep_duration = random.uniform(min_spawn_interval, max_spawn_interval) * 60
+
                     await asyncio.wait_for(self.spawn_event.wait(), timeout=sleep_duration)
                     self.spawn_event.clear()  # Reset the event for next time
                 except asyncio.TimeoutError:
-                    pass  # Normal timeout, continue spawning
+                    pass
         finally:
             self._spawner_running = False
 
@@ -137,12 +133,7 @@ class CreatureSpawnerHandler:
         creature = creature if creature else await self.creature_picker(rarity= rarity)
         creature_embed, creature_thumb_img, creature_encounter_img = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day, spawn_user=user, active_bonuses=self.active_bonuses).generate_spawn_embed()
 
-        spawn_message = await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-            content=TGOMMO_ROLE,
-            view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user),
-            files=[creature_thumb_img, creature_encounter_img],
-            embed=creature_embed
-        )
+        spawn_message = await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(content=TGOMMO_ROLE, view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user), files=[creature_thumb_img, creature_encounter_img], embed=creature_embed)
 
         # Create separate task for despawn
         if creature.local_rarity.name != TRANSCENDANT.name and creature.local_rarity.name != MYTHICAL.name:
@@ -161,9 +152,9 @@ class CreatureSpawnerHandler:
         # 12% chance to spawn a duplicate
         spawn_duplicate = flip_coin(total_iterations=3) and creature.local_rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
         while spawn_duplicate:
-            # 6% chance to spawn more duplicates
             duplicate_creature = deepcopy(creature)
 
+            # the longer the chain, the more likely a mythical spawn becomes
             critter_chain_multiplier += 1
             if random.randint(1, ((MYTHICAL_SPAWN_CHANCE*2) // critter_chain_multiplier)) == 1:
                 duplicate_creature.set_creature_rarity(MYTHICAL)
@@ -180,9 +171,8 @@ class CreatureSpawnerHandler:
         rarity = rarity if rarity and rarity.name != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
 
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity.name]
-        selected_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
-
-        selected_creature = deepcopy(available_creatures[selected_index])
+        selected_creature_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
+        selected_creature = deepcopy(available_creatures[selected_creature_index])
 
         # Check if mythical spawn occurs
         mythical_odds = MYTHICAL_SPAWN_CHANCE // (2 if any(bonus.bonus_type == F'{ITEM_TYPE_CHARM}{TGOMMO_RARITY_MYTHICAL}' for bonus in self.active_bonuses) else 1)
@@ -198,20 +188,20 @@ class CreatureSpawnerHandler:
         if flip_coin(total_iterations= 7 if IS_EVENT else 13):
             return TRANSCENDANT
 
-        bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
+        # CHECK FOR ACTIVE CHARM BONUSES
+        active_bonus = next((bonus for bonus in self.active_bonuses if bonus.bonus_type == ITEM_TYPE_CHARM and bonus.rarity.name not in [TGOMMO_RARITY_NORMAL, TGOMMO_RARITY_MYTHICAL]), None)
 
         # IF DUSK OR DAWN, INCREASE CHANCE OF NORMAL RARITY ROLL
         is_dawn_or_dusk = self.time_of_day in (DUSK, DAWN)
 
-        if bonus and random.randint(1, bonus.spawn_odds // (2 if is_dawn_or_dusk else 1)) == 1:
-            return bonus.rarity
+        if active_bonus and random.randint(1, active_bonus.spawn_odds // (2 if is_dawn_or_dusk else 1)) == 1:
+            return active_bonus.rarity
         return get_rarity() if (random.randint(1, 3) == 1 or is_dawn_or_dusk) else COMMON
 
     # Handles despawning of a creature after its despawn time has elapsed
     def _handle_despawn(self, creature: TGOCreature, spawn_message):
         time.sleep(creature.time_to_despawn)
         try:
-            # Try to fetch the message to check if it still exists
             channel = self.discord_bot.get_channel(spawn_message.channel.id)
             asyncio.run_coroutine_threadsafe(channel.fetch_message(spawn_message.id), self.discord_bot.loop).result()
         except discord.NotFound:
@@ -219,12 +209,7 @@ class CreatureSpawnerHandler:
 
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
-        asyncio.run_coroutine_threadsafe(
-            self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-                files=[creature_embed[1]],
-                embed=creature_embed[0]
-            ), self.discord_bot.loop
-        )
+        asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(files=[creature_embed[1]], embed=creature_embed[0]), self.discord_bot.loop)
 
 
     '''FUNCTIONS TO HANDLE ADDING / REMOVING SPAWN BONUSES'''
@@ -268,10 +253,10 @@ class CreatureSpawnerHandler:
         self._handle_day_night_cycle(current_time=current_time)
         await self._handle_environment_change_cycle(current_time=current_time)
 
-        self._handle_time_based_resets(current_time=current_time)
+        self._handle_user_catch_limit_resets(current_time=current_time)
 
     # Handles hourly and daily resets
-    def _handle_time_based_resets(self, current_time: datetime.datetime = None):
+    def _handle_user_catch_limit_resets(self, current_time: datetime.datetime = None):
         # Clear user catches if the hour has changed
         if current_time.hour != self.last_spawn_time.hour:
             USER_CATCHES_HOURLY.clear()
@@ -335,8 +320,6 @@ class CreatureSpawnerHandler:
 
         # Calculate seconds until environment change
         time_until_environment_change = (environment_change_time - current_time).total_seconds()
-
-        # Sleep until environment change
         time.sleep(time_until_environment_change)
 
         # Execute environment change

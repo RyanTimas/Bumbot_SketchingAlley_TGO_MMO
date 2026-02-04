@@ -24,7 +24,6 @@ class CreatureInventoryImageFactory:
         self.show_favorites_only = show_favorites_only
         self.is_exclusive_mode = False
 
-
         # define creature management items
         self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id, )
         self.caught_creatures_icons = self.build_creature_icons()
@@ -198,8 +197,11 @@ class CreatureInventoryImageFactory:
     def order_creatures_based_on_filter_type(self):
         paired_data = list(zip(self.caught_creatures, self.caught_creatures_icons))
 
+        def get_rarity_sort_key(rarity_name):
+            return 1 if rarity_name == TGOMMO_RARITY_MYTHICAL else 0
+
         if self.order_type == DEX_NO_ORDER:
-            sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].dex_no, reverse=self.is_ascending_order)
+            sorted_pairs = sorted(paired_data, key=lambda pair: (pair[0].dex_no, pair[0].variant_no, get_rarity_sort_key(pair[0].local_rarity.name) ), reverse=self.is_ascending_order)
         elif self.order_type == ALPHABETICAL_ORDER:
             sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].name.lower(), reverse=self.is_ascending_order)
         else:

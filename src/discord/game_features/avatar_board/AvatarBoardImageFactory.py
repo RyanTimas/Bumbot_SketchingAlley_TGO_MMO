@@ -10,7 +10,7 @@ AVATAR_QUESTS = "AVATAR_QUESTS"
 UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
 class AvatarBoardImageFactory:
-    def __init__(self, user_id, open_tab):
+    def __init__(self, user_id, open_tab=UNLOCKED_AVATARS):
         self.user_id = user_id
 
         self.open_tab = open_tab

@@ -19,10 +19,10 @@ class ItemInventoryImageFactory:
         self.ending_index = len(self.user_item_icons)
 
     def generate_item_inventory_image(self, user = None):
-        self.refresh_item_inventory_parameters(user=user)
+        self._refresh_item_inventory_parameters(user=user)
         return self.build_item_inventory_page_image()
 
-    def refresh_item_inventory_parameters(self, user):
+    def _refresh_item_inventory_parameters(self, user):
         self.user = user is not None and user or self.user
         self.user_items = [item for item in get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
         self.user_item_icons = self.build_item_icons()

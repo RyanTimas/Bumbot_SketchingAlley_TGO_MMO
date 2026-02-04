@@ -9,11 +9,11 @@ import io
 
 import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
-from discord import File
+from discord import File, app_commands
 
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
 from src.resources.constants.file_paths import PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE, PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE
-from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
+from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, USER_WHITELIST
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
@@ -388,3 +388,14 @@ def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%
 
         return formatted_date
     return "Unknown"
+
+#************************************************************************************
+#---------------------------------------DECORATORS--------------------------------------------
+#************************************************************************************
+def admin_only():
+    async def predicate(interaction: discord.Interaction):
+        if interaction.user.id not in USER_WHITELIST:
+            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True, delete_after=5)
+            return False
+        return True
+    return app_commands.check(predicate)

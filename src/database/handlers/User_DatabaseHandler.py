@@ -1,5 +1,5 @@
 from src.database.handlers.QueryHandler import QueryHandler
-from src.resources.constants.queries.db_queries import *
+from src.database.queries.bumbot_db_queries import *
 
 from src.discord.objects.User import User
 
@@ -9,18 +9,18 @@ class UserDatabaseHandler:
         self.QueryHandler = QueryHandler(db_file=db_file)
 
     def insert_new_record(self, params=(0,'',0,0,0,0,0,0)):
-        return self.QueryHandler.execute_query(SA_USERS_INSERT_NEW_RECORD, params=params)
+        return self.QueryHandler.execute_query(BUMBOT_INSERT_NEW_USER, params=params)
 
     ''' Deluxe Wall Select Queries '''
     def select_all(self):
-        return self.QueryHandler.execute_query(SA_USERS_SELECT_ALL)
+        return self.QueryHandler.execute_query(BUMBOT_SELECT_ALL_USERS)
 
     def select_by_user_id(self, user_id=0, user_name=None):
-        response = self.QueryHandler.execute_query(SA_USERS_SELECT_ALL_BY_USERID, params=(user_id,))
+        response = self.QueryHandler.execute_query(BUMBOT_SELECT_ALL_USERS_BY_USERID, params=(user_id,))
 
         if not response:
             self.insert_new_record((user_id, user_name, 0, 0, 0, 0, 0, 0))
-            response = self.QueryHandler.execute_query(SA_USERS_SELECT_ALL_BY_USERID, params=(user_id,))
+            response = self.QueryHandler.execute_query(BUMBOT_SELECT_ALL_USERS_BY_USERID, params=(user_id,))
 
         if response:
             entry = response[0]

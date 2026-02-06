@@ -1,9 +1,8 @@
-from src.database.handlers.EnvironmentCreatureLink import EnvironmentCreatureLink, dummy_ec_link
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.TGO_MMO_creature_constants import *
-from src.resources.constants.queries.avatar_quest_db_queries import *
-from src.resources.constants.queries.create_table_queries import *
-from src.resources.constants.queries.db_queries import *
+from src.database.queries.tgommo_avatar_quest_db_queries import *
+from src.database.queries.tgommo_create_table_queries import *
+from src.database.queries.tgommo_db_queries import *
 
 
 class TGOMMODatabaseInitializer:
@@ -933,3 +932,20 @@ def _create_environment_creature_params(creature_info, environment_info, spawn_t
         ec_link.local_variant_no if ec_link.local_variant_no != 0 else ec_link.creature_variant_no,
         ec_link.local_img_root
     ]
+
+
+class EnvironmentCreatureLink:
+    def __init__(self, creature_dex_no, creature_variant_no, environment_dex_no, spawn_time, local_rarity, local_name="", sub_environment=SUB_ENVIRONMENT_RIVER, local_img_root="", local_dex_no=0, local_variant_no=0):
+        self.creature_dex_no = creature_dex_no
+        self.creature_variant_no = creature_variant_no
+
+        self.environment_dex_no = environment_dex_no
+        self.spawn_time = spawn_time
+
+        self.local_rarity = local_rarity
+        self.local_name = local_name
+        self.sub_environment = sub_environment
+        self.local_img_root = local_img_root
+        self.local_dex_no = local_dex_no
+        self.local_variant_no = local_variant_no
+dummy_ec_link = EnvironmentCreatureLink(creature_dex_no=0, creature_variant_no=0, environment_dex_no=0, spawn_time="", local_rarity=0, local_name="", sub_environment=SUB_ENVIRONMENT_RIVER, local_img_root="", local_dex_no=0, local_variant_no=0)

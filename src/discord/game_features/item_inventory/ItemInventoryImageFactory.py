@@ -12,7 +12,7 @@ class ItemInventoryImageFactory:
     def __init__(self, user,):
         self.user = user
 
-        self.user_items = [item for item in get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
+        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
         self.user_item_icons = self.build_item_icons()
 
         self.starting_index = 0
@@ -24,7 +24,7 @@ class ItemInventoryImageFactory:
 
     def _refresh_item_inventory_parameters(self, user):
         self.user = user is not None and user or self.user
-        self.user_items = [item for item in get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
+        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
         self.user_item_icons = self.build_item_icons()
 
     def build_item_inventory_page_image(self):

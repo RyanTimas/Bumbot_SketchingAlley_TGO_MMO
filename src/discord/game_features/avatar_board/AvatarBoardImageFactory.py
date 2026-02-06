@@ -34,7 +34,7 @@ class AvatarBoardImageFactory:
         self.page_num_unlocked_avatar = 1
         self.total_unlocked_avatar_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
 
-        self.avatar_quests = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
+        self.avatar_quests = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
         self.page_num_avatar_quests = 1
         self.total_avatar_quest_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
 

@@ -267,7 +267,7 @@ class TGOMMOMenuView(discord.ui.View):
             async with self.interaction_lock:
                 await interaction.response.defer()
 
-                user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.message_author.id, convert_to_object=True)
+                user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.message_author.id)
                 item_inventory_img_factory = ItemInventoryImageFactory(user=user,)
 
                 item_inventory_view = ItemInventoryView(

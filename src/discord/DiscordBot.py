@@ -144,7 +144,7 @@ class DiscordBot(commands.Bot):
 
         @self.tree.command(name="open-item-inventory-tgommo", description="Opens User's Item Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_item_inventory(interaction):
-            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id, convert_to_object=True)
+            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
 
             item_inventory_handler = ItemInventoryImageFactory(user=target_user, )
             view = ItemInventoryView(command_user=target_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)

@@ -97,20 +97,21 @@ class CreatureEncounterView(View):
 
             # Get user's creatures and count this species
             total_catches_for_species = get_tgommo_db_handler().get_total_catches_for_creature_by_user(user_id=interaction.user.id, dex_no=self.creature.dex_no)
-            total_catches_for_variant = get_tgommo_db_handler().get_total_catches_for_variants_by_user(user_id=interaction.user.id, dex_no=self.creature.dex_no, variant_no=self.creature.variant_no)
-            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_mythicals_for_creature_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
+            total_catches_for_variant = get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
+            total_mythical_catches_for_variant = get_tgommo_db_handler().get_total_mythical_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
 
+            # todo: add message for specific environment
             message = (
                 f"You have caught **{total_catches_for_species}** {self.creature.name}(s) \n"
                 f"You have caught **{total_catches_for_variant}** of this variant! \n"
-                f"You have caught **{total_mythical_catches_for_species}** Mythical {self.creature.name}(s)!"
+                f"You have caught **{total_mythical_catches_for_variant}** Mythical {self.creature.name}(s)!"
             )
 
             if total_catches_for_species == 0:
                 message = f"# ‼️You've never caught this creature before!‼️"
             elif total_catches_for_variant == 0:
                 message = f"🔥You never caught this form for this creature before!🔥"
-            elif total_mythical_catches_for_species == 0 and self.creature.local_rarity == MYTHICAL:
+            elif total_mythical_catches_for_variant == 0 and self.creature.local_rarity == MYTHICAL:
                 message = f"# ⭐You've never caught the Mythical form of this creature before!⭐"
             await interaction.response.send_message(message, files=[convert_to_png(self.creature.creature_image, file_name="creature_img.png")], ephemeral=True)
 

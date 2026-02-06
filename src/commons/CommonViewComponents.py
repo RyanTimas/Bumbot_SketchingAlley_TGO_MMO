@@ -99,6 +99,17 @@ def create_generic_nav_callback(view_instance, is_next):
                     is_ascending_order=view_instance.is_ascending_order,
                     is_exclusive_mode=view_instance.is_exclusive_mode
                 )
+            elif hasattr(view_instance, 'avatar_board_image_factory'):
+                if view_instance.open_tab == view_instance.UNLOCKED_AVATARS:
+                    current_page = view_instance.avatar_board_image_factory.page_num_unlocked_avatar
+                    new_page = current_page + 1 if is_next else current_page - 1
+                    new_image = view_instance.avatar_board_image_factory.build_avatar_board_page_image(new_page_number=new_page, open_tab=view_instance.UNLOCKED_AVATARS)
+                elif view_instance.open_tab == view_instance.AVATAR_QUESTS:
+                    current_page = view_instance.avatar_board_image_factory.page_num_avatar_quests
+                    new_page = current_page + 1 if is_next else current_page - 1
+                    new_image = view_instance.avatar_board_image_factory.build_avatar_board_page_image(new_page_number=new_page, open_tab=view_instance.AVATAR_QUESTS)
+                else:
+                    return
             else:
                 return
 

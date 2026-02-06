@@ -32,7 +32,7 @@ class AvatarUnlockHandler:
 
     # NICKNAME-BASED UNLOCK HANDLERS
     async def handle_nickname_based_unlocks(self):
-        unlocked_secret_avatars = get_tgommo_db_handler().get_unlocked_avatar_ids_for_server()
+        unlocked_secret_avatars = get_tgommo_db_handler().get_unlocked_avatars_for_server()
         player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
 
         avatar_combos = {
@@ -60,7 +60,7 @@ class AvatarUnlockHandler:
                 if unlock_term in self.nickname.lower():
                     file_name = f"_Secret_{avatar_img_root}"
 
-                    if avatar_id not in unlocked_secret_avatars:
+                    if not any(avatar.avatar_id == avatar_id for avatar in unlocked_secret_avatars):
                         get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar_id)
                         await self.interaction.channel.send(f"The secret avatar *{avatar_name}* has been unlocked for the server thanks to @{player.nickname}!!", file=discord.File(f"{PLAYER_PROFILE_AVATAR_BASE}{file_name}{IMAGE_FILE_EXTENSION}", filename="avatar.png"))
                     return
@@ -115,7 +115,7 @@ class AvatarUnlockHandler:
 
     # QUEST-BASED UNLOCK HANDLERS
     async def define_avatar_quests_unlocks(self):
-        unlockable_avatars = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
+        unlockable_avatars = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
 
         for unlockable_avatar in unlockable_avatars:
             params = (self.user_id,)

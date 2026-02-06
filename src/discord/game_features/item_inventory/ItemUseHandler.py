@@ -23,12 +23,12 @@ class ItemUseHandler:
 
     async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check to make sure user has at least 1 bait
-        if get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
+        if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
             affect_successful, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
 
             # remove an item from the user after the effect is applied
             if affect_successful:
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
+                get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
                     await interaction.channel.send(response_message, files=[self.get_image_for_item(item)])
             elif response_message:

@@ -19,7 +19,7 @@ class CreatureCaughtView(discord.ui.View):
         self.successful_catch_message = successful_catch_message
         self.successful_catch_embed_handler = successful_catch_embed_handler
 
-        self.user_profile:TGOPlayer = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.interaction.user.id, convert_to_object=True)
+        self.user_profile:TGOPlayer = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.interaction.user.id)
         self.display_creature_ids = [self.user_profile.creature_slot_id_1, self.user_profile.creature_slot_id_2, self.user_profile.creature_slot_id_3, self.user_profile.creature_slot_id_4, self.user_profile.creature_slot_id_5, self.user_profile.creature_slot_id_6, ]
         self.original_display_creature_ids = [self.user_profile.creature_slot_id_1, self.user_profile.creature_slot_id_2, self.user_profile.creature_slot_id_3, self.user_profile.creature_slot_id_4, self.user_profile.creature_slot_id_5, self.user_profile.creature_slot_id_6, ]
 

@@ -27,10 +27,12 @@ class PlayerProfileImageFactory:
         self.right_button_enabled = False
 
     def load_player_info(self):
-        player_info = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id, nickname=self.target_user.display_name)
+        player_info = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id, convert_to_object= False)
         avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=player_info[3], convert_to_object=True)
 
-        self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar=avatar, background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
+        self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar=avatar, background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catch_attempts=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
+
+        self.player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id)
 
         self.creature_team = []
         for slot_id in (self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6):
@@ -159,7 +161,7 @@ class PlayerProfileImageFactory:
         active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
 
         for collection in active_collections:
-            collection.image_path = f'{DEX_ICON_CREATURE_BASE}_{collection.image_path}{IMAGE_FILE_EXTENSION}'
+            collection.img_path = f'{DEX_ICON_CREATURE_BASE}_{collection.img_path}{IMAGE_FILE_EXTENSION}'
             collection.background_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{collection.background_color_path}{IMAGE_FILE_EXTENSION}'
 
             remove_variants_suffix = f' c.variant_no=1;'
@@ -171,7 +173,7 @@ class PlayerProfileImageFactory:
             total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
             subtitle = f"{caught_number}/{total_number}"
 
-            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=collection.image_path, background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=collection.img_path, background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
             collections_tab_image = collections_tab.create_tab()
 
             background_img.paste(collections_tab_image, current_offset, collections_tab_image)

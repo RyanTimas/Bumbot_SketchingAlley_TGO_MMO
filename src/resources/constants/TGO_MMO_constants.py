@@ -2,6 +2,8 @@
 import datetime
 import pytz
 
+
+'''TIMEZONE'''
 BASE_TIMEZONE = pytz.timezone('US/Eastern')
 
 DEFAULT_CREATURE_SPAWN_RATE_LOW_END = 3
@@ -60,6 +62,7 @@ TGOMMO_CREATURE_EMBED_CLOCK_ICON = "https://cdn-icons-png.flaticon.com/512/4305/
 CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
 CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               "
 CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+250 xp*"
+CREATURE_FIRST_CATCH_VARIANT_LINE = "First Time Catch For Variant                                              *+175 xp*"
 CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+1000 xp*"
 MYTHICAL_CATCH_LINE = "Mythical Creature                                         *+1000 xp*"
 CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"

@@ -2,7 +2,14 @@ import pytz
 
 
 class TGOEnvironment:
-    def __init__(self, environment_id: int, name: str, variant_name: str, dex_no: int, variant_no: int, location: str, description: str, img_root: str, is_night_environment: bool, in_circulation: bool, encounter_rate: int):
+    def __init__(self,
+        environment_id: int,
+        name: str, variant_name: str,
+        dex_no: int, variant_no: int,
+        location: str, description: str,
+        img_root: str,
+        is_night_environment: bool, in_circulation: bool, encounter_rate: int
+    ):
         self.environment_id = environment_id
 
         self.name = name

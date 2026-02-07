@@ -133,7 +133,7 @@ class CreatureEmbedHandler:
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             total_xp += 175
-        if 0 == get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(creature_id=self.creature):
+        if 0 == get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(creature_id=self.creature.creature_id):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 1000

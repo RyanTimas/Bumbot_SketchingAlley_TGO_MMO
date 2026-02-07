@@ -173,7 +173,7 @@ class PlayerProfileImageFactory:
             total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
             subtitle = f"{caught_number}/{total_number}"
 
-            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=collection.img_path, background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=Image.open(collection.img_path), background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
             collections_tab_image = collections_tab.create_tab()
 
             background_img.paste(collections_tab_image, current_offset, collections_tab_image)

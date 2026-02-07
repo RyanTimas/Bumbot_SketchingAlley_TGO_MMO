@@ -130,12 +130,11 @@ class TGOMMODatabaseHandler:
         if convert_to_object:
             user_profiles = []
             for user_profile_details in results:
-                #todo: grab avatar object
                 user_profiles.append(
                     TGOPlayer(
                         player_id=user_profile_details[0], user_id=user_profile_details[1],
                         nickname=user_profile_details[2],
-                        avatar=user_profile_details[3], background_id=user_profile_details[4],
+                        avatar=self.get_avatar_by_id(avatar_id=user_profile_details[3]), background_id=user_profile_details[4],
                         creature_slot_id_1=user_profile_details[5], creature_slot_id_2=user_profile_details[6], creature_slot_id_3=user_profile_details[7], creature_slot_id_4=user_profile_details[8], creature_slot_id_5=user_profile_details[9], creature_slot_id_6=user_profile_details[10],
                         currency=user_profile_details[11],
                         available_catch_attempts=user_profile_details[12],

@@ -4,7 +4,7 @@ from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.item_inventory.ItemInventoryIconImageFactory import ItemInventoryIconImageFactory
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, ITEM_INVENTORY_EXCLUDED_ITEM_TYPES
 from src.resources.constants.file_paths import *
 
 
@@ -12,7 +12,7 @@ class ItemInventoryImageFactory:
     def __init__(self, user,):
         self.user = user
 
-        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
+        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0 and item.item_type not in ITEM_INVENTORY_EXCLUDED_ITEM_TYPES]
         self.user_item_icons = self.build_item_icons()
 
         self.starting_index = 0
@@ -24,7 +24,7 @@ class ItemInventoryImageFactory:
 
     def _refresh_item_inventory_parameters(self, user):
         self.user = user is not None and user or self.user
-        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0]
+        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user.user_id, convert_to_object=True) if item.item_quantity > 0 and item.item_type not in ITEM_INVENTORY_EXCLUDED_ITEM_TYPES]
         self.user_item_icons = self.build_item_icons()
 
     def build_item_inventory_page_image(self):

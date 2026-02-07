@@ -109,7 +109,8 @@ class AvatarUnlockHandler:
             if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"E{avatar_id}", user_id=self.user_id):
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"E{avatar_id}", user_id=self.user_id)
 
-                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name.replace(' ', '')}{IMAGE_FILE_EXTENSION}"
+                # todo: there's gotta be a better way to handle this
+                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name.replace(' ', '').replace('\'', '')}{IMAGE_FILE_EXTENSION}"
                 await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {name}!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
 
 
@@ -126,7 +127,7 @@ class AvatarUnlockHandler:
 
         if user_reached_threshold:
             # if quest rewards more than one avatar (parent entry), unlock all child avatars
-            avatars_to_unlock = [avatar] if not avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id, convert_to_object=True)
+            avatars_to_unlock = [avatar] if not avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id)
 
             for child_avatar in avatars_to_unlock:
                 if get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=self.user_id):

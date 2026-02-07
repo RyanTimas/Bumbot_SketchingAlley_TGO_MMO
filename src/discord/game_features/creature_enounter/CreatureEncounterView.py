@@ -123,7 +123,7 @@ class CreatureEncounterView(View):
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
-        if len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=user_id, is_released=False)) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
+        if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
         # Mythical creatures & spawned creatures can always be caught

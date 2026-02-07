@@ -180,8 +180,7 @@ class EncyclopediaView(discord.ui.View):
 
         self.add_item(self.verbose_button)
         self.add_item(self.variants_button)
-        if get_tgommo_db_handler().get_server_mythical_count() > 0:
-            self.add_item(self.mythics_button)
+        self.add_item(self.mythics_button)
 
         if self.encyclopedia_image_factory.environment.environment_id != 0:
             self.add_item(self.day_only_button)

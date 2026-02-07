@@ -10,7 +10,6 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
-from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
 from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import EncyclopediaLocationIndexView
@@ -343,7 +342,7 @@ class TGOMMOMenuView(discord.ui.View):
                 button_img = Image.open(HELP_IMAGE_BUTTON_CARD)
                 command_img_1 = Image.open(HELP_IMAGE_COMMAND_CARD_1)
                 command_img_2 = Image.open(HELP_IMAGE_COMMAND_CARD_2)
-                if get_tgommo_db_handler().get_server_mythical_count() > 0:
+                if get_tgommo_db_handler().get_total_mythical_catches_for_server() > 0:
                     command_img_2_mythic_addon = Image.open(HELP_IMAGE_COMMAND_CARD_2_MYTHIC_ADDON)
                     command_img_2.paste(command_img_2_mythic_addon, (0, 0), command_img_2_mythic_addon)
 
@@ -364,7 +363,7 @@ class TGOMMOMenuView(discord.ui.View):
     def rebuild_view(self):
         # Create view layout
         self.add_item(self.welcome_button)
-        self.add_item(self.help_button)
+        # self.add_item(self.help_button)
 
         self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
         self.add_item(self.open_user_encyclopedia_button)

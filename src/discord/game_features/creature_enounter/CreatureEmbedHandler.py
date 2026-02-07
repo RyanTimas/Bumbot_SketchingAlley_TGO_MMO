@@ -122,22 +122,18 @@ class CreatureEmbedHandler:
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
         total_xp = randint(10, 50)
 
-        user_has_caught_species = get_tgommo_db_handler().get_total_catches_for_creature_by_user(dex_no=self.creature.dex_no, user_id=interaction.user.id)
-        user_has_caught_variant = get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(creature_id=self.creature.creature_id, user_id=interaction.user.id)
-        total_server_catches = get_tgommo_db_handler().get_total_catches_for_species(creature=self.creature)[0]
-
         self.add_xp_field_to_embed(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
 
-        if not user_has_caught_species:
+        if not get_tgommo_db_handler().has_user_caught_creature(user_id=interaction.user.id, dex_no=self.creature.dex_no):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 250
-        if not user_has_caught_variant:
+        if not get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             total_xp += 175
-        if 0 == total_server_catches:
+        if 0 == get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(creature_id=self.creature):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_SERVER_CATCH_LINE, value=f"", inline=False)
             total_xp += 1000

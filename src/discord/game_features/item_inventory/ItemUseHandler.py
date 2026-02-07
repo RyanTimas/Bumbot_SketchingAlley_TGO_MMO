@@ -66,9 +66,9 @@ class ItemUseHandler:
 
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
-        total_creatures = len(get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no))
-        captured_creatures = get_tgommo_db_handler().get_user_catch_totals_for_environment(include_variants=True, include_mythics=False, environment=self.discord_bot.creature_spawner_handler.current_environment, time_of_day=BOTH)[1]
-        capture_percentage = (captured_creatures / total_creatures) * 100 if total_creatures > 0 else 0
+        available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
+        caught_unique_creatures_for_environment = get_tgommo_db_handler().get_unique_catches_base(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
+        capture_percentage = (caught_unique_creatures_for_environment / available_unique_creatures_for_environment) * 100
 
         if capture_percentage < 65:
             return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."

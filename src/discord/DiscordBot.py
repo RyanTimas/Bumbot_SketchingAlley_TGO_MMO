@@ -178,15 +178,14 @@ class DiscordBot(commands.Bot):
 
         @admin_only()
         @self.tree.command(name="spawn_every_creature_tgommo", description="Spawns one of every creature for a given environment.  Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
-        async def tgommo_spawn_every_creature(interaction, environment_dex_no: str = None, variant_no: str = None, is_mythical: str = None,):
-            environment_dex_no = environment_dex_no if environment_dex_no else 1
+        async def tgommo_spawn_every_creature(interaction, environment_dex_no: str = None, environment_id: str = None, is_mythical: str = None,):
 
-            if variant_no:
-                environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=variant_no)
-                spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment.environment_id)
-            else:
-                environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=1)
-                spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment_dex_no)
+            if not environment_id and not environment_dex_no:
+                await interaction.response.send_message(f"Please provide either an environment dex number or environment ID to spawn creatures.", delete_after=10, ephemeral=True)
+                return
+
+            environment = get_tgommo_db_handler().get_environments_by_dex_no(dex_no=environment_dex_no)[0] if environment_dex_no else get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id)
+            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment.dex_no) if environment_dex_no else get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment_id)
 
             await interaction.response.send_message(f"Spawning all creatures for {environment.name}", delete_after=5, ephemeral=True)
             for creature in spawn_pool:

@@ -168,7 +168,7 @@ TGOMMO_SELECT_COLLECTION_BASE = """
 
 # region CATCH STAT QUERIES - total catches
 TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE = '''
-    SELECT COUNT(*) 
+    SELECT COUNT(DISTINCT(uc.catch_id)) 
     FROM tgommo_user_creature uc 
     LEFT JOIN tgommo_creature c 
         ON uc.creature_id = c.creature_id 

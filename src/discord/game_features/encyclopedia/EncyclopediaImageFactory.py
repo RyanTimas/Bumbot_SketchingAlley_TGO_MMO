@@ -37,23 +37,19 @@ class EncyclopediaImageFactory:
 
 
     def load_relevant_info(self, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
-        self.is_verbose = is_verbose if is_verbose else self.is_verbose
-        self.page_num = new_page_number if new_page_number else self.page_num
-        self.show_variants = show_variants if show_variants else self.show_variants
-        self.show_mythics = show_mythics if show_mythics else self.show_mythics
-        self.time_of_day = time_of_day if time_of_day else self.time_of_day
+        self.is_verbose = is_verbose if is_verbose is not None else self.is_verbose
+        self.page_num = new_page_number if new_page_number is not None else self.page_num
+        self.show_variants = show_variants if show_variants is not None else self.show_variants
+        self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
+        self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
+        self.page_num = 1 if show_variants is not None or time_of_day is not None else self.page_num
 
-        # if we're changing the amount of icons, we need to reset to page 1 to avoid out of bounds errors
-        self.page_num = 1 if show_variants or time_of_day else self.page_num
-
-
-        # if any of these values changed, we need to reload the creatures list
-        if show_variants or show_mythics or time_of_day or new_page_number:
+        data_changed = any(param is not None for param in [show_variants, show_mythics, time_of_day, new_page_number])
+        if data_changed:
             self.distinct_user_catches = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
             self.total_user_catches = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
-
             self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
-        if show_variants or show_mythics or time_of_day or new_page_number or is_verbose:
+        if data_changed or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
 
     def build_encyclopedia_page_image(self, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, new_page_number = None):

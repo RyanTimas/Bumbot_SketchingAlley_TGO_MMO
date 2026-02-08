@@ -380,22 +380,31 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region ENVIRONMENT QUERIES
-    def get_environment_by_id(self, environment_id=-1, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_ENVIRONMENT_ID_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(environment_id,), convert_to_object=convert_to_object, expect_multiple=False)
-    def get_environment_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(dex_no, variant_no if variant_no != 0 else 1), convert_to_object=convert_to_object, expect_multiple=False)
-    def get_environments_by_dex_no(self, dex_no=0, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX} {TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(dex_no, ), convert_to_object=convert_to_object, expect_multiple=True)
+    # region SELECT ENVIRONMENT QUERIES
+    # endregion
 
+    # region MISC ENVIRONMENT QUERIES
     def get_all_environments_in_rotation(self, is_day_night=1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=False)
+    # endregion
+
+
+
+    def get_environment_by_id(self, environment_id=-1, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_id=environment_id)
+        return self.get_environments_from_database(query=query, params=(environment_id,), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_environments_by_dex_no(self, dex_no=0, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no)
+        return self.get_environments_from_database(query=query, params=(dex_no, ), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_environment_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no, variant_no=variant_no)
+        return self.get_environments_from_database(query=query, params=(dex_no, variant_no if variant_no != 0 else 1), convert_to_object=convert_to_object, expect_multiple=False)
+
+
 
     # endregion
 
@@ -553,12 +562,7 @@ class TGOMMODatabaseHandler:
 
 
     ''' SUPPORT FUNCTIONS '''
-    def handle_user_creature_optional_query_extensions(self, base_query, params=[],
-        user_id=None,
-        creature_id=None, creature_dex_no=None,
-        environment_dex_no=None, environment_variant_no=None,
-        is_mythical=None
-    ):
+    def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None):
         if user_id and user_id != 0:
             base_query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
             params.append(user_id)
@@ -577,6 +581,18 @@ class TGOMMODatabaseHandler:
         if is_mythical:
             base_query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX}"
             params.append(1 if is_mythical else 0)
+        return base_query, params
+
+    def handle_environment_optional_query_extensions(self, base_query, params=[], environment_id=None, environment_dex_no=None, variant_no=None):
+        if environment_id and environment_id != 0:
+            base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_ENVIRONMENT_ID_SUFFIX}"
+            params.append(environment_id)
+        if environment_dex_no and environment_dex_no != 0:
+            base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
+            params.append(environment_dex_no)
+        if variant_no and variant_no != 0:
+            base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX}"
+            params.append(variant_no)
         return base_query, params
 
 

@@ -343,6 +343,8 @@ class TGOMMODatabaseHandler:
             query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
             params.append(1)
 
+        # add group by clause for getting a single instance for "both" time spawns
+        query += f" {TGOMMO_GROUP_BY_CREATURE_BY_CREATURE_ID_SUFFIX }"
         # add ordering for environment or national dex
         query += f"{TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX if environment_id == 0 else TGOMMO_ORDER_BY_ENVIRONMENT_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX}"
 
@@ -364,7 +366,7 @@ class TGOMMODatabaseHandler:
         possible_unique_catches = [possible_unique_creature_catches, possible_unique_creature_variants_catches, possible_unique_mythical_creature_catches]
 
         return user_unique_catches, possible_unique_catches
-    def get_first_caught_variant_for_creature(self, creature_dex_no, user_id= None, environment_dex_no= 0):
+    def get_first_caught_variant_for_creature(self, creature_dex_no, user_id= None, environment_dex_no= 0, is_mythical=False):
         query = f"{TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX}"
         params = [creature_dex_no]
 
@@ -374,6 +376,9 @@ class TGOMMODatabaseHandler:
         if environment_dex_no != 0:
             query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
             params.append(environment_dex_no)
+        if is_mythical:
+            query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX}"
+            params.append(1)
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
     # endregion
@@ -572,9 +577,12 @@ class TGOMMODatabaseHandler:
         if creature_dex_no and creature_dex_no != 0:
             base_query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX}"
             params.append(creature_dex_no)
+
+        # todo: need to add branching logic for  TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX
         if environment_dex_no and environment_dex_no != 0:
             base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX}"
             params.append(environment_dex_no)
+
         if environment_variant_no and environment_variant_no != BOTH:
             base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
             params.append(environment_variant_no)

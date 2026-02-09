@@ -141,13 +141,14 @@ class EncyclopediaImageFactory:
         for i in range(starting_index, ending_index):
             creature: TGOCreature = self.creatures[i]
 
-            total_catches_for_species = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if self.show_variants else None, creature_id=creature.creature_id  if not self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, include_variants=not self.show_variants)
-            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if self.show_variants else None, creature_id=creature.creature_id  if not self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, include_variants=not self.show_variants, is_mythical=True)
-            creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_species == 0
+            # todo: problem with getting catches specifically for the environment
+            total_catches_for_species_for_environment = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
+            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, is_mythical=True)
+            creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_species_for_environment == 0
 
            # if creature is locked and is transcendant, skip it & don't display the icon
             if not (creature_is_locked and creature.default_rarity.name == TRANSCENDANT.name):
-                dex_icon_img = self.build_dex_icon(creature=creature, total_catches=total_catches_for_species, total_mythical_catches=total_mythical_catches_for_species, creature_is_locked=creature_is_locked)
+                dex_icon_img = self.build_dex_icon(creature=creature, total_catches=total_catches_for_species_for_environment, total_mythical_catches=total_mythical_catches_for_species, creature_is_locked=creature_is_locked)
                 raw_imgs.append(dex_icon_img)
                 imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
 
@@ -161,9 +162,9 @@ class EncyclopediaImageFactory:
         if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
             creature.set_creature_rarity(MYTHICAL)
         if not self.show_variants:
-            first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no)
+            first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no, is_mythical=self.show_mythics)
             if first_caught_variant != 1:
-                creature.variant_no = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user_id, environment_dex_no=self.environment.dex_no)
+                creature.variant_no = first_caught_variant
                 creature.define_creature_images()
 
         dex_icon = EncyclopediaIconFactory(creature=creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
@@ -217,6 +218,7 @@ class EncyclopediaImageFactory:
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
 
+        total_user_catches = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
         unique_catches_for_user = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
         unique_creatures_available_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
 
@@ -224,7 +226,6 @@ class EncyclopediaImageFactory:
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 
-        total_user_catches = get_tgommo_db_handler().get_total_catches_for_user(user_id=self.target_user_id)
         text = f"{total_user_catches}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
         draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)

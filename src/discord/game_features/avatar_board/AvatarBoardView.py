@@ -10,7 +10,7 @@ from src.discord.game_features.avatar_board.AvatarBoardImageFactory import Avata
 
 
 class AvatarBoardView(discord.ui.View):
-    def __init__(self, message_author, avatar_board_image_factory: AvatarBoardImageFactory, open_tab=AVATAR_QUESTS, original_view=None):
+    def __init__(self, message_author, avatar_board_image_factory: AvatarBoardImageFactory, open_tab=UNLOCKED_AVATARS, original_view=None):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.interaction_lock = asyncio.Lock()

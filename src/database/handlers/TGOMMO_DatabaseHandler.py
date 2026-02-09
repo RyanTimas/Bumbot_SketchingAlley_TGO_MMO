@@ -268,6 +268,18 @@ class TGOMMODatabaseHandler:
     def get_total_mythical_catches_for_server(self):
         return self.get_total_catches_base(is_mythical=True)
 
+    def get_total_catches_for_species_for_environment(self, user_id, creature_dex_no, creature_id, environment_dex_no=0, time_of_day=BOTH, is_mythical=False):
+        query = f"{TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE} true "
+        params = []
+        if environment_dex_no != 0:
+            query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX}"
+            params.append(environment_dex_no)
+        query, additional_params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_dex_no=creature_dex_no, creature_id=creature_id, environment_variant_no=time_of_day, is_mythical=is_mythical)
+        params = params + additional_params
+
+        return self.QueryHandler.execute_query(query, params=params)[0][0]
+
+
     def get_total_catches_for_creature_by_user(self, user_id=0, dex_no=0):
         return self.get_total_catches_base(user_id=user_id, include_variants=False, creature_dex_no=dex_no)
     def get_total_catches_for_creature_variant_by_user(self, user_id=0, creature_id=0):

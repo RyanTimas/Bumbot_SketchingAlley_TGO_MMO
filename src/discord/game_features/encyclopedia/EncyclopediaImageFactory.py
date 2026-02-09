@@ -141,14 +141,13 @@ class EncyclopediaImageFactory:
         for i in range(starting_index, ending_index):
             creature: TGOCreature = self.creatures[i]
 
-            # todo: problem with getting catches specifically for the environment
-            total_catches_for_species_for_environment = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, is_mythical=True)
-            creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_species_for_environment == 0
+            total_catches_for_creature_for_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
+            total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, is_mythical=True)
+            creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_creature_for_environment == 0
 
            # if creature is locked and is transcendant, skip it & don't display the icon
             if not (creature_is_locked and creature.default_rarity.name == TRANSCENDANT.name):
-                dex_icon_img = self.build_dex_icon(creature=creature, total_catches=total_catches_for_species_for_environment, total_mythical_catches=total_mythical_catches_for_species, creature_is_locked=creature_is_locked)
+                dex_icon_img = self.build_dex_icon(creature=creature, total_catches=total_catches_for_creature_for_environment, total_mythical_catches=total_mythical_catches_for_species, creature_is_locked=creature_is_locked)
                 raw_imgs.append(dex_icon_img)
                 imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
 

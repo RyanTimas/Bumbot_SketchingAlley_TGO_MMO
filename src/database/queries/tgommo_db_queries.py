@@ -174,6 +174,8 @@ TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE = '''
         ON uc.creature_id = c.creature_id 
     LEFT JOIN tgommo_environment_creature ec 
         ON uc.creature_id = ec.creature_id
+    LEFT JOIN tgommo_environment e
+        ON uc.environment_id = e.environment_id
     WHERE 
 '''
 # endregion
@@ -280,15 +282,11 @@ TGOMMO_SELECT_POSSIBLE_CATCHES_FOR_ENCYCLOPEDIA_BASE = """
     WHERE true
 """
 
-
-
 '''EVENT QUERIES'''
 TGOMMO_GET_COUNT_FOR_SERVER_CATCHES_FOR_CREATURE_BY_CREATURE_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id = ?;"""
 TGOMMO_GET_TOTAL_CATCHES_BY_USER_ID = """SELECT COUNT(*) FROM tgommo_user_creature WHERE user_id = ?;"""
 
 # endregion
-
-
 
 # region USER QUERIES
 TGOMMO_SELECT_USER_PROFILE_BY_ID = """SELECT player_id, user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount FROM tgommo_user_profile WHERE user_id = ?;"""

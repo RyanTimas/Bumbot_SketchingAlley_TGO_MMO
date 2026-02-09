@@ -49,15 +49,14 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.response.send_message(f"You gotta pick a display index first", ephemeral=True)
             return
 
-        # if creature was already set as display creature, remove it from the display list
-        for index, id in enumerate(self.display_creature_ids):
-            if id == self.creature_catch_id:
-                get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id,creature_id=self.original_display_creature_ids[index], display_index=index)
-
+        self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=interaction.user.id)
         get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=self.creature_catch_id, display_index=self.display_index)
-
         self.display_creature_ids[self.display_index] = self.creature_catch_id
-        await interaction.response.send_message(f"Display index set to: {self.display_index+1}", ephemeral=True)
+
+        self.refresh_view()
+
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send(f"Display index set to: {self.display_index + 1}", ephemeral=True)
 
     def create_release_button(self, row=0):
         if hasattr(self, '_release_confirmed') and self._release_confirmed:
@@ -69,13 +68,9 @@ class CreatureCaughtView(discord.ui.View):
     async def release_button_callback(self, interaction: discord.Interaction):
         # Check if this is the confirmation click
         if hasattr(self, '_release_confirmed') and self._release_confirmed:
-            # Remove from display slots if present
-            for index, id in enumerate(self.display_creature_ids):
-                if id == self.creature_catch_id:
-                    get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=None, display_index=index)
+            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=interaction.user.id)
 
-            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(
-                user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
+            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
             if not currency_earned:
                 await interaction.response.send_message("Failed to release creature", ephemeral=True)
@@ -133,7 +128,7 @@ class CreatureCaughtView(discord.ui.View):
     def create_display_creature_index_dropdown(self, row=1):
         options = []
         for index, display_creature_id in enumerate(self.display_creature_ids):
-            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_creature_id, convert_to_object=True) if display_creature_id and display_creature_id != -1 else None
+            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_creature_id) if display_creature_id and display_creature_id != -1 else None
 
             label = f"{index+1} - [EMPTY]" if creature is None else f"{index+1} - {creature.nickname} ({creature.name})"
             options.append(discord.SelectOption(label=label, value=str(index)))
@@ -159,3 +154,11 @@ class CreatureCaughtView(discord.ui.View):
         self.add_item(self.create_nickname_button(row=1))
         self.add_item(self.create_display_creature_button(row=1))
         self.add_item(self.create_display_creature_index_dropdown(row=2))
+
+    # MISC FUNCTIONS
+    def handle_existing_display_creature_removal(self, creature_id: int, user_id: int):
+        for index, id in enumerate(self.display_creature_ids):
+            if id == creature_id:
+                get_tgommo_db_handler().update_creature_display_index(user_id=user_id, creature_id=-1, display_index=index)
+                self.display_creature_ids[index] = -1
+                return

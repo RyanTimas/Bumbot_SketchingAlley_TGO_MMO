@@ -407,7 +407,8 @@ TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_ITEM_BY_ITEM_ID_SUFFIX = " uil.item_id = 
 # endregion
 
 # region tgommo_collection suffixes
-TGOMMO_SELECT_COLLECTION_BY_COLLECTION_ID_SUFFIX = " collection_id = ?"
+TGOMMO_SELECT_COLLECTION_BY_COLLECTION_ID_SUFFIX = "collection_id = ?"
+TGOMMO_SELECT_COLLECTION_BY_IS_ACTIVE_SUFFIX = "is_active = ?"
 # endregion
 # endregion
 

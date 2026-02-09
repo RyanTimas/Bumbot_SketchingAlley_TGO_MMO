@@ -492,8 +492,12 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region COLLECTION QUERIES
-    def get_active_collections(self, convert_to_object=False):
+    def get_collection_by_collection_id(self, convert_to_object=False):
         query = f"{TGOMMO_SELECT_COLLECTION_BASE} {TGOMMO_SELECT_COLLECTION_BY_COLLECTION_ID_SUFFIX};"
+        return self.get_collections_from_database(query=query, params=(1,), convert_to_object=convert_to_object, expect_multiple=True)
+
+    def get_active_collections(self, convert_to_object=False):
+        query = f"{TGOMMO_SELECT_COLLECTION_BASE} {TGOMMO_SELECT_COLLECTION_BY_IS_ACTIVE_SUFFIX};"
         return self.get_collections_from_database(query=query, params=(1,), convert_to_object=convert_to_object, expect_multiple=True)
 
     # endregion

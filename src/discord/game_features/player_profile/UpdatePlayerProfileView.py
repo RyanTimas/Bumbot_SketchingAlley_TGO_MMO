@@ -7,6 +7,7 @@ from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to
 from src.commons.CommonViewComponents import create_close_button, create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
+from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, PLAYER_PROFILE_TAB_CLOSED
 from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
@@ -43,7 +44,7 @@ class UpdatePlayerProfileView(discord.ui.View):
 
         self.user_creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user_id, )
 
-        self.player_profile_image_factory = player_profile_image_factory
+        self.player_profile_image_factory: PlayerProfileImageFactory = player_profile_image_factory
         self.original_view = original_view
         self.original_message = original_message
 
@@ -166,11 +167,11 @@ class UpdatePlayerProfileView(discord.ui.View):
         creature_slot_5 = int(self.creature_id_5) if self.creature_id_5 != '' else -1
         creature_slot_6 = int(self.creature_id_6) if self.creature_id_6 != '' else -1
 
-        params = (self.display_name, self.current_avatar_id, self.background_id,  creature_slot_1, creature_slot_2, creature_slot_3, creature_slot_4, creature_slot_5, creature_slot_6, self.currency, self.available_catches, self.rod_level, self.rod_amount, self.trap_level, self.trap_amount, self.user_id)
-        get_tgommo_db_handler().update_user_profile(params=params)
+        get_tgommo_db_handler().update_user_profile(params=(self.display_name, self.current_avatar_id, self.background_id,  creature_slot_1, creature_slot_2, creature_slot_3, creature_slot_4, creature_slot_5, creature_slot_6, self.currency, self.available_catches, self.rod_level, self.rod_amount, self.trap_level, self.trap_amount, self.user_id))
+        self.player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.player.user_id)
+        self.player_profile_image_factory.target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.player.user_id)
 
-        self.player_profile_image_factory.load_player_info()
-        new_image = self.player_profile_image_factory.build_player_profile_page_image(tab_is_open=False)
+        new_image = self.player_profile_image_factory.reload_image(open_tab=PLAYER_PROFILE_TAB_CLOSED)
         new_png = convert_to_png(new_image, f'player_profile_page.png')
 
         await self.original_message.edit(attachments=[new_png], view=self.original_view)

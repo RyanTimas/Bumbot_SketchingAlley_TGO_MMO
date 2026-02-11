@@ -398,6 +398,15 @@ class TGOMMODatabaseHandler:
 
     # region ENVIRONMENT QUERIES
     # region SELECT ENVIRONMENT QUERIES
+    def get_environment_by_id(self, environment_id=-1, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_id=environment_id)
+        return self.get_environments_from_database(query=query, params=(environment_id,), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_environments_by_dex_no(self, dex_no=0, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no)
+        return self.get_environments_from_database(query=query, params=(dex_no, ), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_environment_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
+        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no, variant_no=variant_no)
+        return self.get_environments_from_database(query=query, params=(dex_no, variant_no if variant_no != 0 else 1), convert_to_object=convert_to_object, expect_multiple=False)
     # endregion
 
     # region MISC ENVIRONMENT QUERIES
@@ -408,21 +417,6 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=False)
     # endregion
-
-
-
-    def get_environment_by_id(self, environment_id=-1, convert_to_object=True):
-        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_id=environment_id)
-        return self.get_environments_from_database(query=query, params=(environment_id,), convert_to_object=convert_to_object, expect_multiple=False)
-    def get_environments_by_dex_no(self, dex_no=0, convert_to_object=True):
-        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no)
-        return self.get_environments_from_database(query=query, params=(dex_no, ), convert_to_object=convert_to_object, expect_multiple=True)
-    def get_environment_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
-        query, params = self.handle_environment_optional_query_extensions(base_query=f"{TGOMMO_SELECT_ENVIRONMENT_BASE} true ", params=[], environment_dex_no=dex_no, variant_no=variant_no)
-        return self.get_environments_from_database(query=query, params=(dex_no, variant_no if variant_no != 0 else 1), convert_to_object=convert_to_object, expect_multiple=False)
-
-
-
     # endregion
 
     # region PLAYER PROFILE QUERIES
@@ -441,7 +435,6 @@ class TGOMMODatabaseHandler:
             query = f"{TGOMMO_SELECT_USER_PROFILE_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_ID_SUFFIX};"
             users.append(self.get_player_profiles_from_database(query=query, params=(user_id,), convert_to_object=True, expect_multiple=False))
         return users
-
     # endregion
 
     # region AVATAR QUERIES

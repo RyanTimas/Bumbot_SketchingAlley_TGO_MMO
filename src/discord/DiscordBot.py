@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, convert_to_png
+from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
@@ -48,8 +49,8 @@ class DiscordBot(commands.Bot):
             print(f'DiscordBot - Logged in as {self.user.name} ({self.user.id})')
 
             try:
-                synced = await self.tree.sync(guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
-                print(f"Synced {len(synced)} command(s) to guild")
+                set_guild(self)
+                print(f"Synced {len(await self.tree.sync(guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN)))} command(s) to guild")
             except Exception as e:
                 print(f"Failed to sync commands: {e}")
 
@@ -153,14 +154,14 @@ class DiscordBot(commands.Bot):
 
         @self.tree.command(name="open-player_profile-tgommo", description="Opens User's Player Profile.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_player_profile(interaction, user_id: str = None):
-            user_id = int(user_id) if user_id and (user_id.isdigit()) else interaction.user.id
-            target_user = interaction.guild.get_member(interaction.user.id if user_id is None else user_id)
+            user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
 
-            player_profile_image_factory = PlayerProfileImageFactory(user_id=interaction.user.id, target_user=target_user)
-            player_profile_img = player_profile_image_factory.build_player_profile_page_image()
-            view = PlayerProfileView(user=interaction.user, profile_user_id=user_id, player_profile_image_factory=player_profile_image_factory)
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)
 
-            await interaction.response.send_message('', files=[convert_to_png(player_profile_img, f'player_profile.png')], view=view)
+            player_profile_image_factory = PlayerProfileImageFactory(message_author= message_author, target_user=target_user)
+            view = PlayerProfileView(message_author=get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id), target_user=get_tgommo_db_handler().get_user_profile_by_user_id(user_id), player_profile_image_factory=player_profile_image_factory)
+            await interaction.response.send_message('', files=[view.reload_image()], view=view)
 
     def register_tgommo_admin_commands(self):
         @admin_only()

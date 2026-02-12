@@ -4,6 +4,7 @@ import sys
 import aiohttp
 import discord
 from discord.ext import commands
+from pyexpat.errors import messages
 
 from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, convert_to_png
 from src.commons.GuildHandler import set_guild
@@ -112,7 +113,9 @@ class DiscordBot(commands.Bot):
         @self.tree.command(name="tgommo", description="Brings up the master menu for TGOMMO.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_menu(interaction):
             from src.discord.game_features.TGOMMOMenuView import TGOMMOMenuView
-            await interaction.response.send_message(f'{interaction.user.mention} Welcome to the TGO MMO Help Menu!', files=[], view=TGOMMOMenuView(message_author=interaction.user, discord_bot=self))
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+
+            await interaction.response.send_message(f'{interaction.user.mention} Welcome to the TGO MMO Help Menu!', files=[], view=TGOMMOMenuView(message_author=message_author, target_user=message_author, discord_bot=self))
 
         @self.tree.command(name="open-avatar-board-tgommo", description="Opens User's Avatar Quest & Collection Board.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_avatar_board(interaction, user_id: str = None):
@@ -129,7 +132,7 @@ class DiscordBot(commands.Bot):
             target_user = interaction.guild.get_member(int(user_id) if user_id and user_id.isdigit() else interaction.user.id)
 
             creature_inventory_handler = CreatureInventoryImageFactory(user=target_user)
-            view = CreatureInventoryView(message_author=interaction.user, owner_id=target_user.id, creature_inventory_image_factory=creature_inventory_handler)
+            view = CreatureInventoryView(message_author=interaction.user, target_user=target_user.id, creature_inventory_image_factory=creature_inventory_handler)
 
             await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_handler.get_creature_inventory_page_image(), f'avatar_board.png')], view=view)
 
@@ -148,7 +151,7 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
 
             item_inventory_handler = ItemInventoryImageFactory(user=target_user, )
-            view = ItemInventoryView(command_user=target_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
+            view = ItemInventoryView(message_author=target_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
 
             await interaction.response.send_message(files=[convert_to_png(item_inventory_handler.generate_item_inventory_image(), f'avatar_board.png')], view=view)
 

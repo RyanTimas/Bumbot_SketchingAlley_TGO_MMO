@@ -1,29 +1,21 @@
-import asyncio
 import discord
 from discord.ui import Select
-from sqlalchemy import false
 
-from src.commons.CommonFunctions import convert_to_png
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonFunctions import convert_to_png, interaction_guard
+from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView, next_, previous, jump
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
+    EncyclopediaLocationIndexImageFactory
+from src.discord.general.template.BaseView import BaseView
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 
-class EncyclopediaLocationIndexView(discord.ui.View):
-    def __init__(self, message_author, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, target_user=None, original_view=None):
-        super().__init__(timeout=None)
-        self.message_author = message_author
-        self.target_user = target_user if target_user else None
 
-        self.encyclopedia_location_index_image_factory = encyclopedia_location_index_image_factory
-        self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image()
-
-        self.original_view = original_view
-        self.interaction_lock = asyncio.Lock()
-
+class EncyclopediaLocationIndexView(BaseView):
+    def __init__(self, message_author, target_user, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, original_view=None):
+        super().__init__(message_author=message_author, target_user=target_user, image_factory=encyclopedia_location_index_image_factory, original_view=original_view)
         self.new_page = 1
 
         self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation()
@@ -49,94 +41,62 @@ class EncyclopediaLocationIndexView(discord.ui.View):
 
     # CREATE BUTTONS
     def create_view_environment_button(self, row=4):
-        button = discord.ui.Button(
-            label="View Environment Encyclopedia",
-            style=discord.ButtonStyle.green,
-            row=row,
-        )
+        button = discord.ui.Button(label="View Environment Encyclopedia", style=discord.ButtonStyle.green, row=row,)
+
         button.callback = self.view_environment_callback
         return button
-    async def view_environment_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-            return
-
-        async with self.interaction_lock:
-            await interaction.response.defer()
-
-            # Create encyclopedia view for the selected environment
+    def view_environment_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
             encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
-            encyclopedia_view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=self.message_author, original_view=self, original_image_files=[convert_to_png(self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index_page.png')],)
-            await interaction.message.edit(attachments=[convert_to_png(encyclopedia_img_factory.build_encyclopedia_page_image(), f'encyclopedia_page.png')], view=encyclopedia_view)
+            encyclopedia_view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=self.message_author, original_view=self, original_image_files=[self.reload_image()],)
 
+            await interaction.message.edit(attachments=[self.reload_image()], view=encyclopedia_view)
             self.selected_environment = NATIONAL_ENV
+
 
     # CREATE DROPDOWNS
     def create_page_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.encyclopedia_location_index_image_factory.total_pages)]
+        options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.image_factory.total_pages)]
         dropdown = Select(placeholder="Skip to Page", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.page_jump_callback
+
+        dropdown.callback = self.page_jump_callback()
         return dropdown
-    async def page_jump_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-            return
-
-        async with self.interaction_lock:
-            await interaction.response.defer()
-
+    async def page_jump_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
             self.new_page = int(interaction.data["values"][0])
-            new_image = self.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=self.new_page)
-            self.update_button_states()
 
-            await interaction.message.edit(attachments=[convert_to_png(new_image, f'encyclopedia_page.png')], view=self)
+            self.update_button_states()
+            await interaction.message.edit(attachments=[self.reload_image()], view=self)
 
     def create_environments_dropdown(self, row=0):
         options = [
-            discord.SelectOption(
-                label=env.name,  # name
-                value=str(env.environment_id),
-                description=env.location
-            )
+            discord.SelectOption(label=env.name,  value=str(env.environment_id), description=env.location)
             for env in self.selectable_environments[:25]  # Discord limit of 25 options
         ]
+        dropdown = Select(placeholder=self.selectable_environments[0].name, options=options, min_values=0, max_values=1, row=row,)
 
-        dropdown = Select(
-            placeholder=self.selectable_environments[0].name if self.selectable_environments else "No Environments Available",
-            options=options,
-            min_values=0,
-            max_values=1,
-            row=row,
-        )
         dropdown.callback = self.environments_dropdown_callback
         return dropdown
-    async def environments_dropdown_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-            return
-
-        async with self.interaction_lock:
-            await interaction.response.defer()
-
+    async def environments_dropdown_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
             environment_id = int(interaction.data["values"][0]) if interaction.data["values"] else None
             self.selected_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id) if environment_id > 0 else NATIONAL_ENV
 
 
     # FUNCTIONS FOR UPDATING VIEW STATE
-    def refresh_view(self):
-        self.update_button_states()
-        self.rebuild_view()
     def update_button_states(self):
         # Update navigation buttons
-        current_page = self.encyclopedia_location_index_image_factory.page_num
-        total_pages = self.encyclopedia_location_index_image_factory.total_pages
+        self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.image_factory.total_pages + 1)]
+        self.page_jump_dropdown.placeholder = f"Page {self.image_factory.page_num}"
+        self.page_jump_dropdown.disabled = self.image_factory.total_pages == 1
 
-        self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, total_pages + 1)]
-        self.page_jump_dropdown.placeholder = f"Page {current_page}"
-        self.page_jump_dropdown.disabled = total_pages == 1
-
-        self.prev_button.disabled = current_page == 1
-        self.next_button.disabled = current_page == total_pages
+        self.prev_button.disabled = self.image_factory.page_num == 1
+        self.next_button.disabled = self.image_factory.page_num == self.image_factory.total_pages
     def rebuild_view(self):
-        for item in self.children.copy():
-            self.remove_item(item)
+        self.clear_items()
 
         # Add buttons to view
         if len(self.selectable_environments) > 8:
@@ -151,3 +111,7 @@ class EncyclopediaLocationIndexView(discord.ui.View):
         self.add_item(self.close_button)
         if self.original_view is not None:
             self.add_item(self.go_back_button)
+
+    def reload_image(self):
+        new_image = self.image_factory.build_encyclopedia_location_index_page_image(new_page_number=self.new_page)
+        return convert_to_png(new_image, 'encyclopedia_location_index_image.png')

@@ -111,10 +111,18 @@ PLAYER_PROFILE_CREATURE_COORDINATES = [
     (426, 580), (852, 580)      # front row
 ]
 
-'''CREATURE BOXES'''
-ALPHABETICAL_ORDER = 'alphabetical'
-DEX_NO_ORDER = 'dex_no'
-CAUGHT_DATE_ORDER = 'caught_date'
+""" ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+CREATURE_INVENTORY_FILTER_EXPANSION_KEY = "filter_expansion"
+CREATURE_INVENTORY_ORDER_EXPANSION_KEY = "order_expansion"
+CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY = "creature_management"
+
+CREATURE_INVENTORY_FILTER_MYTHIC = "mythic_only"
+CREATURE_FAVORITE_FILTER_MYTHIC = "favorite_only"
+CREATURE_NICKNAME_FILTER_MYTHIC = "nickname_only"
+
+CREATURE_NICKNAME_SORT_ALPHABETICAL = 'alphabetical'
+CREATURE_NICKNAME_SORT_DEX_NO = 'dex_no'
+CREATURE_NICKNAME_SORT_CAUGHT_DATE = 'caught_date'
 
 CREATURE_INVENTORY_MODE_RELEASE = "Release"
 CREATURE_INVENTORY_MODE_FAVORITE = "Favorite"

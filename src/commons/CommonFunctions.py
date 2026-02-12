@@ -401,7 +401,7 @@ def admin_only():
         return True
     return app_commands.check(predicate)
 
-def interaction_guard(max_retries=3, delay=1, self=None):
+def interaction_guard(self=None, max_retries=3, delay=1):
     def decorator(func):
         async def wrapper(interaction):
             if not self:

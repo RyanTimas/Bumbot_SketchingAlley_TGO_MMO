@@ -77,13 +77,10 @@ class PlayerProfileView(BaseView):
         button.callback = self.update_player_profile_callback()
         return button
     def update_player_profile_callback(self):
-        @retry_on_ssl_error()
-        @interaction_guard(self=self)
+        @interaction_guard(self)
         async def callback(interaction):
-            view = UpdatePlayerProfileView(interaction=interaction, user_id=self.message_author.user_id, player=self.target_user, player_profile_image_factory=self.image_factory, original_view=self, original_message=interaction.message)
-            # todo: add a mention to the user when they click the button, but only if they aren't already mentioned in the message (to avoid spam if they click multiple times)
-            # await interaction.followup.send(f"{self.user.mention} Welcome to the Player Profile Editor!*", ephemeral=False, view=UpdatePlayerProfileView(interaction=interaction, user_id=self.user_id, player=self.player, player_profile_image_factory=self.player_profile_image_factory, original_view=self, original_message=interaction.message))
-            await interaction.followup.send(f"{self.target_user.nickname} Welcome to the Player Profile Editor!*", view=view, ephemeral=False)
+            update_player_profile_view = UpdatePlayerProfileView(message_author=self.message_author, player_profile_image_factory=self.image_factory, interaction=interaction, original_view=self, original_message=interaction.message)
+            await interaction.followup.send(f"{self.target_user.discord_profile.mention} Welcome to the Player Profile Editor!*", view=update_player_profile_view, ephemeral=False)
         return callback
 
     def create_alert_center_button(self, row=0):
@@ -91,17 +88,14 @@ class PlayerProfileView(BaseView):
         button.callback = self.alert_center_callback()
         return button
     def alert_center_callback(self):
-        @retry_on_ssl_error()
-        @interaction_guard(self=self)
+        @interaction_guard(self)
         async def callback(interaction):
-            # todo: update this so we send the whole
-            alert_center_view = AlertCenterView(target_user=self.target_user, original_view=self)
-            await interaction.followup.send(f"{self.target_user.nickname} Welcome to the Alert Center!", ephemeral=False, view=alert_center_view)
+            alert_center_view = AlertCenterView(target_user=self.target_user)
+            await interaction.followup.send(f"{self.target_user.discord_profile.mention} Welcome to the Alert Center!", ephemeral=False, view=alert_center_view)
         return callback
 
+
     # SUPPORT FUNCTIONS
-
-
     def update_view_items(self):
         self.panel_toggle_button.label = "Close Panel" if self.tab_is_open else "Open Panel"
         self.panel_toggle_button.emoji = "➡️" if self.tab_is_open else "⬅️"
@@ -136,8 +130,7 @@ class PlayerProfileView(BaseView):
         if self.original_view:
             self.add_item(self.go_back_button)
 
-
     def reload_image(self):
         new_image = self.image_factory.reload_image(open_tab=self.open_tab if self.tab_is_open else PLAYER_PROFILE_TAB_CLOSED)
-        return convert_to_png(new_image, 'player_profile.png')
+        return convert_to_png(new_image, 'player_profile_image.png')
 

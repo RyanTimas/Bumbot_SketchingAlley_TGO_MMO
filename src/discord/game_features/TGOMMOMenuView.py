@@ -3,7 +3,7 @@ import asyncio
 import discord
 from PIL import Image
 
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
 from src.commons.CommonViewComponents import create_close_button, create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -16,41 +16,31 @@ from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationI
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
-from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, TEAM
+from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, PLAYER_PROFILE_TAB_OPEN_TEAM
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
+from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.file_paths import *
 
+server_encyclopedia_button_name = "server_encyclopedia"
+user_encyclopedia_button_name = "user_encyclopedia"
 
-class TGOMMOMenuView(discord.ui.View):
-    def __init__(self, message_author, discord_bot: DiscordBot):
-        super().__init__(timeout=None)
-
-        self.message_author = message_author
+class TGOMMOMenuView(BaseView):
+    def __init__(self, message_author, target_user, discord_bot: DiscordBot):
+        super().__init__(message_author=message_author, target_user=target_user)
         self.discord_bot = discord_bot
 
-        # Add a lock to prevent concurrent button interactions
-        self.interaction_lock = asyncio.Lock()
-
-        # Initialize button names
-        server_encyclopedia_button_name = "server_encyclopedia"
-        user_encyclopedia_button_name = "user_encyclopedia"
-
-        # Add a button to open input modal
-
         # Initialize view buttons
-        self.help_button = self.create_help_button()
         self.welcome_button = self.create_welcome_button()
+        self.help_button = self.create_help_button()
 
+        self.dummy_encyclopedia_label_button = create_dummy_label_button(label_text="Encyclopedia Page: ", row=1)
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
 
-        self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=TEAM, row=2)
+        self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM, row=2)
         self.avatar_board_button = self.create_avatar_board_button(row=2)
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
         self.item_inventory_button = self.create_item_inventory_button(row=2)
-
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=3)
 
         # Update button states
         self.refresh_view()
@@ -58,281 +48,101 @@ class TGOMMOMenuView(discord.ui.View):
     # CREATE BUTTONS
     # Open Screen Buttons
     def create_encyclopedia_button(self, button_type, row=1):
-        labels = {
-            "user_encyclopedia": "User",
-            "server_encyclopedia": "Server",
+        button_data = {
+            user_encyclopedia_button_name: ["User", discord.ButtonStyle.blurple, None],
+            server_encyclopedia_button_name: ["Server", discord.ButtonStyle.blurple, None],
         }
-        styles = {
-            "user_encyclopedia": discord.ButtonStyle.blurple,
-            "server_encyclopedia": discord.ButtonStyle.blurple,
-        }
-        emojis = {
-            "user_encyclopedia": None,
-            "server_encyclopedia": None
-        }
-
-
-        button = discord.ui.Button(
-            label=labels[button_type],
-            style=styles[button_type],
-            emoji=emojis[button_type],
-            row=row
-        )
-        button.callback = self.encyclopedia_callback(button_type=button_type, is_verbose=False, show_variants=False, show_mythics=False)
+        label, style, emojii = button_data[button_type]
+        button = discord.ui.Button(label=label, style=style, emoji=emojii, row=row, custom_id=f"encyclopedia_{button_type}")
+        button.callback = self.encyclopedia_callback(button_type=button_type)
         return button
-    def encyclopedia_callback(self, button_type, is_verbose=False, show_variants=False, show_mythics=False):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+    def encyclopedia_callback(self, button_type):
+        @interaction_guard(self)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(user=self.message_author if button_type == "user_encyclopedia" else None, )
+            view = EncyclopediaLocationIndexView(message_author=self.message_author, target_user=self.message_author if button_type == "user_encyclopedia" else None, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, original_view=self)
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                # encyclopedia_img_factory = EncyclopediaImageFactory(
-                #     user=self.message_author,
-                #     environment=self.discord_bot.creature_spawner_handler.current_environment,
-                #     verbose=is_verbose,
-                #     is_server_page=button_type == "server_encyclopedia",
-                #     show_variants=show_variants,
-                #     show_mythics=show_mythics
-                # )
-                #
-                # view = EncyclopediaView(
-                #     encyclopedia_image_factory=encyclopedia_img_factory,
-                #     is_verbose=is_verbose,
-                #     show_variants=show_variants,
-                #     show_mythics=show_mythics,
-                #     message_author=self.message_author,
-                #     original_view=self
-                # )
-
-                encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(
-                    user=self.message_author if button_type == "user_encyclopedia" else None,
-                )
-
-                view = EncyclopediaLocationIndexView(
-                    message_author= self.message_author,
-                    target_user= self.message_author if button_type == "user_encyclopedia" else None,
-                    encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory,
-                    original_view=self
-                )
-
-                new_encyclopedia_location_index_page = encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image()
-                file = convert_to_png(new_encyclopedia_location_index_page, f'encyclopedia_location_index_page.png')
-
-                # Update button states
-                view.update_button_states()
-
-                # Send updated view
-                await interaction.message.edit(attachments=[file], view=view)
-
+            # view.update_button_states()
+            await interaction.message.edit(attachments=[convert_to_png(encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index_page.png')], view=view)
         return callback
 
-    def create_player_profile_button(self, tab_is_open=False, open_tab=TEAM, row=1):
-        button = discord.ui.Button(
-            label="Player Profile",
-            style=discord.ButtonStyle.blurple,
-            row=row
-        )
+    def create_player_profile_button(self, tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM, row=1):
+        button = discord.ui.Button(label="Player Profile", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.player_profile_callback(tab_is_open=tab_is_open, open_tab=open_tab)
         return button
-    def player_profile_callback(self, tab_is_open=False, open_tab=TEAM):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+    def player_profile_callback(self, tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM):
+        @interaction_guard(self)
         async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction=interaction, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id):
-                return
+            player_profile_img_factory = PlayerProfileImageFactory(message_author=self.message_author, target_user=self.target_user)
+            view = PlayerProfileView(message_author=self.message_author, target_user=self.message_author, player_profile_image_factory=player_profile_img_factory, tab_is_open=tab_is_open, open_tab=open_tab, original_view=self)
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                player_profile_img_factory = PlayerProfileImageFactory(
-                    user_id=self.message_author.id,
-                    target_user=self.message_author,
-                    tab_is_open=tab_is_open,
-                    open_tab=open_tab
-                )
-
-                view = PlayerProfileView(
-                    user=self.message_author,
-                    player_profile_image_factory=player_profile_img_factory,
-                    tab_is_open=tab_is_open,
-                    open_tab=open_tab,
-                    original_view=self
-                )
-
-                new_encyclopedia_page = player_profile_img_factory.build_player_profile_page_image(open_tab=TEAM)
-                file = convert_to_png(new_encyclopedia_page, f'encyclopedia_page.png')
-
-                # Send updated view
-                await interaction.message.edit(attachments=[file], view=view)
-
+            await interaction.message.edit(attachments=[view.reload_image()], view=view)
         return callback
 
     def create_avatar_board_button(self, row=1):
-        button = discord.ui.Button(
-            label="Open Avatar Board",
-            style=discord.ButtonStyle.red,
-            row=row
-        )
-        button.callback = self.display_avatar_board_callback()  # Add parentheses to call the function
+        button = discord.ui.Button(label="Open Avatar Board", style=discord.ButtonStyle.red, row=row)
+        button.callback = self.display_avatar_board_callback()
         return button
     def display_avatar_board_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+        @interaction_guard(self)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+            avatar_board_img_factory = AvatarBoardImageFactory(user_id=self.message_author.user_id, open_tab=AVATAR_QUESTS, )
+            avatar_board_view = AvatarBoardView(message_author=self.message_author, target_user=self.target_user, avatar_board_image_factory=avatar_board_img_factory, original_view=self, open_tab=avatar_board_img_factory.open_tab, )
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                avatar_board_img_factory = AvatarBoardImageFactory(
-                    user_id=self.message_author.id,
-                    open_tab= AVATAR_QUESTS,
-                )
-
-                avatar_board_view = AvatarBoardView(
-                    message_author=self.message_author,
-                    avatar_board_image_factory=avatar_board_img_factory,
-                    open_tab=avatar_board_img_factory.open_tab,
-                    original_view=self
-                )
-
-                new_avatar_board_img = avatar_board_img_factory.build_avatar_board_page_image()
-                file = convert_to_png(new_avatar_board_img, f'avatar_board.png')
-
-                # Send updated view
-                await interaction.message.edit(attachments=[file], view=avatar_board_view)
+            await interaction.message.edit(attachments=[convert_to_png(avatar_board_img_factory.build_avatar_board_page_image(), f'avatar_board.png')], view=avatar_board_view)
         return callback
 
     def create_creature_inventory_button(self, row=1):
-        button = discord.ui.Button(
-            label="Open Creature Inventory",
-            style=discord.ButtonStyle.blurple,
-            row=row
-        )
+        button = discord.ui.Button(label="Open Creature Inventory", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.creature_inventory_callback()  # Add parentheses to call the function
         return button
     def creature_inventory_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+        @interaction_guard(self)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+            creature_inventory_img_factory = CreatureInventoryImageFactory(user=self.message_author,)
+            creature_inventory_view = CreatureInventoryView(message_author=self.message_author, target_user=self.target_user, creature_inventory_image_factory=creature_inventory_img_factory, original_view=self)
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
+            await interaction.message.edit(attachments=[convert_to_png(creature_inventory_img_factory.get_creature_inventory_page_image(), f'creature_inventory_img.png')], view=creature_inventory_view)
 
-                creature_inventory_img_factory = CreatureInventoryImageFactory(
-                    user=self.message_author,
-                )
-
-                creature_inventory_view = CreatureInventoryView(
-                    message_author=self.message_author,
-                    owner_id=self.message_author.id,
-                    creature_inventory_image_factory=creature_inventory_img_factory,
-                    original_view=self
-                )
-
-                creature_inventory_img = creature_inventory_img_factory.get_creature_inventory_page_image()
-                file = convert_to_png(creature_inventory_img, f'creature_inventory_img.png')
-
-                # Send updated view
-                await interaction.message.edit(attachments=[file], view=creature_inventory_view)
         return callback
 
     def create_item_inventory_button(self, row=1):
-        button = discord.ui.Button(
-            label="Open Item Inventory",
-            style=discord.ButtonStyle.green,
-            row=row
-        )
-        button.callback = self.item_inventory_callback()  # Add parentheses to call the function
+        button = discord.ui.Button(label="Open Item Inventory", style=discord.ButtonStyle.green, row=row)
+        button.callback = self.item_inventory_callback()
         return button
     def item_inventory_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+        @interaction_guard(self)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+            item_inventory_img_factory = ItemInventoryImageFactory(user=self.target_user)
+            item_inventory_view = ItemInventoryView(message_author=self.message_author, target_user=self.target_user, item_inventory_image_factory=item_inventory_img_factory, original_message=interaction.message, original_view=self, discord_bot=self.discord_bot)
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.message_author.id)
-                item_inventory_img_factory = ItemInventoryImageFactory(user=user,)
-
-                item_inventory_view = ItemInventoryView(
-                    command_user=user,
-                    target_user=user,
-                    item_inventory_image_factory=item_inventory_img_factory,
-                    original_message=interaction.message,
-                    original_view=self,
-                    discord_bot=self.discord_bot
-                )
-
-                item_inventory_img = item_inventory_img_factory.generate_item_inventory_image()
-                file = convert_to_png(item_inventory_img, f'item_inventory_img.png')
-
-                # Send updated view
-                await interaction.message.edit(attachments=[file], view=item_inventory_view)
+            await interaction.message.edit(attachments=[convert_to_png(item_inventory_img_factory.generate_item_inventory_image(), f'item_inventory_img.png')], view=item_inventory_view)
         return callback
 
 
     def create_welcome_button(self):
-        button = discord.ui.Button(
-            label="What is TGO MMO?",
-            style=discord.ButtonStyle.green,
-            row=0
-        )
+        button = discord.ui.Button(label="What is TGO MMO?", style=discord.ButtonStyle.green, row=0)
         button.callback = self.welcome_callback()
         return button
     def welcome_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
             # Acquire lock to prevent concurrent actions
             async with self.interaction_lock:
                 await interaction.response.defer()
-
-                welcome_img_1 = Image.open(HELP_IMAGE_WELCOME_CARD_INTRO)
-                welcome_img_2 = Image.open(HELP_IMAGE_WELCOME_CARD_HOW_TO_PLAY)
-                welcome_img_3 = Image.open(HELP_IMAGE_WELCOME_CARD_RARITY_SYSTEM)
-                welcome_img_4 = Image.open(HELP_IMAGE_WELCOME_CARD_FUTURE_UPDATES)
-
-                # Send help images
-                await interaction.followup.send(files=[convert_to_png(welcome_img_1, f'welcome_img_1.png')], ephemeral=True)
-                await interaction.followup.send(files=[convert_to_png(welcome_img_2, f'welcome_img_2.png')], ephemeral=True)
-                await interaction.followup.send(files=[convert_to_png(welcome_img_3, f'welcome_img_3.png')], ephemeral=True)
-                await interaction.followup.send(files=[convert_to_png(welcome_img_4, f'welcome_img_4.png')], ephemeral=True)
-
+                await interaction.followup.send(files=[convert_to_png(Image.open(HELP_IMAGE_WELCOME_CARD_INTRO), f'welcome_img_1.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(Image.open(HELP_IMAGE_WELCOME_CARD_HOW_TO_PLAY), f'welcome_img_2.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(Image.open(HELP_IMAGE_WELCOME_CARD_RARITY_SYSTEM), f'welcome_img_3.png')], ephemeral=True)
+                await interaction.followup.send(files=[convert_to_png(Image.open(HELP_IMAGE_WELCOME_CARD_FUTURE_UPDATES), f'welcome_img_4.png')], ephemeral=True)
         return callback
 
     def create_help_button(self):
-        button = discord.ui.Button(
-            label="Help & Commands",
-            style=discord.ButtonStyle.green,
-            row=0
-        )
+        button = discord.ui.Button(label="Help & Commands", style=discord.ButtonStyle.green, row=0)
         button.callback = self.help_callback()
         return button
     def help_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
-
             # Acquire lock to prevent concurrent actions
             async with self.interaction_lock:
                 await interaction.response.defer()
@@ -361,11 +171,13 @@ class TGOMMOMenuView(discord.ui.View):
     def update_button_states(self):
         return
     def rebuild_view(self):
+        super().rebuild_view()
+        
         # Create view layout
         self.add_item(self.welcome_button)
         # self.add_item(self.help_button)
 
-        self.add_item(create_dummy_label_button(label_text="Encyclopedia Page: ", row=1))
+        self.add_item(self.dummy_encyclopedia_label_button)
         self.add_item(self.open_user_encyclopedia_button)
         self.add_item(self.open_server_encyclopedia_button)
 
@@ -373,6 +185,4 @@ class TGOMMOMenuView(discord.ui.View):
         self.add_item(self.avatar_board_button)
         self.add_item(self.creature_inventory_button)
         self.add_item(self.item_inventory_button)
-
-        self.add_item(self.close_button)
 

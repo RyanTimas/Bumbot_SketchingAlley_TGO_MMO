@@ -268,7 +268,7 @@ class TGOMMODatabaseHandler:
     def get_total_mythical_catches_for_server(self):
         return self.get_total_catches_base(is_mythical=True)
 
-    def get_total_catches_for_species_for_environment(self, user_id, creature_dex_no, creature_id, environment_dex_no=0, time_of_day=BOTH, is_mythical=False):
+    def get_total_catches_for_species_for_environment(self, user_id=0, creature_dex_no=0, creature_id=0, environment_dex_no=0, time_of_day=BOTH, is_mythical=False):
         query = f"{TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE} true "
         params = []
         if environment_dex_no != 0:

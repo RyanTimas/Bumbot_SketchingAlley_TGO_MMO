@@ -1,5 +1,6 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
+from sqlalchemy.testing.plugin.plugin_base import options
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
     check_if_user_can_interact_with_view, interaction_guard
@@ -19,7 +20,6 @@ class UpdatePlayerProfileView(BaseView):
         # LOAD VARIABLES
         self.interaction = interaction
         self.original_message = original_message
-
         self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.message_author.user_id)
 
         self.avatar_page_capacity = 25
@@ -44,8 +44,21 @@ class UpdatePlayerProfileView(BaseView):
         self.previous_avatars_button = self.create_avatar_dropdown_navigation_button(is_next=False, row=0)
         self.placeholder_avatar_options_button = create_dummy_label_button(label_text=f"-----Avatars-----", row=0)
 
-        self.update_profile_button_1 = self.create_update_profile_button(page=1, row=2)
-        self.update_profile_button_2 = self.create_update_profile_button(page=2,row=2)
+        self.profile_inputs_page_1 = [
+            ("DisplayName", "DisplayName", "new_nickname"),
+            ("Display Creature 2", "Display Creature 2", "new_creature_slot_id_2"),
+            ("Display Creature 3", "Display Creature 3", "new_creature_slot_id_3"),
+            ("Display Creature 1", "Display Creature 1", "new_creature_slot_id_1"),
+        ]
+
+        self.profile_inputs_page_2 = [
+            ("Display Creature 4", "Display Creature 4", "new_creature_slot_id_4"),
+            ("Display Creature 5", "Display Creature 5", "new_creature_slot_id_5"),
+            ("Display Creature 6", "Display Creature 6", "new_creature_slot_id_6"),
+        ]
+
+        self.update_profile_button_1 = self.create_update_profile_button(page=1, input_configs=self.profile_inputs_page_1, row=2)
+        self.update_profile_button_2 = self.create_update_profile_button(page=2, input_configs=self.profile_inputs_page_2, row=2)
 
         self.display_creatures_button = self.display_creature_collection_button(row=3)
 
@@ -57,8 +70,7 @@ class UpdatePlayerProfileView(BaseView):
         background_picker_dropdown = self.create_background_picker_dropdown(row=2)
 
         # ADD COMPONENTS TO VIEW
-        self.rebuild_view()
-
+        self.refresh_view()
 
     # CREATE BUTTONS
     def create_avatar_dropdown_navigation_button(self, is_next, row=0):
@@ -73,35 +85,30 @@ class UpdatePlayerProfileView(BaseView):
             await interaction.message.edit(view=self)
         return callback
 
-    def create_update_profile_button(self, page, row=0):
+    def create_update_profile_button(self, page, input_configs, row=0):
         button = Button(label=f"Change Profile - {page}", style=discord.ButtonStyle.blurple, row=row)
-        button.callback = self.update_profile_button_callback_page_1 if page == 1 else self.update_profile_button_callback_page_2
+        button.callback = self.update_profile_button_callback(input_configs)
         return button
-
-    def update_profile_button_callback_page_1(self):
-        @interaction_guard(self)
+    def update_profile_button_callback(self, input_configs):
+        @interaction_guard(self, defer_response=False)
         async def callback(interaction):
-            display_name_input = TextInput(label="DisplayName", default=f"{self.new_nickname}", placeholder="Set your display name", max_length=20, required=False)
-            display_creature_1_input = TextInput(label="Display Creature 1", default=f"{self.new_creature_slot_id_1 if self.new_creature_slot_id_1 != -1 else ''}", placeholder="Set creature ID for slot 1 (use 'See Creature Storage' to view options)", max_length=20, required=False)
-            display_creature_2_input = TextInput(label="Display Creature 2", default=f"{self.new_creature_slot_id_2 if self.new_creature_slot_id_2 != -1 else ''}", placeholder="Set creature ID for slot 2 (use 'See Creature Storage' to view options)", max_length=20, required=False)
-            display_creature_3_input = TextInput(label="Display Creature 3", default=f"{self.new_creature_slot_id_3 if self.new_creature_slot_id_3 != -1 else ''}",placeholder="Set creature ID for slot 3 (use 'See Creature Storage' to view options)", max_length=20, required=False)
-            await interaction.response.send_modal(self.create_user_details_modal(options=(display_name_input, display_creature_1_input, display_creature_2_input, display_creature_3_input)))
-        return callback
+            items = []
+            for config in input_configs:
+                label, custom_id, attr_name = config
+                current_value = getattr(self, attr_name)
+                display_value = current_value if current_value != -1 else ''
 
-    def update_profile_button_callback_page_2(self):
-        @interaction_guard(self)
-        async def callback(interaction):
-            display_creature_4_input = TextInput(label="Display Creature 4", default=f"{self.new_creature_slot_id_4 if self.new_creature_slot_id_4 != -1 else ''}",placeholder="Set creature ID for slot 4 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-            display_creature_5_input = TextInput(label="Display Creature 5", default=f"{self.new_creature_slot_id_5 if self.new_creature_slot_id_5 != -1 else ''}",placeholder="Set creature ID for slot 5 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-            display_creature_6_input = TextInput(label="Display Creature 6", default=f"{self.new_creature_slot_id_6 if self.new_creature_slot_id_6 != -1 else ''}",placeholder="Set creature ID for slot 6 (use 'See Creature Storage' to view options)",max_length=20, required=False)
-            await interaction.response.send_modal(self.create_user_details_modal(options=(display_creature_4_input, display_creature_5_input, display_creature_6_input)))
+                text_input = TextInput(label=label, custom_id=custom_id, default=str(display_value), placeholder=f"Set {label.lower()}", max_length=20, required=False)
+                items.append(text_input)
+
+            await interaction.response.send_modal(self.create_user_details_modal(items=items))
         return callback
 
     def create_save_changes_button(self, row=0):
         button = Button(label="Save Changes", style=discord.ButtonStyle.green, row=row)
-        button.callback = self.save_changes_button_callback
+        button.callback = self.save_changes_button_callback()
         return button
-    def save_changes_button_callback(self,):
+    def save_changes_button_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
             await self.handle_invalid_creature_ids(interaction)
@@ -119,74 +126,81 @@ class UpdatePlayerProfileView(BaseView):
             self.image_factory.target_user = updated_user
 
             await self.original_message.edit(attachments=[self.reload_image()], view=self.original_view)
-            await interaction.response.send_message("Changes successfully saved!", ephemeral=True)
+            await interaction.followup.send("Changes successfully saved!", ephemeral=True)
 
             await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction).check_avatar_unlock_conditions()
             await interaction.message.delete(delay=2)
-
+        return callback
 
     def display_creature_collection_button(self, row=0):
         button = Button(label="See Creature Storage", style=discord.ButtonStyle.red, row=row)
-        button.callback = self.display_creature_collection_callback
+        button.callback = self.display_creature_collection_callback()
         return button
     def display_creature_collection_callback(self,):
         @interaction_guard(self)
         async def callback(interaction):
             await self.build_user_creature_collection(interaction)
+        return callback
 
 
     # CREATE MODALS
-    def create_user_details_modal(self, options):
+    def create_user_details_modal(self, items):
         user_details_modal = Modal(title="Update Profile Details")
-        for option in options:
-            user_details_modal.add_item(option)
-        user_details_modal.on_submit = self.user_details_modal_on_submit
+        for item in items:
+            user_details_modal.add_item(item)
+        user_details_modal.on_submit = self.user_details_modal_on_submit()
         return user_details_modal
     def user_details_modal_on_submit(self,):
         @interaction_guard(self)
         async def callback(interaction):
+            # Mapping of custom_id to attribute name
+            field_mapping = {
+                'DisplayName': 'new_nickname',
+                'Display Creature 1': 'new_creature_slot_id_1',
+                'Display Creature 2': 'new_creature_slot_id_2',
+                'Display Creature 3': 'new_creature_slot_id_3',
+                'Display Creature 4': 'new_creature_slot_id_4',
+                'Display Creature 5': 'new_creature_slot_id_5',
+                'Display Creature 6': 'new_creature_slot_id_6',
+            }
+
             for component_row in interaction.data.get('components', []):
                 for component in component_row.get('components', []):
-                    field_label = component.get('custom_id', '')
-                    field_value = component.get('value', '')
+                    custom_id = component.get('custom_id', '')
+                    field_value = component.get('value', '').strip()
 
-                    if 'DisplayName' in field_label and field_value.strip() != '':
-                        self.target_user.nickname = field_value.strip()
-                    elif 'Display Creature 1' in field_label:
-                        self.target_user.creature_slot_id_1 = field_value.strip() if field_value.strip() else ''
-                    elif 'Display Creature 2' in field_label:
-                        self.target_user.creature_slot_id_1 = field_value.strip() if field_value.strip() else ''
-                    elif 'Display Creature 3' in field_label:
-                        self.target_user.creature_slot_id_3 = field_value.strip() if field_value.strip() else ''
-                    elif 'Display Creature 4' in field_label:
-                        self.target_user.creature_slot_id_4 = field_value.strip() if field_value.strip() else ''
-                    elif 'Display Creature 5' in field_label:
-                        self.target_user.creature_slot_id_5 = field_value.strip() if field_value.strip() else ''
-                    elif 'Display Creature 6' in field_label:
-                        self.target_user.creature_slot_id_6 = field_value.strip() if field_value.strip() else ''
-            await interaction.response.send_message(f"Successfully modified player info - Remember to save your changes!", ephemeral=True)
+                    if custom_id in field_mapping:
+                        if custom_id == 'DisplayName' and field_value:
+                            setattr(self, field_mapping[custom_id], field_value)
+                        elif custom_id != 'DisplayName':
+                            setattr(self, field_mapping[custom_id], field_value if field_value else '')
+
+            await interaction.followup.send(f"Successfully modified player info - Remember to save your changes!", ephemeral=True)
+            self.refresh_view()
+        return callback
 
     # CREATE DROPDOWNS
     def create_avatar_picker_dropdown(self, row=1):
         dropdown = Select(placeholder="Choose Avatar", options=self.get_avatar_dropdown_options(), min_values=1, max_values=1, row=row)
-        dropdown.callback = self.avatar_dropdown_callback
+        dropdown.callback = self.avatar_dropdown_callback()
         return dropdown
-    def avatar_dropdown_callback(self,):
+    def avatar_dropdown_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
             self.new_avatar_id = interaction.data["values"][0]
+        return callback
 
     def create_background_picker_dropdown(self, row=1):
         options = [discord.SelectOption(label=f"Background {i}", value=str(i)) for i in range(1, 2)]
         dropdown = Select(placeholder="Choose Background Style", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.avatar_dropdown_callback
+        dropdown.callback = self.avatar_dropdown_callback()
         return dropdown
-    @retry_on_ssl_error(max_retries=3, delay=1)
+    @retry_on_ssl_error()
     def background_dropdown_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            # Access the selected value from the interaction
             self.new_background_id = int(interaction.data["values"][0])
+        return callback
 
 
     # SUPPORT FUNCTIONS
@@ -216,7 +230,7 @@ class UpdatePlayerProfileView(BaseView):
 
         # Send the first page as the response
         text = f"\n# {self.target_user.nickname}'s Creature Collection (1/{len(pages)}):\n{pages[0]}"
-        await interaction.response.send_message(text, ephemeral=True)
+        await interaction.followup.send(text, ephemeral=True)
 
         # create page images for user to see
         for page_index, page in enumerate(pages):

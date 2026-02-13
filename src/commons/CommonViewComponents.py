@@ -86,7 +86,7 @@ def create_generic_nav_callback(view_instance, is_next):
                 current_box = view_instance.creature_inventory_image_factory.current_box_num
                 new_box = current_box + 1 if is_next else current_box - 1
 
-                if is_next and new_box > view_instance.max_boxes and view_instance.author_matches_owner:
+                if is_next and new_box > view_instance.max_boxes:
                     await interaction.followup.send_modal(view_instance.create_inventory_expansion_confirmation_modal())
                     return
 

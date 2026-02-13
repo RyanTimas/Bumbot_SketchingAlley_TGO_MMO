@@ -71,7 +71,7 @@ class PlayerProfileImageFactory(BaseImageFactory):
         text_img = Image.new('RGBA', (text_width + 8, text_height + 8), (0, 0, 0, 0))
         x_offset, y_offset = 11, 10
         border_size = 4
-        username_font_image = add_border_to_image(base_image=text_img, text=self.message_author.nickname, font=font, border_size=border_size, border_color=(0, 104, 145), font_color=FONT_COLOR_WHITE)
+        username_font_image = add_border_to_image(base_image=text_img, text=self.target_user.nickname, font=font, border_size=border_size, border_color=(0, 104, 145), font_color=FONT_COLOR_WHITE)
 
         # Paste the text image onto the profile image
         player_profile_img.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)

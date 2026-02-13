@@ -16,7 +16,7 @@ class CreatureInventoryImageFactory:
         self.user = user
 
         # define filter & order settings
-        self.order_type = CAUGHT_DATE_ORDER
+        self.order_type = CREATURE_NICKNAME_SORT_CAUGHT_DATE
         self.is_ascending_order = False
 
         self.show_mythics_only = show_mythics_only
@@ -200,9 +200,9 @@ class CreatureInventoryImageFactory:
         def get_rarity_sort_key(rarity_name):
             return 1 if rarity_name == TGOMMO_RARITY_MYTHICAL else 0
 
-        if self.order_type == DEX_NO_ORDER:
+        if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO:
             sorted_pairs = sorted(paired_data, key=lambda pair: (pair[0].dex_no, pair[0].variant_no, get_rarity_sort_key(pair[0].local_rarity.name) ), reverse=self.is_ascending_order)
-        elif self.order_type == ALPHABETICAL_ORDER:
+        elif self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL:
             sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].name.lower(), reverse=self.is_ascending_order)
         else:
             sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].caught_date, reverse=not self.is_ascending_order)

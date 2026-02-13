@@ -401,7 +401,7 @@ def admin_only():
         return True
     return app_commands.check(predicate)
 
-def interaction_guard(self=None, max_retries=3, delay=1):
+def interaction_guard(self=None, max_retries=3, delay=1, defer_response=True):
     def decorator(func):
         async def wrapper(interaction):
             if not self:
@@ -409,7 +409,8 @@ def interaction_guard(self=None, max_retries=3, delay=1):
 
             if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'target_user', None).user_id):
                 async with self.interaction_lock:
-                    await interaction.response.defer()
+                    if defer_response:
+                        await interaction.response.defer()
 
                     for attempt in range(max_retries):
                         try:

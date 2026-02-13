@@ -32,9 +32,6 @@ class EncyclopediaLocationIndexView(BaseView):
 
         self.view_environment_button = self.create_view_environment_button(row=3)
 
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=4)
-        self.go_back_button = create_go_back_button(original_view=self.original_view, row=4, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id)
-
         # Add buttons to view
         self.refresh_view()
 
@@ -49,7 +46,7 @@ class EncyclopediaLocationIndexView(BaseView):
         @interaction_guard(self)
         async def callback(interaction):
             encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
-            encyclopedia_view = EncyclopediaView(encyclopedia_image_factory=encyclopedia_img_factory, message_author=self.message_author, original_view=self, original_image_files=[self.reload_image()],)
+            encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=encyclopedia_img_factory, original_view=self, original_image_files=[self.reload_image()],)
 
             await interaction.message.edit(attachments=[self.reload_image()], view=encyclopedia_view)
             self.selected_environment = NATIONAL_ENV

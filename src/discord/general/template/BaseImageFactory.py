@@ -1,16 +1,13 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
-from src.commons.CommonFunctions import convert_to_png
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
-from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
+from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.file_paths import *
 
 
 class BaseImageFactory:
     def __init__(self, message_author, target_user):
-        self.message_author = message_author
-        self.target_user = target_user
+        self.message_author: TGOPlayer = message_author
+        self.target_user: TGOPlayer = target_user
 
         self.page_num = 1
         self.total_pages = 1

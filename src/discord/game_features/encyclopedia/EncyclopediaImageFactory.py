@@ -3,8 +3,7 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png, get_user_discord_profile_pic, center_text_on_pixel, \
-    resize_text_to_fit, build_user_profile_pic
+from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
 from src.discord.objects.CreatureRarity import TRANSCENDANT, MYTHICAL
@@ -64,7 +63,7 @@ class EncyclopediaImageFactory:
 
         # load user profile pic if not server page
         if self.target_user:
-            profile_pic = build_user_profile_pic(user= self.target_user)
+            profile_pic = build_user_profile_pic(user= self.target_user.discord_profile)
             encyclopedia_img.paste(profile_pic, (60, 0), profile_pic)
 
         # place layers on final image

@@ -40,7 +40,7 @@ class EncyclopediaLocationIndexView(BaseView):
     def create_view_environment_button(self, row=4):
         button = discord.ui.Button(label="View Environment Encyclopedia", style=discord.ButtonStyle.green, row=row,)
 
-        button.callback = self.view_environment_callback
+        button.callback = self.view_environment_callback()
         return button
     def view_environment_callback(self):
         @interaction_guard(self)
@@ -50,6 +50,7 @@ class EncyclopediaLocationIndexView(BaseView):
 
             await interaction.message.edit(attachments=[self.reload_image()], view=encyclopedia_view)
             self.selected_environment = NATIONAL_ENV
+        return callback
 
 
     # CREATE DROPDOWNS
@@ -59,13 +60,14 @@ class EncyclopediaLocationIndexView(BaseView):
 
         dropdown.callback = self.page_jump_callback()
         return dropdown
-    async def page_jump_callback(self):
+    def page_jump_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
             self.new_page = int(interaction.data["values"][0])
 
             self.update_button_states()
             await interaction.message.edit(attachments=[self.reload_image()], view=self)
+        return callback
 
     def create_environments_dropdown(self, row=0):
         options = [
@@ -74,13 +76,14 @@ class EncyclopediaLocationIndexView(BaseView):
         ]
         dropdown = Select(placeholder=self.selectable_environments[0].name, options=options, min_values=0, max_values=1, row=row,)
 
-        dropdown.callback = self.environments_dropdown_callback
+        dropdown.callback = self.environments_dropdown_callback()
         return dropdown
-    async def environments_dropdown_callback(self):
+    def environments_dropdown_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
             environment_id = int(interaction.data["values"][0]) if interaction.data["values"] else None
             self.selected_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id) if environment_id > 0 else NATIONAL_ENV
+        return callback
 
 
     # FUNCTIONS FOR UPDATING VIEW STATE

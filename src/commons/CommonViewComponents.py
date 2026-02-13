@@ -77,11 +77,11 @@ def create_generic_nav_callback(view_instance, is_next):
             if hasattr(view_instance, 'encyclopedia_image_factory'):
                 current_page = view_instance.encyclopedia_image_factory.page_num
                 new_page = current_page + 1 if is_next else current_page - 1
-                new_image = view_instance.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=new_page)
+                new_image = view_instance.encyclopedia_image_factory.reload_image(new_page_number=new_page)
             elif hasattr(view_instance, 'encyclopedia_location_index_image_factory'):
                 current_page = view_instance.encyclopedia_location_index_image_factory.page_num
                 new_page = current_page + 1 if is_next else current_page - 1
-                new_image = view_instance.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=new_page)
+                new_image = view_instance.encyclopedia_location_index_image_factory.reload_image(new_page_number=new_page)
             elif hasattr(view_instance, 'creature_inventory_image_factory'):
                 current_box = view_instance.creature_inventory_image_factory.current_box_num
                 new_box = current_box + 1 if is_next else current_box - 1
@@ -122,7 +122,7 @@ def create_generic_nav_callback(view_instance, is_next):
 #************************************************************************************
 #-----------------------------------------DROPDOWNS-------------------------------------------
 #************************************************************************************
-# todo
+# todo these def need to be more generic
 def create_page_jump_dropdown(view_instance, row=0, option_prefix="Page"):
     # Determine total pages based on view type
     if hasattr(view_instance, 'encyclopedia_image_factory'):
@@ -159,7 +159,7 @@ def create_generic_page_jump_callback(view_instance):
             if hasattr(view_instance, 'encyclopedia_image_factory'):
                 new_image = convert_to_png(view_instance.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=new_page), 'encyclopedia_page.png')
             elif hasattr(view_instance, 'encyclopedia_location_index_image_factory'):
-                new_image = convert_to_png(view_instance.encyclopedia_location_index_image_factory.build_encyclopedia_location_index_page_image(new_page_number=new_page), 'encyclopedia_location_index_page.png')
+                new_image = convert_to_png(view_instance.encyclopedia_location_index_image_factory.reload_image(new_page_number=new_page), 'encyclopedia_location_index_page.png')
             elif hasattr(view_instance, 'creature_inventory_image_factory'):
                 new_image = view_instance.reload_image(new_box_number=new_page)
             else:

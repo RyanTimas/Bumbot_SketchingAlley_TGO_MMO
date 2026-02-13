@@ -106,8 +106,7 @@ class DiscordBot(commands.Bot):
     def register_tgommo_user_general_commands(self):
         @self.tree.command(name="current-environment-tgommo", description="Displays the current TGOMMO environment.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_current_environment(interaction: discord.Interaction):
-            env = self.creature_spawner_handler.current_environment
-            await interaction.response.send_message(f"Current Environment: {env.name} ({self.creature_spawner_handler.time_of_day})", delete_after=10)
+            await interaction.response.send_message(f"Current Environment: {self.creature_spawner_handler.current_environment.name} ({self.creature_spawner_handler.time_of_day})", delete_after=10)
 
     def register_tgommo_user_navigation_commands(self):
         @self.tree.command(name="tgommo", description="Brings up the master menu for TGOMMO.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
@@ -119,46 +118,51 @@ class DiscordBot(commands.Bot):
 
         @self.tree.command(name="open-avatar-board-tgommo", description="Opens User's Avatar Quest & Collection Board.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_avatar_board(interaction, user_id: str = None):
-            user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
-
+            target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
+            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+             
             avatar_board_handler = AvatarBoardImageFactory(user_id=user_id)
             avatar_board_img = avatar_board_handler.build_avatar_board_page_image()
-            view = AvatarBoardView(message_author=interaction.user, avatar_board_image_factory=avatar_board_handler)
+            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_image_factory=avatar_board_handler)
 
             await interaction.response.send_message('', files=[convert_to_png(avatar_board_img, f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-creature-inventory-tgommo", description="Opens User's Creature Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_creature_inventory(interaction, user_id: str = None):
-            target_user = interaction.guild.get_member(int(user_id) if user_id and user_id.isdigit() else interaction.user.id)
+            target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
+            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
 
             creature_inventory_handler = CreatureInventoryImageFactory(user=target_user)
-            view = CreatureInventoryView(message_author=interaction.user, target_user=target_user.id, creature_inventory_image_factory=creature_inventory_handler)
+            view = CreatureInventoryView(message_author=message_author, target_user=target_user, creature_inventory_image_factory=creature_inventory_handler)
 
             await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_handler.get_creature_inventory_page_image(), f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-encyclopedia-tgommo", description="Opens User's Encyclopedia.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_encyclopedia(interaction, user_id: str = None):
-            user_id = user_id if user_id and (user_id.lower() == "server" or user_id.isdigit()) else interaction.user.id
-            target_user = None if user_id == "server" else interaction.guild.get_member(int(user_id))
+            target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
+            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
 
-            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(user=target_user, )
-            view = EncyclopediaLocationIndexView(message_author=interaction.user, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, )
+            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(target_user=target_user, )
+            view = EncyclopediaLocationIndexView(message_author=message_author, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, )
 
-            await interaction.response.send_message('', files=[convert_to_png(encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index.png')], view=view)
+            await interaction.response.send_message('', files=[convert_to_png(encyclopedia_location_index_img_factory.reload_image(), f'encyclopedia_location_index.png')], view=view)
 
         @self.tree.command(name="open-item-inventory-tgommo", description="Opens User's Item Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_item_inventory(interaction):
-            target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
+            target_user = message_author
 
             item_inventory_handler = ItemInventoryImageFactory(user=target_user, )
-            view = ItemInventoryView(message_author=target_user, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
+            view = ItemInventoryView(message_author=message_author, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
 
             await interaction.response.send_message(files=[convert_to_png(item_inventory_handler.generate_item_inventory_image(), f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-player_profile-tgommo", description="Opens User's Player Profile.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_player_profile(interaction, user_id: str = None):
             user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
-
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)
 

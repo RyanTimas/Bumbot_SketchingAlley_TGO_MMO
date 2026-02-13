@@ -6,15 +6,15 @@ from PIL import Image, ImageDraw, ImageFont
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
 
 
-class EncyclopediaLocationIndexImageFactory:
-    def __init__(self, user = None, ):
-        self.user = user
-        self.player = get_tgommo_db_handler().get_user_profile_by_user_id(user.id, convert_to_object=True) if user else None
+class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user=None):
+        super().__init__(message_author, target_user)
 
         self.locations = []
         self.location_icons = []
@@ -22,19 +22,16 @@ class EncyclopediaLocationIndexImageFactory:
         self.total_pages = 1
 
 
-    def build_encyclopedia_location_index_page_image(self, new_page_number = None):
-        # set new values in case button was clicked
-        self.page_num = new_page_number if new_page_number is not None else self.page_num
-
+    def build_image(self):
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
-        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if not self.player else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
+        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if not self.target_user else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
         location_tab_icon_corkboard_img = Image.open(ENCYCLOPEDIA_LOCATION_INDEX_CORKBOARD_MAGE)
 
-        if self.player:
-            profile_pic = build_user_profile_pic(self.user)
+        if self.target_user:
+            profile_pic = build_user_profile_pic(self.target_user)
             encyclopedia_img.paste(profile_pic, (60, 0), profile_pic)
 
         # place layers on final image
@@ -162,7 +159,7 @@ class EncyclopediaLocationIndexImageFactory:
         draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
         if self.player:
-            text = f"@{self.user.name}"
+            text = f"@{self.target_user.name}"
             font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)
             draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)

@@ -113,5 +113,5 @@ class EncyclopediaLocationIndexView(BaseView):
             self.add_item(self.go_back_button)
 
     def reload_image(self):
-        new_image = self.image_factory.build_encyclopedia_location_index_page_image(new_page_number=self.new_page)
+        new_image = self.image_factory.reload_image(new_page_number=self.new_page)
         return convert_to_png(new_image, 'encyclopedia_location_index_image.png')

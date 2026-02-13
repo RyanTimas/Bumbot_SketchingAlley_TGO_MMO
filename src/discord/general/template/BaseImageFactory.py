@@ -17,33 +17,21 @@ class BaseImageFactory:
 
         self.load_relevant_info()
 
-    def load_relevant_info(self):
-        # Load initial page info
+    def load_relevant_info(self, new_page_number = None):
+        self.page_num = new_page_number if new_page_number else self.page_num
         pass
 
-    def reload_image(self, new_page_number = None):
-        # update components
-        self.page_num = new_page_number if new_page_number else self.page_num
-
+    def reload_image(self, new_page_number = 1):
+        self.load_relevant_info()
         return self.build_image()
 
 
     '''IMAGE FUNCTIONS'''
     def build_image(self):
-        # define images
-        new_img = Image.open(AVATAR_BOARD_BACKGROUND_IMAGE)
-
-        # paste images together
-        new_img = self.add_text_to_image(new_img)
-
-        return new_img
+        return self.add_text_to_image(Image.open(AVATAR_BOARD_BACKGROUND_IMAGE))
 
     def add_text_to_image(self, img: Image):
         draw = ImageDraw.Draw(img)
-
-        # define fonts
-        # add piece of text to image
-
         return img
 
 

@@ -59,11 +59,11 @@ class TGOMMOMenuView(BaseView):
     def encyclopedia_callback(self, button_type):
         @interaction_guard(self)
         async def callback(interaction):
-            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(user=self.message_author if button_type == "user_encyclopedia" else None, )
+            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(target_user=self.message_author if button_type == "user_encyclopedia" else None, )
             view = EncyclopediaLocationIndexView(message_author=self.message_author, target_user=self.message_author if button_type == "user_encyclopedia" else None, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, original_view=self)
 
             # view.update_button_states()
-            await interaction.message.edit(attachments=[convert_to_png(encyclopedia_location_index_img_factory.build_encyclopedia_location_index_page_image(), f'encyclopedia_location_index_page.png')], view=view)
+            await interaction.message.edit(attachments=[convert_to_png(encyclopedia_location_index_img_factory.reload_image(), f'encyclopedia_location_index_page.png')], view=view)
         return callback
 
     def create_player_profile_button(self, tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM, row=1):

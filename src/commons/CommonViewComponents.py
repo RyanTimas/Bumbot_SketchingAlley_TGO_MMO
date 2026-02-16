@@ -67,7 +67,7 @@ def create_navigation_button(is_next, view_instance, callback_func = None, row=0
 def create_generic_nav_callback(view_instance, is_next):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):
-        if not await check_if_user_can_interact_with_view(interaction, view_instance.interaction_lock, view_instance.message_author.id):
+        if not await check_if_user_can_interact_with_view(interaction, view_instance.interaction_lock, view_instance.message_author.user_id):
             return
 
         async with view_instance.interaction_lock:
@@ -148,7 +148,7 @@ def create_page_jump_dropdown(view_instance, row=0, option_prefix="Page"):
 def create_generic_page_jump_callback(view_instance):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):
-        if not await check_if_user_can_interact_with_view(interaction, view_instance.interaction_lock, view_instance.message_author.id):
+        if not await check_if_user_can_interact_with_view(interaction, view_instance.interaction_lock, view_instance.message_author.user_id):
             return
 
         async with view_instance.interaction_lock:
@@ -157,7 +157,7 @@ def create_generic_page_jump_callback(view_instance):
             new_page = int(interaction.data["values"][0])
 
             if hasattr(view_instance, 'encyclopedia_image_factory'):
-                new_image = convert_to_png(view_instance.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=new_page), 'encyclopedia_page.png')
+                new_image = convert_to_png(view_instance.encyclopedia_image_factory.reload_image(new_page_number=new_page), 'encyclopedia_page.png')
             elif hasattr(view_instance, 'encyclopedia_location_index_image_factory'):
                 new_image = convert_to_png(view_instance.encyclopedia_location_index_image_factory.reload_image(new_page_number=new_page), 'encyclopedia_location_index_page.png')
             elif hasattr(view_instance, 'creature_inventory_image_factory'):

@@ -407,7 +407,7 @@ def interaction_guard(self=None, max_retries=3, delay=1, defer_response=True):
             if not self:
                 return await func(interaction)
 
-            if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'target_user', None).user_id):
+            if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'message_author', None).user_id):
                 async with self.interaction_lock:
                     if defer_response:
                         await interaction.response.defer()

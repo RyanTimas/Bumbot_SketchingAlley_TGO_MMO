@@ -16,20 +16,16 @@ from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 class EncyclopediaLocationIndexView(BaseView):
     def __init__(self, message_author, target_user, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=encyclopedia_location_index_image_factory, original_view=original_view)
-        self.new_page = 1
-
         self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation()
         self.selectable_environments.insert(0, NATIONAL_ENV)
-        self.selected_environment = self.selectable_environments[0] if self.selectable_environments else None
+        self.selected_environment = self.selectable_environments[0]
+
+        self.encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
+        self.encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=self.encyclopedia_img_factory, original_view=self, original_image_files=[self.reload_image()])
 
         # INITIALIZE BUTTONS AND DROPDOWNS
-        self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
-
-        self.prev_button = create_navigation_button(is_next=False, view_instance=self, row=1)
-        self.next_button = create_navigation_button(is_next=True, view_instance=self, row=1)
-
+        # self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
         self.environment_dropdown = self.create_environments_dropdown(row=2)
-
         self.view_environment_button = self.create_view_environment_button(row=3)
 
         # Add buttons to view
@@ -39,16 +35,15 @@ class EncyclopediaLocationIndexView(BaseView):
     # CREATE BUTTONS
     def create_view_environment_button(self, row=4):
         button = discord.ui.Button(label="View Environment Encyclopedia", style=discord.ButtonStyle.green, row=row,)
-
         button.callback = self.view_environment_callback()
         return button
     def view_environment_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
-            encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=encyclopedia_img_factory, original_view=self, original_image_files=[self.reload_image()],)
-
-            await interaction.message.edit(attachments=[self.reload_image()], view=encyclopedia_view)
+            # Set the selected environment in the encyclopedia image factory to ensure the correct environment is displayed when returning to location index view
+            self.encyclopedia_view.image_factory.environment = self.selected_environment
+            self.encyclopedia_view.refresh_view()
+            await interaction.message.edit(attachments=[self.reload_encyclopedia_image()], view=self.encyclopedia_view)
             self.selected_environment = NATIONAL_ENV
         return callback
 
@@ -57,7 +52,6 @@ class EncyclopediaLocationIndexView(BaseView):
     def create_page_jump_dropdown(self, row=1):
         options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.image_factory.total_pages)]
         dropdown = Select(placeholder="Skip to Page", options=options, min_values=1, max_values=1, row=row)
-
         dropdown.callback = self.page_jump_callback()
         return dropdown
     def page_jump_callback(self):
@@ -66,7 +60,7 @@ class EncyclopediaLocationIndexView(BaseView):
             self.new_page = int(interaction.data["values"][0])
 
             self.update_button_states()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
+            await interaction.message.edit(attachments=[self.reload_image(self.image_factory)], view=self)
         return callback
 
     def create_environments_dropdown(self, row=0):
@@ -112,6 +106,6 @@ class EncyclopediaLocationIndexView(BaseView):
         if self.original_view is not None:
             self.add_item(self.go_back_button)
 
-    def reload_image(self):
-        new_image = self.image_factory.reload_image(new_page_number=self.new_page)
-        return convert_to_png(new_image, 'encyclopedia_location_index_image.png')
+    def reload_encyclopedia_image(self, new_page_number=None):
+        new_image = self.encyclopedia_img_factory.reload_image(new_page_number=new_page_number, environment=self.selected_environment)
+        return convert_to_png(new_image, 'encyclopedia_image.png')

@@ -2,13 +2,10 @@ import discord
 from discord.ui import Select
 
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonFunctions import retry_on_ssl_error
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
-    EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 
@@ -21,7 +18,7 @@ class EncyclopediaLocationIndexView(BaseView):
         self.selected_environment = self.selectable_environments[0]
 
         self.encyclopedia_img_factory = EncyclopediaImageFactory(environment=self.selected_environment if self.selected_environment else NATIONAL_ENV, message_author=self.message_author, target_user=self.target_user,)
-        self.encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=self.encyclopedia_img_factory, original_view=self, original_image_files=[self.reload_image()])
+        self.encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=self.encyclopedia_img_factory, original_view=self, original_image_files=[self.image_factory.reload_image()])
 
         # INITIALIZE BUTTONS AND DROPDOWNS
         self.environment_dropdown = self.create_environments_dropdown(row=2)

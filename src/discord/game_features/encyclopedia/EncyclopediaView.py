@@ -1,7 +1,6 @@
 import discord
 
-from src.commons.CommonFunctions import convert_to_png
-from src.commons.CommonFunctions import retry_on_ssl_error
+from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import NIGHT, BOTH, DAY, ENCYCLOPEDIA_VERBOSE_MODE, \
@@ -47,7 +46,7 @@ class EncyclopediaView(BaseView):
         button.callback = self.toggle_callback(button_type)
         return button
     def toggle_callback(self, button_type):
-        @retry_on_ssl_error()
+        @interaction_guard()
         async def callback(interaction):
             await interaction.response.defer()
 

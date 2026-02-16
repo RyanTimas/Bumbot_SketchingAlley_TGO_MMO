@@ -22,10 +22,10 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
-        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if not self.target_user else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
+        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_view else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
         location_tab_icon_corkboard_img = Image.open(ENCYCLOPEDIA_LOCATION_INDEX_CORKBOARD_MAGE)
 
-        if self.target_user:
+        if not self.is_server_view:
             profile_pic = build_user_profile_pic(self.target_user.discord_profile)
             encyclopedia_img.paste(profile_pic, (60, 0), profile_pic)
 
@@ -108,7 +108,7 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
         # Only process within our page range
         for i in range(starting_index, ending_index):
             location = self.locations[i]
-            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=self.target_user.user_id if self.target_user else None, environment_dex_no=location.dex_no)
+            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=self.target_user.user_id, environment_dex_no=location.dex_no)
 
             icon = EncyclopediaLocationIndexIconFactory(environment=location, user_unique_catches=user_catches, possible_unique_catches=possible_catches)
             icon_img = icon.generate_location_tab_icon_image()
@@ -148,12 +148,12 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
 
         # NAME TEXT
-        text = f"Sketching Alley" if not self.target_user else self.target_user.nickname
+        text = f"Sketching Alley" if self.is_server_view else self.target_user.nickname
         font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)
         draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
-        if self.target_user:
+        if not self.is_server_view:
             text = f"@{self.target_user.discord_profile.name}"
             font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)

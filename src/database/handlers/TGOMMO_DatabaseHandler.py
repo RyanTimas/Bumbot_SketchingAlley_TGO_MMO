@@ -382,7 +382,7 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX}"
         params = [creature_dex_no]
 
-        if user_id is not None:
+        if user_id != 0:
             query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
             params.append(user_id)
         if environment_dex_no != 0:

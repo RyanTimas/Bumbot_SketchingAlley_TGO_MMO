@@ -8,6 +8,7 @@ class BaseImageFactory:
     def __init__(self, message_author, target_user):
         self.message_author: TGOPlayer = message_author
         self.target_user: TGOPlayer = target_user
+        self.is_server_view = target_user.user_id == 0
 
         self.page_num = 1
         self.total_pages = 1

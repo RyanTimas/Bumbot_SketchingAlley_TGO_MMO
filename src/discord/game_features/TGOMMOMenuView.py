@@ -59,8 +59,10 @@ class TGOMMOMenuView(BaseView):
     def encyclopedia_callback(self, button_type):
         @interaction_guard(self)
         async def callback(interaction):
-            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(message_author=self.message_author, target_user=self.target_user if button_type == "user_encyclopedia" else None, )
-            view = EncyclopediaLocationIndexView(message_author=self.message_author, target_user=self.message_author if button_type == "user_encyclopedia" else None, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, original_view=self)
+            server_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=0)
+
+            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(message_author=self.message_author, target_user=self.target_user if button_type == "user_encyclopedia" else server_user, )
+            view = EncyclopediaLocationIndexView(message_author=self.message_author, target_user=self.target_user if button_type == "user_encyclopedia" else server_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, original_view=self)
 
             # view.update_button_states()
             await interaction.message.edit(attachments=[convert_to_png(encyclopedia_location_index_img_factory.reload_image(), f'encyclopedia_location_index_page.png')], view=view)

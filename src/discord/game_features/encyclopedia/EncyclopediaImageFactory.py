@@ -60,10 +60,10 @@ class EncyclopediaImageFactory(BaseImageFactory):
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
-        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.target_user else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
+        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_view else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
 
         # load user profile pic if not server page
-        if self.target_user:
+        if not self.is_server_view:
             profile_pic = build_user_profile_pic(user= self.target_user.discord_profile)
             encyclopedia_img.paste(profile_pic, (60, 0), profile_pic)
 
@@ -78,6 +78,9 @@ class EncyclopediaImageFactory(BaseImageFactory):
         if self.show_mythics:
             mythical_overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_SHINY_IMAGE)
             encyclopedia_img.paste(mythical_overlay_img, (0, 0), mythical_overlay_img)
+        elif self.time_of_day != BOTH:
+            time_overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_OVERLAY_DAY_IMAGE)
+            encyclopedia_img.paste(time_overlay_img, (0, 0), time_overlay_img)
 
         # generate dex icons
         icons_grid = self.create_dex_icons_grid()
@@ -172,6 +175,8 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
         top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
+        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_TOP_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_TOP_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_TOP_BAR_IMAGE)
+
         top_bar_camera_img = Image.open(ENCYCLOPEDIA_TOP_BAR_CAMERA_ICON_IMAGE)
         top_bar_encounter_img = Image.open(ENCYCLOPEDIA_TOP_BAR_ENCOUNTER_ICON_IMAGE)
 
@@ -181,7 +186,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
         return encyclopedia_img
     def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image):
-        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE)
+        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_BOTTOM_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_BOTTOM_BAR_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)
@@ -203,12 +208,12 @@ class EncyclopediaImageFactory(BaseImageFactory):
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
 
         # NAME TEXT
-        text = f"Sketching Alley" if not self.target_user else self.target_user.discord_profile.display_name
+        text = f"Sketching Alley" if self.is_server_view else self.target_user.nickname
         font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)
         draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
-        if self.target_user:
+        if not self.is_server_view:
             text = f"@{self.target_user.discord_profile.name}"
             font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)

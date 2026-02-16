@@ -60,9 +60,8 @@ class UpdatePlayerProfileView(BaseView):
         self.update_profile_button_1 = self.create_update_profile_button(page=1, input_configs=self.profile_inputs_page_1, row=2)
         self.update_profile_button_2 = self.create_update_profile_button(page=2, input_configs=self.profile_inputs_page_2, row=2)
 
+        self.save_changes_button = self.create_save_changes_button(row=3)
         self.display_creatures_button = self.display_creature_collection_button(row=3)
-
-        self.save_changes_button = self.create_save_changes_button(row=4)
 
         # DROPDOWNS
         self.avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
@@ -338,6 +337,7 @@ class UpdatePlayerProfileView(BaseView):
         self.add_item(self.update_profile_button_1)
         self.add_item(self.update_profile_button_2)
         # row 3
+        self.add_item(self.save_changes_button)
         self.add_item(self.display_creatures_button)
 
     # Support functions

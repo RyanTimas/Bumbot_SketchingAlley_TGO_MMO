@@ -26,7 +26,7 @@ class BaseImageFactory:
 
     '''IMAGE FUNCTIONS'''
     def build_image(self):
-        return self.add_text_to_image(Image.open(AVATAR_BOARD_BACKGROUND_IMAGE))
+        return None
 
     def add_text_to_image(self, img: Image):
         draw = ImageDraw.Draw(img)

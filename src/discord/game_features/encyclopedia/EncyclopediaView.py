@@ -46,7 +46,7 @@ class EncyclopediaView(BaseView):
         button.callback = self.toggle_callback(button_type)
         return button
     def toggle_callback(self, button_type):
-        @interaction_guard()
+        @interaction_guard(self)
         async def callback(interaction):
             await interaction.response.defer()
 

@@ -26,13 +26,13 @@ class AlertCenterView(BaseView):
         async def callback(interaction):
             tgommo_role = interaction.guild.get_role(TGOMMO_ROLE_ID)
             if not tgommo_role:
-                await interaction.response.send_message("TGOMMO role not found in this server.", ephemeral=True)
+                await interaction.followup.send("TGOMMO role not found in this server.", ephemeral=True)
                 return
 
             # Handle role assignment/removal
             has_role = tgommo_role in self.target_user.discord_profile.roles
             await self.target_user.discord_profile.remove_roles(tgommo_role) if has_role else await self.target_user.discord_profile.add_roles(tgommo_role)
-            await interaction.response.send_message(f"Megaphone is now {'off' if has_role else 'on'}. You will {"no longer" if has_role else "now"} be notified when a creature spawns.", ephemeral=True)
+            await interaction.followup.send(f"Megaphone is now {'off' if has_role else 'on'}. You will {"no longer" if has_role else "now"} be notified when a creature spawns.", ephemeral=True)
 
             self.refresh_view()
             await  interaction.message.edit(view=self)

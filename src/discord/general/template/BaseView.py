@@ -44,15 +44,17 @@ class BaseView(discord.ui.View):
             await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
 
-    def create_go_back_button(self, row=4,):
+    def create_go_back_button(self, row=4):
         button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
         button.callback = self.go_back_callback()
         return button
     def go_back_callback(self):
-        @interaction_guard()
+        @interaction_guard(self)
         async def callback(interaction):
             self.original_view.refresh_view()
-            await interaction.message.edit(attachments=[self.original_view.reload_image()], view=self.original_view)
+
+            reloaded_image = self.original_view.reload_image()
+            await interaction.message.edit(attachments=[reloaded_image] if reloaded_image else [], view=self.original_view)
         return callback
 
     def create_close_button(self, row=1):
@@ -72,7 +74,7 @@ class BaseView(discord.ui.View):
         dropdown.callback = self.page_jump_callback()
         return dropdown
     def page_jump_callback(self):
-        @interaction_guard()
+        @interaction_guard(self)
         async def callback(interaction):
             await interaction.response.defer()
 
@@ -120,4 +122,4 @@ class BaseView(discord.ui.View):
     def reload_image(self, image_factory= None, new_page_number=None):
         image_factory =  image_factory if image_factory else self.image_factory
         new_image = image_factory.reload_image(new_page_number=self.page_num)
-        return convert_to_png(new_image, 'image_factory_image.png')
+        return new_image if new_image is None else convert_to_png(new_image, 'image_factory_image.png')

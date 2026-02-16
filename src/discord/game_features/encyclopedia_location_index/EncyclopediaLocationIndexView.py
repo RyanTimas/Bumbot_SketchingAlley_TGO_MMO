@@ -24,7 +24,6 @@ class EncyclopediaLocationIndexView(BaseView):
         self.encyclopedia_view = EncyclopediaView(message_author=self.message_author, target_user=self.target_user, encyclopedia_image_factory=self.encyclopedia_img_factory, original_view=self, original_image_files=[self.reload_image()])
 
         # INITIALIZE BUTTONS AND DROPDOWNS
-        # self.page_jump_dropdown = self.create_page_jump_dropdown(row=0)
         self.environment_dropdown = self.create_environments_dropdown(row=2)
         self.view_environment_button = self.create_view_environment_button(row=3)
 
@@ -45,22 +44,6 @@ class EncyclopediaLocationIndexView(BaseView):
             self.encyclopedia_view.refresh_view()
             await interaction.message.edit(attachments=[self.reload_encyclopedia_image()], view=self.encyclopedia_view)
             self.selected_environment = NATIONAL_ENV
-        return callback
-
-
-    # CREATE DROPDOWNS
-    def create_page_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.image_factory.total_pages)]
-        dropdown = Select(placeholder="Skip to Page", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.page_jump_callback()
-        return dropdown
-    def page_jump_callback(self):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.new_page = int(interaction.data["values"][0])
-
-            self.update_button_states()
-            await interaction.message.edit(attachments=[self.reload_image(self.image_factory)], view=self)
         return callback
 
     def create_environments_dropdown(self, row=0):
@@ -90,15 +73,10 @@ class EncyclopediaLocationIndexView(BaseView):
         self.prev_button.disabled = self.image_factory.page_num == 1
         self.next_button.disabled = self.image_factory.page_num == self.image_factory.total_pages
     def rebuild_view(self):
+        super().rebuild_view()
         self.clear_items()
 
         # Add buttons to view
-        if len(self.selectable_environments) > 8:
-            self.add_item(self.page_jump_dropdown)
-
-            self.add_item(self.prev_button)
-            self.add_item(self.next_button)
-
         self.add_item(self.environment_dropdown)
         self.add_item(self.view_environment_button)
 

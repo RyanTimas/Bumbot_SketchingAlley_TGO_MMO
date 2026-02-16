@@ -143,8 +143,6 @@ def create_page_jump_dropdown(view_instance, row=0, option_prefix="Page"):
     dropdown = Select(placeholder=f"Skip to {option_prefix}" if current_page == 1 else f"{option_prefix} {current_page}", options=options, min_values=1, max_values=1, row=row)
     dropdown.callback = create_generic_page_jump_callback(view_instance)
     return dropdown
-
-
 def create_generic_page_jump_callback(view_instance):
     @retry_on_ssl_error(max_retries=3, delay=1)
     async def callback(interaction):

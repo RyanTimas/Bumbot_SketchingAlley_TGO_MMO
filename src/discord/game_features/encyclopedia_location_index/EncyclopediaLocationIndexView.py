@@ -40,7 +40,7 @@ class EncyclopediaLocationIndexView(BaseView):
         @interaction_guard(self)
         async def callback(interaction):
             # Set the selected environment in the encyclopedia image factory to ensure the correct environment is displayed when returning to location index view
-            self.encyclopedia_view.image_factory.environment = self.selected_environment
+            self.encyclopedia_img_factory.load_relevant_info(environment=self.selected_environment)
             self.encyclopedia_view.refresh_view()
             await interaction.message.edit(attachments=[self.reload_encyclopedia_image()], view=self.encyclopedia_view)
             self.selected_environment = NATIONAL_ENV

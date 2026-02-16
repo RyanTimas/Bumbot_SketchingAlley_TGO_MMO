@@ -53,9 +53,6 @@ class EncyclopediaImageFactory(BaseImageFactory):
             self.dex_icons = self.get_dex_icons()
 
     def build_image(self, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, new_page_number = None):
-        # set new values in case button was clicked
-        self.load_relevant_info(is_verbose=is_verbose, show_variants= show_variants, show_mythics= show_mythics, time_of_day= time_of_day, new_page_number= new_page_number)
-
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)

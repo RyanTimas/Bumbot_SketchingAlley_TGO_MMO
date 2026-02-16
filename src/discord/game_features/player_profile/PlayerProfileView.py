@@ -2,7 +2,6 @@ import discord
 
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.commons.CommonFunctions import retry_on_ssl_error
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button
 from src.discord.game_features.alert_center.AlertCenterView import AlertCenterView
 from src.discord.game_features.player_profile.UpdatePlayerProfileView import UpdatePlayerProfileView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, \
@@ -23,9 +22,6 @@ class PlayerProfileView(BaseView):
         self.panel_toggle_button = self.create_panel_toggle_button(row=1)
         self.open_teams_panel_button = self.create_open_teams_panel_button(row=1)
         self.open_collections_panel_button = self.create_open_collections_panel_button(row=1)
-
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id, row=2)
-        self.go_back_button = create_go_back_button(original_view=self.original_view, interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id, row=2)
 
         # Add buttons to view
         super().refresh_view()
@@ -111,7 +107,7 @@ class PlayerProfileView(BaseView):
                 self.remove_item(self.open_teams_panel_button)
                 self.remove_item(self.open_collections_panel_button)
     def rebuild_view(self):
-        self.clear_items()
+        super().rebuild_view()
 
         # Add buttons to view
         # row 1
@@ -124,11 +120,6 @@ class PlayerProfileView(BaseView):
         if self.tab_is_open:
             self.add_item(self.open_teams_panel_button)
             self.add_item(self.open_collections_panel_button)
-
-        # row 3
-        self.add_item(self.close_button)
-        if self.original_view:
-            self.add_item(self.go_back_button)
 
     def reload_image(self):
         new_image = self.image_factory.reload_image(open_tab=self.open_tab if self.tab_is_open else PLAYER_PROFILE_TAB_CLOSED)

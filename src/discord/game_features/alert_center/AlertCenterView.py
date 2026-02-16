@@ -2,8 +2,7 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, interaction_guard
-from src.commons.CommonViewComponents import create_close_button
+from src.commons.CommonFunctions import interaction_guard
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.general_constants import TGOMMO_ROLE_ID
 
@@ -12,7 +11,6 @@ class AlertCenterView(BaseView):
     def __init__(self, target_user):
         super().__init__(message_author=target_user, target_user=target_user)
         self.megaphone_button = self.create_role_toggle_button(row=0)
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.target_user.id, row=3)
         self.refresh_view()
 
     def create_role_toggle_button(self, row=0):
@@ -43,10 +41,9 @@ class AlertCenterView(BaseView):
 
     # FUNCTIONS FOR UPDATING VIEW STATE
     def update_button_states(self):
-        self.megaphone_button.style = discord.ButtonStyle.green if discord.utils.get(self.target_user.roles, id=TGOMMO_ROLE_ID) is not None else discord.ButtonStyle.gray
-        self.megaphone_button.label = "Turn off Megaphone" if discord.utils.get(self.target_user.roles, id=TGOMMO_ROLE_ID) is not None else "Turn on Megaphone"
+        self.megaphone_button.style = discord.ButtonStyle.green if discord.utils.get(self.target_user.discord_profile.roles, id=TGOMMO_ROLE_ID) is not None else discord.ButtonStyle.gray
+        self.megaphone_button.label = "Turn off Megaphone" if discord.utils.get(self.target_user.discord_profile.roles, id=TGOMMO_ROLE_ID) is not None else "Turn on Megaphone"
     def rebuild_view(self):
-        self.clear_items()
+        super().rebuild_view()
 
         self.add_item(self.megaphone_button)
-        self.add_item(self.close_button)

@@ -1,8 +1,7 @@
 import asyncio
 import discord
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonViewComponents import create_close_button
+from src.commons.CommonFunctions import convert_to_png, interaction_guard, retry_on_ssl_error
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer
 
@@ -26,7 +25,7 @@ class BaseView(discord.ui.View):
         self.next_button = self.create_navigation_button(is_next=True, row=1)
 
         self.go_back_button = self.create_go_back_button(row=4)
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id, row=4, )
+        self.close_button = self.create_close_button(row=4, )
 
     # BUTTONS
     def create_navigation_button(self, is_next, callback_func=None, row=0, disabled=False):
@@ -34,7 +33,7 @@ class BaseView(discord.ui.View):
         button.callback = callback_func if callback_func else self.navigation_button_callback(is_next)
         return button
     def navigation_button_callback(self, is_next):
-        @interaction_guard()
+        @interaction_guard(self)
         async def callback(interaction):
             await interaction.response.defer()
 
@@ -54,6 +53,16 @@ class BaseView(discord.ui.View):
         async def callback(interaction):
             self.original_view.refresh_view()
             await interaction.message.edit(attachments=[self.original_view.reload_image()], view=self.original_view)
+        return callback
+
+    def create_close_button(self, row=1):
+        button = discord.ui.Button(label="✘", style=discord.ButtonStyle.red, row=row)
+        button.callback = self.close_button_callback()
+        return button
+    def close_button_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
+            await interaction.message.delete()
         return callback
 
     # DROPDOWNS

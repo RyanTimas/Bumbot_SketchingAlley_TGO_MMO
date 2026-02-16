@@ -1,7 +1,6 @@
 from discord.ui import Select
 
 from src.commons.CommonFunctions import *
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemUseHandler import ItemUseHandler
 from src.discord.general.template.BaseView import BaseView
@@ -21,8 +20,6 @@ class ItemInventoryView(BaseView):
         self.item_select_dropdown = self.create_items_dropdown(row=0)
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id, row=2)
-        self.go_back_button = create_go_back_button(original_view=self.original_view, row=2, interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id)
 
         self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_INITIAL)
 

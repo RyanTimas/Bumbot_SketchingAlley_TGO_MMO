@@ -1,46 +1,13 @@
 import discord
 from discord.ui import Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png
+from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png, \
+    interaction_guard
 
 
 #************************************************************************************
 #-------------------------------------------BUTTONS---------------------------------------------
 #************************************************************************************
-def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None, files=None):
-    button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
-    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id, files=files)
-    return button
-def go_back_callback(original_view, interaction_lock=None, message_author_id=None, files=None):
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def callback(interaction):
-        # Check if we're already processing an interaction
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-    # Acquire lock to prevent concurrent actions
-        async with interaction_lock:
-            await interaction.response.defer()
-
-    # Go back to the previous view or state
-        await interaction.message.edit(attachments=files if files else [], view=original_view)
-    return callback
-
-# Button that goes back to parent view when clicked
-def create_close_button(interaction_lock, message_author_id, row=1):
-    button = discord.ui.Button(label="✘", style=discord.ButtonStyle.red, row=row)
-
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def close_callback(interaction):
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-        async with interaction_lock:
-            await interaction.message.delete()
-
-    button.callback = close_callback
-    return button
-
 # Placeholder button that does nothing when clicked
 def create_dummy_label_button(label_text, row=1):
     button = discord.ui.Button(label=f"{label_text}", style=discord.ButtonStyle.gray, row=row)

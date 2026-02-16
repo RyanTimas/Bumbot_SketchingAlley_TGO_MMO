@@ -4,7 +4,6 @@ import discord
 
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png, \
     interaction_guard
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS, \
     UNLOCKED_AVATARS
@@ -20,38 +19,10 @@ class AvatarBoardView(BaseView):
         self.open_unlocked_avatars_page = 1
         self.open_avatar_quests_page = 1
 
-        self.prev_button = self.create_navigation_button(is_next=False, row=0)
-        self.next_button = self.create_navigation_button(is_next=True, row=0)
-
         self.avatar_quests_button = self.create_open_avatar_quests_panel_button(row=1)
         self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=1)
 
         self.refresh_view()
-
-
-    def create_navigation_button(self, is_next, row=0):
-        button = discord.ui.Button(label="To Next Page➡️" if is_next else "⬅️To Previous Page", style=discord.ButtonStyle.blurple, row=row)
-        button.callback = self.nav_callback(new_page=next_ if is_next else previous)
-        return button
-    def nav_callback(self, new_page,):
-        @interaction_guard(self)
-        async def callback(interaction):
-            # Update page number
-            page_offset = -1 if new_page == previous else 1
-            if self.open_tab == AVATAR_QUESTS:
-                self.image_factory.page_num_avatar_quests += page_offset
-            elif self.open_tab == UNLOCKED_AVATARS:
-                self.image_factory.page_num_unlocked_avatar += page_offset
-
-            new_image = self.image_factory.build_avatar_board_page_image()
-
-            # Update state and button appearance
-            self.refresh_view()
-
-            # Send updated view
-            file = convert_to_png(new_image, f'avatar_board_page.png')
-            await interaction.message.edit(attachments=[file], view=self)
-        return callback
 
     def create_open_unlocked_avatars_panel_button(self, row=1):
         button = discord.ui.Button(label="Unlocked Avatars", style=discord.ButtonStyle.primary, row=row)
@@ -59,7 +30,6 @@ class AvatarBoardView(BaseView):
         return button
     def open__unlocked_avatars_panel_callback(self):
         @interaction_guard(self)
-        @retry_on_ssl_error()
         async def callback(interaction):
             new_image = self.image_factory.build_avatar_board_page_image(open_tab=UNLOCKED_AVATARS)
             self.open_tab = UNLOCKED_AVATARS

@@ -5,7 +5,7 @@ from PIL import Image
 
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
-from src.commons.CommonViewComponents import create_close_button, create_dummy_label_button
+from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory

@@ -4,7 +4,7 @@ from sqlalchemy.testing.plugin.plugin_base import options
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
     check_if_user_can_interact_with_view, interaction_guard
-from src.commons.CommonViewComponents import create_close_button, create_dummy_label_button
+from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PLAYER_PROFILE_TAB_CLOSED
@@ -63,7 +63,6 @@ class UpdatePlayerProfileView(BaseView):
         self.display_creatures_button = self.display_creature_collection_button(row=3)
 
         self.save_changes_button = self.create_save_changes_button(row=4)
-        self.close_button = create_close_button(message_author_id=self.message_author.user_id, interaction_lock=self.interaction_lock, row=4)
 
         # DROPDOWNS
         self.avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
@@ -325,7 +324,7 @@ class UpdatePlayerProfileView(BaseView):
 
         self.avatar_picker_dropdown.options = self.get_avatar_dropdown_options()
     def rebuild_view(self):
-        self.clear_items()
+        super().rebuild_view()
 
         # row 1
         if len(self.unlocked_avatars) > self.avatar_page_capacity:
@@ -340,9 +339,6 @@ class UpdatePlayerProfileView(BaseView):
         self.add_item(self.update_profile_button_2)
         # row 3
         self.add_item(self.display_creatures_button)
-        # row 4
-        self.add_item(self.save_changes_button)
-        self.add_item(self.close_button)
 
     # Support functions
     def get_avatar_dropdown_options(self):

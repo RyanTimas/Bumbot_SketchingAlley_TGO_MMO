@@ -2,7 +2,6 @@ import asyncio
 from discord.ui import Select, Modal
 
 from src.commons.CommonFunctions import *
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button, create_page_jump_dropdown
 from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryManagementView import CreatureInventoryManagementView
@@ -33,13 +32,6 @@ class CreatureInventoryView(BaseView):
         self.select_all_enabled = True
 
         # DEFINE VIEW COMPONENTS
-        # row 0
-        self.box_jump_dropdown = create_page_jump_dropdown(view_instance=self, row=0, option_prefix="Box")
-
-        # row 1
-        self.prev_button = create_navigation_button(is_next=False, view_instance=self, row=1)
-        self.next_button = create_navigation_button(is_next=True, view_instance=self, row=1)
-
         # row 2
         self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_FILTER_EXPANSION_KEY)
         self.expand_order_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_ORDER_EXPANSION_KEY)
@@ -62,9 +54,6 @@ class CreatureInventoryView(BaseView):
         self.favorite_button = self.create_creature_management_button(row=3, button_type=CREATURE_INVENTORY_MODE_FAVORITE)
 
         # row 4
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id, row=4)
-        self.go_back_button = create_go_back_button(original_view=self.original_view, row=4, interaction_lock=self.interaction_lock, message_author_id=self.message_author.user_id)
-
         self.refresh_view()
 
     # CREATE BUTTONS
@@ -293,16 +282,10 @@ class CreatureInventoryView(BaseView):
         self.order_alphabetically_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL else discord.ButtonStyle.gray
         self.order_catch_date_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO else discord.ButtonStyle.gray
         self.order_dex_no_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_CAUGHT_DATE else discord.ButtonStyle.gray
-
-        # UPDATE DROPDOWN OPTIONS
-        self.box_jump_dropdown.options = [discord.SelectOption(label=f"Box {i}", value=str(i), default=(i == self.image_factory.current_box_num)) for i in range(1, self.max_boxes + 1)]
     def rebuild_view(self):
-        for item in self.children.copy():
-            self.remove_item(item)
+        super().rebuild_view()
 
         # add always visible items
-        # row 0
-        self.add_item(self.box_jump_dropdown)
         # row 1
         self.add_item(self.prev_button)
         self.add_item(self.next_button)

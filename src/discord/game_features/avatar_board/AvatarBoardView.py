@@ -1,14 +1,12 @@
 import discord
 
-from src.commons.CommonFunctions import retry_on_ssl_error, convert_to_png, \
-    interaction_guard
-from src.zz_deprecated.AvatarBoardImageFactory import AVATAR_QUESTS, \
-    UNLOCKED_AVATARS
+from src.commons.CommonFunctions import retry_on_ssl_error, convert_to_png, interaction_guard
 from src.discord.general.template.BaseView import BaseView
+from src.resources.constants.TGO_MMO_constants import AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY, AVATAR_INVENTORY_QUEST_TAB_KEY
 
 
 class AvatarBoardView(BaseView):
-    def __init__(self, message_author, target_user, avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory, open_tab=UNLOCKED_AVATARS, original_view=None):
+    def __init__(self, message_author, target_user, avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory, open_tab=AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=None, original_view=original_view)
 
         self.open_tab = open_tab
@@ -24,7 +22,7 @@ class AvatarBoardView(BaseView):
     def navigation_button_callback(self, is_next):
         @interaction_guard(self)
         async def callback(interaction):
-            image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory
+            image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else self.avatar_board_quest_image_factory
             new_page_number = image_factory.page_num + (1 if is_next else -1)
 
             reloaded_image = self.reload_image(new_page_number=new_page_number)
@@ -40,7 +38,7 @@ class AvatarBoardView(BaseView):
     def open__unlocked_avatars_panel_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            self.open_tab = UNLOCKED_AVATARS
+            self.open_tab = AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY
 
             self.refresh_view()
             await interaction.message.edit(attachments=[self.reload_image()], view=self)
@@ -54,7 +52,7 @@ class AvatarBoardView(BaseView):
         @interaction_guard(self)
         @retry_on_ssl_error()
         async def callback(interaction):
-            self.open_tab = AVATAR_QUESTS
+            self.open_tab = AVATAR_INVENTORY_QUEST_TAB_KEY
 
             self.refresh_view()
             await interaction.message.edit(attachments=[self.reload_image()], view=self)
@@ -66,20 +64,20 @@ class AvatarBoardView(BaseView):
         self.update_button_states()
         self.rebuild_view()
     def update_button_states(self):
-        active_img_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory
+        active_img_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else self.avatar_board_quest_image_factory
 
         self.prev_button.disabled = active_img_factory.page_num == 1
         self.next_button.disabled = active_img_factory.page_num == active_img_factory.total_pages
 
-        self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == UNLOCKED_AVATARS else discord.ButtonStyle.gray
-        self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_QUESTS else discord.ButtonStyle.gray
+        self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else discord.ButtonStyle.gray
+        self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_INVENTORY_QUEST_TAB_KEY else discord.ButtonStyle.gray
 
-        self.update_page_jump_dropdown_options(active_img_factory=self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory)  # Add this line
+        self.update_page_jump_dropdown_options(active_img_factory=self.avatar_board_unlocked_avatar_image_factory if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else self.avatar_board_quest_image_factory)  # Add this line
 
     def rebuild_view(self):
         self.clear_items()
 
-        if (len(self.avatar_board_unlocked_avatar_image_factory.unlocked_avatars) > 75 and self.open_tab == UNLOCKED_AVATARS) or (len(self.avatar_board_quest_image_factory.avatar_quests) > 16 and self.open_tab == AVATAR_QUESTS):
+        if (len(self.avatar_board_unlocked_avatar_image_factory.unlocked_avatars) > 75 and self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY) or (len(self.avatar_board_quest_image_factory.avatar_quests) > 16 and self.open_tab == AVATAR_INVENTORY_QUEST_TAB_KEY):
             self.add_item(self.page_jump_dropdown)
             self.add_item(self.prev_button)
             self.add_item(self.next_button)
@@ -92,9 +90,7 @@ class AvatarBoardView(BaseView):
             self.add_item(self.go_back_button)
 
     def reload_image(self, image_factory= None, new_page_number=None):
-        image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory
+        image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else self.avatar_board_quest_image_factory
         new_image = image_factory.reload_image(new_page_number=new_page_number)
         return convert_to_png(new_image, 'avatar_board_image.png')
-
-    # SUPPORT FUNCTIONS
 

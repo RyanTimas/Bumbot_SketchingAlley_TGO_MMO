@@ -6,8 +6,6 @@ from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import Unl
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
-AVATAR_QUESTS = "AVATAR_QUESTS"
-UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
 class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user):

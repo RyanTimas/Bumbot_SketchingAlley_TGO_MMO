@@ -144,6 +144,8 @@ CREATURE_INVENTORY_MODE_DEFAULT = "Default"
 CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
 
 """ ----- AVATAR INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+AVATAR_INVENTORY_QUEST_TAB_KEY = "AVATAR_QUESTS"
+AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY = "UNLOCKED_AVATARS"
 
 
 '''------------------'''

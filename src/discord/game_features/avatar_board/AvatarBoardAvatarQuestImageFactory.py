@@ -6,9 +6,6 @@ from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQ
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
-# todo: move to commons
-AVATAR_QUESTS = "AVATAR_QUESTS"
-UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
 class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user):

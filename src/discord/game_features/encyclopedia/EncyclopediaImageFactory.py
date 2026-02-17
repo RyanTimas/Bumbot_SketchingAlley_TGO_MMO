@@ -30,11 +30,12 @@ class EncyclopediaImageFactory(BaseImageFactory):
         super().__init__(message_author=message_author, target_user=target_user)
         self.load_relevant_info(environment=environment)
 
-    def reload_image(self, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None):
-        self.load_relevant_info(environment=environment, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
+    def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None):
+        self.load_relevant_info(target_user=target_user, environment=environment, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
         return self.build_image()
 
-    def load_relevant_info(self, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
+    def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
+        self.target_user = target_user if target_user is not None else self.target_user
         self.environment = environment if environment is not None else self.environment
 
         self.is_verbose = is_verbose if is_verbose is not None else self.is_verbose
@@ -44,8 +45,10 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
         self.page_num = 1 if show_variants is not None or time_of_day is not None else self.page_num
 
-        data_changed = any(param is not None for param in [environment, show_variants, show_mythics, time_of_day, new_page_number])
+        data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day, new_page_number])
         if data_changed:
+            self.is_server_view = self.target_user.user_id == 0
+
             self.distinct_user_catches = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
             self.total_user_catches = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
             self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)

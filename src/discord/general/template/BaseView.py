@@ -2,6 +2,7 @@ import asyncio
 import discord
 
 from src.commons.CommonFunctions import convert_to_png, interaction_guard, retry_on_ssl_error
+from src.commons.Modals.ChangeUserModal import ChangeUserModal
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer
 
@@ -26,6 +27,7 @@ class BaseView(discord.ui.View):
 
         self.go_back_button = self.create_go_back_button(row=4)
         self.close_button = self.create_close_button(row=4, )
+        self.change_user_button = self.create_change_user_button(row=4)
 
     # BUTTONS
     def create_navigation_button(self, is_next, callback_func=None, row=0, disabled=False):
@@ -65,6 +67,17 @@ class BaseView(discord.ui.View):
             await interaction.message.delete()
         return callback
 
+    def create_change_user_button(self, row=4):
+        button = discord.ui.Button(label="👤 Change User", style=discord.ButtonStyle.secondary, row=row)
+        button.callback = self.change_user_callback()
+        return button
+    def change_user_callback(self):
+        @interaction_guard(self, defer_response=False)
+        async def callback(interaction):
+            modal = ChangeUserModal(self)
+            await interaction.response.send_modal(modal)
+        return callback
+
     # DROPDOWNS
     def create_page_jump_dropdown(self, row=0):
         options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.image_factory.total_pages + 1)]
@@ -91,7 +104,6 @@ class BaseView(discord.ui.View):
                     default=(page == active_img_factory.page_num)
                 )
             )
-
 
     # FUNCTIONS FOR UPDATING VIEW STATE
     def refresh_view(self):
@@ -123,10 +135,11 @@ class BaseView(discord.ui.View):
             self.add_item(self.next_button)
 
         self.add_item(self.close_button)
+        self.add_item(self.change_user_button)
         if self.original_view:
             self.add_item(self.go_back_button)
 
-    def reload_image(self, image_factory= None, new_page_number=None):
+    def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         image_factory =  image_factory if image_factory else self.image_factory
-        new_image = image_factory.reload_image(new_page_number=self.page_num)
+        new_image = image_factory.reload_image(target_user=target_user, new_page_number=self.page_num)
         return new_image if new_image is None else convert_to_png(new_image, 'image_factory_image.png')

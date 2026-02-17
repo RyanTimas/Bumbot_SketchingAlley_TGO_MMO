@@ -13,10 +13,11 @@ class BaseImageFactory:
         self.page_num = 1
         self.total_pages = 1
 
-    def reload_image(self, new_page_number = None):
-        self.load_relevant_info(new_page_number)
+    def reload_image(self, target_user=None, new_page_number = None):
+        self.load_relevant_info(target_user=target_user, new_page_number=new_page_number)
         return self.build_image()
-    def load_relevant_info(self, new_page_number = None):
+    def load_relevant_info(self, target_user=None, new_page_number = None):
+        self.target_user = target_user if target_user else self.target_user
         self.page_num = new_page_number if new_page_number else self.page_num
         pass
     def build_image(self):

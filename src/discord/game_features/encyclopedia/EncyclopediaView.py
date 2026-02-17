@@ -47,9 +47,7 @@ class EncyclopediaView(BaseView):
         return button
     def toggle_callback(self, button_type):
         @interaction_guard(self)
-        async def callback(interaction):
-            await interaction.response.defer()
-
+        async def callback(interaction, defer_response=False):
             self.is_verbose = not self.is_verbose if button_type == ENCYCLOPEDIA_VERBOSE_MODE else self.is_verbose
             self.show_variants = not self.show_variants if button_type == ENCYCLOPEDIA_VARIANTS_MODE else self.show_variants
             self.show_mythics = not self.show_mythics if button_type == ENCYCLOPEDIA_MYTHICAL_MODE else self.show_mythics
@@ -84,8 +82,8 @@ class EncyclopediaView(BaseView):
             self.add_item(self.night_only_button)
 
 
-    def reload_image(self, is_verbose=None, show_variants=None, show_mythics=None, time=None, new_page_number=None):
-        new_image = self.image_factory.reload_image(is_verbose=is_verbose, show_variants=show_variants, show_mythics=show_mythics, time_of_day=time, new_page_number=new_page_number)
+    def reload_image(self, target_user=None, is_verbose=None, show_variants=None, show_mythics=None, time=None, new_page_number=None):
+        new_image = self.image_factory.reload_image(target_user=target_user, is_verbose=is_verbose, show_variants=show_variants, show_mythics=show_mythics, time_of_day=time, new_page_number=new_page_number)
         return convert_to_png(new_image, f'encyclopedia_page.png')
 
 

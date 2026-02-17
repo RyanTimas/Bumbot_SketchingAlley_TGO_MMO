@@ -80,6 +80,17 @@ class BaseView(discord.ui.View):
             self.refresh_view()
             await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
+    def update_page_jump_dropdown_options(self, active_img_factory):
+        # Clear existing options and add new ones based on active factory
+        self.page_jump_dropdown.options = []
+        for page in range(1, active_img_factory.total_pages + 1):
+            self.page_jump_dropdown.options.append(
+                discord.SelectOption(
+                    label=f"Page {page}",
+                    value=str(page),
+                    default=(page == active_img_factory.page_num)
+                )
+            )
 
 
     # FUNCTIONS FOR UPDATING VIEW STATE

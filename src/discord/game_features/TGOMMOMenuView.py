@@ -1,16 +1,14 @@
-import asyncio
-
 import discord
 from PIL import Image
 
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
+from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
-from src.discord.game_features.avatar_board.avatar_collection.AvatarBoardAvatarQuestImageFactory import \
+from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
     AvatarBoardAvatarQuestImageFactory
-from src.discord.game_features.avatar_board.avatar_collection.AvatarBoardUnlockedAvatarImageFactory import \
+from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import \
     AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView

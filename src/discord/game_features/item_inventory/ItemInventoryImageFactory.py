@@ -30,7 +30,7 @@ class ItemInventoryImageFactory(BaseImageFactory):
     def build_image(self):
         item_inventory_image = Image.open(ITEM_INVENTORY_BG_IMAGE)
         item_inventory_overlay = Image.open(ITEM_INVENTORY_CORNER_OVERLAY_IMAGE)
-        item_grid_img = self.build_grid(icons=self.user_item_icons[self.starting_index: self.ending_index], grid_size=(1512, 700), icon_size=(500, 70), icons_per_row=3, horizontal_padding=6, vertical_padding=3)
+        item_grid_img = self.build_grid(icons=self.user_item_icons[self.starting_index: self.ending_index], grid_size=(1512, 700), icons_per_page=20, icon_size=(500, 70), icons_per_row=3, horizontal_padding=6, vertical_padding=3)
 
         item_inventory_image.paste(item_grid_img, (216, 270), item_grid_img)
         item_inventory_image.paste(item_inventory_overlay, (0, 0), item_inventory_overlay)

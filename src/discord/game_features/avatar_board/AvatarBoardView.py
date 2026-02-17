@@ -1,12 +1,8 @@
-import asyncio
-
 import discord
-from anyio import current_time
 
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view, convert_to_png, \
+from src.commons.CommonFunctions import retry_on_ssl_error, convert_to_png, \
     interaction_guard
-from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
-from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AVATAR_QUESTS, \
+from src.zz_deprecated.AvatarBoardImageFactory import AVATAR_QUESTS, \
     UNLOCKED_AVATARS
 from src.discord.general.template.BaseView import BaseView
 
@@ -20,11 +16,8 @@ class AvatarBoardView(BaseView):
         self.avatar_board_unlocked_avatar_image_factory = avatar_board_unlocked_avatar_image_factory
         self.avatar_board_quest_image_factory = avatar_board_quest_image_factory
 
-        self.avatar_quests_button = self.create_open_avatar_quests_panel_button(row=1)
-        self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=1)
-
-        self.prev_button = self.create_navigation_button(is_next=False, row=2)
-        self.next_button = self.create_navigation_button(is_next=True, row=2)
+        self.avatar_quests_button = self.create_open_avatar_quests_panel_button(row=2)
+        self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=2)
 
         self.refresh_view()
 
@@ -80,10 +73,14 @@ class AvatarBoardView(BaseView):
 
         self.unlocked_avatar_tab_button.style = discord.ButtonStyle.green if self.open_tab == UNLOCKED_AVATARS else discord.ButtonStyle.gray
         self.avatar_quests_button.style = discord.ButtonStyle.green if self.open_tab == AVATAR_QUESTS else discord.ButtonStyle.gray
+
+        self.update_page_jump_dropdown_options(active_img_factory=self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory)  # Add this line
+
     def rebuild_view(self):
         self.clear_items()
 
         if (len(self.avatar_board_unlocked_avatar_image_factory.unlocked_avatars) > 75 and self.open_tab == UNLOCKED_AVATARS) or (len(self.avatar_board_quest_image_factory.avatar_quests) > 16 and self.open_tab == AVATAR_QUESTS):
+            self.add_item(self.page_jump_dropdown)
             self.add_item(self.prev_button)
             self.add_item(self.next_button)
 
@@ -98,3 +95,6 @@ class AvatarBoardView(BaseView):
         image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == UNLOCKED_AVATARS else self.avatar_board_quest_image_factory
         new_image = image_factory.reload_image(new_page_number=new_page_number)
         return convert_to_png(new_image, 'avatar_board_image.png')
+
+    # SUPPORT FUNCTIONS
+

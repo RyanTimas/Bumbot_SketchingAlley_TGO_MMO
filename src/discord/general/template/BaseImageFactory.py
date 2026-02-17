@@ -28,14 +28,17 @@ class BaseImageFactory:
         draw = ImageDraw.Draw(img)
         return img
 
-    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_row=3, horizontal_padding=6, vertical_padding=3):
+    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3):
         grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
         icon_width, icon_height = icon_size
 
         # Calculate padding
         row, col = 0, 0
 
-        for i, icon in enumerate(icons):
+        starting_index = (self.page_num - 1) * icons_per_page
+        ending_index = min(starting_index + icons_per_page, len(icons))
+
+        for i, icon in enumerate(icons[starting_index:ending_index]):
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)

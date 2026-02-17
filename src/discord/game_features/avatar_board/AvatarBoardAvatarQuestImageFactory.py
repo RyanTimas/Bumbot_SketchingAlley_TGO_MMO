@@ -6,6 +6,7 @@ from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQ
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
+# todo: move to commons
 AVATAR_QUESTS = "AVATAR_QUESTS"
 UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
@@ -26,15 +27,13 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         corner_overlay_img = Image.open(AVATAR_BOARD_CORNER_OVERLAY)
         unlocked_avatar_button_img = Image.open(AVATAR_BOARD_BUTTON_UNLOCKED_AVATAR_INACTIVE_IMAGE)
         avatar_quest_button_img = Image.open(AVATAR_BOARD_BUTTON_AVATAR_QUESTS_ACTIVE_IMAGE)
-
-        avatar_quest_grid_img = self.create_avatar_quests_grid()
+        avatar_quest_grid_img = self.build_grid(self.avatar_quest_icons, grid_size=(1092, 476), icon_size=(550, 50), icons_per_page=16, icons_per_row=2, horizontal_padding=0, vertical_padding=5)
 
         avatar_quest_img.paste(unlocked_avatar_button_img, (0, 0), unlocked_avatar_button_img)
         avatar_quest_img.paste(avatar_quest_button_img, (0, 0), avatar_quest_button_img)
         avatar_quest_img.paste(avatar_quest_grid_img, (103, 100), avatar_quest_grid_img)
         avatar_quest_img.paste(corner_overlay_img, (0, 0), corner_overlay_img)
         return avatar_quest_img
-
 
     def get_avatar_quests_icons(self):
         if len(self.avatar_quests) == 0:
@@ -55,44 +54,3 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
             imgs.append(convert_to_png(avatar_quest_img, f'avatar_icon_{avatar.img_root}.png'))
 
         return raw_imgs  #, imgs
-    def create_avatar_quests_grid(self):
-        # Create a blank canvas for the grid
-        grid_canvas = Image.new('RGBA', (1092, 476), (0, 0, 0, 0))
-
-        # Define grid parameters
-        icon_width, icon_height = 550, 50
-        icons_per_row = 2
-
-        # Calculate padding
-        horizontal_padding = 0
-        vertical_padding = 5
-
-        # Define how many icons will be displayed at a time
-        tabs_per_page = 16
-        starting_index = (self.page_num - 1) * tabs_per_page  # Adjust calculation to start from 0
-        ending_index = min(starting_index + tabs_per_page, len(self.avatar_quest_icons))  # Ensure we don't go past the end of the list
-
-        # Place icons on grid
-        row, col = 0, 0
-        for i in range(starting_index, ending_index):
-            dex_icon = self.avatar_quest_icons[i]
-
-            # Calculate position
-            x = col * (icon_width + horizontal_padding if i != 0 else 0)
-            y = row * (icon_height + vertical_padding if i != 0 else 0)
-
-            # Paste icon onto canvas
-            grid_canvas.paste(dex_icon, (int(x), int(y)))
-
-            # Move to next position
-            col += 1
-            if col >= icons_per_row:
-                col = 0
-                row += 1
-
-            # Stop if we run out of space
-            if row * (icon_height + vertical_padding) + icon_height > 500:
-                break
-
-        return grid_canvas
-

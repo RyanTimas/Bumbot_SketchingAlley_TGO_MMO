@@ -4,13 +4,15 @@ import sys
 import aiohttp
 import discord
 from discord.ext import commands
-from pyexpat.errors import messages
 
 from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, convert_to_png
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
+from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
+    AvatarBoardAvatarQuestImageFactory
+from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import \
+    AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_enounter.CreatureSpawnerHandler import CreatureSpawnerHandler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
@@ -122,8 +124,8 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
              
-            avatar_board_unlocked_avatar_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
-            avatar_board_quest_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
+            avatar_board_unlocked_avatar_image_factory = AvatarBoardUnlockedAvatarImageFactory(message_author=message_author, target_user=target_user)
+            avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=message_author, target_user=target_user)
             view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory)
 
             await interaction.response.send_message('', files=[view.reload_image()], view=view)
@@ -134,10 +136,10 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
 
-            creature_inventory_handler = CreatureInventoryImageFactory(message_author=message_author, target_user=target_user)
-            view = CreatureInventoryView(message_author=message_author, target_user=target_user, creature_inventory_image_factory=creature_inventory_handler)
+            creature_inventory_image_factory = CreatureInventoryImageFactory(message_author=message_author, target_user=target_user)
+            view = CreatureInventoryView(message_author=message_author, target_user=target_user, creature_inventory_image_factory=creature_inventory_image_factory)
 
-            await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_handler.reload_image(), f'avatar_board.png')], view=view)
+            await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_image_factory.reload_image(), f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-encyclopedia-tgommo", description="Opens User's Encyclopedia.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_encyclopedia(interaction, user_id: str = None):

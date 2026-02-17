@@ -19,8 +19,8 @@ class BaseImageFactory:
         self.page_num = new_page_number if new_page_number else self.page_num
         pass
 
-    def reload_image(self, new_page_number = 1):
-        self.load_relevant_info()
+    def reload_image(self, new_page_number = None):
+        self.load_relevant_info(new_page_number)
         return self.build_image()
 
 

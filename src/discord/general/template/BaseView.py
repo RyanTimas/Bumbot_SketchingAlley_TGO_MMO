@@ -35,8 +35,6 @@ class BaseView(discord.ui.View):
     def navigation_button_callback(self, is_next):
         @interaction_guard(self)
         async def callback(interaction):
-            await interaction.response.defer()
-
             new_page_number = self.image_factory.page_num + (1 if is_next else -1)
 
             reloaded_image = self.reload_image(new_page_number=new_page_number)
@@ -76,8 +74,6 @@ class BaseView(discord.ui.View):
     def page_jump_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            await interaction.response.defer()
-
             new_page_number = int(interaction.data["values"][0])
 
             reloaded_image = self.reload_image(new_page_number=new_page_number)

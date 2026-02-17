@@ -8,6 +8,10 @@ from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_in
 from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
+from src.discord.game_features.avatar_board.avatar_collection.AvatarBoardAvatarQuestImageFactory import \
+    AvatarBoardAvatarQuestImageFactory
+from src.discord.game_features.avatar_board.avatar_collection.AvatarBoardUnlockedAvatarImageFactory import \
+    AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
@@ -17,7 +21,6 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, PLAYER_PROFILE_TAB_OPEN_TEAM
-from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory, AVATAR_QUESTS
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.file_paths import *
 
@@ -88,10 +91,11 @@ class TGOMMOMenuView(BaseView):
     def display_avatar_board_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            avatar_board_img_factory = AvatarBoardImageFactory(user_id=self.message_author.user_id, open_tab=AVATAR_QUESTS, )
-            avatar_board_view = AvatarBoardView(message_author=self.message_author, target_user=self.target_user, avatar_board_image_factory=avatar_board_img_factory, original_view=self, open_tab=avatar_board_img_factory.open_tab, )
+            avatar_board_unlocked_avatar_image_factory = AvatarBoardUnlockedAvatarImageFactory(message_author=self.message_author, target_user=self.target_user)
+            avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=self.message_author, target_user=self.target_user)
+            avatar_board_view = AvatarBoardView(message_author=self.message_author, target_user=self.target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory, original_view=self, )
 
-            await interaction.message.edit(attachments=[convert_to_png(avatar_board_img_factory.build_avatar_board_page_image(), f'avatar_board.png')], view=avatar_board_view)
+            await interaction.message.edit(attachments=[convert_to_png(avatar_board_unlocked_avatar_image_factory.build_image(), f'avatar_board.png')], view=avatar_board_view)
         return callback
 
     def create_creature_inventory_button(self, row=1):

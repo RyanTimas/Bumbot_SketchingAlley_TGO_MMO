@@ -4,15 +4,15 @@ from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
 AVATAR_QUESTS = "AVATAR_QUESTS"
 UNLOCKED_AVATARS = "UNLOCKED_AVATARS"
 
-class AvatarBoardImageFactory:
-    def __init__(self, user_id, open_tab=UNLOCKED_AVATARS):
-        self.user_id = user_id
-
+class AvatarBoardImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user, open_tab=UNLOCKED_AVATARS):
+        super().__init__(message_author=message_author, target_user=target_user)
         self.open_tab = open_tab
 
         self.unlocked_avatars = []
@@ -28,9 +28,9 @@ class AvatarBoardImageFactory:
 
         self.load_relevant_info()
 
-    def load_relevant_info(self):
+    def load_relevant_info(self, new_page_number = None):
         # Load page info for both sections
-        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.user_id, convert_to_object=True)
+        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.target_user.user_id, convert_to_object=True)
         self.page_num_unlocked_avatar = 1
         self.total_unlocked_avatar_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
 
@@ -41,6 +41,15 @@ class AvatarBoardImageFactory:
         # load all unlocked avatar icons
         self.unlocked_avatar_icons = self.get_unlocked_avatars_icons()
         self.avatar_quest_icons = self.get_avatar_quests_icons()
+
+
+    def bulild_unlocked_avatars_page(self, background_img):
+        self.page_num_unlocked_avatar = new_page_number
+
+        unlocked_avatars_grid_img = self.create_unlocked_avatars_grid()
+        background_img.paste(unlocked_avatars_grid_img, (102, 106), unlocked_avatars_grid_img)
+
+        return background_img
 
 
     def build_avatar_board_page_image(self, new_page_number = None, open_tab = None):

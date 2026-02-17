@@ -14,9 +14,6 @@ class CreatureInventoryView(BaseView):
     def __init__(self, message_author, target_user, creature_inventory_image_factory: CreatureInventoryImageFactory, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=creature_inventory_image_factory, original_view=original_view)
 
-        self.new_box = 1
-        self.max_boxes = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=target_user.user_id)
-
         # FILTER/ORDER STATE
         self.show_only_mythics = False
         self.show_only_favorites = False
@@ -32,6 +29,8 @@ class CreatureInventoryView(BaseView):
         self.select_all_enabled = True
 
         # DEFINE VIEW COMPONENTS
+        # row 1
+        self.storage_expansion_button = self.create_storage_expansion_button(row=1)
         # row 2
         self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_FILTER_EXPANSION_KEY)
         self.expand_order_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_ORDER_EXPANSION_KEY)
@@ -64,7 +63,7 @@ class CreatureInventoryView(BaseView):
     def storage_expansion_callback(self, ):
         @interaction_guard(self)
         async def callback(interaction):
-            if self.image_factory.current_box_num + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
+            if self.image_factory.page_num + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
                 await interaction.followup.send("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
             elif self.message_author.user_id == self.target_user.user_id:
                 await interaction.followup.send(self.create_inventory_expansion_confirmation_modal())
@@ -72,23 +71,6 @@ class CreatureInventoryView(BaseView):
         return callback
 
     # todo: move to base view
-    def create_navigation_button(self, is_next, row=0):
-        button = discord.ui.Button(label="To Next Page➡️" if is_next else "⬅️To Previous Page", style=discord.ButtonStyle.blurple, row=row)
-        button.callback = self.nav_callback(new_page=next_ if is_next else previous)
-        return button
-    def nav_callback(self, new_page, ):
-        @interaction_guard(self)
-        async def callback(interaction):
-             # Update page number
-                page_options = {
-                    next_: self.image_factory.current_box_num + 1,
-                    previous: self.image_factory.current_box_num - 1,
-                    jump: self.new_box
-                }
-                self.refresh_view()
-                await interaction.message.edit(attachments=[self.reload_image(new_box_number=page_options[new_page])], view=self)
-        return callback
-
     def create_filter_button(self, row=2, button_type=CREATURE_INVENTORY_FILTER_MYTHIC):
         button_type_options = {
             CREATURE_INVENTORY_FILTER_MYTHIC: "✨ Mythics Only",
@@ -186,40 +168,11 @@ class CreatureInventoryView(BaseView):
     def creature_management_button_callback(self, button_type):
         @interaction_guard(self)
         async def callback(interaction):
-            view = CreatureInventoryManagementView(
-                message_author=self.message_author,
-                mode=button_type,
-                creatures=self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index],
-                creature_inventory_image_factory=self.image_factory,
-                original_message=interaction.message,
-                original_view=self,
-                select_all_enabled=self.select_all_enabled,
-
-                show_only_mythics=self.show_only_mythics,
-                show_only_favorites=self.show_only_favorites,
-                show_only_nicknames=self.show_only_nicknames,
-            )
+            view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index], creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames,)
 
             box_is_empty = len(self.image_factory.caught_creatures[self.image_factory.starting_index:self.image_factory.ending_index]) == 0
-            await interaction.response.send_message(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)
+            await interaction.followup.send(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)
         return callback
-
-
-    # CREATE DROPDOWNS
-    def create_page_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Box {i}", value=str(i)) for i in range(1, self.max_boxes + 1)]
-        dropdown = Select(placeholder="Jump to Box", options=options, min_values=1, max_values=1, row=row)
-
-        dropdown.callback = self.nav_callback(new_page=jump)
-        return dropdown
-    def creature_box_dropdown_callback(self):
-         @interaction_guard(self)
-         async def callback(interaction):
-             self.new_box = int(interaction.data["values"][0])
-
-             self.refresh_view()
-             await interaction.message.edit(attachments=[self.reload_image(new_box_number=self.new_box)], view=self)
-         return callback
 
 
     # CREATE MODALS
@@ -238,12 +191,11 @@ class CreatureInventoryView(BaseView):
 
                 # Update local values
                 self.target_user.currency -= self.get_expansion_cost()
-                self.max_boxes += 1
-                self.image_factory.total_unlocked_box_num += 1
+                self.image_factory.total_pages += 1
 
                 # Refresh View
                 self.refresh_view()
-                await interaction.message.edit(attachments=[self.reload_image(new_box_number=self.new_box)], view=self)
+                await interaction.message.edit(attachments=[self.reload_image(new_page_number=self.image_factory.page_num)], view=self)
                 await interaction.response.send_message("✅ Your creature storage has been expanded by 100 slots!", ephemeral=True)
             else:
                 await interaction.response.send_message("❌ You do not have enough coins to expand your creature storage.", ephemeral=True)
@@ -259,13 +211,13 @@ class CreatureInventoryView(BaseView):
         self.rebuild_view()
     def update_button_states(self):
         # UPDATE ENABLED/DISABLED STATES
-        self.prev_button.disabled = self.image_factory.current_box_num <= 1
-        self.next_button.disabled = self.image_factory.current_box_num >= self.max_boxes+(1 if self.message_author.user_id == self.target_user.user_id else 0)
+        self.prev_button.disabled = self.image_factory.page_num <= 1
+        self.next_button.disabled = self.image_factory.page_num >= self.image_factory.total_pages + (1 if self.message_author.user_id == self.target_user.user_id else 0)
 
         # UPDATE BUTTON LABELS
         self.exclusive_mode_button.label = "❌" if self.is_exclusive_mode else "✅"
         self.ascending_order_button.label = "⬆️" if self.is_ascending_order else "⬇️"
-        self.next_button.label = "To Next Page➡️" if self.image_factory.current_box_num < self.max_boxes else "To Next Page➡️"
+        self.next_button.label = "To Next Page➡️" if self.image_factory.page_num < self.image_factory.total_pages else "To Next Page➡️"
 
         # UPDATE BUTTON STYLES
         self.expand_order_options_button.style = discord.ButtonStyle.green if self.expanded_display == CREATURE_INVENTORY_ORDER_EXPANSION_KEY else discord.ButtonStyle.gray
@@ -276,19 +228,21 @@ class CreatureInventoryView(BaseView):
         self.show_only_mythics_button.style = discord.ButtonStyle.green if self.show_only_mythics else discord.ButtonStyle.gray
         self.show_only_favorites_button.style = discord.ButtonStyle.green if self.show_only_favorites else discord.ButtonStyle.gray
         self.show_only_nicknames_button.style = discord.ButtonStyle.green if self.show_only_nicknames else discord.ButtonStyle.gray
-        self.next_button.style = discord.ButtonStyle.blurple if self.image_factory.current_box_num < self.max_boxes else discord.ButtonStyle.green if self.message_author.user_id == self.target_user.user_id else discord.ButtonStyle.blurple
+        self.next_button.style = discord.ButtonStyle.blurple if self.image_factory.page_num < self.image_factory.total_pages else discord.ButtonStyle.green if self.message_author.user_id == self.target_user.user_id else discord.ButtonStyle.blurple
 
         self.ascending_order_button.style = discord.ButtonStyle.green if self.is_ascending_order else discord.ButtonStyle.red
         self.order_alphabetically_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL else discord.ButtonStyle.gray
         self.order_catch_date_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO else discord.ButtonStyle.gray
         self.order_dex_no_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_CAUGHT_DATE else discord.ButtonStyle.gray
     def rebuild_view(self):
-        super().rebuild_view()
+        self.clear_items()
 
-        # add always visible items
         # row 1
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
+        if self.image_factory and self.image_factory.total_pages > 1:
+            self.add_item(self.page_jump_dropdown)
+            self.add_item(self.prev_button)
+            self.add_item(self.storage_expansion_button if self.image_factory.page_num == self.image_factory.total_pages else self.next_button)
+
         # row 2
         self.add_item(self.expand_filter_options_button)
         self.add_item(self.expand_order_options_button)
@@ -315,16 +269,16 @@ class CreatureInventoryView(BaseView):
 
         # row 4
         self.add_item(self.close_button)
-        if self.original_view is not None:
+        if self.original_view:
             self.add_item(self.go_back_button)
 
 
     # SUPPORT FUNCTIONS
-    def reload_image(self, new_box_number=None):
+    def reload_image(self, image_factory= None, new_page_number=None):
         reload_icons = self.image_factory.image_mode == CREATURE_INVENTORY_MODE_RELEASE
-        new_image = self.image_factory.get_creature_inventory_page_image(refresh_creatures= reload_icons,order_type=self.order_type, new_box_number=new_box_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )
+        new_image = self.image_factory.reload_image(refresh_creatures= reload_icons,order_type=self.order_type, new_box_number=new_page_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def get_expansion_cost(self):
-        already_purchased_expansions = self.max_boxes - BASE_CREATURE_STORAGE_EXPANSIONS
+        already_purchased_expansions = self.image_factory.total_pages - BASE_CREATURE_STORAGE_EXPANSIONS
         return (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_COST

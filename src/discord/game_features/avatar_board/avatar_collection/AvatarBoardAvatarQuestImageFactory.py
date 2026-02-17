@@ -16,6 +16,7 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
 
         super().__init__(message_author=message_author, target_user=target_user)
         self.total_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
+        self.load_relevant_info()
 
     def load_relevant_info(self, new_page_number = None):
         self.page_num = new_page_number if new_page_number else self.page_num

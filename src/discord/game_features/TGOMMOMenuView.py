@@ -105,10 +105,10 @@ class TGOMMOMenuView(BaseView):
     def creature_inventory_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            creature_inventory_img_factory = CreatureInventoryImageFactory(user=self.message_author,)
+            creature_inventory_img_factory = CreatureInventoryImageFactory(message_author=self.message_author, target_user=self.target_user)
             creature_inventory_view = CreatureInventoryView(message_author=self.message_author, target_user=self.target_user, creature_inventory_image_factory=creature_inventory_img_factory, original_view=self)
 
-            await interaction.message.edit(attachments=[convert_to_png(creature_inventory_img_factory.get_creature_inventory_page_image(), f'creature_inventory_img.png')], view=creature_inventory_view)
+            await interaction.message.edit(attachments=[convert_to_png(creature_inventory_img_factory.reload_image(), f'creature_inventory_img.png')], view=creature_inventory_view)
 
         return callback
 

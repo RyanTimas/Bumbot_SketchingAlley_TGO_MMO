@@ -122,11 +122,11 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
              
-            avatar_board_handler = AvatarBoardImageFactory(user_id=user_id)
-            avatar_board_img = avatar_board_handler.build_avatar_board_page_image()
-            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_image_factory=avatar_board_handler)
+            avatar_board_unlocked_avatar_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
+            avatar_board_quest_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
+            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory)
 
-            await interaction.response.send_message('', files=[convert_to_png(avatar_board_img, f'avatar_board.png')], view=view)
+            await interaction.response.send_message('', files=[view.reload_image()], view=view)
 
         @self.tree.command(name="open-creature-inventory-tgommo", description="Opens User's Creature Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_creature_inventory(interaction, user_id: str = None):
@@ -134,10 +134,10 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
 
-            creature_inventory_handler = CreatureInventoryImageFactory(user=target_user)
+            creature_inventory_handler = CreatureInventoryImageFactory(message_author=message_author, target_user=target_user)
             view = CreatureInventoryView(message_author=message_author, target_user=target_user, creature_inventory_image_factory=creature_inventory_handler)
 
-            await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_handler.get_creature_inventory_page_image(), f'avatar_board.png')], view=view)
+            await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_handler.reload_image(), f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-encyclopedia-tgommo", description="Opens User's Encyclopedia.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_encyclopedia(interaction, user_id: str = None):

@@ -57,8 +57,7 @@ def create_generic_nav_callback(view_instance, is_next):
                     await interaction.followup.send_modal(view_instance.create_inventory_expansion_confirmation_modal())
                     return
 
-                new_image = view_instance.creature_inventory_image_factory.get_creature_inventory_page_image(
-                    new_box_number=new_box,
+                new_image = view_instance.creature_inventory_image_factory.reload_image(new_box_number=new_box,
                     order_type=view_instance.order_type,
                     show_mythics_only=view_instance.show_only_mythics,
                     show_favorites_only=view_instance.show_only_favorites,

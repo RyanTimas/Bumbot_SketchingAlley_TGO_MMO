@@ -17,6 +17,8 @@ class PlayerProfileImageFactory(BaseImageFactory):
         self.left_button_enabled = False
         self.right_button_enabled = False
 
+        self.load_relevant_info()
+
 
     def reload_image(self, open_tab = None):
         # update components

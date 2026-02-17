@@ -155,10 +155,10 @@ class DiscordBot(commands.Bot):
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
             target_user = message_author
 
-            item_inventory_handler = ItemInventoryImageFactory(user=target_user, )
+            item_inventory_handler = ItemInventoryImageFactory(message_author=message_author, target_user=target_user,)
             view = ItemInventoryView(message_author=message_author, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
 
-            await interaction.response.send_message(files=[convert_to_png(item_inventory_handler.generate_item_inventory_image(), f'avatar_board.png')], view=view)
+            await interaction.response.send_message(files=[convert_to_png(item_inventory_handler.reload_image(), f'avatar_board.png')], view=view)
 
         @self.tree.command(name="open-player_profile-tgommo", description="Opens User's Player Profile.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_player_profile(interaction, user_id: str = None):

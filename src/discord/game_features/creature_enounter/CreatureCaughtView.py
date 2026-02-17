@@ -80,7 +80,7 @@ class CreatureCaughtView(discord.ui.View):
             for item in self.children:
                 item.disabled = True
 
-            release_results_file = CreatureReleaseService.create_release_results_file(user=self.interaction.user, currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+            release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.interaction.user.id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
 
             await interaction.response.edit_message(view=self)
             await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
@@ -96,13 +96,9 @@ class CreatureCaughtView(discord.ui.View):
         return button
     async def favorite_button_callback(self, interaction: discord.Interaction):
         creature = get_tgommo_db_handler().get_user_creature_by_catch_id(self.creature_catch_id, convert_to_object=True)
-
-        # Toggle favorite status
         get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[self.creature_catch_id, ], is_favorite=not creature.is_favorite)
 
-        # Refresh view to update button state
         self.refresh_view()
-
         await interaction.response.edit_message(view=self)
         await interaction.followup.send(f"Creature {"favorited" if not creature.is_favorite else "unfavorited"}!", ephemeral=True)
 

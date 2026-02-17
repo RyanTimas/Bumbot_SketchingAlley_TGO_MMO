@@ -31,8 +31,8 @@ class CreatureReleaseService:
         return currency_earned, earned_items
 
     @staticmethod
-    def create_release_results_file(user, currency_earned: int, earned_items: list, count_released: int):
+    def create_release_results_file(target_user, currency_earned: int, earned_items: list, count_released: int):
         """Create release results image file"""
-        release_result_factory = ReleaseResultImageFactory(message_author=user, target_user=user)
+        release_result_factory = ReleaseResultImageFactory(message_author=target_user, target_user=target_user)
         release_results_image = release_result_factory.reload_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
         return convert_to_png(release_results_image, 'release_results.png')

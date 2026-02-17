@@ -99,6 +99,6 @@ class ItemInventoryView(BaseView):
 
 
     # SUPPORT FUNCTIONS
-    def reload_image(self):
-        new_image = self.image_factory.generate_item_inventory_image()
+    def reload_image(self, image_factory= None, new_page_number=None):
+        new_image = self.image_factory.reload_image()
         return convert_to_png(new_image, f'item_inventory_page.png')

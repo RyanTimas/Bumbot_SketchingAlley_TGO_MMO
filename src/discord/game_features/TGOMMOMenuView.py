@@ -119,10 +119,10 @@ class TGOMMOMenuView(BaseView):
     def item_inventory_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            item_inventory_img_factory = ItemInventoryImageFactory(user=self.target_user)
+            item_inventory_img_factory = ItemInventoryImageFactory(message_author=self.message_author, target_user=self.target_user)
             item_inventory_view = ItemInventoryView(message_author=self.message_author, target_user=self.target_user, item_inventory_image_factory=item_inventory_img_factory, original_message=interaction.message, original_view=self, discord_bot=self.discord_bot)
 
-            await interaction.message.edit(attachments=[convert_to_png(item_inventory_img_factory.generate_item_inventory_image(), f'item_inventory_img.png')], view=item_inventory_view)
+            await interaction.message.edit(attachments=[convert_to_png(item_inventory_img_factory.reload_image(), f'item_inventory_img.png')], view=item_inventory_view)
         return callback
 
 

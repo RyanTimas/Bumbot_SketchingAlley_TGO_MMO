@@ -210,9 +210,9 @@ class CreatureInventoryView(BaseView):
         self.update_button_states()
         self.rebuild_view()
     def update_button_states(self):
+        super().update_view_items()
+
         # UPDATE ENABLED/DISABLED STATES
-        self.prev_button.disabled = self.image_factory.page_num <= 1
-        self.next_button.disabled = self.image_factory.page_num >= self.image_factory.total_pages + (1 if self.message_author.user_id == self.target_user.user_id else 0)
 
         # UPDATE BUTTON LABELS
         self.exclusive_mode_button.label = "❌" if self.is_exclusive_mode else "✅"
@@ -241,7 +241,7 @@ class CreatureInventoryView(BaseView):
         if self.image_factory and self.image_factory.total_pages > 1:
             self.add_item(self.page_jump_dropdown)
             self.add_item(self.prev_button)
-            self.add_item(self.storage_expansion_button if self.image_factory.page_num == self.image_factory.total_pages else self.next_button)
+            self.add_item(self.storage_expansion_button if self.image_factory.page_num == self.image_factory.total_pages and self.message_author.user_id == self.target_user.user_id else self.next_button)
 
         # row 2
         self.add_item(self.expand_filter_options_button)
@@ -271,12 +271,13 @@ class CreatureInventoryView(BaseView):
         self.add_item(self.close_button)
         if self.original_view:
             self.add_item(self.go_back_button)
+        self.add_item(self.change_user_button)
 
 
     # SUPPORT FUNCTIONS
-    def reload_image(self, image_factory= None, new_page_number=None):
+    def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         reload_icons = self.image_factory.image_mode == CREATURE_INVENTORY_MODE_RELEASE
-        new_image = self.image_factory.reload_image(refresh_creatures= reload_icons,order_type=self.order_type, new_box_number=new_page_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )
+        new_image = self.image_factory.reload_image(target_user=target_user, refresh_creatures= reload_icons, order_type=self.order_type, new_page_number=new_page_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def get_expansion_cost(self):

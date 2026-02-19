@@ -41,11 +41,12 @@ class CreatureInventoryImageFactory(BaseImageFactory):
 
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def reload_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
-        self.load_relevant_info(new_page_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, is_ascending_order=is_ascending_order, is_exclusive_mode=is_exclusive_mode)
+    def reload_image(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+        self.load_relevant_info(target_user= target_user, new_page_number=new_page_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, is_ascending_order=is_ascending_order, is_exclusive_mode=is_exclusive_mode)
         return self.build_image()
-    def load_relevant_info(self, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+    def load_relevant_info(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
         # define filter & order settings
+        self.target_user = target_user if target_user else self.target_user
         self.order_type = order_type if order_type else self.order_type
         self.is_ascending_order = is_ascending_order
 
@@ -55,7 +56,9 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         self.is_exclusive_mode = is_exclusive_mode
 
         # define creature management items
-        if refresh_creatures:
+        data_changed = any(param is not None for param in [target_user])
+        if refresh_creatures or data_changed:
+            self.total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=self.target_user.user_id)
             self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)
             self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()

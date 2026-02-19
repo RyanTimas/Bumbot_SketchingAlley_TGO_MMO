@@ -85,16 +85,16 @@ class ItemInventoryView(BaseView):
         super().rebuild_view()
 
         if view_mode == VIEW_WORKFLOW_STATE_INITIAL:
+            super().rebuild_view()
             if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
                 self.add_item(self.item_select_dropdown)
                 self.add_item(self.use_item_button)
 
-            self.add_item(self.close_button)
-            if self.original_view is not None:
-                self.add_item(self.go_back_button)
-
         if view_mode == VIEW_WORKFLOW_STATE_CONFIRMATION:
             self.add_item(self.use_item_confirm_button)
+            self.remove_item(self.close_button)
+            self.remove_item(self.go_back_button)
+            self.remove_item(self.change_user_button)
 
 
     # SUPPORT FUNCTIONS

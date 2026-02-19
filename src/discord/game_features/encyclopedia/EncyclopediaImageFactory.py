@@ -31,7 +31,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.load_relevant_info(environment=environment)
 
     def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None):
-        self.load_relevant_info(target_user=target_user, environment=environment, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
+        self.load_relevant_info(target_user=target_user, environment=environment if environment != self.environment else None, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
         return self.build_image()
 
     def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
@@ -43,7 +43,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.show_variants = show_variants if show_variants is not None else self.show_variants
         self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
         self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
-        self.page_num = 1 if show_variants is not None or time_of_day is not None else self.page_num
+        self.page_num = 1 if any(param is not None for param in [show_variants, time_of_day, environment]) else self.page_num
 
         data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day, new_page_number])
         if data_changed:

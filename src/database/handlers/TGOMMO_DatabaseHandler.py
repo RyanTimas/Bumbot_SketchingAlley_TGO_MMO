@@ -1,3 +1,4 @@
+from src.commons.GuildHandler import get_guild
 from src.database.handlers.QueryHandler import QueryHandler
 from src.database.queries.tgommo_avatar_quest_db_queries import *
 from src.database.queries.tgommo_db_queries import *
@@ -421,8 +422,8 @@ class TGOMMODatabaseHandler:
 
     # region PLAYER PROFILE QUERIES
     def get_user_profile_by_user_id(self, user_id=0, convert_to_object=True):
-        # todo: think about passing in target user so we have access to nickname for new profile creation instead of defaulting to "user"
-        self.insert_new_user_profile(user_id=user_id, nickname="user")
+        player_discord_profile = get_guild().get_member(user_id)
+        self.insert_new_user_profile(user_id=user_id, nickname="User" if not player_discord_profile else player_discord_profile.display_name)
 
         query = f"{TGOMMO_SELECT_USER_PROFILE_BASE} {TGOMMO_SELECT_USER_PROFILE_BY_USER_ID_SUFFIX};"
         return self.get_player_profiles_from_database(query=query, params=(user_id,), convert_to_object=convert_to_object, expect_multiple=False)

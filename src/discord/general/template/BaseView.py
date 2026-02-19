@@ -17,6 +17,7 @@ class BaseView(discord.ui.View):
         self.original_image_files = original_view_files
 
         self.page_num = 1
+        self.is_server_view = target_user.user_id == 0
 
         self.interaction_lock = asyncio.Lock()
 
@@ -28,6 +29,7 @@ class BaseView(discord.ui.View):
         self.go_back_button = self.create_go_back_button(row=4)
         self.close_button = self.create_close_button(row=4, )
         self.change_user_button = self.create_change_user_button(row=4)
+        self.server_view_button = self.create_server_view_button(row=4)
 
     # BUTTONS
     def create_navigation_button(self, is_next, callback_func=None, row=0, disabled=False):
@@ -68,7 +70,7 @@ class BaseView(discord.ui.View):
         return callback
 
     def create_change_user_button(self, row=4):
-        button = discord.ui.Button(label="👤 Change User", style=discord.ButtonStyle.secondary, row=row)
+        button = discord.ui.Button(label="👤 Change Display Player", style=discord.ButtonStyle.red, row=row)
         button.callback = self.change_user_callback()
         return button
     def change_user_callback(self):
@@ -76,6 +78,22 @@ class BaseView(discord.ui.View):
         async def callback(interaction):
             modal = ChangeUserModal(self)
             await interaction.response.send_modal(modal)
+        return callback
+
+    def create_server_view_button(self, row=4):
+        button = discord.ui.Button(label="🌐 Server View", style=discord.ButtonStyle.green if self.is_server_view else discord.ButtonStyle.red, row=row)
+        button.callback = self.server_view_callback()
+        return button
+
+    def server_view_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
+            from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+            self.is_server_view = not self.is_server_view
+
+            reloaded_image = self.reload_image(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(0 if self.is_server_view else self.message_author.user_id))
+            self.refresh_view()
+            await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
 
     # DROPDOWNS
@@ -117,6 +135,9 @@ class BaseView(discord.ui.View):
         self.next_button.disabled = self.image_factory.page_num == self.image_factory.total_pages
         self.page_jump_dropdown.disabled = self.image_factory.total_pages == 1
 
+        # update style
+        self.server_view_button.style = discord.ButtonStyle.green if self.is_server_view else discord.ButtonStyle.red
+
         # update options
         self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i), default=(i == self.image_factory.page_num)) for i in range(1, self.image_factory.total_pages + 1)]
 
@@ -135,9 +156,9 @@ class BaseView(discord.ui.View):
             self.add_item(self.next_button)
 
         self.add_item(self.close_button)
-        self.add_item(self.change_user_button)
         if self.original_view:
             self.add_item(self.go_back_button)
+        self.add_item(self.change_user_button)
 
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         image_factory =  image_factory if image_factory else self.image_factory

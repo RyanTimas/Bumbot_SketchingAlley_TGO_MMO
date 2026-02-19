@@ -121,7 +121,7 @@ class PlayerProfileView(BaseView):
             self.add_item(self.open_teams_panel_button)
             self.add_item(self.open_collections_panel_button)
 
-    def reload_image(self):
-        new_image = self.image_factory.reload_image(open_tab=self.open_tab if self.tab_is_open else PLAYER_PROFILE_TAB_CLOSED)
+    def reload_image(self, target_user=None):
+        new_image = self.image_factory.reload_image(open_tab=self.open_tab if self.tab_is_open else PLAYER_PROFILE_TAB_CLOSED, target_user=target_user)
         return convert_to_png(new_image, 'player_profile_image.png')
 

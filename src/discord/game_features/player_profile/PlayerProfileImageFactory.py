@@ -20,9 +20,10 @@ class PlayerProfileImageFactory(BaseImageFactory):
         self.load_relevant_info()
 
 
-    def reload_image(self, open_tab = None):
+    def reload_image(self, open_tab = None, target_user=None, new_page_number = None):
         # update components
         self.open_tab = open_tab if open_tab else self.open_tab
+        self.target_user = target_user if target_user else self.target_user
         return super().reload_image()
 
     def build_image(self):

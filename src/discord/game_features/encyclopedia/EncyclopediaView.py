@@ -30,7 +30,6 @@ class EncyclopediaView(BaseView):
         # Add buttons to view
         self.refresh_view()
 
-
     # CREATE BUTTONS
     def create_toggle_button(self, button_type, row=1):
         data_options = {
@@ -80,6 +79,8 @@ class EncyclopediaView(BaseView):
         if self.image_factory.environment.environment_id != 0:
             self.add_item(self.day_only_button)
             self.add_item(self.night_only_button)
+
+        self.add_item(self.server_view_button)
 
 
     def reload_image(self, target_user=None, is_verbose=None, show_variants=None, show_mythics=None, time=None, new_page_number=None):

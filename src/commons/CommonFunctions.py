@@ -2,6 +2,7 @@ import asyncio
 import functools
 import os
 import random
+import ssl
 
 import aiohttp
 import discord
@@ -308,39 +309,17 @@ def build_user_profile_pic(user, size=(600, 600)):
 #*********************
 # DISCORD VIEW HELPERS
 #*********************
-async def check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
+async def check_if_user_can_interact_with_view(interaction, interaction_lock, target_user_id):
     # Check if we're already processing an interaction
     if interaction_lock.locked():
         await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
         return False
 
-    if message_author_id and interaction.user.id != message_author_id:
-        await interaction.response.send_message("You do not have permission to interact with this command, freak.", ephemeral=True)
+    if target_user_id and interaction.user.id != target_user_id:
+        await interaction.response.send_message("You do not have permission to interact with this, freak.", ephemeral=True)
         return False
 
     return True
-
-# Retry decorator for handling SSL errors
-def retry_on_ssl_error(max_retries=3, delay=1):
-    def decorator(func):
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
-            retries = 0
-            while retries < max_retries:
-                try:
-                    return await func(*args, **kwargs)
-                except discord.errors.InteractionResponded:
-                    # Interaction already responded to, so don't retry
-                    return
-                except aiohttp.client_exceptions.ClientOSError as e:
-                    if "SSL" in str(e) and retries < max_retries - 1:
-                        retries += 1
-                        await asyncio.sleep(delay)
-                    else:
-                        # If we've exhausted retries or it's not an SSL error, re-raise
-                        raise
-        return wrapper
-    return decorator
 
 #************************************************************************************
 #-------------------------------SQL FUNCTIONS------------------------------------
@@ -392,6 +371,28 @@ def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%
 #************************************************************************************
 #---------------------------------------DECORATORS--------------------------------------------
 #************************************************************************************
+# Retry decorator for handling SSL errors
+def retry_on_ssl_error(max_retries=3, delay=1):
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            retries = 0
+            while retries < max_retries:
+                try:
+                    return await func(*args, **kwargs)
+                except discord.errors.InteractionResponded:
+                    # Interaction already responded to, so don't retry
+                    return
+                except aiohttp.client_exceptions.ClientOSError as e:
+                    if "SSL" in str(e) and retries < max_retries - 1:
+                        retries += 1
+                        await asyncio.sleep(delay)
+                    else:
+                        # If we've exhausted retries or it's not an SSL error, re-raise
+                        raise
+        return wrapper
+    return decorator
+
 def admin_only():
     async def predicate(interaction: discord.Interaction):
         if interaction.user.id not in USER_WHITELIST:
@@ -399,3 +400,24 @@ def admin_only():
             return False
         return True
     return app_commands.check(predicate)
+
+def interaction_guard(self=None, max_retries=3, delay=1, defer_response=True):
+    def decorator(func):
+        async def wrapper(interaction):
+            if not self:
+                return await func(interaction)
+
+            if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'message_author', None).user_id):
+                async with self.interaction_lock:
+                    if defer_response:
+                        await interaction.response.defer()
+
+                    for attempt in range(max_retries):
+                        try:
+                            return await func(interaction)
+                        except ssl.SSLError as e:
+                            if attempt == max_retries - 1:
+                                raise e
+                            await asyncio.sleep(delay)
+        return wrapper
+    return decorator

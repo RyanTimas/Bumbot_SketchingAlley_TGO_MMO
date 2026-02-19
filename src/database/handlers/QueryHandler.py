@@ -1,6 +1,6 @@
 import sqlite3
 
-from src.resources.constants.queries.create_table_queries import *
+from src.database.queries.tgommo_create_table_queries import *
 
 
 class QueryHandler:

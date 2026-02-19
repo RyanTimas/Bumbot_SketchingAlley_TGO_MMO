@@ -23,12 +23,12 @@ class ItemUseHandler:
 
     async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check to make sure user has at least 1 bait
-        if get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
+        if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
             affect_successful, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
 
             # remove an item from the user after the effect is applied
             if affect_successful:
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
+                get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
                     await interaction.channel.send(response_message, files=[self.get_image_for_item(item)])
             elif response_message:
@@ -66,12 +66,12 @@ class ItemUseHandler:
 
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
-        total_creatures = len(get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no))
-        captured_creatures = get_tgommo_db_handler().get_user_catch_totals_for_environment(include_variants=True, include_mythics=False, environment=self.discord_bot.creature_spawner_handler.current_environment, time_of_day=BOTH)[1]
-        capture_percentage = (captured_creatures / total_creatures) * 100 if total_creatures > 0 else 0
+        available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
+        caught_unique_creatures_for_environment = get_tgommo_db_handler().get_unique_catches_base(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
+        capture_percentage = (caught_unique_creatures_for_environment / available_unique_creatures_for_environment) * 100
 
-        if capture_percentage < 65:
-            return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
+        # if capture_percentage < 65:
+        #     return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
 
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"

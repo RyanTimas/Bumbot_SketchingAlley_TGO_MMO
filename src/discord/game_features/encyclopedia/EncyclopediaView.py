@@ -1,167 +1,66 @@
-import asyncio
 import discord
-from discord.ui import Select
 
-from src.commons.CommonFunctions import convert_to_png
-from src.commons.CommonFunctions import retry_on_ssl_error, check_if_user_can_interact_with_view
-from src.commons.CommonViewComponents import create_go_back_button, create_close_button, create_navigation_button, \
-    create_page_jump_dropdown
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
-from src.resources.constants.TGO_MMO_constants import NIGHT, BOTH, DAY
-
-verbose_keyword = "verbose"
-variants_keyword = "variants"
-mythics_keyword = "mythics"
-night_spawns_keyword = "night_spawns"
-day_spawns_keyword = "day_spawns"
+from src.discord.general.template.BaseView import BaseView
+from src.resources.constants.TGO_MMO_constants import NIGHT, BOTH, DAY, ENCYCLOPEDIA_VERBOSE_MODE, \
+    ENCYCLOPEDIA_VARIANTS_MODE, ENCYCLOPEDIA_MYTHICAL_MODE, ENCYCLOPEDIA_NIGHT_SPAWNS_MODE, ENCYCLOPEDIA_DAY_SPAWNS_MODE
 
 next_ = "next"
 previous = "previous"
 jump = "jump"
 
-class EncyclopediaView(discord.ui.View):
-    def __init__(self, message_author, encyclopedia_image_factory: EncyclopediaImageFactory, is_verbose=False, show_variants=False, show_mythics=False, time=BOTH, original_view=None, original_image_files=[]):
-        super().__init__(timeout=None)
-        self.message_author = message_author
-        self.encyclopedia_image_factory = encyclopedia_image_factory
+class EncyclopediaView(BaseView):
+    def __init__(self, message_author, target_user, encyclopedia_image_factory: EncyclopediaImageFactory,original_view=None, original_image_files=[]):
+        super().__init__(message_author=message_author, target_user=target_user, image_factory=encyclopedia_image_factory, original_view=original_view, original_view_files=original_image_files)
 
-        self.original_view = original_view
-        self.original_image_files = original_image_files
-        self.interaction_lock = asyncio.Lock()
-
-        self.is_verbose = is_verbose
-        self.show_variants = show_variants
-        self.show_mythics = show_mythics
-        self.time = time
-        self.new_page = 1
+        # State variables for toggles
+        self.is_verbose = None
+        self.show_variants = None
+        self.show_mythics = None
+        self.time = None
 
         # Initialize the buttons once
-        self.page_jump_dropdown = create_page_jump_dropdown(view_instance=self, row=0)
-
-
-        self.prev_button = create_navigation_button(is_next=False, view_instance=self, row=1)
-        self.next_button = create_navigation_button(is_next=True, view_instance=self, row=1)
-
-        self.verbose_button = self.create_toggle_button(verbose_keyword, row=2)
-        self.variants_button = self.create_toggle_button(variants_keyword, row=2)
-        self.mythics_button = self.create_toggle_button(mythics_keyword, row=2)
-        self.day_only_button = self.create_toggle_button(day_spawns_keyword, row=2)
-        self.night_only_button = self.create_toggle_button(night_spawns_keyword, row=2)
-
-        self.close_button = create_close_button(interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, row=3)
-        self.go_back_button = create_go_back_button(original_view=self.original_view, row=3, interaction_lock=self.interaction_lock, message_author_id=self.message_author.id, files=self.original_image_files)
+        self.verbose_button = self.create_toggle_button(ENCYCLOPEDIA_VERBOSE_MODE, row=2)
+        self.variants_button = self.create_toggle_button(ENCYCLOPEDIA_VARIANTS_MODE, row=2)
+        self.mythics_button = self.create_toggle_button(ENCYCLOPEDIA_MYTHICAL_MODE, row=2)
+        self.day_only_button = self.create_toggle_button(ENCYCLOPEDIA_DAY_SPAWNS_MODE, row=2)
+        self.night_only_button = self.create_toggle_button(ENCYCLOPEDIA_NIGHT_SPAWNS_MODE, row=2)
 
         # Add buttons to view
         self.refresh_view()
 
-
     # CREATE BUTTONS
     def create_toggle_button(self, button_type, row=1):
-        labels = {
-            verbose_keyword: "Show Detailed View",
-            variants_keyword: "Show Variants",
-            mythics_keyword: "Show Mythics",
-            night_spawns_keyword: "Show Night Spawns",
-            day_spawns_keyword: "Show Day Spawns",
+        data_options = {
+            ENCYCLOPEDIA_VERBOSE_MODE: ["Show Detailed View", discord.ButtonStyle.green, None],
+            ENCYCLOPEDIA_VARIANTS_MODE: ["Show Variants", discord.ButtonStyle.green, None],
+            ENCYCLOPEDIA_MYTHICAL_MODE: ["Show Mythics", discord.ButtonStyle.green, "✨"],
+            ENCYCLOPEDIA_NIGHT_SPAWNS_MODE: ["Show Night Spawns", discord.ButtonStyle.green, "🌙"],
+            ENCYCLOPEDIA_DAY_SPAWNS_MODE: ["Show Day Spawns", discord.ButtonStyle.green, "☀️"]
         }
-        styles = {
-            verbose_keyword: discord.ButtonStyle.green,
-            variants_keyword: discord.ButtonStyle.green,
-            mythics_keyword: discord.ButtonStyle.green,
-            night_spawns_keyword: discord.ButtonStyle.green,
-            day_spawns_keyword: discord.ButtonStyle.green
-        }
-        emojis = {
-            verbose_keyword: None,
-            variants_keyword: None,
-            mythics_keyword: "✨",
-            night_spawns_keyword: "🌙",
-            day_spawns_keyword: "☀️"
-        }
+        data = data_options[button_type]
+        button = discord.ui.Button(label=data[0], style=data[1], emoji=data[2], row=row)
 
-        button = discord.ui.Button(
-            label=labels[button_type],
-            style=styles[button_type],
-            emoji=emojis[button_type],
-            row=row
-        )
         button.callback = self.toggle_callback(button_type)
         return button
     def toggle_callback(self, button_type):
-        @retry_on_ssl_error(max_retries=3, delay=1)
-        async def callback(interaction):
-            # Check if we're already processing an interaction
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+        @interaction_guard(self)
+        async def callback(interaction, defer_response=False):
+            self.is_verbose = not self.is_verbose if button_type == ENCYCLOPEDIA_VERBOSE_MODE else self.is_verbose
+            self.show_variants = not self.show_variants if button_type == ENCYCLOPEDIA_VARIANTS_MODE else self.show_variants
+            self.show_mythics = not self.show_mythics if button_type == ENCYCLOPEDIA_MYTHICAL_MODE else self.show_mythics
+            self.update_time_filter(button_type)
 
-            # Acquire lock to prevent concurrent actions
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                # Toggle the appropriate state
-                if button_type == verbose_keyword:
-                    self.is_verbose = not self.is_verbose
-                    new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(is_verbose=self.is_verbose)
-                elif button_type == variants_keyword:
-                    self.show_variants = not self.show_variants
-                    new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(show_variants=self.show_variants)
-                elif button_type == mythics_keyword:
-                    self.show_mythics = not self.show_mythics
-                    new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(show_mythics=self.show_mythics)
-                elif button_type == night_spawns_keyword:
-                    self.time = NIGHT if self.time != NIGHT else BOTH
-                    new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(time_of_day=self.time)
-                elif button_type == day_spawns_keyword:
-                    self.time = DAY if self.time != DAY else BOTH
-                    new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(time_of_day=self.time)
-
-                file = convert_to_png(new_image, f'encyclopedia_page.png')
-                self.update_button_states()
-
-                await interaction.message.edit(attachments=[file], view=self)
-
+            reloaded_image = self.reload_image(is_verbose=self.is_verbose, show_variants=self.show_variants, show_mythics=self.show_mythics, time=self.time)
+            self.refresh_view()
+            await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
 
-
-    # CREATE DROPDOWNS
-    def create_page_jump_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, self.encyclopedia_image_factory.total_pages)]
-        dropdown = Select(placeholder="Skip to Page", options=options, min_values=1, max_values=1, row=row)
-        dropdown.callback = self.page_jump_callback
-        return dropdown
-    async def page_jump_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-            return
-
-        async with self.interaction_lock:
-            await interaction.response.defer()
-
-            self.new_page = int(interaction.data["values"][0])
-            new_image = self.encyclopedia_image_factory.build_encyclopedia_page_image(new_page_number=self.new_page)
-            self.update_button_states()
-
-            await interaction.message.edit(attachments=[convert_to_png(new_image, f'encyclopedia_page.png')], view=self)
-
-
     # FUNCTIONS FOR UPDATING VIEW STATE
-    def refresh_view(self):
-        self.update_button_states()
-        self.rebuild_view()
-    def update_button_states(self):
-        # Update navigation buttons
-        current_page = self.encyclopedia_image_factory.page_num
-        total_pages = self.encyclopedia_image_factory.total_pages
-
-        # Update Options
-        self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i)) for i in range(1, total_pages + 1)]
-        self.page_jump_dropdown.placeholder = f"Page {current_page}"  # Set current page as placeholder
-
-        # Update Enabled/Disabled States
-        self.page_jump_dropdown.disabled = total_pages == 1
-        self.prev_button.disabled = current_page == 1
-        self.next_button.disabled = current_page == total_pages
-
+    def update_view_items(self):
+        super().update_view_items()
+        
         # Update toggle buttons appearance
         self.verbose_button.style = discord.ButtonStyle.green if self.is_verbose else discord.ButtonStyle.gray
         self.variants_button.style = discord.ButtonStyle.green if self.show_variants else discord.ButtonStyle.gray
@@ -170,23 +69,28 @@ class EncyclopediaView(discord.ui.View):
         self.night_only_button.style = discord.ButtonStyle.blurple if self.time == NIGHT else discord.ButtonStyle.gray
         self.day_only_button.style = discord.ButtonStyle.blurple if self.time == DAY else discord.ButtonStyle.gray
     def rebuild_view(self):
-        for item in self.children.copy():
-            self.remove_item(item)
+        super().rebuild_view()
 
         # Add buttons to view
-        self.add_item(self.page_jump_dropdown)
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
-
         self.add_item(self.verbose_button)
         self.add_item(self.variants_button)
-        if get_tgommo_db_handler().get_server_mythical_count() > 0:
-            self.add_item(self.mythics_button)
+        self.add_item(self.mythics_button)
 
-        if self.encyclopedia_image_factory.environment.environment_id != 0:
+        if self.image_factory.environment.environment_id != 0:
             self.add_item(self.day_only_button)
             self.add_item(self.night_only_button)
 
-        self.add_item(self.close_button)
-        if self.original_view is not None:
-            self.add_item(self.go_back_button)
+        self.add_item(self.server_view_button)
+
+
+    def reload_image(self, target_user=None, is_verbose=None, show_variants=None, show_mythics=None, time=None, new_page_number=None):
+        new_image = self.image_factory.reload_image(target_user=target_user, is_verbose=is_verbose, show_variants=show_variants, show_mythics=show_mythics, time_of_day=time, new_page_number=new_page_number)
+        return convert_to_png(new_image, f'encyclopedia_page.png')
+
+
+    # SUPPORT FUNCTIONS
+    def update_time_filter(self, button_type):
+        if button_type == ENCYCLOPEDIA_NIGHT_SPAWNS_MODE:
+            self.time = NIGHT if self.time != NIGHT else BOTH
+        elif button_type == ENCYCLOPEDIA_DAY_SPAWNS_MODE:
+            self.time = DAY if self.time != DAY else BOTH

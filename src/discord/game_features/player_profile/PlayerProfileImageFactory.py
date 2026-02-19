@@ -1,53 +1,34 @@
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.player_profile.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
-from src.discord.objects.CreatureRarity import MYTHICAL, get_rarity_by_name
-from src.discord.objects.TGOCreature import TGOCreature, PLACEHOLDER_CREATURE
-from src.discord.objects.TGOPlayer import TGOPlayer
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.TGO_MMO_constants import PLAYER_PROFILE_CREATURE_RESIZE_PERCENT, \
     PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE, TGOMMO_RARITY_MYTHICAL
 from src.resources.constants.file_paths import *
 
-TEAM = "Team"
-COLLECTIONS = "Collections"
+PLAYER_PROFILE_TAB_OPEN_TEAM = "Team"
+PLAYER_PROFILE_TAB_OPEN_COLLECTIONS = "Collections"
+PLAYER_PROFILE_TAB_CLOSED = "Closed"
 
-class PlayerProfileImageFactory:
-    def __init__(self, user_id, target_user, tab_is_open: bool = False, open_tab: str = TEAM):
-        self.user_id = user_id
-        self.target_user = target_user
-
-        self.player: TGOPlayer = None
-        self.creature_team = []
-        self.load_player_info()
-
-        self.tab_is_open = tab_is_open
+class PlayerProfileImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user, tab_is_open: bool = False, open_tab: str = None):
+        super().__init__(message_author, target_user)
         self.open_tab = open_tab
-
         self.left_button_enabled = False
         self.right_button_enabled = False
 
-    def load_player_info(self):
-        player_info = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.id, nickname=self.target_user.display_name)
-        avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=player_info[3], convert_to_object=True)
-
-        self.player = TGOPlayer(player_id=player_info[0], user_id=player_info[1], nickname=player_info[2], avatar=avatar, background_id=player_info[4], creature_slot_id_1=player_info[5], creature_slot_id_2=player_info[6], creature_slot_id_3=player_info[7], creature_slot_id_4=player_info[8], creature_slot_id_5=player_info[9], creature_slot_id_6=player_info[10], currency=player_info[11], available_catches=player_info[12], rod_level=player_info[13], rod_amount=player_info[14], trap_level=player_info[15], trap_amount=player_info[16])
-
-        self.creature_team = []
-        for slot_id in (self.player.creature_slot_id_1, self.player.creature_slot_id_2, self.player.creature_slot_id_3, self.player.creature_slot_id_4, self.player.creature_slot_id_5, self.player.creature_slot_id_6):
-            if slot_id == -1:
-                self.creature_team.append(PLACEHOLDER_CREATURE)
-            else:
-                creature = get_tgommo_db_handler().get_user_creature_by_catch_id(catch_id=slot_id, convert_to_object=True)
-                self.creature_team.append(creature)
+        self.load_relevant_info()
 
 
-    def build_player_profile_page_image(self, new_page_number = None, tab_is_open = None, open_tab = None):
-        # self.new_page_number = self.new_page_number if new_page_number is None else new_page_number
-        self.tab_is_open = self.tab_is_open if tab_is_open is None else tab_is_open
-        self.open_tab = self.open_tab if open_tab is None else open_tab
+    def reload_image(self, open_tab = None, target_user=None, new_page_number = None):
+        # update components
+        self.open_tab = open_tab if open_tab else self.open_tab
+        self.target_user = target_user if target_user else self.target_user
+        return super().reload_image()
 
+    def build_image(self):
         # set new values in case button was clicked
-        player_profile_image = Image.open(f"{PLAYER_PROFILE_BACKGROUND_BASE}_{self.player.background_id}{IMAGE_FILE_EXTENSION}")
+        player_profile_image = Image.open(f"{PLAYER_PROFILE_BACKGROUND_BASE}_{self.message_author.background_id}{IMAGE_FILE_EXTENSION}")
         dirt_patches_image = Image.open(PLAYER_PROFILE_DIRT_PATCHES_IMAGE)
         top_bar_image = Image.open(PLAYER_PROFILE_TOP_BAR_IMAGE)
         closed_panel_image = Image.open(PLAYER_PROFILE_SIDE_PANEL_CLOSED_IMAGE)
@@ -61,36 +42,31 @@ class PlayerProfileImageFactory:
         player_profile_image = self._place_creatures_on_image(player_profile_img=player_profile_image)
         player_profile_image = self.place_username_on_image(player_profile_img=player_profile_image)
 
-        if self.tab_is_open:
+        if self.open_tab and self.open_tab != PLAYER_PROFILE_TAB_CLOSED:
             player_profile_image = self.build_side_panel_content(player_profile_img=player_profile_image)
 
         return player_profile_image
 
     def _place_creatures_on_image(self, player_profile_img: Image):
-        for index, creature in enumerate(self.creature_team):
-            if creature.catch_id == -1:
-                continue
+        for index, creature in enumerate(self.target_user.display_creatures):
+            if creature.catch_id != -1:
+                creature_image = creature.creature_image.resize((int(creature.creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature.creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
 
-            creature_image = creature.creature_image.resize((int(creature.creature_image.width * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT), int(creature.creature_image.height * PLAYER_PROFILE_CREATURE_RESIZE_PERCENT)), Image.LANCZOS)
+                x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][0] - (creature_image.width // 2)
+                y_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][1] - (creature_image.height // 2)
 
-            x_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][0] - (creature_image.width // 2)
-            y_offset = PLAYER_PROFILE_CREATURE_COORDINATES[index][1] - (creature_image.height // 2)
-
-            player_profile_img.paste(creature_image, (x_offset, y_offset), creature_image)
-
+                player_profile_img.paste(creature_image, (x_offset, y_offset), creature_image)
         return player_profile_img
     def _place_avatar_on_image(self, player_profile_image: Image):
-        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.player.avatar.avatar_type}_{self.player.avatar.img_root}{IMAGE_FILE_EXTENSION}")
+        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.target_user.avatar.avatar_type}_{self.target_user.avatar.img_root}{IMAGE_FILE_EXTENSION}")
         player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
         return player_profile_image
     def place_username_on_image(self, player_profile_img: Image):
         draw = ImageDraw.Draw(player_profile_img)
-
-        font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50)
-        font = resize_text_to_fit(text=self.player.nickname, draw=draw, font=font, max_width=300, min_font_size=10)
+        font = resize_text_to_fit(text=self.target_user.nickname, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50), max_width=300, min_font_size=10)
 
         # Get text dimensions
-        text_bbox = draw.textbbox((0, 0), self.player.nickname, font=font)
+        text_bbox = draw.textbbox((0, 0), self.target_user.nickname, font=font)
         text_width = text_bbox[2] - text_bbox[0]
         text_height = text_bbox[3] - text_bbox[1]
 
@@ -98,39 +74,32 @@ class PlayerProfileImageFactory:
         text_img = Image.new('RGBA', (text_width + 8, text_height + 8), (0, 0, 0, 0))
         x_offset, y_offset = 11, 10
         border_size = 4
-        username_font_image = add_border_to_image(base_image=text_img, text=self.player.nickname, font=font, border_size=border_size, border_color=(0, 104, 145), font_color=FONT_COLOR_WHITE)
+        username_font_image = add_border_to_image(base_image=text_img, text=self.target_user.nickname, font=font, border_size=border_size, border_color=(0, 104, 145), font_color=FONT_COLOR_WHITE)
 
         # Paste the text image onto the profile image
         player_profile_img.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)
-
-        # draw.text((11, 10), self.player.nickname, font=font, fill=FONT_COLOR_WHITE)
-
         return player_profile_img
 
 
     # side panel functions
     def build_side_panel_content(self, player_profile_img: Image):
+        # define in memory images
         side_drawer_border_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_IMAGE}")
-        side_drawer_background_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_BACKGROUND_IMAGE}")
-
-        if self.open_tab == TEAM:
-            side_drawer_background_image = self._build_team_tab(side_drawer_background_image)
-
-            side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TEAM_OVERLAY_IMAGE}")
-            side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
-        elif self.open_tab == COLLECTIONS:
-            side_drawer_background_image = self._build_collections_tab(side_drawer_background_image)
-
-            side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_OVERLAY_IMAGE}")
-            side_drawer_background_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
-
+        side_drawer_team_overlay = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_TEAM_OVERLAY_IMAGE if self.open_tab == PLAYER_PROFILE_TAB_OPEN_TEAM else PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_OVERLAY_IMAGE}")
+        side_drawer_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_BACKGROUND_IMAGE}")
         left_button_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_LEFT_BUTTON_IMAGE if self.left_button_enabled else PLAYER_PROFILE_SIDE_PANEL_LEFT_BUTTON_DISABLED_IMAGE}")
         right_button_image = Image.open(f"{PLAYER_PROFILE_SIDE_PANEL_RIGHT_BUTTON_IMAGE if self.left_button_enabled else PLAYER_PROFILE_SIDE_PANEL_RIGHT_BUTTON_DISABLED_IMAGE}")
 
-        side_drawer_background_image.paste(left_button_image, (0, 0), left_button_image)
-        side_drawer_background_image.paste(right_button_image, (0, 0), right_button_image)
+        # build side drawer content
+        side_drawer_image = self._build_team_tab(side_drawer_image) if self.open_tab == PLAYER_PROFILE_TAB_OPEN_TEAM else self._build_collections_tab(side_drawer_image)
+        side_drawer_image.paste(side_drawer_team_overlay, (0, 0), side_drawer_team_overlay)
 
-        player_profile_img.paste(side_drawer_background_image, (0, 0), side_drawer_background_image)
+        # add button images
+        side_drawer_image.paste(left_button_image, (0, 0), left_button_image)
+        side_drawer_image.paste(right_button_image, (0, 0), right_button_image)
+
+        # paste side drawer content
+        player_profile_img.paste(side_drawer_image, (0, 0), side_drawer_image)
         player_profile_img.paste(side_drawer_border_image, (0, 0), side_drawer_border_image)
 
         return player_profile_img
@@ -138,20 +107,17 @@ class PlayerProfileImageFactory:
     def _build_team_tab(self, background_img: Image):
         current_offset = (1097,70)
 
-        for index, creature in enumerate(self.creature_team):
-            if creature.catch_id == -1:
-                continue
+        for index, creature in enumerate(self.target_user.display_creatures):
+            if creature.catch_id != -1:
+                title = creature.nickname if creature.nickname != "" else creature.name
+                image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.local_rarity.name}{IMAGE_FILE_EXTENSION}'
+                catch_date = convert_date_format_to_month_name(creature.caught_date)
 
-            title = creature.nickname if creature.nickname != "" else creature.name
-            image_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{creature.local_rarity.name}{IMAGE_FILE_EXTENSION}'
-            catch_date = convert_date_format_to_month_name(creature.caught_date)
+                team_tab = PlayerProfileSidePanelTabFactory(tab_type=PLAYER_PROFILE_TAB_OPEN_TEAM, player=self.message_author, tab_image=creature.dex_icon_image, background_image_path=None, image_color_path=image_color_path, tab_title=title, tab_subtitle=creature.full_name, tab_footer=catch_date)
+                team_tab_image = team_tab.create_tab()
 
-            team_tab = PlayerProfileSidePanelTabFactory(tab_type=TEAM, player=self.player, tab_image=creature.dex_icon_image, background_image_path=None, image_color_path=image_color_path, tab_title=title, tab_subtitle=creature.full_name, tab_footer=catch_date)
-            team_tab_image = team_tab.create_tab()
-
-            background_img.paste(team_tab_image, current_offset, team_tab_image)
-            current_offset = (current_offset[0], current_offset[1] + team_tab_image.height + 17)
-
+                background_img.paste(team_tab_image, current_offset, team_tab_image)
+                current_offset = (current_offset[0], current_offset[1] + team_tab_image.height + 17)
         return background_img
     def _build_collections_tab(self, background_img: Image):
         current_offset = (1097,70)
@@ -159,7 +125,7 @@ class PlayerProfileImageFactory:
         active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
 
         for collection in active_collections:
-            collection.image_path = f'{DEX_ICON_CREATURE_BASE}_{collection.image_path}{IMAGE_FILE_EXTENSION}'
+            collection.img_path = f'{DEX_ICON_CREATURE_BASE}_{collection.img_path}{IMAGE_FILE_EXTENSION}'
             collection.background_color_path = f'{PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE}_{collection.background_color_path}{IMAGE_FILE_EXTENSION}'
 
             remove_variants_suffix = f' c.variant_no=1;'
@@ -167,31 +133,20 @@ class PlayerProfileImageFactory:
             caught_query = collection.caught_count_query[:-1] + f"{get_query_connector(collection.caught_count_query)}{remove_variants_suffix}" if 'variant_no' not in collection.caught_count_query else collection.caught_count_query
             total_query = collection.total_count_query[:-1] + f"{get_query_connector(collection.total_count_query)}{remove_variants_suffix}" if 'variant_no' not in collection.total_count_query else collection.total_count_query
 
-            caught_number = get_tgommo_db_handler().execute_query(caught_query, params=(self.player.user_id,))[0][0]
+            caught_number = get_tgommo_db_handler().execute_query(caught_query, params=(self.message_author.user_id,))[0][0]
             total_number = get_tgommo_db_handler().execute_query(total_query, params=())[0][0]
             subtitle = f"{caught_number}/{total_number}"
 
-            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=COLLECTIONS, player=self.player, collection=collection, tab_image=collection.image_path, background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
+            collections_tab = PlayerProfileSidePanelTabFactory(tab_type=PLAYER_PROFILE_TAB_OPEN_COLLECTIONS, player=self.message_author, collection=collection, tab_image=Image.open(collection.img_path), background_image_path=None, image_color_path=collection.background_color_path, tab_title=collection.title, tab_subtitle=subtitle, tab_footer="todo")
             collections_tab_image = collections_tab.create_tab()
 
             background_img.paste(collections_tab_image, current_offset, collections_tab_image)
             current_offset = (current_offset[0], current_offset[1] + collections_tab_image.height + 17)
 
         return background_img
-    def _build_environments_tab(self, player_profile_img: Image):
-        content_image_path=""
-        background_image_path = ""
-        image_color_path = ""
-        tab_title = ""
-        tab_subtitle = ""
-        tab_footer = ""
-
-        environments_tab = PlayerProfileSidePanelTabFactory(tab_type="Environments", player=self.player, tab_image=content_image_path, background_image_path=background_image_path, image_color_path=image_color_path, tab_title=tab_title, tab_subtitle=tab_subtitle, tab_footer=tab_footer)
-
-        return player_profile_img
 
 
-async def build_user_creature_collection(author, ctx):
+async def build_text_based_user_creature_collection(author, ctx):
     creature_collection = get_tgommo_db_handler().get_user_creatures_by_user_id(author.id, )
 
     page_num = 0
@@ -215,11 +170,7 @@ async def build_user_creature_collection(author, ctx):
 
     # create page images for user to see
     for page_index, page in enumerate(pages):
-        text = "\n".join([
-            f"# {author.name}'s Creature Collection ({page_index + 1}/{len(pages)}):",
-        ])
-
+        text = "\n".join([f"# {author.name}'s Creature Collection ({page_index + 1}/{len(pages)}):",])
         text += f'{page}'
         await ctx.message.reply(text)
-    # await ctx.response.send_message("Someone else already caught this creature...", ephemeral=True)
 

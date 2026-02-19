@@ -2,6 +2,8 @@
 import datetime
 import pytz
 
+
+'''TIMEZONE'''
 BASE_TIMEZONE = pytz.timezone('US/Eastern')
 
 DEFAULT_CREATURE_SPAWN_RATE_LOW_END = 3
@@ -60,6 +62,7 @@ TGOMMO_CREATURE_EMBED_CLOCK_ICON = "https://cdn-icons-png.flaticon.com/512/4305/
 CREATURE_DIVIDER_LINE = "__ \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t __"
 CREATURE_SUCCESSFUL_CATCH_LINE = "Successful Catch                                               "
 CREATURE_FIRST_CATCH_LINE = "First Time Catch                                              *+250 xp*"
+CREATURE_FIRST_CATCH_VARIANT_LINE = "First Time Catch For Variant                        *+175 xp*"
 CREATURE_FIRST_SERVER_CATCH_LINE = "New Species For Server                             *+1000 xp*"
 MYTHICAL_CATCH_LINE = "Mythical Creature                                         *+1000 xp*"
 CREATURE_TOTAL_XP_LINE = "✨ **Total 150000 xp** ✨"
@@ -108,15 +111,41 @@ PLAYER_PROFILE_CREATURE_COORDINATES = [
     (426, 580), (852, 580)      # front row
 ]
 
-'''CREATURE BOXES'''
-ALPHABETICAL_ORDER = 'alphabetical'
-DEX_NO_ORDER = 'dex_no'
-CAUGHT_DATE_ORDER = 'caught_date'
+""" ----- VIEW ITEMS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+VIEW_NEXT_BUTTON_KEY = "view_next_button"
+VIEW_PREV_BUTTON_KEY = "view_prev_button"
+VIEW_PAGE_JUMP_DROPDOWN_KEY = "view_page_jump_dropdown"
+
+
+""" ----- ENCYCLOPEDIA  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+ENCYCLOPEDIA_VERBOSE_MODE = "verbose"
+ENCYCLOPEDIA_VARIANTS_MODE = "variants"
+ENCYCLOPEDIA_MYTHICAL_MODE = "mythical"
+ENCYCLOPEDIA_DAY_SPAWNS_MODE = "day_spawns"
+ENCYCLOPEDIA_NIGHT_SPAWNS_MODE = "night_spawns"
+
+
+""" ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+CREATURE_INVENTORY_FILTER_EXPANSION_KEY = "filter_expansion"
+CREATURE_INVENTORY_ORDER_EXPANSION_KEY = "order_expansion"
+CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY = "creature_management"
+
+CREATURE_INVENTORY_FILTER_MYTHIC = "mythic_only"
+CREATURE_FAVORITE_FILTER_MYTHIC = "favorite_only"
+CREATURE_NICKNAME_FILTER_MYTHIC = "nickname_only"
+
+CREATURE_NICKNAME_SORT_ALPHABETICAL = 'alphabetical'
+CREATURE_NICKNAME_SORT_DEX_NO = 'dex_no'
+CREATURE_NICKNAME_SORT_CAUGHT_DATE = 'caught_date'
 
 CREATURE_INVENTORY_MODE_RELEASE = "Release"
 CREATURE_INVENTORY_MODE_FAVORITE = "Favorite"
 CREATURE_INVENTORY_MODE_DEFAULT = "Default"
 CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
+
+""" ----- AVATAR INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+AVATAR_INVENTORY_QUEST_TAB_KEY = "AVATAR_QUESTS"
+AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY = "UNLOCKED_AVATARS"
 
 
 '''------------------'''
@@ -196,6 +225,9 @@ ITEM_TYPE_NAMETAG = 'NameTag'
 ITEM_TYPE_BAIT = 'Bait'
 ITEM_TYPE_MEGAPHONE = 'Megaphone'
 ITEM_TYPE_CHARM = 'Charm'
+
+ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
+
 
 # ITEM IDS
 ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION = 'Creature_Inventory_Storage_Expansion'

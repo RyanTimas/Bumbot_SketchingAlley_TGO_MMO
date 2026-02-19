@@ -4,13 +4,13 @@ from src.commons.CommonFunctions import center_text_on_pixel
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryReleaseResultItemImageFactory import \
     CreatureInventoryReleaseResultItemImageFactory
-from src.resources.constants.TGO_MMO_constants import *
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
 
-class ReleaseResultImageFactory:
-    def __init__(self, user, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False):
-        self.user = user
+class ReleaseResultImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user):
+        super().__init__(message_author=message_author, target_user=target_user)
 
         self.creature_ids_to_update = []
 
@@ -20,11 +20,11 @@ class ReleaseResultImageFactory:
 
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def get_creature_inventory_page_image(self, creature_ids_to_update= None, currency= 0, earned_items= None, count_released= 0):
-        self.refresh_creature_inventory_image(creature_ids_to_update=creature_ids_to_update, currency=currency, earned_items=earned_items, count_released=count_released)
+    def reload_image(self, creature_ids_to_update= None, currency= 0, earned_items= None, count_released= 0):
+        self.load_relevant_info(creature_ids_to_update=creature_ids_to_update, currency=currency, earned_items=earned_items, count_released=count_released)
         return self.build_creature_inventory_page_image()
 
-    def refresh_creature_inventory_image(self, creature_ids_to_update= None, currency= 0, earned_items= None, count_released= 0):
+    def load_relevant_info(self, creature_ids_to_update= None, currency= 0, earned_items= None, count_released= 0):
         self.creature_ids_to_update = creature_ids_to_update if creature_ids_to_update else []
 
         self.currency = currency
@@ -68,8 +68,6 @@ class ReleaseResultImageFactory:
             if col >= icons_per_row:
                 col = 0
                 row += 1
-
-
         return grid_canvas
     def build_items_icons(self):
         imgs = []
@@ -88,7 +86,7 @@ class ReleaseResultImageFactory:
         name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28)
 
         # add username footer
-        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user.id, convert_to_object=True).nickname}'s Release Summary"
+        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.user_id, convert_to_object=True).nickname}'s Release Summary"
         pixel_location = center_text_on_pixel(text=name_text, font=name_font, center_pixel_location=(960, 1034))
         draw.text(pixel_location, text=name_text, font=name_font, fill=navy_blue_color)
 
@@ -101,5 +99,4 @@ class ReleaseResultImageFactory:
             no_items_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 48)
             pixel_location = center_text_on_pixel(text="No Items Earned", font=no_items_font, center_pixel_location=(960, 540))
             draw.text(pixel_location, text="No Items Earned", font=no_items_font, fill=navy_blue_color)
-
         return image

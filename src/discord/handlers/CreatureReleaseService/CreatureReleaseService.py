@@ -26,17 +26,13 @@ class CreatureReleaseService:
         # Update user currency and items
         get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=currency_earned)
         for item, count in earned_items:
-            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_user_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user_id, convert_to_object=True).item_quantity + count)
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user_id, convert_to_object=True).item_quantity + count)
 
         return currency_earned, earned_items
 
     @staticmethod
-    def create_release_results_file(user, currency_earned: int, earned_items: list, count_released: int):
+    def create_release_results_file(target_user, currency_earned: int, earned_items: list, count_released: int):
         """Create release results image file"""
-        release_result_factory = ReleaseResultImageFactory(user=user)
-        release_results_image = release_result_factory.get_creature_inventory_page_image(
-            currency=currency_earned,
-            earned_items=earned_items,
-            count_released=count_released
-        )
+        release_result_factory = ReleaseResultImageFactory(message_author=target_user, target_user=target_user)
+        release_results_image = release_result_factory.reload_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
         return convert_to_png(release_results_image, 'release_results.png')

@@ -14,8 +14,8 @@ class CreatureInventoryManagementView(discord.ui.View):
         self.message_author = message_author
         self.mode = mode
 
-        self.creature_inventory_image_factory = creature_inventory_image_factory
-        self.release_result_image_factory = ReleaseResultImageFactory(user= message_author)
+        self.creature_inventory_image_factory:CreatureInventoryImageFactory = creature_inventory_image_factory
+        self.release_result_image_factory = ReleaseResultImageFactory(message_author=message_author, target_user= message_author)
         self.original_view = original_view
         self.original_message = original_message
 
@@ -56,19 +56,12 @@ class CreatureInventoryManagementView(discord.ui.View):
         button.callback = self.confirmation_callback()
         return button
     def confirmation_callback(self, ):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+        @interaction_guard(self)
         async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
-                return
+            updated_image = self.reload_creature_inventory_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
 
-            async with self.interaction_lock:
-                await interaction.response.defer()
-
-                updated_image = self.reload_creature_inventory_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
-
-                self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
-                await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[updated_image], view=self, ephemeral=True)
-
+            self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
+            await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[updated_image], view=self, ephemeral=True)
         return callback
 
     def create_final_confirmation_button(self, row=0, is_confirm=True):
@@ -82,37 +75,28 @@ class CreatureInventoryManagementView(discord.ui.View):
         button.callback = self.final_confirmation_callback()
         return button
     def final_confirmation_callback(self):
-        @retry_on_ssl_error(max_retries=3, delay=1)
+        @interaction_guard(self)
         async def callback(interaction):
-            if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+            # Route to appropriate handler based on mode - release or favorite
+            success, final_image_mode, release_rewards = await self._handle_release_operation() if self.mode == CREATURE_INVENTORY_MODE_RELEASE else await self._handle_favorite_operation()
+            if not success:
+                await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
                 return
 
-            async with self.interaction_lock:
-                await interaction.response.defer()
+            self.refresh_view(view_state=VIEW_WORKFLOW_STATE_FINALIZED)
 
-                # Route to appropriate handler based on mode - release or favorite
-                success, final_image_mode, extra_data = await self._handle_release_operation() if self.mode == CREATURE_INVENTORY_MODE_RELEASE else await self._handle_favorite_operation()
-                if not success:
-                    await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
-                    return
+            await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", ephemeral=True)
 
-                self.refresh_view(view_state=VIEW_WORKFLOW_STATE_FINALIZED)
+            # Update original message with refreshed inventory image
+            await self.original_message.edit(content="", attachments=[self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT)], view=self.original_view)
 
-                # Handle Response Messages
-                # Send success message
-                await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", ephemeral=True)
-
-                # Update original message with refreshed inventory image
-                updated_creature_inventory_image = self.reload_creature_inventory_image(refresh_creatures=True, image_mode=CREATURE_INVENTORY_MODE_DEFAULT)
-                await self.original_message.edit(content="", attachments=[updated_creature_inventory_image], view=self.original_view)
-
-                # Show release results if releasing
-                if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS and extra_data:
-                    release_results_image = self.reload_release_results_image(currency_earned=extra_data['currency_earned'], earned_items=extra_data['earned_items'], count_released=len(self.selected_ids))
-                    await interaction.followup.send(content="Here are your release rewards:", files=[release_results_image], ephemeral=True)
+            # Show release results if releasing
+            if final_image_mode == CREATURE_INVENTORY_MODE_RELEASE_RESULTS and release_rewards:
+                release_results_image = self.reload_release_results_image(currency_earned=release_rewards['currency_earned'], earned_items=release_rewards['earned_items'], count_released=len(self.selected_ids))
+                await interaction.followup.send(content="You have earned the following rewards:", files=[release_results_image], ephemeral=True)
         return callback
     async def _handle_release_operation(self):
-        currency_earned, earned_items  = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.id, creature_ids=self.selected_ids, interaction=None)
+        currency_earned, earned_items  = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.user_id, creature_ids=self.selected_ids, interaction=None)
 
         if not currency_earned:
             return False, None, None
@@ -131,7 +115,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         button.callback = self.select_all_callback
         return button
     async def select_all_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.user_id):
             return
 
         dropdowns = [
@@ -162,7 +146,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         button.callback = self.deselect_all_callback
         return button
     async def deselect_all_callback(self, interaction: discord.Interaction):
-        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.id):
+        if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, self.message_author.user_id):
             return
 
         dropdowns = [
@@ -275,9 +259,9 @@ class CreatureInventoryManagementView(discord.ui.View):
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 
     def reload_creature_inventory_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
-        new_image = self.creature_inventory_image_factory.get_creature_inventory_page_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
+        new_image = self.creature_inventory_image_factory.reload_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames)
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def reload_release_results_image(self, currency_earned=0, earned_items=None, count_released=0):
-        new_image = self.release_result_image_factory.get_creature_inventory_page_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
+        new_image = self.release_result_image_factory.reload_image(currency=currency_earned, earned_items=earned_items, count_released=count_released)
         return convert_to_png(new_image, f'release_results.png')

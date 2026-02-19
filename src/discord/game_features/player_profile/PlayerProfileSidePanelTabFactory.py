@@ -9,7 +9,7 @@ from src.resources.constants.file_paths import *
 
 
 class PlayerProfileSidePanelTabFactory:
-    def __init__(self, tab_type: str, player: TGOPlayer, collection: TGOCollection = None, tab_image: str = None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
+    def __init__(self, tab_type: str, player: TGOPlayer, collection: TGOCollection = None, tab_image= None, background_image_path: str = None, image_color_path: str = None, tab_title: str = None, tab_subtitle: str = None, tab_footer: str = None):
         self.player = player
         self.collection = collection
 

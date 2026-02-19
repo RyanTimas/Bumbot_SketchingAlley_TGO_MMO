@@ -10,14 +10,18 @@ from src.resources.constants.file_paths import *
 class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user):
         self.unlocked_avatar_icons = []
-        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(target_user.user_id, convert_to_object=True)
+        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(target_user.user_id)
 
         super().__init__(message_author=message_author, target_user=target_user)
         self.total_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
         self.load_relevant_info()
 
-    def load_relevant_info(self, new_page_number = None):
-        self.page_num = new_page_number if new_page_number else self.page_num
+    def load_relevant_info(self, target_user=None, new_page_number = None):
+        super().load_relevant_info(target_user=target_user, new_page_number=new_page_number)
+
+        data_changed = any(param is not None for param in [target_user])
+        if data_changed:
+            self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(target_user.user_id)
         self.unlocked_avatar_icons = self.get_unlocked_avatars_icons()
     def build_image(self):
         avatar_board_img = Image.open(AVATAR_BOARD_BACKGROUND_IMAGE)

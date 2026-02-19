@@ -16,10 +16,10 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         self.total_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)
         self.load_relevant_info()
 
-    def load_relevant_info(self, new_page_number = None):
-        self.page_num = new_page_number if new_page_number else self.page_num
+    def load_relevant_info(self, target_user=None, new_page_number = None):
+        super().load_relevant_info(target_user=target_user, new_page_number=new_page_number)
         self.avatar_quest_icons = self.get_avatar_quests_icons()
-    def build_image(self, new_page_number = None, open_tab = None):
+    def build_image(self, target_user=None, new_page_number = None, open_tab = None):
         avatar_quest_img = Image.open(AVATAR_BOARD_BACKGROUND_IMAGE)
         corner_overlay_img = Image.open(AVATAR_BOARD_CORNER_OVERLAY)
         unlocked_avatar_button_img = Image.open(AVATAR_BOARD_BUTTON_UNLOCKED_AVATAR_INACTIVE_IMAGE)

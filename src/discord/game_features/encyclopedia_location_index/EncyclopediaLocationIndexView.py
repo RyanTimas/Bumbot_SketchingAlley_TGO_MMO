@@ -80,6 +80,8 @@ class EncyclopediaLocationIndexView(BaseView):
         self.add_item(self.close_button)
         if self.original_view is not None:
             self.add_item(self.go_back_button)
+        self.add_item(self.change_user_button)
+        self.add_item(self.server_view_button)
 
     def reload_encyclopedia_image(self, new_page_number=None):
         new_image = self.encyclopedia_img_factory.reload_image(new_page_number=new_page_number, environment=self.selected_environment)

@@ -1,6 +1,8 @@
 import discord
 
 from src.commons.CommonFunctions import retry_on_ssl_error, convert_to_png, interaction_guard
+from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import AvatarBoardAvatarQuestImageFactory
+from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import AvatarBoardUnlockedAvatarImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY, AVATAR_INVENTORY_QUEST_TAB_KEY
 
@@ -11,8 +13,8 @@ class AvatarBoardView(BaseView):
 
         self.open_tab = open_tab
 
-        self.avatar_board_unlocked_avatar_image_factory = avatar_board_unlocked_avatar_image_factory
-        self.avatar_board_quest_image_factory = avatar_board_quest_image_factory
+        self.avatar_board_unlocked_avatar_image_factory:AvatarBoardUnlockedAvatarImageFactory = avatar_board_unlocked_avatar_image_factory
+        self.avatar_board_quest_image_factory:AvatarBoardAvatarQuestImageFactory = avatar_board_quest_image_factory
 
         self.avatar_quests_button = self.create_open_avatar_quests_panel_button(row=2)
         self.unlocked_avatar_tab_button = self.create_open_unlocked_avatars_panel_button(row=2)
@@ -88,9 +90,12 @@ class AvatarBoardView(BaseView):
         self.add_item(self.close_button)
         if self.original_view:
             self.add_item(self.go_back_button)
+        self.add_item(self.change_user_button)
 
-    def reload_image(self, image_factory= None, new_page_number=None):
+    def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         image_factory = self.avatar_board_unlocked_avatar_image_factory if self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else self.avatar_board_quest_image_factory
-        new_image = image_factory.reload_image(new_page_number=new_page_number)
+        # todo: when user is changed, only displayed image factory's target user is updated, need to update both factories
+
+        new_image = image_factory.reload_image(target_user=target_user, new_page_number=new_page_number)
         return convert_to_png(new_image, 'avatar_board_image.png')
 

@@ -19,12 +19,16 @@ class ItemInventoryImageFactory(BaseImageFactory):
         self.starting_index = 0
         self.ending_index = len(self.user_item_icons)
 
-    def reload_image(self, new_page_number = None):
-        self.load_relevant_info(new_page_number=new_page_number)
+    def reload_image(self, target_user= None, new_page_number = None):
+        self.load_relevant_info(target_user=target_user, new_page_number=new_page_number)
         return self.build_image()
 
-    def load_relevant_info(self, new_page_number = None):
-        self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.target_user.user_id, convert_to_object=True) if item.item_quantity > 0 and item.item_type not in ITEM_INVENTORY_EXCLUDED_ITEM_TYPES]
+    def load_relevant_info(self, target_user= None, new_page_number = None):
+        super().load_relevant_info(target_user=target_user, new_page_number=new_page_number)
+
+        data_changed = any(param is not None for param in [target_user])
+        if data_changed:
+            self.user_items = [item for item in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.target_user.user_id, convert_to_object=True) if item.item_quantity > 0 and item.item_type not in ITEM_INVENTORY_EXCLUDED_ITEM_TYPES]
         self.user_item_icons = self.build_item_icons()
 
     def build_image(self):

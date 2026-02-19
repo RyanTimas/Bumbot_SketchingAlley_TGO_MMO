@@ -82,8 +82,7 @@ class ItemInventoryView(BaseView):
     def update_button_states(self):
         pass
     def rebuild_view(self, view_mode: str = None):
-        for item in self.children.copy():
-            self.remove_item(item)
+        super().rebuild_view()
 
         if view_mode == VIEW_WORKFLOW_STATE_INITIAL:
             if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
@@ -99,6 +98,6 @@ class ItemInventoryView(BaseView):
 
 
     # SUPPORT FUNCTIONS
-    def reload_image(self, image_factory= None, new_page_number=None):
-        new_image = self.image_factory.reload_image()
+    def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
+        new_image = self.image_factory.reload_image(target_user=target_user)
         return convert_to_png(new_image, f'item_inventory_page.png')

@@ -245,9 +245,9 @@ class TGOMMODatabaseHandler:
 
     # region CATCH STAT QUERIES
     # region CATCH STAT QUERIES - total catches
-    def get_total_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no=None, time_of_day=None, is_mythical=False):
+    def get_total_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no=None, time_of_day=None, is_mythical=False, rarity=None, creature_class=None):
         query = f"{TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE} true "
-        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical)
+        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical, rarity=rarity, creature_class=creature_class)
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
 
@@ -292,9 +292,9 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region CATCH STAT QUERIES - unique catches
-    def get_unique_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no= None,  environment_id= None, time_of_day=None, is_mythical=False):
+    def get_unique_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no= None,  environment_id= None, time_of_day=None, rarity=None, creature_class=None, is_mythical=False):
         query = f"{TGOMMO_SELECT_UNIQUE_CREATURE_VARIANTS_CAUGHT_BASE if include_variants else TGOMMO_SELECT_UNIQUE_CREATURES_CAUGHT_BASE} true "
-        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical)
+        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical, rarity=rarity, creature_class=creature_class)
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
 
@@ -318,14 +318,14 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region CATCH STAT QUERIES # region CATCH STAT QUERIES - unique catches
-    def get_total_unique_creatures_available_base(self, user_id=None, include_variants=False, include_mythics=False, environment_dex_no= None, environment_id=None, time_of_day=None):
+    def get_total_unique_creatures_available_base(self, user_id=None, include_variants=False, include_mythics=False, environment_dex_no= None, environment_id=None, time_of_day=None, rarity=None, creature_class=None):
         query = f"{TGOMMO_SELECT_TOTAL_UNIQUE_VARIANTS_AVAILABLE_BASE if include_variants else TGOMMO_SELECT_TOTAL_UNIQUE_CREATURES_AVAILABLE_BASE} {TGOMMO_SELECT_CREATURE_BY_EXCLUDING_TRANSCENDANT_DEFAULT_RARITY_SUFFIX} "
-        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=include_mythics)
+        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=include_mythics, rarity=rarity, creature_class=creature_class)
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
 
-    def get_total_unique_creatures_available_for_environment(self, environment_dex_no=None, include_variants=False, time_of_day=None):
-        return self.get_total_unique_creatures_available_base(environment_dex_no=environment_dex_no, include_variants=include_variants, time_of_day=time_of_day)
+    def get_total_unique_creatures_available_for_environment(self, environment_dex_no=None, include_variants=False, time_of_day=None, rarity=None, creature_class=None):
+        return self.get_total_unique_creatures_available_base(environment_dex_no=environment_dex_no, include_variants=include_variants, time_of_day=time_of_day, rarity=rarity, creature_class=creature_class)
     # endregion
     # endregion
 
@@ -340,7 +340,7 @@ class TGOMMODatabaseHandler:
             query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX};"
             event_creatures.append(self.get_creatures_from_database(query=query, params=(event_pairing[0], event_pairing[1]), convert_to_object=convert_to_object, expect_multiple=False))
         return event_creatures
-    def get_creatures_to_display_for_encyclopedia(self, environment_id=0, environment_variant_type=None, include_variants=False):
+    def get_creatures_to_display_for_encyclopedia(self, environment_id=0, environment_variant_type=None, include_variants=False, rarity=None, creature_class=None):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE if environment_id != 0 else TGOMMO_SELECT_CREATURE_BASE} TRUE "
         params = []
 
@@ -352,6 +352,14 @@ class TGOMMODatabaseHandler:
             if environment_variant_type != BOTH:
                 query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"
                 params.append(environment_variant_type)
+            if rarity:
+                query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_RARITY_SUFFIX}"
+                params.append(rarity)
+
+        if creature_class:
+            query += f" AND {TGOMMO_SELECT_CREATURE_BY_CLASSIFICATION_SUFFIX}"
+            params.append(creature_class)
+
         if not include_variants:
             query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX}"
             params.append(1)
@@ -577,7 +585,7 @@ class TGOMMODatabaseHandler:
 
 
     ''' SUPPORT FUNCTIONS '''
-    def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None):
+    def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None, rarity=None, creature_class=None):
         if user_id and user_id != 0:
             base_query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
             params.append(user_id)
@@ -592,6 +600,13 @@ class TGOMMODatabaseHandler:
         if environment_dex_no and environment_dex_no != 0:
             base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX}"
             params.append(environment_dex_no)
+
+        if rarity:
+            base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_RARITY_SUFFIX}"
+            params.append(rarity)
+        if creature_class:
+            base_query += f" AND {TGOMMO_SELECT_CREATURE_BY_CLASSIFICATION_SUFFIX}"
+            params.append(creature_class)
 
         if environment_variant_no and environment_variant_no != BOTH:
             base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_SPAWN_TIME_SUFFIX}"

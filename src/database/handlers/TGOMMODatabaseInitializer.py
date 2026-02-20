@@ -186,7 +186,7 @@ class TGOMMODatabaseInitializer:
             ('Otter', '', 95, 1, 'North American River Otter', 'Lontra canadensis', MAMMAL, '', RIVER_OTTER_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
             ('Hercules Beetle', 'Male', 96, 1, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Hercules Beetle', 'Female', 96, 2, 'Eastern Hercules Beetle', 'Dynastes tityus', INSECT, '', HERCULES_BEETLE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
-            ('Hellbender', '', 97, 1, 'Hellbender', 'Cryptobranchus alleganiensis', REPTILE, '', HELLBENDER_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Hellbender', '', 97, 1, 'Hellbender', 'Cryptobranchus alleganiensis', AMPHIBIAN, '', HELLBENDER_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Puffin', '', 98, 1, 'Atlantic Puffin', 'Fratercula arctica', BIRD, '', PUFFIN_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
             ('Seal', '', 99, 1, 'Harbor Seal', 'Phoca vitulina', MAMMAL, '', HARBOR_SEAL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Alligator', '', 100, 1, 'American Alligator', 'Alligator mississippiensis', REPTILE, '', ALLIGATOR_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),

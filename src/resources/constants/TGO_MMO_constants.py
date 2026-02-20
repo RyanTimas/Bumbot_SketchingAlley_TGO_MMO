@@ -125,6 +125,12 @@ ENCYCLOPEDIA_DAY_SPAWNS_MODE = "day_spawns"
 ENCYCLOPEDIA_NIGHT_SPAWNS_MODE = "night_spawns"
 ENCYCLOPEDIA_XL_MODE = "XL"
 
+ENCYCLOPEDIA_NO_EXPANDED_DISPLAY_KEY = "no_expanded_display"
+ENCYCLOPEDIA_BASE_EXPANDED_DISPLAY_KEY = "base_expanded_display"
+ENCYCLOPEDIA_EXPANDED_TIME_DISPLAY_KEY = "expanded_time_display"
+ENCYCLOPEDIA_EXPANDED_RARITY_DISPLAY_KEY = "expanded_rarity_display"
+ENCYCLOPEDIA_EXPANDED_CLASS_DISPLAY_KEY = "expanded_class_display"
+
 
 """ ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 CREATURE_INVENTORY_FILTER_EXPANSION_KEY = "filter_expansion"

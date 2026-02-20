@@ -23,40 +23,51 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.is_verbose = False
         self.show_variants = False
         self.show_mythics = False
+
         self.time_of_day = BOTH
+        self.rarity_filter = None
+        self.creature_class_filter = None
 
         self.is_xl_mode = False
         self.encyclopedia_xl_image_factory = EncyclopediaXLImageFactory(parent_image_factory=self)
 
         self.total_user_catches = 0
-        self.distinct_user_catches = 0
+        self.unique_catches_for_user = 0
+        self.unique_creatures_available_for_environment = 0
+
         self.creatures = []
         self.dex_icons = []
 
 
-    def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, is_xl_mode = None):
-        self.load_relevant_info(target_user=target_user, environment=environment if environment != self.environment else None, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, is_xl_mode= is_xl_mode if is_xl_mode != self.is_xl_mode else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
+    def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, is_xl_mode = None, rarity = None, creature_class = None):
+        self.load_relevant_info(target_user=target_user, environment=environment if environment != self.environment else None, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, rarity=rarity, creature_class=creature_class,  is_xl_mode= is_xl_mode if is_xl_mode != self.is_xl_mode else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
         return self.build_image()
 
-    def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, is_xl_mode= None, new_page_number= None):
+    def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, is_xl_mode= None, new_page_number= None, rarity = None, creature_class = None):
         self.target_user = target_user if target_user is not None else self.target_user
         self.environment = environment if environment is not None else self.environment
+        self.is_xl_mode = is_xl_mode if is_xl_mode is not None else self.is_xl_mode
 
+        self.page_num = 1 if any(param is not None for param in [show_variants, time_of_day, environment, rarity, creature_class]) else new_page_number if new_page_number else self.page_num
+
+        # basic filter options
         self.is_verbose = is_verbose if is_verbose is not None else self.is_verbose
-        self.page_num = new_page_number if new_page_number is not None else self.page_num
         self.show_variants = show_variants if show_variants is not None else self.show_variants
         self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
-        self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
-        self.is_xl_mode = is_xl_mode if is_xl_mode is not None else self.is_xl_mode
-        self.page_num = 1 if any(param is not None for param in [show_variants, time_of_day, environment]) else self.page_num
 
-        data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day])
+        # deluxe filter options
+        self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
+        self.rarity_filter = None if rarity == "None" else (rarity if rarity is not None else self.rarity_filter)
+        self.creature_class_filter = None if creature_class == "None" else (creature_class if creature_class is not None else self.creature_class_filter)
+
+        data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day, rarity, creature_class])
         if data_changed:
             self.is_server_view = self.target_user.user_id == 0
+            self.total_user_catches = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
+            self.unique_catches_for_user = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
+            self.unique_creatures_available_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
 
-            self.distinct_user_catches = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-            self.total_user_catches = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
-            self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants)
+            self.creatures = get_tgommo_db_handler().get_creatures_to_display_for_encyclopedia(environment_id=self.environment.dex_no, environment_variant_type=self.time_of_day, include_variants=self.show_variants, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
         if data_changed or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
 
@@ -102,43 +113,6 @@ class EncyclopediaImageFactory(BaseImageFactory):
         encyclopedia_img.paste(icons_grid, (694, 142), icons_grid)
         return encyclopedia_img
 
-    # create a grid of dex icons
-    def create_dex_icons_grid(self):
-        # Create a blank canvas for the grid
-        grid_canvas = Image.new('RGBA', (520, 535), (0, 0, 0, 0))
-
-        # Define grid parameters
-        icon_width, icon_height = 100, 75
-        icons_per_row = 5  # 500 / 100 = 5, but we need padding
-
-        # Calculate padding
-        horizontal_padding = 3
-        vertical_padding = 20
-
-        # Place icons in grid
-        row, col = 0, 0
-        for i, dex_icon in enumerate(self.dex_icons):
-            # Open the file as an image
-
-            # Calculate position
-            x = col * (icon_width + horizontal_padding if i != 0 else 0)
-            y = row * (icon_height + vertical_padding if i != 0 else 0)
-
-            # Paste icon onto canvas
-            grid_canvas.paste(dex_icon, (int(x), int(y)))
-
-            # Move to next position
-            col += 1
-            if col >= icons_per_row:
-                col = 0
-                row += 1
-
-            # Stop if we run out of space
-            if row * (icon_height + vertical_padding) + icon_height > 500:
-                break
-
-        return grid_canvas
-
     # return list of all dex icons for species
     def get_dex_icons(self, page_swap = 0):
         self.page_num += page_swap
@@ -173,7 +147,6 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
         dex_icon = EncyclopediaIconFactory(creature=creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
         return dex_icon.generate_dex_entry_image()
-
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
         top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
@@ -224,22 +197,18 @@ class EncyclopediaImageFactory(BaseImageFactory):
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
 
-        total_user_catches = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-        unique_catches_for_user = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-        unique_creatures_available_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
-
-        text = f"{'0' if unique_catches_for_user < 10 else ''} {unique_catches_for_user} / {'0' if unique_creatures_available_for_environment < 10 else ''} {unique_creatures_available_for_environment}"
+        text = f"{'0' if self.unique_catches_for_user < 10 else ''} {self.unique_catches_for_user} / {'0' if self.unique_creatures_available_for_environment < 10 else ''} {self.unique_creatures_available_for_environment}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 
-        text = f"{total_user_catches}"
+        text = f"{self.total_user_catches}"
         pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
         draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
         # BOTTOM BAR TEXT
-        # text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
-        # font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
-        # pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
-        # draw.text(pixel_location, text=text, font=font, color=bar_font_color)
+        text = f"{self.environment.name}"
+        font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
+        pixel_location = center_text_on_pixel(text, font, center_pixel_location=(950, 630))
+        draw.text(pixel_location, text=text, font=font, color=bar_font_color)
 
         return encyclopedia_img

@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import center_text_on_pixel, resize_text_to_fit
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.commons.CommonFunctions import *
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY
 from src.resources.constants.file_paths import *
@@ -26,18 +25,15 @@ class EncyclopediaXLImageFactory(BaseImageFactory):
         overlay_img = Image.open(f"{ENCYCLOPEDIA_XL_OVERLAY_IMAGE}")
         box_img = Image.open(f"{ENCYCLOPEDIA_XL_BOX_BASE}{self.parent_image_factory.environment.dex_no}{IMAGE_FILE_EXTENSION}")
 
-        # todo: add username to image
-        # todo: add catch stats & environment info to image
-        # todo: add avatar to image
-        # todo: add discord profile pic to image
-
         icon_dimensions, icons_per_row, total_rows = self.calculate_dex_grid_information(len(self.parent_image_factory.creatures))
         dex_icon_grid = self.build_grid(icons=self.parent_image_factory.dex_icons, grid_size=(2050, 942), icon_size=icon_dimensions, icons_per_page=1000, icons_per_row=icons_per_row, horizontal_padding=1, vertical_padding=1)
 
         encyclopedia_img.paste(box_img, (0, 0), box_img)
         encyclopedia_img.paste(dex_icon_grid, (743, 109), dex_icon_grid)
+        encyclopedia_img = self.add_player_images_to_image(encyclopedia_img)
         encyclopedia_img.paste(overlay_img, (0, 0), overlay_img)
-        return encyclopedia_img
+
+        return self.add_text_to_encyclopedia_image(encyclopedia_img)
 
     # Calculate optimal icon dimensions for a grid layout.
     # Returns: tuple: ((icon_width, icon_height), icons_per_row, total_rows)
@@ -97,46 +93,40 @@ class EncyclopediaXLImageFactory(BaseImageFactory):
 
         return best_config if best_config else ((53, 40), 38, (total_icons + 37) // 38)
 
+    def add_player_images_to_image(self, encyclopedia_img: Image):
+        # add discord profile pic to image
+        # todo: is is_server_view, put the tgommo logo instead of profile pic
+        if not self.parent_image_factory.is_server_view:
+            profile_pic = build_user_profile_pic(user=self.parent_image_factory.target_user.discord_profile, size=(236, 236))
+            encyclopedia_img.paste(profile_pic, (246, 215), profile_pic)
 
-    # return list of all dex icons for species
+        # add avatar to image
+        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.parent_image_factory.target_user.avatar.avatar_type}_{self.parent_image_factory.target_user.avatar.img_root}{IMAGE_FILE_EXTENSION}")
+        player_avatar_image = player_avatar_image.resize((711, 400), Image.LANCZOS)
+        encyclopedia_img.paste(player_avatar_image, (9, 520), player_avatar_image)
+
+        return encyclopedia_img
+
+
     def add_text_to_encyclopedia_image(self, encyclopedia_img: Image):
+        encyclopedia_img = place_username_on_image(target_user=self.parent_image_factory.target_user, image=encyclopedia_img, border_color=(255,0,0), max_width=480, max_font_size=60)
         draw = ImageDraw.Draw(encyclopedia_img)
 
-        name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50)
-        tag_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 30)
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
+        bar_font_color = FONT_COLOR_WHITE
 
-        # NAME TEXT
-        text = f"Sketching Alley" if self.is_server_view else self.target_user.nickname
-        font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
-        pixel_location = (70, 535)
-        draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
+        text = f"{'0' if self.parent_image_factory.unique_catches_for_user < 10 else ''} {self.parent_image_factory.unique_catches_for_user} / {'0' if self.parent_image_factory.unique_creatures_available_for_environment < 10 else ''} {self.parent_image_factory.unique_creatures_available_for_environment}"
+        pixel_location = (1104, 64)
+        draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
-        if not self.is_server_view:
-            text = f"@{self.target_user.discord_profile.name}"
-            font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
-            pixel_location = (83, 593)
-            draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
-
-        # TOP BAR TEXT
-        bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
-
-        total_user_catches = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-        unique_catches_for_user = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
-        unique_creatures_available_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day)
-
-        text = f"{'0' if unique_catches_for_user < 10 else ''} {unique_catches_for_user} / {'0' if unique_creatures_available_for_environment < 10 else ''} {unique_creatures_available_for_environment}"
-        pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
-        draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
-
-        text = f"{total_user_catches}"
-        pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
+        text = f"{self.parent_image_factory.total_user_catches}"
+        pixel_location = (1440, 64)
         draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
         # BOTTOM BAR TEXT
-        # text = f"{self.environment.name} | {'Night' if self.environment.is_night_environment else 'Day'}"
-        # font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
-        # pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(980, 630))
-        # draw.text(pixel_location, text=text, font=font, color=bar_font_color)
+        text = f"{self.parent_image_factory.environment.name}"
+        font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
+        pixel_location = center_text_on_pixel(text, font, center_pixel_location=(2160, 73))
+        draw.text(pixel_location, text=text, font=font, color=bar_font_color)
 
         return encyclopedia_img

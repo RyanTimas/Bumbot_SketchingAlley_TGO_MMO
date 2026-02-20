@@ -40,7 +40,7 @@ class PlayerProfileImageFactory(BaseImageFactory):
 
         player_profile_image = self._place_avatar_on_image(player_profile_image=player_profile_image)
         player_profile_image = self._place_creatures_on_image(player_profile_img=player_profile_image)
-        player_profile_image = self.place_username_on_image(player_profile_img=player_profile_image)
+        player_profile_image = place_username_on_image(target_user=self.target_user, image=player_profile_image)
 
         if self.open_tab and self.open_tab != PLAYER_PROFILE_TAB_CLOSED:
             player_profile_image = self.build_side_panel_content(player_profile_img=player_profile_image)
@@ -61,24 +61,6 @@ class PlayerProfileImageFactory(BaseImageFactory):
         player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.target_user.avatar.avatar_type}_{self.target_user.avatar.img_root}{IMAGE_FILE_EXTENSION}")
         player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
         return player_profile_image
-    def place_username_on_image(self, player_profile_img: Image):
-        draw = ImageDraw.Draw(player_profile_img)
-        font = resize_text_to_fit(text=self.target_user.nickname, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50), max_width=300, min_font_size=10)
-
-        # Get text dimensions
-        text_bbox = draw.textbbox((0, 0), self.target_user.nickname, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-
-        # Create a separate image for the text with border
-        text_img = Image.new('RGBA', (text_width + 8, text_height + 8), (0, 0, 0, 0))
-        x_offset, y_offset = 11, 10
-        border_size = 4
-        username_font_image = add_border_to_image(base_image=text_img, text=self.target_user.nickname, font=font, border_size=border_size, border_color=(0, 104, 145), font_color=FONT_COLOR_WHITE)
-
-        # Paste the text image onto the profile image
-        player_profile_img.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)
-        return player_profile_img
 
 
     # side panel functions

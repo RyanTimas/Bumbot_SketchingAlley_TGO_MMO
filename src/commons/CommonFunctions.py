@@ -13,7 +13,7 @@ from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File, app_commands
 
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
-from src.resources.constants.file_paths import PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE, PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE
+from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, USER_WHITELIST
 
 #************************************************************************************
@@ -367,6 +367,29 @@ def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%
 
         return formatted_date
     return "Unknown"
+
+#****************************************************************************************
+#---------------------------------------IMAGE FUNCTION--------------------------------------------
+#****************************************************************************************
+def place_username_on_image(target_user, image: Image, border_color = (0, 104, 145), font_color = FONT_COLOR_WHITE, max_font_size = 50, max_width = 300):
+        draw = ImageDraw.Draw(image)
+        font = resize_text_to_fit(text=target_user.nickname, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, max_font_size), max_width=max_width, min_font_size=10)
+
+        # Get text dimensions
+        text_bbox = draw.textbbox((0, 0), target_user.nickname, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+
+        # Create a separate image for the text with border
+        text_img = Image.new('RGBA', (text_width + 8, text_height + 8), (0, 0, 0, 0))
+        x_offset, y_offset = 11, 10
+        border_size = 4
+        username_font_image = add_border_to_image(base_image=text_img, text=target_user.nickname, font=font, border_size=border_size, border_color=border_color, font_color=font_color)
+
+        # Paste the text image onto the profile image
+        image.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)
+        return image
+
 
 #************************************************************************************
 #---------------------------------------DECORATORS--------------------------------------------

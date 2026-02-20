@@ -265,7 +265,7 @@ class UpdatePlayerProfileView(BaseView):
         self.reset_display_creature_ids(violations_to_reset)
 
         warning_message = '\n'.join(warnings)
-        await interaction.response.send_message(warning_message, ephemeral=True)
+        await interaction.followup.send(warning_message, ephemeral=True)
 
     def validate_creature_ids(self):
         invalid_ids = []

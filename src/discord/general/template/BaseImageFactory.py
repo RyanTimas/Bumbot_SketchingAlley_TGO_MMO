@@ -36,10 +36,10 @@ class BaseImageFactory:
         # Calculate padding
         row, col = 0, 0
 
-        starting_index = (self.page_num - 1) * icons_per_page
-        ending_index = min(starting_index + icons_per_page, len(icons))
+        for i, icon in enumerate(icons):
+            if icon.size != icon_size:
+                icon = icon.resize(icon_size, Image.LANCZOS)
 
-        for i, icon in enumerate(icons[starting_index:ending_index]):
             # Calculate position
             x = col * (icon_width + horizontal_padding if i != 0 else 0)
             y = row * (icon_height + vertical_padding if i != 0 else 0)

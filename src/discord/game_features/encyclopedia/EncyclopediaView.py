@@ -3,8 +3,7 @@ import discord
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import NIGHT, BOTH, DAY, ENCYCLOPEDIA_VERBOSE_MODE, \
-    ENCYCLOPEDIA_VARIANTS_MODE, ENCYCLOPEDIA_MYTHICAL_MODE, ENCYCLOPEDIA_NIGHT_SPAWNS_MODE, ENCYCLOPEDIA_DAY_SPAWNS_MODE
+from src.resources.constants.TGO_MMO_constants import *
 
 next_ = "next"
 previous = "previous"
@@ -19,6 +18,7 @@ class EncyclopediaView(BaseView):
         self.show_variants = None
         self.show_mythics = None
         self.time = None
+        self.is_xl_mode = False
 
         # Initialize the buttons once
         self.verbose_button = self.create_toggle_button(ENCYCLOPEDIA_VERBOSE_MODE, row=2)
@@ -26,6 +26,8 @@ class EncyclopediaView(BaseView):
         self.mythics_button = self.create_toggle_button(ENCYCLOPEDIA_MYTHICAL_MODE, row=2)
         self.day_only_button = self.create_toggle_button(ENCYCLOPEDIA_DAY_SPAWNS_MODE, row=2)
         self.night_only_button = self.create_toggle_button(ENCYCLOPEDIA_NIGHT_SPAWNS_MODE, row=2)
+
+        self.is_xl_button = self.create_toggle_button(ENCYCLOPEDIA_XL_MODE, row=4)
 
         # Add buttons to view
         self.refresh_view()
@@ -37,7 +39,8 @@ class EncyclopediaView(BaseView):
             ENCYCLOPEDIA_VARIANTS_MODE: ["Show Variants", discord.ButtonStyle.green, None],
             ENCYCLOPEDIA_MYTHICAL_MODE: ["Show Mythics", discord.ButtonStyle.green, "✨"],
             ENCYCLOPEDIA_NIGHT_SPAWNS_MODE: ["Show Night Spawns", discord.ButtonStyle.green, "🌙"],
-            ENCYCLOPEDIA_DAY_SPAWNS_MODE: ["Show Day Spawns", discord.ButtonStyle.green, "☀️"]
+            ENCYCLOPEDIA_DAY_SPAWNS_MODE: ["Show Day Spawns", discord.ButtonStyle.green, "☀️"],
+            ENCYCLOPEDIA_XL_MODE: ["Show Full View", discord.ButtonStyle.green, "➕"]
         }
         data = data_options[button_type]
         button = discord.ui.Button(label=data[0], style=data[1], emoji=data[2], row=row)
@@ -50,9 +53,10 @@ class EncyclopediaView(BaseView):
             self.is_verbose = not self.is_verbose if button_type == ENCYCLOPEDIA_VERBOSE_MODE else self.is_verbose
             self.show_variants = not self.show_variants if button_type == ENCYCLOPEDIA_VARIANTS_MODE else self.show_variants
             self.show_mythics = not self.show_mythics if button_type == ENCYCLOPEDIA_MYTHICAL_MODE else self.show_mythics
+            self.is_xl_mode = not self.is_xl_mode if button_type == ENCYCLOPEDIA_XL_MODE else self.is_xl_mode
             self.update_time_filter(button_type)
 
-            reloaded_image = self.reload_image(is_verbose=self.is_verbose, show_variants=self.show_variants, show_mythics=self.show_mythics, time=self.time)
+            reloaded_image = self.reload_image(is_verbose=self.is_verbose, show_variants=self.show_variants, show_mythics=self.show_mythics, time=self.time, is_xl_mode=self.is_xl_mode)
             self.refresh_view()
             await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
@@ -68,8 +72,14 @@ class EncyclopediaView(BaseView):
         self.mythics_button.style = discord.ButtonStyle.blurple if self.show_mythics else discord.ButtonStyle.gray
         self.night_only_button.style = discord.ButtonStyle.blurple if self.time == NIGHT else discord.ButtonStyle.gray
         self.day_only_button.style = discord.ButtonStyle.blurple if self.time == DAY else discord.ButtonStyle.gray
+        self.is_xl_button.style = discord.ButtonStyle.green if self.is_xl_mode else discord.ButtonStyle.gray
     def rebuild_view(self):
         super().rebuild_view()
+
+        if self.is_xl_mode:
+            self.remove_item(self.page_jump_dropdown)
+            self.remove_item(self.prev_button)
+            self.remove_item(self.next_button)
 
         # Add buttons to view
         self.add_item(self.verbose_button)
@@ -81,10 +91,11 @@ class EncyclopediaView(BaseView):
             self.add_item(self.night_only_button)
 
         self.add_item(self.server_view_button)
+        self.add_item(self.is_xl_button)
 
 
-    def reload_image(self, target_user=None, is_verbose=None, show_variants=None, show_mythics=None, time=None, new_page_number=None):
-        new_image = self.image_factory.reload_image(target_user=target_user, is_verbose=is_verbose, show_variants=show_variants, show_mythics=show_mythics, time_of_day=time, new_page_number=new_page_number)
+    def reload_image(self, target_user=None, is_verbose=None, show_variants=None, show_mythics=None, time=None, is_xl_mode=None, new_page_number=None):
+        new_image = self.image_factory.reload_image(target_user=target_user, is_verbose=is_verbose, show_variants=show_variants, show_mythics=show_mythics, time_of_day=time, is_xl_mode=is_xl_mode, new_page_number=new_page_number)
         return convert_to_png(new_image, f'encyclopedia_page.png')
 
 

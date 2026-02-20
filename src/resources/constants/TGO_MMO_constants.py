@@ -123,6 +123,7 @@ ENCYCLOPEDIA_VARIANTS_MODE = "variants"
 ENCYCLOPEDIA_MYTHICAL_MODE = "mythical"
 ENCYCLOPEDIA_DAY_SPAWNS_MODE = "day_spawns"
 ENCYCLOPEDIA_NIGHT_SPAWNS_MODE = "night_spawns"
+ENCYCLOPEDIA_XL_MODE = "XL"
 
 
 """ ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

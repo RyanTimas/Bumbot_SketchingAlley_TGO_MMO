@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
+from src.discord.game_features.encyclopedia.encyclopedia_xl.EncyclopediaXLImageFactory import EncyclopediaXLImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.CreatureRarity import TRANSCENDANT, MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature
@@ -16,25 +17,28 @@ from src.resources.constants.file_paths import *
 
 class EncyclopediaImageFactory(BaseImageFactory):
     def __init__(self, environment: TGOEnvironment, message_author=None, target_user=None):
-        self.environment = None
+        super().__init__(message_author=message_author, target_user=target_user)
+
+        self.environment = environment
         self.is_verbose = False
         self.show_variants = False
         self.show_mythics = False
         self.time_of_day = BOTH
+
+        self.is_xl_mode = False
+        self.encyclopedia_xl_image_factory = EncyclopediaXLImageFactory(parent_image_factory=self)
 
         self.total_user_catches = 0
         self.distinct_user_catches = 0
         self.creatures = []
         self.dex_icons = []
 
-        super().__init__(message_author=message_author, target_user=target_user)
-        self.load_relevant_info(environment=environment)
 
-    def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None):
-        self.load_relevant_info(target_user=target_user, environment=environment if environment != self.environment else None, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
+    def reload_image(self, target_user=None, environment=None, new_page_number = None, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, is_xl_mode = None):
+        self.load_relevant_info(target_user=target_user, environment=environment if environment != self.environment else None, is_verbose=is_verbose if is_verbose != self.is_verbose else None, show_variants= show_variants if show_variants != self.show_variants else None, show_mythics= show_mythics if show_mythics != self.show_mythics else None, time_of_day= time_of_day  if time_of_day != self.time_of_day else None, is_xl_mode= is_xl_mode if is_xl_mode != self.is_xl_mode else None, new_page_number= new_page_number if new_page_number != self.page_num else None)
         return self.build_image()
 
-    def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, new_page_number= None):
+    def load_relevant_info(self, target_user=None, environment=None, is_verbose= None, show_variants= None, show_mythics= None, time_of_day= None, is_xl_mode= None, new_page_number= None):
         self.target_user = target_user if target_user is not None else self.target_user
         self.environment = environment if environment is not None else self.environment
 
@@ -43,9 +47,10 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.show_variants = show_variants if show_variants is not None else self.show_variants
         self.show_mythics = show_mythics if show_mythics is not None else self.show_mythics
         self.time_of_day = time_of_day if time_of_day is not None else self.time_of_day
+        self.is_xl_mode = is_xl_mode if is_xl_mode is not None else self.is_xl_mode
         self.page_num = 1 if any(param is not None for param in [show_variants, time_of_day, environment]) else self.page_num
 
-        data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day, new_page_number])
+        data_changed = any(param is not None for param in [target_user, environment, show_variants, show_mythics, time_of_day])
         if data_changed:
             self.is_server_view = self.target_user.user_id == 0
 
@@ -55,7 +60,10 @@ class EncyclopediaImageFactory(BaseImageFactory):
         if data_changed or is_verbose is not None:
             self.dex_icons = self.get_dex_icons()
 
-    def build_image(self, is_verbose = None, show_variants = None, show_mythics= None, time_of_day= None, new_page_number = None):
+    def build_image(self):
+        if self.is_xl_mode:
+            return self.encyclopedia_xl_image_factory.reload_image()
+
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
@@ -83,7 +91,9 @@ class EncyclopediaImageFactory(BaseImageFactory):
             encyclopedia_img.paste(time_overlay_img, (0, 0), time_overlay_img)
 
         # generate dex icons
-        icons_grid = self.create_dex_icons_grid()
+        starting_index = (self.page_num - 1) * 25  # Adjust calculation to start from 0
+        ending_index = min(starting_index + 25, len(self.creatures))  # Ensure we don't go past the end of the list
+        icons_grid = self.build_grid(icons=self.dex_icons[starting_index: ending_index], grid_size=(520, 535), icon_size=(100, 75), icons_per_page=25, icons_per_row=5, horizontal_padding=3, vertical_padding=20)
 
         # add bottom bar and top bar
         encyclopedia_img = self.build_encyclopedia_dex_top_bar(encyclopedia_img)
@@ -91,7 +101,6 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
         encyclopedia_img.paste(icons_grid, (694, 142), icons_grid)
         return encyclopedia_img
-
 
     # create a grid of dex icons
     def create_dex_icons_grid(self):
@@ -137,13 +146,8 @@ class EncyclopediaImageFactory(BaseImageFactory):
         imgs = []
         raw_imgs = []
 
-        starting_index = (self.page_num - 1) * 25  # Adjust calculation to start from 0
-        ending_index = min(starting_index + 25, len(self.creatures))  # Ensure we don't go past the end of the list
-
         # Only process creatures within our page range
-        for i in range(starting_index, ending_index):
-            creature: TGOCreature = self.creatures[i]
-
+        for i, creature in enumerate(self.creatures):
             total_catches_for_creature_for_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user.user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
             total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user.user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, is_mythical=True)
             creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_creature_for_environment == 0
@@ -157,9 +161,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
         if self.total_pages != (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0):
             self.total_pages = (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0)
-
         return raw_imgs  #, imgs
-
     def build_dex_icon(self, creature: TGOCreature, total_catches: int, total_mythical_catches: int, creature_is_locked: bool):
         if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
             creature.set_creature_rarity(MYTHICAL)

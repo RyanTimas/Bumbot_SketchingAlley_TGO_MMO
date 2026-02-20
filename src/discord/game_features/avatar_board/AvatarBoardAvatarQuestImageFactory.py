@@ -24,7 +24,10 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         corner_overlay_img = Image.open(AVATAR_BOARD_CORNER_OVERLAY)
         unlocked_avatar_button_img = Image.open(AVATAR_BOARD_BUTTON_UNLOCKED_AVATAR_INACTIVE_IMAGE)
         avatar_quest_button_img = Image.open(AVATAR_BOARD_BUTTON_AVATAR_QUESTS_ACTIVE_IMAGE)
-        avatar_quest_grid_img = self.build_grid(self.avatar_quest_icons, grid_size=(1092, 476), icon_size=(550, 50), icons_per_page=16, icons_per_row=2, horizontal_padding=0, vertical_padding=5)
+
+        starting_index = (self.page_num - 1) * 16
+        ending_index = min(starting_index + 16, len(self.avatar_quest_icons))
+        avatar_quest_grid_img = self.build_grid(self.avatar_quest_icons[starting_index:ending_index], grid_size=(1092, 476), icon_size=(550, 50), icons_per_page=16, icons_per_row=2, horizontal_padding=0, vertical_padding=5)
 
         avatar_quest_img.paste(unlocked_avatar_button_img, (0, 0), unlocked_avatar_button_img)
         avatar_quest_img.paste(avatar_quest_button_img, (0, 0), avatar_quest_button_img)

@@ -147,7 +147,7 @@ class DiscordBot(commands.Bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
 
-            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(target_user=target_user, )
+            encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(message_author=message_author, target_user=target_user,)
             view = EncyclopediaLocationIndexView(message_author=message_author, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, )
 
             await interaction.response.send_message('', files=[convert_to_png(encyclopedia_location_index_img_factory.reload_image(), f'encyclopedia_location_index.png')], view=view)

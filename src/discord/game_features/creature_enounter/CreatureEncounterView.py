@@ -39,7 +39,7 @@ class CreatureEncounterView(View):
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            await interaction.response.defer(ephemeral=True)
+            await interaction.response.defer()
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
@@ -116,7 +116,7 @@ class CreatureEncounterView(View):
 
     async def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
-        if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
+        if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",
 
         # Mythical creatures & spawned creatures can always be caught

@@ -245,9 +245,9 @@ class TGOMMODatabaseHandler:
 
     # region CATCH STAT QUERIES
     # region CATCH STAT QUERIES - total catches
-    def get_total_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no=None, time_of_day=None, is_mythical=False, rarity=None, creature_class=None):
+    def get_total_catches_base(self, user_id=None, include_variants=False, creature_dex_no=None, creature_id=None, environment_dex_no=None, time_of_day=None, is_mythical=False, rarity=None, creature_class=None, is_released=None):
         query = f"{TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE} true "
-        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical, rarity=rarity, creature_class=creature_class)
+        query, params = self.handle_user_creature_optional_query_extensions(base_query=query, params=[], user_id=user_id, creature_id=creature_id, creature_dex_no=creature_dex_no, environment_dex_no=environment_dex_no, environment_variant_no=time_of_day, is_mythical=is_mythical, rarity=rarity, creature_class=creature_class, is_released=is_released)
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
 
@@ -260,14 +260,14 @@ class TGOMMODatabaseHandler:
     def has_user_caught_mythical_creature_variant(self, user_id=0, creature_id=0):
         return self.get_total_mythical_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
 
-    def get_total_catches_for_user(self, user_id=0):
-        return self.get_total_catches_base(user_id=user_id)
-    def get_total_mythical_catches_for_user(self, user_id=0):
-        return self.get_total_catches_base(user_id=user_id, is_mythical=True)
-    def get_total_catches_for_server(self):
-        return self.get_total_catches_base()
-    def get_total_mythical_catches_for_server(self):
-        return self.get_total_catches_base(is_mythical=True)
+    def get_total_catches_for_user(self, user_id=0, is_released=None):
+        return self.get_total_catches_base(user_id=user_id, is_released=is_released)
+    def get_total_mythical_catches_for_user(self, user_id=0, is_released=None):
+        return self.get_total_catches_base(user_id=user_id, is_mythical=True, is_released=is_released)
+    def get_total_catches_for_server(self, is_released=None):
+        return self.get_total_catches_base(is_released=is_released)
+    def get_total_mythical_catches_for_server(self, is_released=None):
+        return self.get_total_catches_base(is_mythical=True, is_released=None)
 
     def get_total_catches_for_species_for_environment(self, user_id=0, creature_dex_no=0, creature_id=0, environment_dex_no=0, time_of_day=BOTH, is_mythical=False):
         query = f"{TGOMMO_SELECT_TOTAL_CREATURES_CAUGHT_BASE} true "
@@ -585,7 +585,7 @@ class TGOMMODatabaseHandler:
 
 
     ''' SUPPORT FUNCTIONS '''
-    def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None, rarity=None, creature_class=None):
+    def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None, rarity=None, creature_class=None, is_released=None):
         if user_id and user_id != 0:
             base_query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
             params.append(user_id)
@@ -595,6 +595,10 @@ class TGOMMODatabaseHandler:
         if creature_dex_no and creature_dex_no != 0:
             base_query += f" AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX}"
             params.append(creature_dex_no)
+        if is_released is not None:
+            base_query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX}"
+            params.append(1 if is_released else 0)
+
 
         # todo: need to add branching logic for  TGOMMO_SELECT_ENVIRONMENT_BY_DEX_NO_SUFFIX
         if environment_dex_no and environment_dex_no != 0:

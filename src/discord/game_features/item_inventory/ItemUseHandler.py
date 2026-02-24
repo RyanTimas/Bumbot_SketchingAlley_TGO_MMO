@@ -70,8 +70,8 @@ class ItemUseHandler:
         caught_unique_creatures_for_environment = get_tgommo_db_handler().get_unique_catches_base(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
         capture_percentage = (caught_unique_creatures_for_environment / available_unique_creatures_for_environment) * 100
 
-        # if capture_percentage < 65:
-        #     return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
+        if capture_percentage < 65:
+            return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
 
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"

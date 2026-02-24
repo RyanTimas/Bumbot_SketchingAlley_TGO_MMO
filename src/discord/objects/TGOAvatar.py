@@ -1,3 +1,9 @@
+from random import randint
+
+from PIL import Image
+from src.resources.constants.file_paths import *
+
+
 class TGOAvatar:
     def __init__(self,
                  avatar_num:int, avatar_id:str,
@@ -20,3 +26,25 @@ class TGOAvatar:
         self.unlock_query = unlock_query if unlock_query else ""
         self.unlock_threshold = unlock_threshold if unlock_threshold else 0
         self.is_secret = is_secret if is_secret else False
+
+        self.avatar_image = None
+        self.avatar_icon_image = None
+        self.quest_icon_image = None
+        self.define_avatar_images()
+
+    def define_avatar_images(self):
+        avatar_img_path = f"{PLAYER_PROFILE_AVATAR_BASE}_{self.avatar_type}_{self.img_root}{IMAGE_FILE_EXTENSION}"
+        fallback_img_root_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
+
+        avatar_icon_img_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_ROOT}_{self.img_root}{IMAGE_FILE_EXTENSION}"
+        fallback_icon_img_root_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_ROOT}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
+
+        with Image.open(avatar_img_path if os.path.exists(avatar_img_path) else fallback_img_root_path) as img:
+            self.avatar_image = img.copy()
+        with Image.open(avatar_icon_img_path if os.path.exists(avatar_icon_img_path) else fallback_icon_img_root_path) as img:
+            self.avatar_icon_image = img.copy()
+
+        quest_icon_img_path = f'{QUEST_TAB_INDIVIDUAL_QUEST_BASE}{self.img_root}{IMAGE_FILE_EXTENSION}'
+        if os.path.exists(quest_icon_img_path):
+            with Image.open(quest_icon_img_path) as img:
+                self.quest_icon_image = img.copy()

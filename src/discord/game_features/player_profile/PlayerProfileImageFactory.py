@@ -58,8 +58,7 @@ class PlayerProfileImageFactory(BaseImageFactory):
                 player_profile_img.paste(creature_image, (x_offset, y_offset), creature_image)
         return player_profile_img
     def _place_avatar_on_image(self, player_profile_image: Image):
-        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.target_user.avatar.avatar_type}_{self.target_user.avatar.img_root}{IMAGE_FILE_EXTENSION}")
-        player_profile_image.paste(player_avatar_image, (0, 0), player_avatar_image)
+        player_profile_image.paste(self.target_user.avatar.avatar_image, (0, 0), self.target_user.avatar.avatar_image)
         return player_profile_image
 
 

@@ -178,7 +178,7 @@ class AvatarBoardImageFactory(BaseImageFactory):
             avatar_quest_img = avatar_quest.generate_avatar_quest_tab_image()
 
             raw_imgs.append(avatar_quest_img)
-            imgs.append(convert_to_png(avatar_quest_img, f'avatar_icon_{avatar.img_root}.png'))
+            imgs.append(convert_to_png(avatar_quest_img, f'avatar_icon_{avatar.avatar_id}.png'))
 
         return raw_imgs  #, imgs
 

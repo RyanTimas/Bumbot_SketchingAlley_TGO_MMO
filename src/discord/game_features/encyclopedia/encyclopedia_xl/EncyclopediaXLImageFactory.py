@@ -101,8 +101,7 @@ class EncyclopediaXLImageFactory(BaseImageFactory):
             encyclopedia_img.paste(profile_pic, (246, 215), profile_pic)
 
         # add avatar to image
-        player_avatar_image = Image.open(f"{PLAYER_PROFILE_AVATAR_BASE}_{self.parent_image_factory.target_user.avatar.avatar_type}_{self.parent_image_factory.target_user.avatar.img_root}{IMAGE_FILE_EXTENSION}")
-        player_avatar_image = player_avatar_image.resize((711, 400), Image.LANCZOS)
+        player_avatar_image = self.parent_image_factory.target_user.avatar.avatar_image.resize((711, 400), Image.LANCZOS)
         encyclopedia_img.paste(player_avatar_image, (9, 520), player_avatar_image)
 
         return encyclopedia_img

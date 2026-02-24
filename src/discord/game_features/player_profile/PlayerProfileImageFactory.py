@@ -2,13 +2,8 @@ from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.player_profile.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import PLAYER_PROFILE_CREATURE_RESIZE_PERCENT, \
-    PLAYER_PROFILE_CREATURE_COORDINATES, FONT_COLOR_WHITE, TGOMMO_RARITY_MYTHICAL
+from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
-
-PLAYER_PROFILE_TAB_OPEN_TEAM = "Team"
-PLAYER_PROFILE_TAB_OPEN_COLLECTIONS = "Collections"
-PLAYER_PROFILE_TAB_CLOSED = "Closed"
 
 class PlayerProfileImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user, tab_is_open: bool = False, open_tab: str = None):

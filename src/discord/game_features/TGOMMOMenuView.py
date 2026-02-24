@@ -6,10 +6,8 @@ from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
-from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
-    AvatarBoardAvatarQuestImageFactory
-from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import \
-    AvatarBoardUnlockedAvatarImageFactory
+from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import AvatarBoardAvatarQuestImageFactory
+from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView

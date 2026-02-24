@@ -282,4 +282,4 @@ class CreatureInventoryView(BaseView):
 
     def get_expansion_cost(self):
         already_purchased_expansions = self.image_factory.total_pages - BASE_CREATURE_STORAGE_EXPANSIONS
-        return (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_COST
+        return (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_BASE_COST

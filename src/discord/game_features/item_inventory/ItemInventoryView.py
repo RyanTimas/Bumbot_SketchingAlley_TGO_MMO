@@ -21,7 +21,7 @@ class ItemInventoryView(BaseView):
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
 
-        self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_INITIAL)
+        self.refresh_view(view_mode=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INITIAL)
 
 
     # CREATE BUTTONS
@@ -41,7 +41,7 @@ class ItemInventoryView(BaseView):
                 return
 
             self.original_message = interaction.message
-            self.refresh_view(view_mode=VIEW_WORKFLOW_STATE_CONFIRMATION)
+            self.refresh_view(view_mode=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION)
 
             item_img = convert_to_png(Image.open(f"{ITEM_INVENTORY_ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
             await interaction.followup.send(content=f"You have selected {self.selected_item.item_name} to use.\nYou have {self.selected_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=self, ephemeral=True)
@@ -84,13 +84,13 @@ class ItemInventoryView(BaseView):
     def rebuild_view(self, view_mode: str = None):
         super().rebuild_view()
 
-        if view_mode == VIEW_WORKFLOW_STATE_INITIAL:
+        if view_mode == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INITIAL:
             super().rebuild_view()
             if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
                 self.add_item(self.item_select_dropdown)
                 self.add_item(self.use_item_button)
 
-        if view_mode == VIEW_WORKFLOW_STATE_CONFIRMATION:
+        if view_mode == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION:
             self.add_item(self.use_item_confirm_button)
             self.remove_item(self.close_button)
             self.remove_item(self.go_back_button)

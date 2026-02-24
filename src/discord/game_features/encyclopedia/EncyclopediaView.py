@@ -29,13 +29,13 @@ class EncyclopediaView(BaseView):
         # basic filter buttons
         self.base_filter_expansion_button = self.create_expansion_button(ENCYCLOPEDIA_BASE_EXPANDED_DISPLAY_KEY, row=2)
         self.verbose_button = self.create_toggle_button(ENCYCLOPEDIA_VERBOSE_MODE, row=3)
-        self.variants_button = self.create_toggle_button(ENCYCLOPEDIA_VARIANTS_MODE, row=3)
-        self.mythics_button = self.create_toggle_button(ENCYCLOPEDIA_MYTHICAL_MODE, row=3)
+        self.variants_button = self.create_toggle_button(ENCYCLOPEDIA_VARIANTS_DISPLAY_KEY, row=3)
+        self.mythics_button = self.create_toggle_button(ENCYCLOPEDIA_MYTHICAL_DISPLAY_KEY, row=3)
 
         # deluxe filter options
         self.time_of_day_filter_expansion_button = self.create_expansion_button(ENCYCLOPEDIA_EXPANDED_TIME_DISPLAY_KEY, row=2)
-        self.day_only_button = self.create_toggle_button(ENCYCLOPEDIA_DAY_SPAWNS_MODE, row=3)
-        self.night_only_button = self.create_toggle_button(ENCYCLOPEDIA_NIGHT_SPAWNS_MODE, row=3)
+        self.day_only_button = self.create_toggle_button(ENCYCLOPEDIA_DAY_SPAWNS_DISPLAY_KEY, row=3)
+        self.night_only_button = self.create_toggle_button(ENCYCLOPEDIA_NIGHT_SPAWNS_DISPLAY_KEY, row=3)
 
         self.rarity_filter_expansion_button = self.create_expansion_button(ENCYCLOPEDIA_EXPANDED_RARITY_DISPLAY_KEY, row=2)
         self.rarity_dropdown = self.create_rarity_dropdown(row=3)
@@ -52,10 +52,10 @@ class EncyclopediaView(BaseView):
     def create_toggle_button(self, button_type, row=1):
         data_options = {
             ENCYCLOPEDIA_VERBOSE_MODE: ["Show Detailed View", discord.ButtonStyle.green, None],
-            ENCYCLOPEDIA_VARIANTS_MODE: ["Show Variants", discord.ButtonStyle.green, None],
-            ENCYCLOPEDIA_MYTHICAL_MODE: ["Show Mythics", discord.ButtonStyle.green, "✨"],
-            ENCYCLOPEDIA_NIGHT_SPAWNS_MODE: ["Show Night Spawns", discord.ButtonStyle.green, "🌙"],
-            ENCYCLOPEDIA_DAY_SPAWNS_MODE: ["Show Day Spawns", discord.ButtonStyle.green, "☀️"],
+            ENCYCLOPEDIA_VARIANTS_DISPLAY_KEY: ["Show Variants", discord.ButtonStyle.green, None],
+            ENCYCLOPEDIA_MYTHICAL_DISPLAY_KEY: ["Show Mythics", discord.ButtonStyle.green, "✨"],
+            ENCYCLOPEDIA_NIGHT_SPAWNS_DISPLAY_KEY: ["Show Night Spawns", discord.ButtonStyle.green, "🌙"],
+            ENCYCLOPEDIA_DAY_SPAWNS_DISPLAY_KEY: ["Show Day Spawns", discord.ButtonStyle.green, "☀️"],
             ENCYCLOPEDIA_XL_MODE: ["Show Full View", discord.ButtonStyle.green, "➕"]
         }
         data = data_options[button_type]
@@ -67,8 +67,8 @@ class EncyclopediaView(BaseView):
         @interaction_guard(self)
         async def callback(interaction, defer_response=False):
             self.is_verbose = not self.is_verbose if button_type == ENCYCLOPEDIA_VERBOSE_MODE else self.is_verbose
-            self.show_variants = not self.show_variants if button_type == ENCYCLOPEDIA_VARIANTS_MODE else self.show_variants
-            self.show_mythics = not self.show_mythics if button_type == ENCYCLOPEDIA_MYTHICAL_MODE else self.show_mythics
+            self.show_variants = not self.show_variants if button_type == ENCYCLOPEDIA_VARIANTS_DISPLAY_KEY else self.show_variants
+            self.show_mythics = not self.show_mythics if button_type == ENCYCLOPEDIA_MYTHICAL_DISPLAY_KEY else self.show_mythics
             self.is_xl_mode = not self.is_xl_mode if button_type == ENCYCLOPEDIA_XL_MODE else self.is_xl_mode
             self.update_time_filter(button_type)
 
@@ -218,7 +218,7 @@ class EncyclopediaView(BaseView):
 
     # SUPPORT FUNCTIONS
     def update_time_filter(self, button_type):
-        if button_type == ENCYCLOPEDIA_NIGHT_SPAWNS_MODE:
+        if button_type == ENCYCLOPEDIA_NIGHT_SPAWNS_DISPLAY_KEY:
             self.time = NIGHT if self.time != NIGHT else BOTH
-        elif button_type == ENCYCLOPEDIA_DAY_SPAWNS_MODE:
+        elif button_type == ENCYCLOPEDIA_DAY_SPAWNS_DISPLAY_KEY:
             self.time = DAY if self.time != DAY else BOTH

@@ -9,7 +9,7 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryManagementView(discord.ui.View):
-    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False, show_only_mythics=False, show_only_favorites=False, show_only_nicknames=False):
+    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False, show_only_mythics=False, show_only_favorites=False, show_only_nicknames=False):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.mode = mode
@@ -60,7 +60,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         async def callback(interaction):
             updated_image = self.reload_creature_inventory_image(image_mode= self.mode, creature_ids_to_update= self.selected_ids)
 
-            self.refresh_view(view_state = VIEW_WORKFLOW_STATE_CONFIRMATION)
+            self.refresh_view(view_state = CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION)
             await interaction.followup.send(content=f"You have selected the following creatures. Are you sure you want to {self.mode} them?", files=[updated_image], view=self, ephemeral=True)
         return callback
 
@@ -83,7 +83,7 @@ class CreatureInventoryManagementView(discord.ui.View):
                 await interaction.followup.send(content=f"An error occurred while trying to {self.mode} your creatures. Please try again.", ephemeral=True)
                 return
 
-            self.refresh_view(view_state=VIEW_WORKFLOW_STATE_FINALIZED)
+            self.refresh_view(view_state=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_FINALIZED)
 
             await interaction.followup.send(content=f"You have successfully {self.mode}'d your guys", ephemeral=True)
 
@@ -220,14 +220,14 @@ class CreatureInventoryManagementView(discord.ui.View):
         self.rebuild_view()
     def update_button_states(self):
         # UPDATE ENABLED/DISABLED STATES
-        self.final_confirmation_button_yes.disabled = self.view_state != VIEW_WORKFLOW_STATE_CONFIRMATION
-        self.final_confirmation_button_no.disabled = self.view_state != VIEW_WORKFLOW_STATE_CONFIRMATION
-        self.confirmation_button.disabled = self.view_state != VIEW_WORKFLOW_STATE_INTERACTION
+        self.final_confirmation_button_yes.disabled = self.view_state != CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION
+        self.final_confirmation_button_no.disabled = self.view_state != CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION
+        self.confirmation_button.disabled = self.view_state != CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INTERACTION
     def rebuild_view(self):
         for item in self.children.copy():
             self.remove_item(item)
 
-        if self.view_state == VIEW_WORKFLOW_STATE_INTERACTION:
+        if self.view_state == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INTERACTION:
             self.add_item(self.confirmation_button)
             # self.add_item(self.select_all_button)
             # self.add_item(self.deselect_all_button)
@@ -240,10 +240,10 @@ class CreatureInventoryManagementView(discord.ui.View):
                 self.add_item(self.selectable_creature_dropdown_3)
             if len(self.creatures) > 75:
                 self.add_item(self.selectable_creature_dropdown_4)
-        elif self.view_state == VIEW_WORKFLOW_STATE_CONFIRMATION:
+        elif self.view_state == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION:
             self.add_item(self.final_confirmation_button_yes)
             # self.add_item(self.final_confirmation_button_no)
-        elif self.view_state == VIEW_WORKFLOW_STATE_FINALIZED:
+        elif self.view_state == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_FINALIZED:
             for item in self.children:
                 item.disabled = True
 

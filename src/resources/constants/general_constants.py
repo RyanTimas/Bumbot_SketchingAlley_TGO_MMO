@@ -10,9 +10,7 @@ CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", CONF
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_PATH)
 
-'''*****************'''
-'''Bot Launch Constants'''
-'''*****************'''
+''' ----- Bot Launch Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 RUN_DISCORD_BOT = config.getboolean('General', 'RUN_DISCORD_BOT', fallback=False)
 RUN_TWITCH_BOT = config.getboolean('General', 'RUN_TWITCH_BOT', fallback=False)
 RUN_OBS_BOT = config.getboolean('General', 'RUN_OBS_WEBSOCKET', fallback=False)
@@ -20,9 +18,8 @@ RUN_OBS_BOT = config.getboolean('General', 'RUN_OBS_WEBSOCKET', fallback=False)
 RUN_SA_DB_INIT = config.getboolean('General', 'RUN_SA_DB_INIT', fallback=False)
 RUN_TGOMMO_DB_INIT = config.getboolean('General', 'RUN_TGOMMO_DB_INIT', fallback=False)
 
-'''*****************'''
-'''Discord constants'''
-'''*****************'''
+
+''' ----- Discord Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 DISCORD_TOKEN = config['DISCORD']['DISCORD_TOKEN']
 DISCORD_DATABASE = config['DISCORD']['DISCORD_DATABASE']
 
@@ -58,19 +55,15 @@ JORDO_USER_ID = 667807803418607651
 
 USER_WHITELIST = [BUMBISS_USER_ID]
 
-'''**********************'''
-'''File Paths / Locations'''
-'''**********************'''
+
+''' ----- File Paths / Locations  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 IMAGE_FOLDER_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "")
 IMAGE_FOLDER_IMAGES = "images"
 IMAGE_FOLDER_FONTS = "fonts"
 
 
-'''*****************'''
-'''General Constants'''
-'''*****************'''
+''' ----- General Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 DIVIDER_LINE = "──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
-
 NEW_DAY_TIMESTAMP = time(0, 0)  # 00:00:00
 
 

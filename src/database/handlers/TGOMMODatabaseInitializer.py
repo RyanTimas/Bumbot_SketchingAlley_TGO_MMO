@@ -202,7 +202,7 @@ class TGOMMODatabaseInitializer:
             ('Turtle', '', 105, 1, 'Florida Softshell Turtle', 'Apalone ferox', REPTILE, '', FLORIDA_SOFTSHELL_TURTLE_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Snake', '', 106, 1, 'North American Racer', 'Coluber constrictor', REPTILE, '', NORTH_AMERICAN_RACER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
             ('Snake', '', 107, 1, 'Eastern Coral Snake', 'Micrurus fulvius', REPTILE, '', EASTERN_CORALSNAKE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
-            ('TreeFrog', '', 108, 1, 'Florida Treefrog', 'Hyla squirella', AMPHIBIAN, '', SQUIRREL_TREEFROG_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Tree Frog', '', 108, 1, 'Florida Treefrog', 'Hyla squirella', AMPHIBIAN, '', SQUIRREL_TREEFROG_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
             ('Siren', '', 109, 1, 'Greater Siren', 'Siren lacertina', AMPHIBIAN, '', GREATER_SIREN_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Mockingbird', '', 110, 1, 'Northern Mockingbird', 'Mimus polyglottos', BIRD, '', NORTHERN_MOCKINGBIRD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
             ('Warbler', '', 111, 1, 'Palm Warbler', 'Setophaga palmarum', BIRD, '', PALM_WARBLER_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
@@ -474,6 +474,7 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(ROYAL_TERN_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(BROWN_PELICAN_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(BOTTLE_NOSED_DOLPHIN_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_OCEAN),
+            EnvironmentCreatureLink(MOSQUITO_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
         ]
 
         everglades_environment_creature_data = [

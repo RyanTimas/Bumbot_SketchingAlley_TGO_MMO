@@ -149,8 +149,8 @@ class EncyclopediaImageFactory(BaseImageFactory):
         return dex_icon.generate_dex_entry_image()
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
-        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
-        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_TOP_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_TOP_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_TOP_BAR_IMAGE)
+        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_DEFAULT_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)
+        top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_TOP_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_TOP_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_TOP_BAR_DEFAULT_IMAGE)
 
         top_bar_camera_img = Image.open(ENCYCLOPEDIA_TOP_BAR_CAMERA_ICON_IMAGE)
         top_bar_encounter_img = Image.open(ENCYCLOPEDIA_TOP_BAR_ENCOUNTER_ICON_IMAGE)
@@ -161,7 +161,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
         return encyclopedia_img
     def build_encyclopedia_dex_bottom_bar(self, encyclopedia_img: Image):
-        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_BOTTOM_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_BOTTOM_BAR_IMAGE)
+        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_SHINY_IMAGE if self.show_mythics else ENCYCLOPEDIA_BOTTOM_BAR_NIGHT_IMAGE if self.time_of_day == NIGHT else ENCYCLOPEDIA_BOTTOM_BAR_DAY_IMAGE if self.time_of_day == DAY  else ENCYCLOPEDIA_BOTTOM_BAR_DEFAULT_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)

@@ -125,7 +125,7 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
 
     # build user's profile pic from discord id
     def build_bottom_bar(self, encyclopedia_img: Image):
-        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE)
+        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_DEFAULT_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)

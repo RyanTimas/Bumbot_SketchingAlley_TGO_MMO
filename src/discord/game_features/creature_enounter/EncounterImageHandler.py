@@ -1,6 +1,7 @@
 import random
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
+from pygments.styles.dracula import background
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.CreatureRarity import TRANSCENDANT
@@ -79,19 +80,13 @@ class EncounterImageHandler:
     def build_background_image(self):
         time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
         sub_environment = self.creature.sub_environment if self.creature.sub_environment else SUB_ENVIRONMENT_FOREST
+        background_img_base = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}")
 
-        # Build path using pathlib to avoid hardcoded backslashes
-        base_dir = Path(IMAGE_FOLDER_ENVIRONMENTS_PATH)
-        path_dir = base_dir / self.environment.short_name / sub_environment
+        # todo: add logic for default background if specific one doesn't exist for environment + time of day combo
+        background_img = Image.open(f"{background_img_base}{IMAGE_FILE_EXTENSION}")
+        overlay_img = None if not os.path.exists(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}") else Image.open(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}")
 
-        img_name = f"{ENCOUNTER_SCREEN_IMAGE_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}"
-        full_img_path = (path_dir / f"{img_name}{IMAGE_FILE_EXTENSION}").resolve()
-        overlay_path = (path_dir / f"{img_name}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}").resolve()
-
-        if not full_img_path.exists():
-            raise FileNotFoundError(f"Background image not found: `{full_img_path}`")
-
-        return Image.open(full_img_path), None if not os.path.exists(overlay_path) else Image.open(overlay_path)
+        return background_img, overlay_img
 
 
     # set up text to add to encounter image

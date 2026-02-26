@@ -36,15 +36,15 @@ class TGOAvatar:
         avatar_img_path = f"{PLAYER_PROFILE_AVATAR_BASE}_{self.avatar_type}_{self.img_root}{IMAGE_FILE_EXTENSION}"
         fallback_img_root_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
 
-        avatar_icon_img_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_ROOT}_{self.img_root}{IMAGE_FILE_EXTENSION}"
-        fallback_icon_img_root_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_ROOT}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
+        avatar_icon_img_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_BASE}_{self.img_root}{IMAGE_FILE_EXTENSION}"
+        fallback_icon_img_root_path = f"{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_BASE}_Fallback-{randint(1, 2)}{IMAGE_FILE_EXTENSION}"
 
         with Image.open(avatar_img_path if os.path.exists(avatar_img_path) else fallback_img_root_path) as img:
             self.avatar_image = img.copy()
         with Image.open(avatar_icon_img_path if os.path.exists(avatar_icon_img_path) else fallback_icon_img_root_path) as img:
             self.avatar_icon_image = img.copy()
 
-        quest_icon_img_path = f'{QUEST_TAB_INDIVIDUAL_QUEST_BASE}{self.img_root}{IMAGE_FILE_EXTENSION}'
+        quest_icon_img_path = f'{AVATAR_QUEST_BASE}_{self.img_root}{IMAGE_FILE_EXTENSION}'
         if os.path.exists(quest_icon_img_path):
             with Image.open(quest_icon_img_path) as img:
                 self.quest_icon_image = img.copy()

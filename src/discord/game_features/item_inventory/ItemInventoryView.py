@@ -43,7 +43,7 @@ class ItemInventoryView(BaseView):
             self.original_message = interaction.message
             self.refresh_view(view_mode=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION)
 
-            item_img = convert_to_png(Image.open(f"{ITEM_INVENTORY_ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
+            item_img = convert_to_png(Image.open(f"{ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
             await interaction.followup.send(content=f"You have selected {self.selected_item.item_name} to use.\nYou have {self.selected_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=self, ephemeral=True)
         return callback
 

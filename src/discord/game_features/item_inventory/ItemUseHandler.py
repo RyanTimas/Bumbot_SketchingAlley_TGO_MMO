@@ -91,4 +91,4 @@ class ItemUseHandler:
 
     '''############ SUPPORT FUNCTIONS ############'''
     def get_image_for_item(self, item: TGOPlayerItem):
-        return convert_to_png(Image.open(f"{ITEM_INVENTORY_ITEM_BASE}{item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
+        return convert_to_png(Image.open(f"{ITEM_BASE}{item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')

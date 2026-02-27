@@ -12,7 +12,7 @@ class ItemInventoryIconImageFactory:
 
     def generate_inventory_icon_image(self):
         dex_icon_img = Image.open(ITEM_INVENTORY_TAB_BG_IMAGE)
-        item_img = Image.open(f"{ITEM_INVENTORY_ITEM_BASE}{self.item.img_root}{IMAGE_FILE_EXTENSION}").resize((64, 64))
+        item_img = Image.open(f"{ITEM_BASE}{self.item.img_root}{IMAGE_FILE_EXTENSION}").resize((64, 64))
 
         dex_icon_img.paste(item_img, (5, 5), item_img)
         return self.add_text_to_image(image=dex_icon_img)

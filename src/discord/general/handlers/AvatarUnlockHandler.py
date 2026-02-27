@@ -79,11 +79,11 @@ class AvatarUnlockHandler:
             ("Satoru Gojo", "16", datetime.datetime(2026, 1, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 29, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Kento Nanami", "17", datetime.datetime(2026, 1, 29, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Maki Zen'in", "18", datetime.datetime(2026, 2, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Suguru Geto", "19", datetime.datetime(2026, 2, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Toji Fushiguro", "20", datetime.datetime(2026, 2, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Mahito", "21", datetime.datetime(2026, 2, 26, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Suguru Geto", "19", datetime.datetime(2026, 2, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Toji Fushiguro", "20", datetime.datetime(2026, 2, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Mahito", "21", datetime.datetime(2026, 2, 26, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Ryomen Sukuna", "24", datetime.datetime(2026, 3, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 

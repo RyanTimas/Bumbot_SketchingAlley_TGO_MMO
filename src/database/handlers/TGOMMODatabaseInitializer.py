@@ -288,6 +288,40 @@ class TGOMMODatabaseInitializer:
             ('Dog', 'Dachshund', 176, 9, 'Domestic Dog', 'Canis lupus familiaris', MAMMAL, '', DOMESTIC_DOG_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
             ('Dog', 'Pug', 176, 10, 'Domestic Dog', 'Canis lupus familiaris', MAMMAL, '', DOMESTIC_DOG_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # endregion
+            # region WAVE 4.5
+            ('Dog', 'Poodle', 176, 11, 'Domestic Dog', 'Canis lupus familiaris', MAMMAL, '', DOMESTIC_DOG_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+
+            ('Pigeon', '', 177, 1, 'Rock Pigeon', 'Columba livia', BIRD, '', ROCK_PIGEON_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Rat', '', 178, 1, 'Brown Rat', 'Rattus norvegicus', MAMMAL, '', BROWN_RAT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Horse', '', 179, 1, 'Domestic Horse', 'Equus ferus caballus', MAMMAL, '', DOMESTIC_HORSE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Ant', 'Worker', 180, 1, 'Carpenter Ant', 'Camponotus pennsylvanicus', INSECT, '', CARPENTER_ANT_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Ant', 'Queen', 180, 2 , 'Carpenter Ant', 'Camponotus pennsylvanicus', INSECT, '', CARPENTER_ANT_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Yellowjacket', '', 181, 1, 'Eastern Yellowjacket', 'Vespula maculifrons', INSECT, '', YELLOW_JACKET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Leafhopper', '', 182, 1, 'Red Banded Leafhopper', 'Graphocephala coccinea', INSECT, '', RED_BANDED_LEAFHOPPER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Butterfly', '', 183, 1, 'Cabbage White Butterfly', 'Pieris rapae', INSECT, '', CABBAGE_WHITE_BUTTERFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Butterfly', '', 184, 1, 'Orange Sulphur Butterfly', 'Colias eurytheme', INSECT, '', ORANGE_SULPHUR_BUTTERFLY_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Toe Biter', '', 185, 1, 'Giant Water Bug', 'Lethocerus americanus', INSECT, '', GIANT_WATERBUG_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Beetle', '', 186, 1, 'Japanese Beetle', 'Popillia japonica', INSECT, '', JAPANESE_BEETLE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Salamander', '', 187, 1, 'Red-Backed Salamander', 'Plethodon cinereus', AMPHIBIAN, '', RED_BACKED_SALAMANDER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Peeper', '', 188, 1, 'Spring Peeper', 'Pseudacris crucifer', AMPHIBIAN, '', SPRING_PEEPER_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Tree Frog', '', 189, 1, 'Cuban Tree Frog', 'Osteopilus septentrionalis', AMPHIBIAN, '', CUBAN_TREE_FROG_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Monitor', '', 190, 1, 'Nile Monitor', 'Varanus niloticus', REPTILE, '', NILE_MONITOR_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
+            ('Tegu', '', 191, 1, 'Argentine Black and White Tegu', 'Salvator merianae', REPTILE, '', ARGENTINE_BLACK_AND_WHITE_TEGU_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Bluebird', '', 192, 1, 'Eastern Bluebird', 'Sialia sialis', BIRD, '', EASTERN_BLUEBIRD_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Heron', '', 193, 1, 'Green Heron', 'Butorides virescens', BIRD, '', GREEN_HERON_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Bobwhite', '', 194, 1, 'Northern Bobwhite', 'Colinus virginianus', BIRD, '', NORTHERN_BOBWHITE_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Pheasant', 'Male', 195, 1, 'Ring-Necked Pheasant', 'Phasianus colchicus', BIRD, '', RING_NECKED_PHEASANT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Pheasant', 'Female', 195, 2, 'Ring-Necked Pheasant', 'Phasianus colchicus', BIRD, '', RING_NECKED_PHEASANT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Parakeet', 'Green', 196, 1, 'Monk Parakeet', 'Myiopsitta monachus', BIRD, '', MONK_PARAKEET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Parakeet', 'Blue', 196, 2, 'Monk Parakeet', 'Myiopsitta monachus', BIRD, '', MONK_PARAKEET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Parakeet', 'Yellow', 196, 3, 'Monk Parakeet', 'Myiopsitta monachus', BIRD, '', MONK_PARAKEET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Parakeet', 'White', 196, 4, 'Monk Parakeet', 'Myiopsitta monachus', BIRD, '', MONK_PARAKEET_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
+            ('Macaw', '', 197, 1, 'Scarlet Macaw', 'Ara macao', BIRD, '', SCARLET_MACAW_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Shrew', '', 198, 1, 'Northern Short-Tailed Shrew', 'Blarina brevicauda', MAMMAL, '', NORTHERN_SHORT_TAILED_SHREW_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Elk', 'Female', 199, 1, 'Elk', 'Cervus canadensis', MAMMAL, '', ELK_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Elk', 'Male', 199, 2, 'Elk', 'Cervus canadensis', MAMMAL, '', ELK_IMAGE_ROOT, 5, TGOMMO_RARITY_EPIC),
+            ('Wolf', '', 200, 1, 'Red Wolf', 'Canis rufus', MAMMAL, '', RED_WOLF_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            # endregion
         ]
 
         for index, creature in enumerate(creature_data):
@@ -325,7 +359,7 @@ class TGOMMODatabaseInitializer:
 
     def insert_environment_creature_records(self):
         eastern_us_environment_creature_data = [
-            # WAVE 1
+            # region EST WAVE 1
             EnvironmentCreatureLink(DEER_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(DEER_DEX_NO, 2, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(GRAY_SQUIRREL_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
@@ -358,7 +392,8 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(MOOSE_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(MOOSE_DEX_NO, 2, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(WOLF_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FOREST),
-            # WAVE 2
+            # endregion
+            # region EST - WAVE 2
             EnvironmentCreatureLink(CAT_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             EnvironmentCreatureLink(CAT_DEX_NO, 2, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             EnvironmentCreatureLink(CAT_DEX_NO, 3, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -387,7 +422,8 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(PORCUPINE_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(COYOTE_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(MOUNTAIN_LION_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_LEGENDARY, 'Cougar', SUB_ENVIRONMENT_FOREST),
-            # WAVE 3
+            # endregion
+            # region EST - WAVE 3
             EnvironmentCreatureLink(SKINK_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(COPPERHEAD_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(EARTHWORM_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -448,17 +484,18 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(PUFFIN_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(HARBOR_SEAL_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(ALLIGATOR_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_RIVER),
-            # WAVE 4
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 2, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 3, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 4, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 5, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 6, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 7, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 8, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 9, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FIELD),
-            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 10, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FIELD),
+            # endregion
+            # region EST - WAVE 4
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 2, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 3, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 4, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 5, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 6, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 7, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 8, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 9, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 10, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_CITY),
             EnvironmentCreatureLink(FOX_SQUIRREL_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(GRAY_FOX_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
             EnvironmentCreatureLink(EASTERN_PONDHAWK_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
@@ -475,9 +512,40 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(BROWN_PELICAN_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_BEACH),
             EnvironmentCreatureLink(BOTTLE_NOSED_DOLPHIN_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_OCEAN),
             EnvironmentCreatureLink(MOSQUITO_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
+            # endregion
+            # region EST - WAVE 4.5
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 11, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(ROCK_PIGEON_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(BROWN_RAT_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(DOMESTIC_HORSE_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_BEACH),
+            EnvironmentCreatureLink(CARPENTER_ANT_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(CARPENTER_ANT_DEX_NO, 2, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(YELLOW_JACKET_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(RED_BANDED_LEAFHOPPER_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(CABBAGE_WHITE_BUTTERFLY_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(ORANGE_SULPHUR_BUTTERFLY_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(GIANT_WATERBUG_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_POND),
+            EnvironmentCreatureLink(JAPANESE_BEETLE_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(RED_BACKED_SALAMANDER_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(SPRING_PEEPER_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_POND),
+            EnvironmentCreatureLink(EASTERN_BLUEBIRD_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(GREEN_HERON_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_RIVER),
+            EnvironmentCreatureLink(NORTHERN_BOBWHITE_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FIELD),
+            EnvironmentCreatureLink(RING_NECKED_PHEASANT_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
+            EnvironmentCreatureLink(RING_NECKED_PHEASANT_DEX_NO, 2, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FIELD),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 1, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 2, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 3, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 4, EASTERN_US_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(NORTHERN_SHORT_TAILED_SHREW_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(ELK_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(ELK_DEX_NO, 2, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(RED_WOLF_DEX_NO, 1, EASTERN_US_DEX_NO, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_FIELD),
+            # endregion
         ]
 
         everglades_environment_creature_data = [
+            # region FL WAVE 4
             EnvironmentCreatureLink(ALLIGATOR_DEX_NO, 1, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_SWAMP, FL_ALLIGATOR_IMAGE_ROOT),
             EnvironmentCreatureLink(GREEN_ANOLE_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
             EnvironmentCreatureLink(CURLY_TAILED_LIZARD_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
@@ -640,8 +708,26 @@ class TGOMMODatabaseInitializer:
             EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 8, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_CITY),
             EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 9, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_CITY),
             EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 10, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_CITY),
+            # endregion
+            # region FL WAVE 4.5
+            EnvironmentCreatureLink(DOMESTIC_DOG_DEX_NO, 11, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_CITY),
 
-
+            EnvironmentCreatureLink(ROCK_PIGEON_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(BROWN_RAT_DEX_NO, 1, FLORIDA_DEX_NO, NIGHT, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(CARPENTER_ANT_DEX_NO, 1, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(CARPENTER_ANT_DEX_NO, 2, FLORIDA_DEX_NO, NIGHT, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(YELLOW_JACKET_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(ORANGE_SULPHUR_BUTTERFLY_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_GARDEN),
+            EnvironmentCreatureLink(CUBAN_TREE_FROG_DEX_NO, 1, FLORIDA_DEX_NO, NIGHT, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(NILE_MONITOR_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_RARE, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(ARGENTINE_BLACK_AND_WHITE_TEGU_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_EPIC, '', SUB_ENVIRONMENT_FOREST),
+            EnvironmentCreatureLink(GREEN_HERON_DEX_NO, 1, FLORIDA_DEX_NO, BOTH, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_RIVER),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_COMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 2, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 3, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(MONK_PARAKEET_DEX_NO, 4, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_UNCOMMON, '', SUB_ENVIRONMENT_CITY),
+            EnvironmentCreatureLink(SCARLET_MACAW_DEX_NO, 1, FLORIDA_DEX_NO, DAY, TGOMMO_RARITY_LEGENDARY, '', SUB_ENVIRONMENT_GARDEN),
+            # endregion
         ]
 
         environment_creature_data = [

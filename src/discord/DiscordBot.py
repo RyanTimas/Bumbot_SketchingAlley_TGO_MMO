@@ -206,7 +206,7 @@ class DiscordBot(commands.Bot):
                 for attempt in range(max_retries):
                     try:
                         await self.creature_spawner_handler.spawn_creature(creature=creature)
-                        await interaction.response.send_message(f"Manually spawned a {creature.name}", delete_after=5)
+                        await interaction.channel.send(f"Manually spawned a {creature.name}", delete_after=5)
                         break  # Success, exit retry loop
                     except (discord.errors.HTTPException, aiohttp.ClientOSError) as e:
                         if attempt < max_retries - 1:

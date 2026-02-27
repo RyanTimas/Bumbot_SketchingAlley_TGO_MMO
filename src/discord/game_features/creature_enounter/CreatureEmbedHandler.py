@@ -10,8 +10,7 @@ from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON, IMAGE_FOLDER_CREATURES_PATH, \
-    ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX
+from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON
 
 
 class CreatureEmbedHandler:

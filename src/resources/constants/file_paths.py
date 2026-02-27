@@ -20,7 +20,9 @@ IMAGE_FOLDER_IMAGES_PATH = join_path(RESOURCES_FOLDER_BASE_PATH, "images")
 
 # region Object Paths
 # region Creatures Paths
-IMAGE_FOLDER_CREATURES_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "creature_imgs")
+IMAGE_FOLDER_CREATURES_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "creatures")
+IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH = join_path(IMAGE_FOLDER_CREATURES_PATH, "thumbnails")
+IMAGE_FOLDER_CREATURE_ICONS_PATH = join_path(IMAGE_FOLDER_CREATURES_PATH, "icons")
 # endregion
 # region Environments Paths
 IMAGE_FOLDER_ENVIRONMENTS_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "environments")
@@ -49,7 +51,6 @@ IMAGE_FOLDER_TRAVEL_ADVISORY_PATH = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, "t
 
 # region Encyclopedia paths
 IMAGE_FOLDER_ENCYCLOPEDIA_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "encyclopedia_resources")
-IMAGE_FOLDER_DEX_ICON_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "dex_icons")
 IMAGE_FOLDER_ENCYCLOPEDIA_TOP_BAR_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "top_bar")
 IMAGE_FOLDER_ENCYCLOPEDIA_BOTTOM_BAR_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "bottom_bar")
 IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "encyclopedia_xl")
@@ -147,7 +148,7 @@ ENCYCLOPEDIA_LOCATION_INDEX_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_LOC
 ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_PATH, f"{ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX}_Environment")
 # endregion
 # region Encyclopedia Dex Icon Roots
-DEX_ICON_BASE = join_path(IMAGE_FOLDER_DEX_ICON_PATH, "DexIcon")
+DEX_ICON_BASE = join_path(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon")
 DEX_ICON_BACKGROUND_BASE = DEX_ICON_BASE + "_BackgroundColor"
 DEX_ICON_CREATURE_BASE = DEX_ICON_BASE + "_Creature"
 # endregion
@@ -184,8 +185,8 @@ ITEM_INVENTORY_ITEM_BASE = join_path(IMAGE_FOLDER_ITEM_INVENTORY_ITEM_PATH, "ite
 """ ----- STATIC IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Object Images
 # region Creature Images
-FALLBACK_CREATURE_IMAGE = join_path(IMAGE_FOLDER_CREATURES_PATH, "NA_THUMB" + IMAGE_FILE_EXTENSION)
-FALLBACK_CREATURE_DEX_ICON_IMAGE = join_path(IMAGE_FOLDER_DEX_ICON_PATH, "DexIcon_Creature_NA" + IMAGE_FILE_EXTENSION)
+FALLBACK_CREATURE_IMAGE = join_path(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, "NA_THUMB" + IMAGE_FILE_EXTENSION)
+FALLBACK_CREATURE_DEX_ICON_IMAGE = join_path(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon_Creature_NA" + IMAGE_FILE_EXTENSION)
 # endregion
 # region Environment Images
 # endregion

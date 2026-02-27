@@ -75,11 +75,11 @@ class TGOCreature:
         local_img_root = f"{self.local_img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
         img_root = f"{self.img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
 
-        creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURES_PATH, f"{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+        creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, f"{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{local_img_root}{IMAGE_FILE_EXTENSION}"
 
         if not os.path.exists(creature_thumb_img_path):
-            creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURES_PATH, f"{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
+            creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, f"{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         if not os.path.exists(dex_icon_img_path):
             dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
 

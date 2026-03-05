@@ -43,6 +43,17 @@ AVATAR_TYPE_TRANSCENDANT = "Transcendant"
 
 AVATAR_TYPE_CUSTOM = "Custom"
 AVATAR_TYPE_FALLBACK = "Fallback"
+
+AVATAR_TYPE_SORT_ORDER = {
+    AVATAR_TYPE_DEFAULT: 1,
+    AVATAR_TYPE_SECRET: 2,
+    AVATAR_TYPE_EVENT: 3,
+    AVATAR_TYPE_QUEST: 4,
+    AVATAR_TYPE_TRANSCENDANT: 5,
+    AVATAR_TYPE_FALLBACK: 6,
+    AVATAR_TYPE_CUSTOM: 7
+}
+
 # endregion
 
 """ ----- CREATURES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

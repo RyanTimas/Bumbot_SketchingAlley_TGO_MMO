@@ -4,15 +4,17 @@ from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
+from src.resources.constants.TGO_MMO_constants import AVATAR_TYPE_SORT_ORDER
 from src.resources.constants.file_paths import *
 
 
 class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user):
-        self.unlocked_avatar_icons = []
-        self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(target_user.user_id)
-
         super().__init__(message_author=message_author, target_user=target_user)
+
+        self.unlocked_avatar_icons = []
+        self.unlocked_avatars = self.get_unlocked_avatars()
+
         self.total_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
         self.load_relevant_info()
 
@@ -21,7 +23,7 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
 
         data_changed = any(param is not None for param in [target_user])
         if data_changed:
-            self.unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(target_user.user_id)
+            self.unlocked_avatars = self.get_unlocked_avatars()
         self.unlocked_avatar_icons = self.get_unlocked_avatars_icons()
     def build_image(self):
         avatar_board_img = Image.open(AVATAR_BOARD_BACKGROUND_IMAGE)
@@ -39,6 +41,19 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
 
 
     # Unlocked Avatars Section
+    def get_unlocked_avatars(self):
+        # first add avatars unlocked by all users to the list, then add avatars unlocked by the target user
+        unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(-1)
+        unlocked_avatars += get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.target_user.user_id)
+
+        # todo: will modify this to sort by user preferences
+        unlocked_avatars.sort(key=lambda avatar: (
+            AVATAR_TYPE_SORT_ORDER.get(avatar.avatar_type, 999),
+            avatar.avatar_num
+        ))
+
+        return unlocked_avatars
+
     def get_unlocked_avatars_icons(self):
         if len(self.unlocked_avatars) == 0:
             return None

@@ -459,7 +459,7 @@ class TGOMMODatabaseHandler:
         return self.get_avatars_from_database(query=query, params=(-1,), convert_to_object=convert_to_object, expect_multiple=True)
 
     def get_avatars_with_unlock_conditions(self):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX};"
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(), convert_to_object=True, expect_multiple=True)
     def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"

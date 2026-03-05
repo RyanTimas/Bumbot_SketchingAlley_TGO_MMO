@@ -397,6 +397,7 @@ TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX = " upal.avatar_id = ?"
 # endregion
 # region tgommo_user_avatar_unlock_condition suffixes
 TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX= "auc.unlock_query is not Null"
+TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX = "GROUP BY ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry, ua.img_root"
 # endregion
 
 # region tgommo_inventory_item suffixes

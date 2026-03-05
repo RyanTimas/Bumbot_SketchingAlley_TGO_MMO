@@ -123,7 +123,7 @@ class DiscordBot(commands.Bot):
 
         @self.tree.command(name="shiny-check", description="Check how many messages its been since the last shiny.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
         async def shiny_check(interaction):
-            await interaction.response.send_message(f"Its been {get_game_state_manager().get_shiny_message_count()} messages since the last shiny", delete_after=5)
+            await interaction.response.send_message(f"Its been {get_game_state_manager().get_shiny_message_count()} messages since the last shiny", delete_after=60)
 
     def register_tgommo_user_general_commands(self):
         @self.tree.command(name="current-environment-tgommo", description="Displays the current TGOMMO environment.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))

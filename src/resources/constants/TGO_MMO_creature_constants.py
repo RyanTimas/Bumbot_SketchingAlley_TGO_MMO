@@ -1,5 +1,7 @@
 
 """ ----- IMAGE ROOTS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+from pathlib import Path
+
 # region IMAGE ROOTS
 # region image roots - Wave 1
 DEER_IMAGE_ROOT = "Deer"
@@ -235,12 +237,12 @@ RED_WOLF_IMAGE_ROOT = "RedWolf"
 # endregion
 
 # region image roots - Transcendant Creatures
-BIGFOOT_IMAGE_ROOT = r"transcendant\Bigfoot"
-MOTHMAN_IMAGE_ROOT = r"transcendant\Mothman"
-FROGMAN_IMAGE_ROOT = r"transcendant\Frogman"
-SKUNK_APE_IMAGE_ROOT = r"transcendant\SkunkApe"
-CHUPACABRA_IMAGE_ROOT = r"transcendant\Chupacabra"
-WAMPUS_CAT_IMAGE_ROOT = r"transcendant\WampusCat"
+BIGFOOT_IMAGE_ROOT = str(Path("transcendant") / "Bigfoot")
+MOTHMAN_IMAGE_ROOT = str(Path("transcendant") / "Mothman")
+FROGMAN_IMAGE_ROOT = str(Path("transcendant") / "Frogman")
+SKUNK_APE_IMAGE_ROOT = str(Path("transcendant") / "SkunkApe")
+CHUPACABRA_IMAGE_ROOT = str(Path("transcendant") / "Chupacabra")
+WAMPUS_CAT_IMAGE_ROOT = str(Path("transcendant") / "WampusCat")
 # endregion
 # endregion
 

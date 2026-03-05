@@ -25,7 +25,7 @@ from src.discord.game_features.item_inventory.ItemInventoryView import ItemInven
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID
+from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_TOKEN
 
 
 class DiscordBot(commands.Bot):
@@ -53,7 +53,7 @@ class DiscordBot(commands.Bot):
 
             try:
                 set_guild(self)
-                print(f"Synced {len(await self.tree.sync(guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID)))} command(s) to guild")
+                print(f"Synced {len(await self.tree.sync(guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN)))} command(s) to guild")
             except Exception as e:
                 print(f"Failed to sync commands: {e}")
 
@@ -69,7 +69,7 @@ class DiscordBot(commands.Bot):
 
     ''' COMMANDS '''
     def register_core_commands(self):
-        @self.tree.command(name="shutdown", description="Completely shuts down bumbot. Please for emergencies only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="shutdown", description="Completely shuts down bumbot. Please for emergencies only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def shutdown(interaction: discord.Interaction):
             print("Shutting down bot...")
             await interaction.response.send_message("Successfully shut down bot.", delete_after=5)
@@ -81,12 +81,12 @@ class DiscordBot(commands.Bot):
             print("Bot successfully shut down")
             sys.exit(0)
 
-        @self.tree.command(name="bumbot-online", description="Check to see if bumbot is online.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="bumbot-online", description="Check to see if bumbot is online.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def bumbot_online(interaction: discord.Interaction):
             await interaction.response.send_message("TGO MMO - Online ✔", delete_after=5)
             return True
 
-        @self.tree.command(name="bumbot-test", description="A test function. Does whatever I need it to for whenever I need it.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="bumbot-test", description="A test function. Does whatever I need it to for whenever I need it.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def bumbot_test(interaction: discord.Interaction):
             get_tgommo_db_handler().get_active_collections(convert_to_object=True)
 
@@ -94,7 +94,7 @@ class DiscordBot(commands.Bot):
             return True
 
     def register_misc_feature_commands(self):
-        @self.tree.command(name="get-user-profile-pic", description="Display a user's profile picture by user ID.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="get-user-profile-pic", description="Display a user's profile picture by user ID.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def get_user_profile_pic(interaction: discord.Interaction, user_id: str = None):
             target_user = interaction.guild.get_member(interaction.user.id if user_id is None else int(user_id))
             profile_pic_url = get_user_discord_profile_pic(target_user)
@@ -106,12 +106,12 @@ class DiscordBot(commands.Bot):
             await interaction.response.send_message(embed=embed)
 
     def register_tgommo_user_general_commands(self):
-        @self.tree.command(name="current-environment-tgommo", description="Displays the current TGOMMO environment.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="current-environment-tgommo", description="Displays the current TGOMMO environment.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_current_environment(interaction: discord.Interaction):
             await interaction.response.send_message(f"Current Environment: {self.creature_spawner_handler.current_environment.name} ({self.creature_spawner_handler.time_of_day})", delete_after=10)
 
     def register_tgommo_user_navigation_commands(self):
-        @self.tree.command(name="tgommo", description="Brings up the master menu for TGOMMO.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="tgommo", description="Brings up the master menu for TGOMMO.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_menu(interaction):
             from src.discord.game_features.TGOMMOMenuView import TGOMMOMenuView
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
@@ -120,8 +120,10 @@ class DiscordBot(commands.Bot):
 
             await interaction.response.send_message(f'{interaction.user.mention} Welcome to the TGO MMO Help Menu!', files=[], view=view)
 
-        @self.tree.command(name="open-avatar-board-tgommo", description="Opens User's Avatar Quest & Collection Board.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="open-avatar-board-tgommo", description="Opens User's Avatar Quest & Collection Board.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_avatar_board(interaction, user_id: str = None):
+            await interaction.response.defer()
+
             target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
@@ -130,10 +132,12 @@ class DiscordBot(commands.Bot):
             avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=message_author, target_user=target_user)
             view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory)
 
-            await interaction.response.send_message('', files=[view.reload_image()], view=view)
+            await interaction.followup.send('', files=[view.reload_image()], view=view)
 
-        @self.tree.command(name="open-creature-inventory-tgommo", description="Opens User's Creature Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="open-creature-inventory-tgommo", description="Opens User's Creature Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_creature_inventory(interaction, user_id: str = None):
+            await interaction.response.defer()
+
             target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
@@ -141,10 +145,12 @@ class DiscordBot(commands.Bot):
             creature_inventory_image_factory = CreatureInventoryImageFactory(message_author=message_author, target_user=target_user)
             view = CreatureInventoryView(message_author=message_author, target_user=target_user, creature_inventory_image_factory=creature_inventory_image_factory)
 
-            await interaction.response.send_message(content='', files=[convert_to_png(creature_inventory_image_factory.reload_image(), f'avatar_board.png')], view=view)
+            await interaction.followup.send(content='', files=[view.reload_image()], view=view)
 
-        @self.tree.command(name="open-encyclopedia-tgommo", description="Opens User's Encyclopedia.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="open-encyclopedia-tgommo", description="Opens User's Encyclopedia.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_encyclopedia(interaction, user_id: str = None):
+            await interaction.response.defer()
+
             target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
@@ -152,20 +158,24 @@ class DiscordBot(commands.Bot):
             encyclopedia_location_index_img_factory = EncyclopediaLocationIndexImageFactory(message_author=message_author, target_user=target_user,)
             view = EncyclopediaLocationIndexView(message_author=message_author, target_user=target_user, encyclopedia_location_index_image_factory=encyclopedia_location_index_img_factory, )
 
-            await interaction.response.send_message('', files=[convert_to_png(encyclopedia_location_index_img_factory.reload_image(), f'encyclopedia_location_index.png')], view=view)
+            await interaction.followup.send('', files=[view.reload_image()], view=view)
 
-        @self.tree.command(name="open-item-inventory-tgommo", description="Opens User's Item Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="open-item-inventory-tgommo", description="Opens User's Item Inventory.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_item_inventory(interaction):
+            await interaction.response.defer()
+
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
             target_user = message_author
 
             item_inventory_handler = ItemInventoryImageFactory(message_author=message_author, target_user=target_user,)
             view = ItemInventoryView(message_author=message_author, target_user=target_user, item_inventory_image_factory=item_inventory_handler, discord_bot=self)
 
-            await interaction.response.send_message(files=[convert_to_png(item_inventory_handler.reload_image(), f'avatar_board.png')], view=view)
+            await interaction.followup.send(files=[view.reload_image()], view=view)
 
-        @self.tree.command(name="open-player_profile-tgommo", description="Opens User's Player Profile.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="open-player_profile-tgommo", description="Opens User's Player Profile.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_open_player_profile(interaction, user_id: str = None):
+            await interaction.response.defer()
+
             user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)
@@ -173,11 +183,12 @@ class DiscordBot(commands.Bot):
             player_profile_image_factory = PlayerProfileImageFactory(message_author= message_author, target_user=target_user)
             view = PlayerProfileView(message_author=get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id), target_user=get_tgommo_db_handler().get_user_profile_by_user_id(user_id), player_profile_image_factory=player_profile_image_factory)
 
-            await interaction.response.send_message('', files=[view.reload_image()], view=view)
+
+            await interaction.followup.send('', files=[view.reload_image()], view=view)
 
     def register_tgommo_admin_commands(self):
         @admin_only()
-        @self.tree.command(name="spawn_creature_tgommo", description="Manually spawn a creature. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="spawn_creature_tgommo", description="Manually spawn a creature. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_spawn_creature(interaction, creature_id:int = None, environment_id:int=None, is_mythical: str = None):
             creature = get_tgommo_db_handler().get_environment_creature_by_environment_id_and_creature_id(creature_id=creature_id, environment_id=environment_id) if creature_id else await self.creature_spawner_handler.creature_picker()
             if creature_id and not creature:
@@ -190,7 +201,7 @@ class DiscordBot(commands.Bot):
             await interaction.response.send_message(f"Manually spawned a {creature.name}", delete_after=5)
 
         @admin_only()
-        @self.tree.command(name="spawn_every_creature_tgommo", description="Spawns one of every creature for a given environment.  Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="spawn_every_creature_tgommo", description="Spawns one of every creature for a given environment.  Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_spawn_every_creature(interaction, environment_dex_no: str = None, environment_id: str = None, is_mythical: str = None,):
 
             if not environment_id and not environment_dex_no:
@@ -219,13 +230,13 @@ class DiscordBot(commands.Bot):
                             await interaction.channel.send(f"Failed to spawn {creature.name} after {max_retries} attempts.", delete_after=5)
 
         @admin_only()
-        @self.tree.command(name='toggle_creature_spawns_tgommo', description="Turn creature spawns on / off.  Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name='toggle_creature_spawns_tgommo', description="Turn creature spawns on / off.  Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def toggle_creature_spawns(interaction):
             result = self.creature_spawner_handler.toggle_creature_spawner(interaction)
             await interaction.response.send_message(result, delete_after=5)
 
         @admin_only()
-        @self.tree.command(name="change_environment_tgommo", description="Change the current TGOMMO environment. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        @self.tree.command(name="change_environment_tgommo", description="Change the current TGOMMO environment. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
         async def tgommo_change_environment(interaction, environment_dex_no: int):
             try:
                 environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=self.creature_spawner_handler.current_environment.variant_no)

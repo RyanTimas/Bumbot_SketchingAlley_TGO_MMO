@@ -13,6 +13,8 @@ class ChangeUserModal(discord.ui.Modal):
 
     async def on_submit(self, interaction):
         try:
+            await interaction.response.defer()
+
             user_id = self.user_id_input.value
             if self.user_id_input.value.strip() == "":
                 user_id = 0 if self.server_access else interaction.user.id

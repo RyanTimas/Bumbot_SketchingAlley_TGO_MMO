@@ -5,7 +5,8 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, convert_to_png
+from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin
+from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
@@ -25,7 +26,7 @@ from src.discord.game_features.item_inventory.ItemInventoryView import ItemInven
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_TOKEN
+from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_TOKEN, DISCORD_USER_BLACKLIST
 
 
 class DiscordBot(commands.Bot):
@@ -58,6 +59,21 @@ class DiscordBot(commands.Bot):
                 print(f"Failed to sync commands: {e}")
 
             self.creature_spawner_handler.start_creature_spawner()
+
+        @self.event
+        async def on_message(message):
+            if message.author.id in DISCORD_USER_BLACKLIST:
+                return
+
+            # SHINY CHECK
+            if flip_coin(total_iterations=13):
+                shiny_msg = await message.reply(f"```fix\n✨THIS MESSAGE IS A CERTIFIED SHINY!!✨\n```")
+                await shiny_msg.reply(f"Took {get_game_state_manager().get_shiny_message_count()} messages to get a shiny")
+                get_game_state_manager().set_shiny_message_count(new_count=0)
+            else:
+                shiny_message_count = get_game_state_manager().get_shiny_message_count()
+                get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
+
 
         @self.event
         async def on_command_error(ctx, error):
@@ -104,6 +120,10 @@ class DiscordBot(commands.Bot):
             embed.set_image(url=profile_pic_url)
 
             await interaction.response.send_message(embed=embed)
+
+        @self.tree.command(name="shiny-check", description="Check how many messages its been since the last shiny.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))
+        async def shiny_check(interaction):
+            await interaction.response.send_message(f"Its been {get_game_state_manager().get_shiny_message_count()} messages since the last shiny", delete_after=5)
 
     def register_tgommo_user_general_commands(self):
         @self.tree.command(name="current-environment-tgommo", description="Displays the current TGOMMO environment.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_TOKEN))

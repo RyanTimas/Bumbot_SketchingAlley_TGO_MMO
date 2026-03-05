@@ -14,7 +14,7 @@ from discord import File, app_commands
 
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, USER_WHITELIST
+from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, DISCORD_USER_WHITELIST
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
@@ -418,7 +418,7 @@ def retry_on_ssl_error(max_retries=3, delay=1):
 
 def admin_only():
     async def predicate(interaction: discord.Interaction):
-        if interaction.user.id not in USER_WHITELIST:
+        if interaction.user.id not in DISCORD_USER_WHITELIST:
             await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True, delete_after=5)
             return False
         return True

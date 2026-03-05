@@ -53,7 +53,18 @@ TEST_ROLE = f"<@&{TEST_ROLE_ID}>"
 BUMBISS_USER_ID = 801108873955115028
 JORDO_USER_ID = 667807803418607651
 
-USER_WHITELIST = [BUMBISS_USER_ID]
+FANBOT_USER_ID = 931047044334899220
+BUMBOT_SA_USER_ID = 1370195038335926342
+BUMBOT_BV_USER_ID = 1279915328452694016
+
+DISCORD_USER_WHITELIST = [
+    BUMBISS_USER_ID
+]
+DISCORD_USER_BLACKLIST = [
+    FANBOT_USER_ID,
+    BUMBOT_SA_USER_ID,
+    BUMBOT_BV_USER_ID
+]
 
 
 ''' ----- File Paths / Locations  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''

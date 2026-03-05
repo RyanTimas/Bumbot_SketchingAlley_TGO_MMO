@@ -44,7 +44,8 @@ class GameStateManager:
         except Exception as e:
             print(f"Error saving game state: {e}")
 
-    # GETTERS
+
+    ''' ----- GETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def get_current_environment(self) -> Optional[tuple]:
         state = self._load_state()
         env_dex = state.get("environment_dex_no")
@@ -52,8 +53,12 @@ class GameStateManager:
         if env_dex is not None and env_variant is not None:
             return env_dex, env_variant
         return None
+    def get_shiny_message_count(self) -> int:
+        state = self._load_state()
+        return state.get("shiny_message_count", 0)
 
-    # SETTERS
+
+    ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def set_current_environment(self, environment_dex_no: int, environment_variant_no: int):
         state = self._load_state()
 
@@ -61,6 +66,10 @@ class GameStateManager:
             "environment_dex_no": environment_dex_no,
             "environment_variant_no": environment_variant_no
         })
+        self._save_state(state)
+    def set_shiny_message_count(self, new_count: int):
+        state = self._load_state()
+        state["shiny_message_count"] = new_count
         self._save_state(state)
 
 

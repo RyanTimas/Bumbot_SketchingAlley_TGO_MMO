@@ -9,6 +9,7 @@ from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
     AvatarBoardAvatarQuestImageFactory
@@ -147,10 +148,9 @@ class DiscordBot(commands.Bot):
             target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
-             
-            avatar_board_unlocked_avatar_image_factory = AvatarBoardUnlockedAvatarImageFactory(message_author=message_author, target_user=target_user)
-            avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=message_author, target_user=target_user)
-            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory)
+
+            avatar_board_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
+            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_image_factory=avatar_board_image_factory)
 
             await interaction.followup.send('', files=[view.reload_image()], view=view)
 

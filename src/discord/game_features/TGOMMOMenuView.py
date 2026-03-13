@@ -7,6 +7,7 @@ from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import AvatarBoardAvatarQuestImageFactory
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
@@ -89,11 +90,10 @@ class TGOMMOMenuView(BaseView):
     def display_avatar_board_callback(self):
         @interaction_guard(self)
         async def callback(interaction):
-            avatar_board_unlocked_avatar_image_factory = AvatarBoardUnlockedAvatarImageFactory(message_author=self.message_author, target_user=self.target_user)
-            avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=self.message_author, target_user=self.target_user)
-            avatar_board_view = AvatarBoardView(message_author=self.message_author, target_user=self.target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory, original_view=self, )
+            avatar_board_img_factory = AvatarBoardImageFactory(message_author=self.message_author, target_user=self.target_user)
+            avatar_board_view = AvatarBoardView(message_author=self.message_author, target_user=self.target_user, avatar_board_image_factory=avatar_board_img_factory, original_view=self, )
 
-            await interaction.message.edit(attachments=[convert_to_png(avatar_board_unlocked_avatar_image_factory.build_image(), f'avatar_board.png')], view=avatar_board_view)
+            await interaction.message.edit(attachments=[convert_to_png(avatar_board_img_factory.build_image(), f'avatar_board.png')], view=avatar_board_view)
         return callback
 
     def create_creature_inventory_button(self, row=1):

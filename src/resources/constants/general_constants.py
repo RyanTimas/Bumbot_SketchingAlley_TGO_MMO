@@ -10,9 +10,7 @@ CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", CONF
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE_PATH)
 
-'''*****************'''
-'''Bot Launch Constants'''
-'''*****************'''
+''' ----- Bot Launch Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 RUN_DISCORD_BOT = config.getboolean('General', 'RUN_DISCORD_BOT', fallback=False)
 RUN_TWITCH_BOT = config.getboolean('General', 'RUN_TWITCH_BOT', fallback=False)
 RUN_OBS_BOT = config.getboolean('General', 'RUN_OBS_WEBSOCKET', fallback=False)
@@ -20,11 +18,14 @@ RUN_OBS_BOT = config.getboolean('General', 'RUN_OBS_WEBSOCKET', fallback=False)
 RUN_SA_DB_INIT = config.getboolean('General', 'RUN_SA_DB_INIT', fallback=False)
 RUN_TGOMMO_DB_INIT = config.getboolean('General', 'RUN_TGOMMO_DB_INIT', fallback=False)
 
-'''*****************'''
-'''Discord constants'''
-'''*****************'''
+
+''' ----- Discord Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 DISCORD_TOKEN = config['DISCORD']['DISCORD_TOKEN']
 DISCORD_DATABASE = config['DISCORD']['DISCORD_DATABASE']
+
+'''discord server tokens'''
+DISCORD_SA_SERVER_ID = 816147863578738758
+DISCORD_BV_SERVER_ID = 835031418668187714
 
 '''sketching alley channels'''
 DISCORD_SA_CHANNEL_ID_GENERAL = 816147864026742807
@@ -37,7 +38,9 @@ DISCORD_SA_CHANNEL_ID_TEST = 1196630996477542570
 DISCORD_BV_CHANNEL_ID_TEST = 1279894623535497268
 DISCORD_BV_CHANNEL_ID_TEST_2 = 1432547947849187349
 
-TGOMMO_CREATURE_SPAWN_CHANNEL_ID = DISCORD_SA_CHANNEL_ID_TGOMMO
+'''Active for Bots'''
+TGOMMO_CREATURE_SPAWN_CHANNEL_ID = DISCORD_BV_CHANNEL_ID_TEST_2
+TGOMMO_ACTIVE_SERVER_TOKEN = DISCORD_BV_SERVER_TOKEN
 
 
 TGOMMO_ROLE_ID = 1430628300216205332
@@ -50,21 +53,28 @@ TEST_ROLE = f"<@&{TEST_ROLE_ID}>"
 BUMBISS_USER_ID = 801108873955115028
 JORDO_USER_ID = 667807803418607651
 
-USER_WHITELIST = [BUMBISS_USER_ID]
+FANBOT_USER_ID = 931047044334899220
+BUMBOT_SA_USER_ID = 1370195038335926342
+BUMBOT_BV_USER_ID = 1279915328452694016
 
-'''**********************'''
-'''File Paths / Locations'''
-'''**********************'''
+DISCORD_USER_WHITELIST = [
+    BUMBISS_USER_ID
+]
+DISCORD_USER_BLACKLIST = [
+    FANBOT_USER_ID,
+    BUMBOT_SA_USER_ID,
+    BUMBOT_BV_USER_ID
+]
+
+
+''' ----- File Paths / Locations  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 IMAGE_FOLDER_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "")
 IMAGE_FOLDER_IMAGES = "images"
 IMAGE_FOLDER_FONTS = "fonts"
 
 
-'''*****************'''
-'''General Constants'''
-'''*****************'''
+''' ----- General Constants  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 DIVIDER_LINE = "──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
-
 NEW_DAY_TIMESTAMP = time(0, 0)  # 00:00:00
 
 

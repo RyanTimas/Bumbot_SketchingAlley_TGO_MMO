@@ -28,26 +28,7 @@ class GameStateManager:
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
 
-    def save_current_environment(self, environment_dex_no: int, environment_variant_no: int):
-        """Save the current environment state to file."""
-        state = self._load_state()
-        state.update({
-            "environment_dex_no": environment_dex_no,
-            "environment_variant_no": environment_variant_no
-        })
-        self._save_state(state)
-
-    def load_current_environment(self) -> Optional[tuple]:
-        """Load the current environment state from file."""
-        state = self._load_state()
-        env_dex = state.get("environment_dex_no")
-        env_variant = state.get("environment_variant_no")
-        if env_dex is not None and env_variant is not None:
-            return env_dex, env_variant
-        return None
-
     def _load_state(self) -> dict:
-        """Load the entire state from file."""
         try:
             if os.path.exists(self.state_file_path):
                 with open(self.state_file_path, 'r') as f:
@@ -55,7 +36,6 @@ class GameStateManager:
         except Exception as e:
             print(f"Error loading game state: {e}")
         return {}
-
     def _save_state(self, state: dict):
         """Save the entire state to file."""
         try:
@@ -63,3 +43,33 @@ class GameStateManager:
                 json.dump(state, f, indent=2)
         except Exception as e:
             print(f"Error saving game state: {e}")
+
+
+    ''' ----- GETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    def get_current_environment(self) -> Optional[tuple]:
+        state = self._load_state()
+        env_dex = state.get("environment_dex_no")
+        env_variant = state.get("environment_variant_no")
+        if env_dex is not None and env_variant is not None:
+            return env_dex, env_variant
+        return None
+    def get_shiny_message_count(self) -> int:
+        state = self._load_state()
+        return state.get("shiny_message_count", 0)
+
+
+    ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    def set_current_environment(self, environment_dex_no: int, environment_variant_no: int):
+        state = self._load_state()
+
+        state.update({
+            "environment_dex_no": environment_dex_no,
+            "environment_variant_no": environment_variant_no
+        })
+        self._save_state(state)
+    def set_shiny_message_count(self, new_count: int):
+        state = self._load_state()
+        state["shiny_message_count"] = new_count
+        self._save_state(state)
+
+

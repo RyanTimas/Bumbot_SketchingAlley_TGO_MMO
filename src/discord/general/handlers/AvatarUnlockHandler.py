@@ -3,6 +3,7 @@ import datetime
 import discord
 import pytz
 
+from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.file_paths import *
@@ -15,25 +16,19 @@ class AvatarUnlockHandler:
         self.interaction = interaction
 
     async def check_avatar_unlock_conditions(self, creature:TGOCreature =None):
-        # secret unlocks
         if self.nickname:
-            await self.handle_nickname_based_unlocks()
-
-        # quests unlocks
-        await self.define_avatar_quests_unlocks()
-
-        # event unlocks
-        await self.timeline_based_avatar_unlocks()
+            await self.nickname_avatar_unlock_handler()
+        await self.quest_avatar_unlock_handler()
+        await self.limited_time_avatar_unlock_handler()
 
         # todo: handle special case unlocks based on creature caught
         if creature:
             pass
 
 
-    # NICKNAME-BASED UNLOCK HANDLERS
-    async def handle_nickname_based_unlocks(self):
-        unlocked_secret_avatars = get_tgommo_db_handler().get_unlocked_avatar_ids_for_server()
-        player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id, convert_to_object=True)
+    async def nickname_avatar_unlock_handler(self):
+        unlocked_secret_avatars = get_tgommo_db_handler().get_unlocked_avatars_for_server()
+        player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id)
 
         avatar_combos = {
             # WAVE 1
@@ -52,21 +47,15 @@ class AvatarUnlockHandler:
 
         for avatar in avatar_combos:
             unlock_terms = avatar[0]
-            avatar_name = avatar[1][0]
-            avatar_id = avatar[1][1]
-            avatar_img_root = avatar[1][2]
+            avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar[1][1])
 
             for unlock_term in unlock_terms:
                 if unlock_term in self.nickname.lower():
-                    file_name = f"_Secret_{avatar_img_root}"
-
-                    if avatar_id not in unlocked_secret_avatars:
-                        get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar_id)
-                        await self.interaction.channel.send(f"The secret avatar *{avatar_name}* has been unlocked for the server thanks to @{player.nickname}!!", file=discord.File(f"{PLAYER_PROFILE_AVATAR_BASE}{file_name}{IMAGE_FILE_EXTENSION}", filename="avatar.png"))
+                    if not any(avatar.avatar_id == secret_avatar.avatar_id for secret_avatar in unlocked_secret_avatars):
+                        get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar.avatar_id)
+                        await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_image, file_name="avatar.png"))
                     return
-
-    # EVENT-BASED UNLOCK HANDLERS
-    async  def timeline_based_avatar_unlocks(self):
+    async  def limited_time_avatar_unlock_handler(self):
         timeline_params = [
             # Holidays
             ("Freddy Fazbear", "3", datetime.datetime(2025, 10, 31, 0, 0, 1, tzinfo=pytz.UTC), datetime.datetime(2025, 10, 31, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
@@ -90,48 +79,35 @@ class AvatarUnlockHandler:
             ("Satoru Gojo", "16", datetime.datetime(2026, 1, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 1, 29, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Kento Nanami", "17", datetime.datetime(2026, 1, 29, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Maki Zen'in", "18", datetime.datetime(2026, 2, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Suguru Geto", "19", datetime.datetime(2026, 2, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Toji Fushiguro", "20", datetime.datetime(2026, 2, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 2, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Mahito", "21", datetime.datetime(2026, 2, 26, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 5, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 12, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
-            ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 19, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Suguru Geto", "19", datetime.datetime(2026, 2, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Toji Fushiguro", "20", datetime.datetime(2026, 2, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Mahito", "21", datetime.datetime(2026, 2, 26, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Ryomen Sukuna", "24", datetime.datetime(2026, 3, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
         for timeline_param in timeline_params:
-            name = timeline_param[0]
-            avatar_id = timeline_param[1]
+            avatar_id = f"E{timeline_param[1]}"
             start_time = timeline_param[2]
             end_time = timeline_param[3]
-            user_id = timeline_param[4]
 
             current_time = datetime.datetime.now(pytz.UTC)
-            if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=f"E{avatar_id}", user_id=self.user_id):
-                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=f"E{avatar_id}", user_id=self.user_id)
+            if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=avatar_id, user_id=self.user_id):
+                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=avatar_id, user_id=self.user_id)
 
-                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Event_{name.replace(' ', '')}{IMAGE_FILE_EXTENSION}"
-                await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {name}!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)
-
-
-    # QUEST-BASED UNLOCK HANDLERS
-    async def define_avatar_quests_unlocks(self):
-        unlockable_avatars = get_tgommo_db_handler().get_avatar_unlock_conditions(convert_to_object=True)
-
+                avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar_id)
+                await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {avatar.name}!", file=convert_to_png(image=avatar.avatar_image, file_name="avatar.png"), ephemeral=True)
+    async  def quest_avatar_unlock_handler(self):
+        unlockable_avatars = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
         for unlockable_avatar in unlockable_avatars:
-            params = (self.user_id,)
-            await self.handle_quest_complete_check(avatar= unlockable_avatar, params=params,)
+            user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=unlockable_avatar.unlock_query, params=(self.user_id,))[0][0] >= unlockable_avatar.unlock_threshold
 
-    async  def handle_quest_complete_check(self, avatar, params):
-        user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=avatar.unlock_query, params=params)[0][0] >= avatar.unlock_threshold
+            if user_reached_threshold:
+                # if quest rewards more than one avatar (parent entry), unlock all child avatars
+                avatars_to_unlock = [unlockable_avatar] if not unlockable_avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=unlockable_avatar.avatar_id)
+                for child_avatar in avatars_to_unlock:
+                    if not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=self.user_id):
+                        get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=self.user_id)
+                        await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_image, file_name="avatar.png"), ephemeral=True)
 
-        if user_reached_threshold:
-            # if quest rewards more than one avatar (parent entry), unlock all child avatars
-            avatars_to_unlock = [avatar] if not avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id, convert_to_object=True)
-
-            for child_avatar in avatars_to_unlock:
-                if get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=self.user_id):
-                    continue
-
-                get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=self.user_id)
-                avatar_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Quest_{child_avatar.img_root}{IMAGE_FILE_EXTENSION}"
-                await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=discord.File(avatar_path, filename="avatar.png"), ephemeral=True)

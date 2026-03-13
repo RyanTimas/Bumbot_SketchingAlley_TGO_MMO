@@ -1,6 +1,7 @@
 import random
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
+from pygments.styles.dracula import background
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.CreatureRarity import TRANSCENDANT
@@ -29,7 +30,7 @@ class EncounterImageHandler:
         glow = self.get_glow_overlay()
 
         # Resize the foreground image to 80% of its size
-        foreground_img = self.creature.creature_image.resize((int(self.creature.creature_image.width * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.creature.creature_image.height * ENCOUNTER_SCREEN_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
+        foreground_img = self.creature.creature_image.resize((int(self.creature.creature_image.width * CREATURE_ENCOUNTER_FOREGROUND_IMAGE_RESIZE_PERCENT), int(self.creature.creature_image.height * CREATURE_ENCOUNTER_FOREGROUND_IMAGE_RESIZE_PERCENT)), Image.LANCZOS)
 
         # Paste the foreground onto the background
         foreground_image_with_border = self.add_outline_to_img(foreground_img)
@@ -52,7 +53,7 @@ class EncounterImageHandler:
         final_img.paste(textbox_img, (0, 0), textbox_img)
 
         # Add text for creature name
-        final_img = self.add_text_to_image(base_img=final_img.copy(),max_width=TEXT_BOX_WIDTH - (120*2),)
+        final_img = self.add_text_to_image(base_img=final_img.copy(), max_width=CREATURE_ENCOUNTER_TEXT_BOX_WIDTH - (120 * 2), )
         return convert_to_png(final_img, 'encounter_image.png')
 
     def get_glow_overlay(self):
@@ -79,14 +80,13 @@ class EncounterImageHandler:
     def build_background_image(self):
         time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
         sub_environment = self.creature.sub_environment if self.creature.sub_environment else SUB_ENVIRONMENT_FOREST
+        background_img_base = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}")
 
-        path_name = rf"{IMAGE_FOLDER_ENVIRONMENTS_PATH}\{self.environment.short_name}\{sub_environment}"
-        img_name = f"{ENCOUNTER_SCREEN_IMAGE_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}"
+        # todo: add logic for default background if specific one doesn't exist for environment + time of day combo
+        background_img = Image.open(f"{background_img_base}{IMAGE_FILE_EXTENSION}")
+        overlay_img = None if not os.path.exists(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}") else Image.open(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}")
 
-        full_img_path = fr"{path_name}\{img_name}{IMAGE_FILE_EXTENSION}"
-        overlay_path = fr"{path_name}\{img_name}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}"
-
-        return Image.open(full_img_path), None if not os.path.exists(overlay_path) else Image.open(overlay_path)
+        return background_img, overlay_img
 
 
     # set up text to add to encounter image
@@ -96,7 +96,7 @@ class EncounterImageHandler:
         # Split text into words
         # creature_text = self.split_lines(self.creature_name, draw, font, max_width)
 
-        main_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, CREATURE_NAME_TEXT_SIZE)
+        main_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, CREATURE_ENCOUNTER_NAME_TEXT_SIZE)
         main_font = resize_text_to_fit(text=self.creature.name, draw=draw, font=main_font, max_width=max_width, min_font_size=10)
 
         support_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 14)
@@ -151,7 +151,7 @@ class EncounterImageHandler:
 
     # Calculate position to center the foreground on the background And move it down by 50 pixels
     def get_foreground_image_offset(self, foreground, background_img):
-        return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + ENCOUNTER_SCREEN_FOREGROUND_IMAGE_Y_OFFSET
+        return (background_img.width - foreground.width) // 2, ((background_img.height - foreground.height) // 2) + CREATURE_ENCOUNTER_FOREGROUND_IMAGE_Y_OFFSET
 
 
     # draw text onto the image

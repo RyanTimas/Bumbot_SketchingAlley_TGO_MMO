@@ -2,6 +2,7 @@ import asyncio
 import functools
 import os
 import random
+import ssl
 
 import aiohttp
 import discord
@@ -9,11 +10,11 @@ import io
 
 import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
-from discord import File
+from discord import File, app_commands
 
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
-from src.resources.constants.file_paths import PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE, PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE
-from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
+from src.resources.constants.file_paths import *
+from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, DISCORD_USER_WHITELIST
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
@@ -86,9 +87,6 @@ def open_image_from_url(image_url):
     else:
         return Image.open(PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE)
 
-
-
-# puts a colored border around an input image
 def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)
 
@@ -102,8 +100,6 @@ def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_si
     image_draw.text((border_size, border_size), text, font=font, fill=font_color)
     return base_image
 
-
-# adds a gaussian blur mask to the edges of an image
 def add_blur_mask_to_image(image: Image):
         # Create an alpha mask based on the image's alpha channel
         r, g, b, a = image.split()
@@ -132,6 +128,7 @@ def add_blur_mask_to_image(image: Image):
 
         return image
 
+
 #************************************************************************************
 #-------------------------------FONT FUNCTIONS-------------------------------------
 #************************************************************************************
@@ -141,7 +138,6 @@ def load_font(font_path, font_size):
     except IOError:
         font = ImageFont.load_default()
     return font
-
 
 def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
         current_font = font
@@ -289,6 +285,7 @@ def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=
 
     return current_font, current_text
 
+
 #************************************************************************************
 #-------------------------------DISCORD FUNCTIONS------------------------------------
 #************************************************************************************
@@ -312,111 +309,17 @@ def build_user_profile_pic(user, size=(600, 600)):
 #*********************
 # DISCORD VIEW HELPERS
 #*********************
-async def check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
+async def check_if_user_can_interact_with_view(interaction, interaction_lock, target_user_id):
     # Check if we're already processing an interaction
     if interaction_lock.locked():
         await interaction.response.send_message("Please wait for the current action to complete.", ephemeral=True)
         return False
 
-    if message_author_id and interaction.user.id != message_author_id:
-        await interaction.response.send_message("You do not have permission to interact with this command, freak.", ephemeral=True)
+    if target_user_id and interaction.user.id != target_user_id:
+        await interaction.response.send_message("You do not have permission to interact with this, freak.", ephemeral=True)
         return False
 
     return True
-
-
-# Retry decorator for handling SSL errors
-def retry_on_ssl_error(max_retries=3, delay=1):
-    def decorator(func):
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
-            retries = 0
-            while retries < max_retries:
-                try:
-                    return await func(*args, **kwargs)
-                except discord.errors.InteractionResponded:
-                    # Interaction already responded to, so don't retry
-                    return
-                except aiohttp.client_exceptions.ClientOSError as e:
-                    if "SSL" in str(e) and retries < max_retries - 1:
-                        retries += 1
-                        await asyncio.sleep(delay)
-                    else:
-                        # If we've exhausted retries or it's not an SSL error, re-raise
-                        raise
-        return wrapper
-    return decorator
-
-
-#************************************************************************************
-#-------------------------------BUTTON FUNCTIONS------------------------------------
-#************************************************************************************
-# Button that goes back to parent view when clicked
-def create_go_back_button(original_view, row=2, interaction_lock=None, message_author_id=None, files=None):
-    button = discord.ui.Button(label="⬅️ Go Back", style=discord.ButtonStyle.red, row=row)
-    button.callback = go_back_callback(original_view=original_view, interaction_lock=interaction_lock, message_author_id=message_author_id, files=files)
-    return button
-def go_back_callback(original_view, interaction_lock=None, message_author_id=None, files=None):
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def callback(interaction):
-        # Check if we're already processing an interaction
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-    # Acquire lock to prevent concurrent actions
-        async with interaction_lock:
-            await interaction.response.defer()
-
-    # Go back to the previous view or state
-        await interaction.message.edit(attachments=files if files else [], view=original_view)
-    return callback
-
-
-def create_close_button(interaction_lock, message_author_id, row=1):
-    button = discord.ui.Button(
-        label="✘",
-        style=discord.ButtonStyle.red,
-        row=row
-    )
-
-    @retry_on_ssl_error(max_retries=3, delay=1)
-    async def close_callback(interaction):
-        if not await check_if_user_can_interact_with_view(interaction, interaction_lock, message_author_id):
-            return
-
-        async with interaction_lock:
-            await interaction.message.delete()
-
-    button.callback = close_callback
-    return button
-
-# Placeholder button that does nothing when clicked
-def create_dummy_label_button(label_text, row=1):
-    button = discord.ui.Button(
-        label=f"{label_text}",
-        style=discord.ButtonStyle.gray,
-        row=row
-    )
-    button.callback = dummy_callback()
-    return button
-def dummy_callback():
-    async def callback(interaction):
-        # Just acknowledge the interaction to prevent the "interaction failed" message
-        # Without doing anything else
-        await interaction.response.defer(ephemeral=True, thinking=False)
-    return callback
-
-# Creates an invisible button that serves as a spacer
-def create_spacer_button(row=0):
-    button = discord.ui.Button(
-        label="\u200b",  # Zero-width space character
-        style=discord.ButtonStyle.gray,
-        disabled=True,
-        row=row
-    )
-    # Make the button almost invisible
-    button.callback = dummy_callback()
-    return button
 
 #************************************************************************************
 #-------------------------------SQL FUNCTIONS------------------------------------
@@ -464,3 +367,80 @@ def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%
 
         return formatted_date
     return "Unknown"
+
+#****************************************************************************************
+#---------------------------------------IMAGE FUNCTION--------------------------------------------
+#****************************************************************************************
+def place_username_on_image(target_user, image: Image, border_color = (0, 104, 145), font_color = FONT_COLOR_WHITE, max_font_size = 50, max_width = 300):
+        draw = ImageDraw.Draw(image)
+        font = resize_text_to_fit(text=target_user.nickname, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, max_font_size), max_width=max_width, min_font_size=10)
+
+        # Get text dimensions
+        text_bbox = draw.textbbox((0, 0), target_user.nickname, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+
+        # Create a separate image for the text with border
+        text_img = Image.new('RGBA', (text_width + 8, text_height + 8), (0, 0, 0, 0))
+        x_offset, y_offset = 11, 10
+        border_size = 4
+        username_font_image = add_border_to_image(base_image=text_img, text=target_user.nickname, font=font, border_size=border_size, border_color=border_color, font_color=font_color)
+
+        # Paste the text image onto the profile image
+        image.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)
+        return image
+
+
+#************************************************************************************
+#---------------------------------------DECORATORS--------------------------------------------
+#************************************************************************************
+# Retry decorator for handling SSL errors
+def retry_on_ssl_error(max_retries=3, delay=1):
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            retries = 0
+            while retries < max_retries:
+                try:
+                    return await func(*args, **kwargs)
+                except discord.errors.InteractionResponded:
+                    # Interaction already responded to, so don't retry
+                    return
+                except aiohttp.client_exceptions.ClientOSError as e:
+                    if "SSL" in str(e) and retries < max_retries - 1:
+                        retries += 1
+                        await asyncio.sleep(delay)
+                    else:
+                        # If we've exhausted retries or it's not an SSL error, re-raise
+                        raise
+        return wrapper
+    return decorator
+
+def admin_only():
+    async def predicate(interaction: discord.Interaction):
+        if interaction.user.id not in DISCORD_USER_WHITELIST:
+            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True, delete_after=5)
+            return False
+        return True
+    return app_commands.check(predicate)
+
+def interaction_guard(self=None, max_retries=3, delay=1, defer_response=True):
+    def decorator(func):
+        async def wrapper(interaction):
+            if not self:
+                return await func(interaction)
+
+            if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'message_author', None).user_id):
+                async with self.interaction_lock:
+                    if defer_response:
+                        await interaction.response.defer()
+
+                    for attempt in range(max_retries):
+                        try:
+                            return await func(interaction)
+                        except ssl.SSLError as e:
+                            if attempt == max_retries - 1:
+                                raise e
+                            await asyncio.sleep(delay)
+        return wrapper
+    return decorator

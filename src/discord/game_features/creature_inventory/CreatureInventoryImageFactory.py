@@ -1,22 +1,19 @@
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from sqlalchemy.sql.functions import count
+from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel
+from src.commons.CommonFunctions import center_text_on_pixel
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_inventory.CreatureInventoryIconImageFactory import \
-    CreatureInventoryIconImageFactory
-from src.discord.game_features.creature_inventory.CreatureInventoryReleaseResultItemImageFactory import \
-    CreatureInventoryReleaseResultItemImageFactory
+from src.discord.game_features.creature_inventory.CreatureInventoryIconImageFactory import CreatureInventoryIconImageFactory
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
-class CreatureInventoryImageFactory:
-    def __init__(self, user, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False):
-        self.user = user
+class CreatureInventoryImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False):
+        super().__init__(message_author=message_author, target_user=target_user)
 
         # define filter & order settings
-        self.order_type = CAUGHT_DATE_ORDER
+        self.order_type = CREATURE_NICKNAME_SORT_CAUGHT_DATE
         self.is_ascending_order = False
 
         self.show_mythics_only = show_mythics_only
@@ -24,9 +21,8 @@ class CreatureInventoryImageFactory:
         self.show_favorites_only = show_favorites_only
         self.is_exclusive_mode = False
 
-
         # define creature management items
-        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id, )
+        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id, )
         self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
@@ -34,21 +30,23 @@ class CreatureInventoryImageFactory:
         # define parameters for which icons will appear on page
         self.starting_index = 0
         self.ending_index = min(0, len(self.filtered_creatures))
-        self.current_box_num = 1
-        self.total_unlocked_box_num = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(self.user.id)
+
+        self.total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=target_user.user_id)
 
         # define image mode
         self.image_mode = CREATURE_INVENTORY_MODE_DEFAULT
         self.creature_ids_to_update = []
 
+        self.load_relevant_info()
+
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def get_creature_inventory_page_image(self, new_box_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
-        self.refresh_creature_inventory_image(new_box_number=new_box_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, is_ascending_order=is_ascending_order, is_exclusive_mode=is_exclusive_mode)
-        return self.build_creature_inventory_page_image()
-
-    def refresh_creature_inventory_image(self, new_box_number, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+    def reload_image(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+        self.load_relevant_info(target_user= target_user, new_page_number=new_page_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, is_ascending_order=is_ascending_order, is_exclusive_mode=is_exclusive_mode)
+        return self.build_image()
+    def load_relevant_info(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
         # define filter & order settings
+        self.target_user = target_user if target_user else self.target_user
         self.order_type = order_type if order_type else self.order_type
         self.is_ascending_order = is_ascending_order
 
@@ -58,22 +56,23 @@ class CreatureInventoryImageFactory:
         self.is_exclusive_mode = is_exclusive_mode
 
         # define creature management items
-        if refresh_creatures:
-            self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(self.user.id)
+        data_changed = any(param is not None for param in [target_user])
+        if refresh_creatures or data_changed:
+            self.total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=self.target_user.user_id)
+            self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)
             self.caught_creatures_icons = self.build_creature_icons()
         self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
         self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
 
         # define parameters for which icons will appear on page
-        self.current_box_num = new_box_number if new_box_number else self.current_box_num
-        self.starting_index = (self.current_box_num - 1) * 100
+        self.page_num = new_page_number if new_page_number else self.page_num
+        self.starting_index = (self.page_num - 1) * 100
         self.ending_index = min(self.starting_index + 100, len(self.filtered_creature_icons))
 
         # define image mode
         self.image_mode = image_mode if image_mode else CREATURE_INVENTORY_MODE_DEFAULT
         self.creature_ids_to_update = creature_ids_to_update if creature_ids_to_update else []
-
-    def build_creature_inventory_page_image(self):
+    def build_image(self):
         mode_image_paths = {
             CREATURE_INVENTORY_MODE_DEFAULT: (CREATURE_INVENTORY_BG_IMAGE, CREATURE_INVENTORY_MENU_OVERLAY_IMAGE),
             CREATURE_INVENTORY_MODE_RELEASE: (CREATURE_INVENTORY_BG_RELEASE_IMAGE, CREATURE_INVENTORY_MENU_RELEASE_OVERLAY_IMAGE),
@@ -113,14 +112,13 @@ class CreatureInventoryImageFactory:
         x_offset = 100
 
         for box_num in range(1, MAX_CREATURE_STORAGE_EXPANSIONS + 1):
-            if box_num > self.total_unlocked_box_num:
+            if box_num > self.total_pages:
                 current_box_icon = locked_box_icon_img
             else:
-                current_box_icon = selected_box_icon_img if box_num == self.current_box_num else box_icon_img
+                current_box_icon = selected_box_icon_img if box_num == self.page_num else box_icon_img
 
             image.paste(current_box_icon, current_coordinates, current_box_icon)
             current_coordinates = (current_coordinates[0] + x_offset, current_coordinates[1])
-
         return image
 
     def build_creature_inventory_icons_grid(self):
@@ -170,10 +168,9 @@ class CreatureInventoryImageFactory:
         # add box number text to image
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 58)
 
-        box_num_text = f"BOX {self.current_box_num}"
+        box_num_text = f"BOX {self.page_num}"
         pixel_location = center_text_on_pixel(text=box_num_text, font=default_font, center_pixel_location=(960, 90))
         draw.text(pixel_location, text=box_num_text, font=default_font, fill=(200, 255, 185))
-
         return image
 
 
@@ -198,9 +195,12 @@ class CreatureInventoryImageFactory:
     def order_creatures_based_on_filter_type(self):
         paired_data = list(zip(self.caught_creatures, self.caught_creatures_icons))
 
-        if self.order_type == DEX_NO_ORDER:
-            sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].dex_no, reverse=self.is_ascending_order)
-        elif self.order_type == ALPHABETICAL_ORDER:
+        def get_rarity_sort_key(rarity_name):
+            return 1 if rarity_name == TGOMMO_RARITY_MYTHICAL else 0
+
+        if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO:
+            sorted_pairs = sorted(paired_data, key=lambda pair: (pair[0].dex_no, pair[0].variant_no, get_rarity_sort_key(pair[0].local_rarity.name) ), reverse=self.is_ascending_order)
+        elif self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL:
             sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].name.lower(), reverse=self.is_ascending_order)
         else:
             sorted_pairs = sorted(paired_data, key=lambda pair: pair[0].caught_date, reverse=not self.is_ascending_order)

@@ -5,24 +5,37 @@ from src.resources.constants.file_paths import *
 from PIL import Image
 
 class TGOCreature:
-    def __init__(self, creature_id: int, name:str, variant_name:str, dex_no: int, variant_no: int, full_name: str, scientific_name: str, kingdom: str, description: str, img_root: str, encounter_rate:int, default_rarity: CreatureRarity= COMMON, local_rarity= COMMON, nickname: str = '', caught_date: str = '', sub_environment: str = '', catch_id: int = -1, local_name: str = '', is_favorite: bool = False, is_released: bool = False, local_image_root: str = None, local_dex_no = None, local_variant_no = None):
+    def __init__(
+            self,
+            catch_id=-1, creature_id=-1,
+            name='', variant_name='', local_name ='', nickname ='',
+            dex_no=-1, variant_no=-1, local_dex_no=None, local_variant_no=None,
+            environment_id=-1, sub_environment='',
+            full_name='', scientific_name='', kingdom='', description='',
+            img_root='', local_image_root=None,
+            encounter_rate=-1,
+            default_rarity=COMMON, local_rarity=COMMON,
+            caught_date='', is_favorite=False, is_released=False,
+    ):
         self.timezone = pytz.timezone('US/Eastern')
 
-        self.creature_id = creature_id
         self.catch_id = catch_id
+        self.creature_id = creature_id
 
         self.creature_name = name
         self.local_name = local_name
         self.variant_name = variant_name
+        self.nickname = nickname
         # todo: streamline this so that the name is only set once
         self.name = local_name if local_name else self.creature_name
-
-        self.nickname = nickname
 
         self.dex_no = dex_no
         self.variant_no = variant_no
         self.local_dex_no = local_dex_no if local_dex_no else dex_no
         self.local_variant_no = local_variant_no if local_variant_no else variant_no
+
+        self.environment_id = environment_id
+        self.sub_environment = sub_environment
 
         self.full_name = full_name
         self.scientific_name = scientific_name
@@ -30,9 +43,8 @@ class TGOCreature:
         self.description = description
 
         self.img_root = img_root
-        self.local_img_root = local_image_root if local_image_root else None
+        self.local_img_root = local_image_root
 
-        self.sub_environment = sub_environment
         self.encounter_rate = encounter_rate
 
         self.default_rarity = default_rarity
@@ -63,17 +75,17 @@ class TGOCreature:
         local_img_root = f"{self.local_img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
         img_root = f"{self.img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
 
-        creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+        creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, f"{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{local_img_root}{IMAGE_FILE_EXTENSION}"
 
         if not os.path.exists(creature_thumb_img_path):
-            creature_thumb_img_path = fr"{IMAGE_FOLDER_CREATURES_PATH}\{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}"
+            creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, f"{img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")
         if not os.path.exists(dex_icon_img_path):
             dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
 
-        with Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE_PATH) as img:
+        with Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE) as img:
             self.creature_image = img.copy()
-        with Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE_PATH) as img:
+        with Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE) as img:
             self.dex_icon_image = img.copy()
 
     '''GETTERS AND SETTERS'''
@@ -87,12 +99,3 @@ CURRENT_SPAWN_POOL = [
 ]
 
 PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=0, variant_no=0, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, default_rarity=COMMON)
-
-TEST_CREATURE_COMMON = TGOCreature(creature_id= 1, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=COMMON)
-TEST_CREATURE_UNCOMMON = TGOCreature(creature_id= 2, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=UNCOMMON)
-TEST_CREATURE_RARE = TGOCreature(creature_id= 3, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=RARE)
-TEST_CREATURE_EPIC = TGOCreature(creature_id= 4, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=EPIC)
-TEST_CREATURE_LEGENDARY = TGOCreature(creature_id= 5, name='Test Creature - Common', variant_name='', dex_no=1, variant_no=1, full_name='Eastern Chipmunk', scientific_name='Chipmunkus', kingdom='Mammal', description='', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=5, default_rarity=LEGENDARY)
-
-TEST_SPAWN_POOL = [TEST_CREATURE_COMMON, TEST_CREATURE_UNCOMMON, TEST_CREATURE_RARE, TEST_CREATURE_EPIC, TEST_CREATURE_LEGENDARY]
-

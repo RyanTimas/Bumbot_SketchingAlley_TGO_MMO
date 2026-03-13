@@ -12,10 +12,9 @@ class UnlockedAvatarIconFactory:
     def generate_avatar_quest_tab_image(self):
         # Create a copy of the background to serve as the canvas
         white_border_img = Image.open(AVATAR_UNLOCKED_AVATAR_TAB_BORDER_IMAGE)
-        avatar_thumb_img = Image.open(f'{AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_ROOT}_{self.avatar.img_root}{IMAGE_FILE_EXTENSION}')
-        avatar_background_img = Image.open(f"{AVATAR_BOARD_UNLOCKED_AVATAR_BACKGROUND_ROOT}_{self.avatar.avatar_type}{IMAGE_FILE_EXTENSION}")
+        avatar_background_img = Image.open(f"{AVATAR_BOARD_UNLOCKED_AVATAR_BACKGROUND_BASE}_{self.avatar.avatar_type}{IMAGE_FILE_EXTENSION}")
 
-        avatar_background_img.paste(avatar_thumb_img, (0, 0), avatar_thumb_img)
+        avatar_background_img.paste(self.avatar.avatar_icon_image, (0, 0), self.avatar.avatar_icon_image)
         avatar_background_img.paste(white_border_img, (0, 0), white_border_img)
 
         self.add_text_to_image(image=avatar_background_img)

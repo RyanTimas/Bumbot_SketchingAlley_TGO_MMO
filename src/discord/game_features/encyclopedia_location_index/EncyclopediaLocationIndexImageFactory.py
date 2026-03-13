@@ -1,40 +1,32 @@
-from io import BytesIO
-
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
+from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
 
 
-class EncyclopediaLocationIndexImageFactory:
-    def __init__(self, user = None, ):
-        self.user = user
-        self.player = get_tgommo_db_handler().get_user_profile_by_user_id(user.id, convert_to_object=True) if user else None
+class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
+    def __init__(self, message_author, target_user=None):
+        super().__init__(message_author, target_user)
 
         self.locations = []
         self.location_icons = []
-        self.page_num = 1
-        self.total_pages = 1
 
 
-    def build_encyclopedia_location_index_page_image(self, new_page_number = None):
-        # set new values in case button was clicked
-        self.page_num = new_page_number if new_page_number is not None else self.page_num
-
+    def build_image(self):
         # construct base layers, start with environment bg
         encyclopedia_img = Image.open(f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE}{IMAGE_FILE_EXTENSION}")
         overlay_img = Image.open(ENCYCLOPEDIA_OVERLAY_IMAGE)
         textbox_shadow_img = Image.open(ENCYCLOPEDIA_TEXT_SHADOW_IMAGE)
-        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if not self.player else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
+        corner_overlay_img = Image.open(ENCYCLOPEDIA_CORNER_OVERLAY_SERVER_IMAGE if self.is_server_view else ENCYCLOPEDIA_CORNER_OVERLAY_USER_IMAGE)
         location_tab_icon_corkboard_img = Image.open(ENCYCLOPEDIA_LOCATION_INDEX_CORKBOARD_MAGE)
 
-        if self.player:
-            profile_pic = build_user_profile_pic(self.user)
+        if not self.is_server_view:
+            profile_pic = build_user_profile_pic(self.target_user.discord_profile)
             encyclopedia_img.paste(profile_pic, (60, 0), profile_pic)
 
         # place layers on final image
@@ -116,7 +108,7 @@ class EncyclopediaLocationIndexImageFactory:
         # Only process within our page range
         for i in range(starting_index, ending_index):
             location = self.locations[i]
-            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=None if not self.player else self.player.user_id, environment_dex_no=location.dex_no)
+            user_catches, possible_catches = get_tgommo_db_handler().get_environment_catch_stats_for_user(user_id=self.target_user.user_id, environment_dex_no=location.dex_no)
 
             icon = EncyclopediaLocationIndexIconFactory(environment=location, user_unique_catches=user_catches, possible_unique_catches=possible_catches)
             icon_img = icon.generate_location_tab_icon_image()
@@ -133,7 +125,7 @@ class EncyclopediaLocationIndexImageFactory:
 
     # build user's profile pic from discord id
     def build_bottom_bar(self, encyclopedia_img: Image):
-        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_IMAGE)
+        bottom_bar_img = Image.open(ENCYCLOPEDIA_BOTTOM_BAR_DEFAULT_IMAGE)
         bottom_bar_back_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE if self.page_num > 1 else ENCYCLOPEDIA_BOTTOM_BACK_ARROW_IMAGE_DISABLED)
         bottom_bar_forward_arrow_img = Image.open(ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE if self.page_num < self.total_pages else ENCYCLOPEDIA_BOTTOM_FORWARD_ARROW_IMAGE_DISABLED)
         bottom_bar_environment_icon_img = Image.open(ENCYCLOPEDIA_BOTTOM_ENVIRONMENT_ICON_IMAGE)
@@ -156,13 +148,13 @@ class EncyclopediaLocationIndexImageFactory:
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
 
         # NAME TEXT
-        text = f"Sketching Alley" if not self.player else self.player.nickname
+        text = f"Sketching Alley" if self.is_server_view else self.target_user.nickname
         font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)
         draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)
 
-        if self.player:
-            text = f"@{self.user.name}"
+        if not self.is_server_view:
+            text = f"@{self.target_user.discord_profile.name}"
             font = resize_text_to_fit(text=text, draw=draw, font=tag_font, max_width=260, min_font_size=10)
             pixel_location = (83, 593)
             draw.text(pixel_location, text= text, font=font, fill=FONT_COLOR_WHITE)

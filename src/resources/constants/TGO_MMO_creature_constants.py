@@ -1,10 +1,9 @@
-'''CREATURE IMAGES'''
-N00_BASE_CREATURE_IMAGE_FILE = "BASE_CREATURE.png"
-N00_BASE_CREATURE_IMAGE_FILE_ENCOUNTER = "BASE_CREATURE_E.png"
-N00_BASE_CREATURE_IMAGE_FILE_FLEE = "BASE_CREATURE_F.png"
-N00_BASE_CREATURE_IMAGE_FILE_CATCH = "BASE_CREATURE_C.png"
-N00_BASE_CREATURE_IMAGE_FILE_THUMBNAIL = "BASE_CREATURE_THUMB.png"
 
+""" ----- IMAGE ROOTS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+from pathlib import Path
+
+# region IMAGE ROOTS
+# region image roots - Wave 1
 DEER_IMAGE_ROOT = "Deer"
 GRAY_SQUIRREL_IMAGE_ROOT = "Squirrel"
 RABBIT_IMAGE_ROOT = "Rabbit"
@@ -30,7 +29,8 @@ BOBCAT_IMAGE_ROOT = "Bobcat"
 BLACKBEAR_IMAGE_ROOT = "BlackBear"
 MOOSE_IMAGE_ROOT = "Moose"
 WOLF_IMAGE_ROOT = "Wolf"
-
+# endregion
+# region image roots - Wave 2
 CAT_IMAGE_ROOT = "Cat"
 MOUSE_IMAGE_ROOT = "Mouse"
 GROUNDHOG_IMAGE_ROOT = "Groundhog"
@@ -56,7 +56,8 @@ SKUNK_IMAGE_ROOT = "Skunk"
 PORCUPINE_IMAGE_ROOT = "Porcupine"
 COYOTE_IMAGE_ROOT = "Coyote"
 MOUNTAIN_LION_IMAGE_ROOT = "MountainLion"
-
+# endregion
+# region image roots - Wave 3
 SKINK_IMAGE_ROOT = "Skink"
 COPPERHEAD_IMAGE_ROOT = "Copperhead"
 EARTHWORM_IMAGE_ROOT = "Earthworm"
@@ -107,7 +108,8 @@ HELLBENDER_IMAGE_ROOT = "Hellbender"
 PUFFIN_IMAGE_ROOT = "Puffin"
 HARBOR_SEAL_IMAGE_ROOT = "HarborSeal"
 ALLIGATOR_IMAGE_ROOT = "Alligator"
-
+# endregion
+# region image roots - Wave 4
 # Florida Remix Species
 FL_RACCOON_IMAGE_ROOT = "Raccoon_FL"
 FL_GARTERSNAKE_IMAGE_ROOT = "GarterSnake_FL"
@@ -127,7 +129,6 @@ FL_RIVER_OTTER_IMAGE_ROOT = "RiverOtter_FL"
 FL_ALLIGATOR_IMAGE_ROOT = "Alligator_FL"
 FL_FOX_SQUIRREL_IMAGE_ROOT = "FoxSquirrel_FL"
 FL_GRAY_FOX_IMAGE_ROOT = "GrayFox_FL"
-
 
 # Florida Native Species
 GREEN_ANOLE_IMAGE_ROOT = "GreenAnole"
@@ -197,7 +198,6 @@ RETICULATED_PYTHON_IMAGE_ROOT = "ReticulatedPython"
 TOKAY_GECKO_IMAGE_ROOT = "TokayGecko"
 VEILED_CHAMELEON_IMAGE_ROOT = "VeiledChameleon"
 JACKSONS_CHAMELEON_IMAGE_ROOT = "JacksonsChameleon"
-CUBAN_TREE_FROG_IMAGE_ROOT = "CubanTreeFrog"
 CANE_TOAD_IMAGE_ROOT = "CaneToad"
 COMMON_MYNA_IMAGE_ROOT = "Myna"
 MUSCOVY_DUCK_IMAGE_ROOT = "MuscovyDuck"
@@ -208,10 +208,48 @@ GREEN_MONKEY_IMAGE_ROOT = "GreenMonkey"
 RHESUS_MACAQUE_IMAGE_ROOT = "RhesusMacaque"
 CAPYBARA_IMAGE_ROOT = "Capybara"
 DOMESTIC_DOG_IMAGE_ROOT = "Dog"
+# endregion
+# region image roots - Wave 4.5
+ROCK_PIGEON_IMAGE_ROOT = "RockPigeon"
+DOMESTIC_HORSE_IMAGE_ROOT = "DomesticHorse"
+BROWN_RAT_IMAGE_ROOT = "BrownRat"
+CARPENTER_ANT_IMAGE_ROOT = "CarpenterAnt"
+YELLOW_JACKET_IMAGE_ROOT = "YellowJacket"
+RED_BANDED_LEAFHOPPER_IMAGE_ROOT = "RedBandedLeafhopper"
+CABBAGE_WHITE_BUTTERFLY_IMAGE_ROOT = "CabbageWhite"
+ORANGE_SULPHUR_BUTTERFLY_IMAGE_ROOT = "OrangeSulphur"
+GIANT_WATERBUG_IMAGE_ROOT = "GiantWaterBug"
+JAPANESE_BEETLE_IMAGE_ROOT = "JapaneseBeetle"
+RED_BACKED_SALAMANDER_IMAGE_ROOT = "RedBackedSalamander"
+SPRING_PEEPER_IMAGE_ROOT = "SpringPeeper"
+CUBAN_TREE_FROG_IMAGE_ROOT = "CubanTreeFrog"
+NILE_MONITOR_IMAGE_ROOT = "NileMonitor"
+ARGENTINE_BLACK_AND_WHITE_TEGU_IMAGE_ROOT = "ArgentineBlackAndWhiteTegu"
+EASTERN_BLUEBIRD_IMAGE_ROOT = "EasternBluebird"
+GREEN_HERON_IMAGE_ROOT = "GreenHeron"
+NORTHERN_BOBWHITE_IMAGE_ROOT = "NorthernBobwhite"
+RING_NECKED_PHEASANT_IMAGE_ROOT = "RingNeckedPheasant"
+MONK_PARAKEET_IMAGE_ROOT = "MonkParakeet"
+SCARLET_MACAW_IMAGE_ROOT = "ScarletMacaw"
+NORTHERN_SHORT_TAILED_SHREW_IMAGE_ROOT = "NorthernShortTailedShrew"
+ELK_IMAGE_ROOT = "Elk"
+RED_WOLF_IMAGE_ROOT = "RedWolf"
+# endregion
+
+# region image roots - Transcendant Creatures
+BIGFOOT_IMAGE_ROOT = str(Path("transcendant") / "Bigfoot")
+MOTHMAN_IMAGE_ROOT = str(Path("transcendant") / "Mothman")
+FROGMAN_IMAGE_ROOT = str(Path("transcendant") / "Frogman")
+SKUNK_APE_IMAGE_ROOT = str(Path("transcendant") / "SkunkApe")
+CHUPACABRA_IMAGE_ROOT = str(Path("transcendant") / "Chupacabra")
+WAMPUS_CAT_IMAGE_ROOT = str(Path("transcendant") / "WampusCat")
+# endregion
+# endregion
 
 
-
-'''NATIONAL CREATURE DEX NUMBERS'''
+""" ----- NATIONAL DEX NUMBERS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+# region NATIONAL DEX NUMBERS
+# region national dex numbers - Wave 1
 DEER_DEX_NO = 1
 GRAY_SQUIRREL_DEX_NO = 2
 RABBIT_DEX_NO = 3
@@ -237,8 +275,8 @@ BOBCAT_DEX_NO = 22
 BLACKBEAR_DEX_NO = 23
 MOOSE_DEX_NO = 24
 WOLF_DEX_NO = 25
-
-# Wave 2
+# endregion
+# region national dex numbers - Wave 2
 CAT_DEX_NO = 26
 MOUSE_DEX_NO = 27
 GROUNDHOG_DEX_NO = 28
@@ -265,8 +303,8 @@ SKUNK_DEX_NO = 47
 PORCUPINE_DEX_NO = 48
 COYOTE_DEX_NO = 49
 MOUNTAIN_LION_DEX_NO = 50
-
-# Wave 3
+# endregion
+# region national dex numbers - Wave 3
 SKINK_DEX_NO = 51
 COPPERHEAD_DEX_NO = 52
 EARTHWORM_DEX_NO = 53
@@ -317,8 +355,8 @@ HELLBENDER_DEX_NO = 97
 PUFFIN_DEX_NO = 98
 HARBOR_SEAL_DEX_NO = 99
 ALLIGATOR_DEX_NO = 100
-
-# Wave 4
+# endregion
+# region national dex numbers - Wave 4
 GREEN_ANOLE_DEX_NO = 101
 CURLY_TAILED_LIZARD_DEX_NO = 102
 EASTERN_GLASS_LIZARD_DEX_NO = 103
@@ -395,18 +433,41 @@ GREEN_MONKEY_DEX_NO = 173
 RHESUS_MACAQUE_DEX_NO = 174
 CAPYBARA_DEX_NO = 175
 DOMESTIC_DOG_DEX_NO = 176
+# endregion
+# region national dex numbers  - Wave 4.5
+ROCK_PIGEON_DEX_NO = 177
+BROWN_RAT_DEX_NO = 178
+DOMESTIC_HORSE_DEX_NO = 179
+CARPENTER_ANT_DEX_NO = 180
+YELLOW_JACKET_DEX_NO = 181
+RED_BANDED_LEAFHOPPER_DEX_NO = 182
+CABBAGE_WHITE_BUTTERFLY_DEX_NO = 183
+ORANGE_SULPHUR_BUTTERFLY_DEX_NO = 184
+GIANT_WATERBUG_DEX_NO = 185
+JAPANESE_BEETLE_DEX_NO = 186
+RED_BACKED_SALAMANDER_DEX_NO = 187
+SPRING_PEEPER_DEX_NO = 188
+CUBAN_TREE_FROG_DEX_NO = 189
+NILE_MONITOR_DEX_NO = 190
+ARGENTINE_BLACK_AND_WHITE_TEGU_DEX_NO = 191
+EASTERN_BLUEBIRD_DEX_NO = 192
+GREEN_HERON_DEX_NO = 193
+NORTHERN_BOBWHITE_DEX_NO = 194
+RING_NECKED_PHEASANT_DEX_NO = 195
+MONK_PARAKEET_DEX_NO = 196
+SCARLET_MACAW_DEX_NO = 197
+NORTHERN_SHORT_TAILED_SHREW_DEX_NO = 198
+ELK_DEX_NO = 199
+RED_WOLF_DEX_NO = 200
+# endregion
 
-'''TRANSCENDANT CREATURES'''
-BIGFOOT_IMAGE_ROOT = r"transcendant\Bigfoot"
-MOTHMAN_IMAGE_ROOT = r"transcendant\Mothman"
-FROGMAN_IMAGE_ROOT = r"transcendant\Frogman"
-SKUNK_APE_IMAGE_ROOT = r"transcendant\SkunkApe"
-CHUPACABRA_IMAGE_ROOT = r"transcendant\Chupacabra"
-WAMPUS_CAT_IMAGE_ROOT = r"transcendant\WampusCat"
-
+# region national dex numbers - Transcendant Creatures
 BIGFOOT_DEX_NO = 9001
 MOTHMAN_DEX_NO = 9002
 FROGMAN_DEX_NO = 9003
 SKUNK_APE_DEX_NO = 9004
 CHUPACABRA_DEX_NO = 9005
 WAMPUS_CAT_DEX_NO = 9006
+# endregion
+# endregion
+

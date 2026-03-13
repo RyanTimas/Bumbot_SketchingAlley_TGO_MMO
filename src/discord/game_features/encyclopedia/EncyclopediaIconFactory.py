@@ -20,7 +20,7 @@ class EncyclopediaIconFactory:
         self.total_mythical_catches = total_mythical_catches
         self.creature_is_locked = creature_is_locked
 
-        self.show_stats = False if creature_is_locked else show_stats
+        self.show_stats = False if creature_is_locked or self.creature.default_rarity.name == TGOMMO_RARITY_TRANSCENDANT else show_stats
 
 
     def generate_dex_entry_image(self):

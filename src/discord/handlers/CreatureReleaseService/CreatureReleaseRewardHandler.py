@@ -110,11 +110,11 @@ class CreatureReleaseRewardHandler:
             TGOMMO_RARITY_MYTHICAL: 500,
         }
 
-        user_released_creature_amount = len(get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user_id, convert_to_object=True))
+        user_released_creature_amount = len(get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user_id, convert_to_object=True))
         milestone_items = []
 
         # if user has not released any creatures yet, give them a starter pack of 5 bait, 1 legendary bait, and 1 charm
-        if not get_tgommo_db_handler().get_item_collection_by_user_id(user_id=self.user_id, convert_to_object=True):
+        if not get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.user_id, convert_to_object=True):
             milestone_item_bait = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=ITEM_ID_BAIT, convert_to_object=True)
 
             milestone_items.extend([milestone_item_bait] * 5)

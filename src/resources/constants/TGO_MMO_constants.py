@@ -212,6 +212,18 @@ AVATAR_INVENTORY_QUEST_TAB_KEY = "AVATAR_QUESTS"
 AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY = "UNLOCKED_AVATARS"
 # endregion
 
+# region Avatar Board Collection Filter Keys
+AVATAR_BOARD_FILTER_SERIES = "specific_series_only"
+CREATURE_FAVORITE_FILTER_MYTHIC = "favorite_only"
+# endregion
+# region Avatar Board Collection Sort Keys
+AVATAR_BOARD_SORT_ALPHABETICAL = 'alphabetical'
+AVATAR_BOARD_SORT_DEX_NO = 'dex_no'
+AVATAR_BOARD_SORT_SERIES = 'series'
+AVATAR_BOARD_SORT_AVATAR_TYPE = 'avatar_type'
+AVATAR_BOARD_SORT_UNLOCK_DATE = 'unlock_date'
+# endregion
+
 """ ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Creature Inventory Expansion Variables
 BASE_CREATURE_STORAGE_EXPANSIONS = 8

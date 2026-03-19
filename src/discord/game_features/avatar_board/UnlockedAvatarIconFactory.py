@@ -1,12 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, center_text_on_pixel
-from src.discord.objects.TGOAvatar import TGOAvatar
+from src.commons.CommonFunctions import resize_text_to_fit
 from src.resources.constants.file_paths import *
 
 
 class UnlockedAvatarIconFactory:
-    def __init__(self, avatar: TGOAvatar):
+    def __init__(self, avatar):
         self.avatar = avatar
 
     def generate_avatar_quest_tab_image(self):
@@ -14,7 +13,7 @@ class UnlockedAvatarIconFactory:
         white_border_img = Image.open(AVATAR_UNLOCKED_AVATAR_TAB_BORDER_IMAGE)
         avatar_background_img = Image.open(f"{AVATAR_BOARD_UNLOCKED_AVATAR_BACKGROUND_BASE}_{self.avatar.avatar_type}{IMAGE_FILE_EXTENSION}")
 
-        avatar_background_img.paste(self.avatar.avatar_icon_image, (0, 0), self.avatar.avatar_icon_image)
+        avatar_background_img.paste(self.avatar.avatar_thumbnail_image, (0, 0), self.avatar.avatar_thumbnail_image)
         avatar_background_img.paste(white_border_img, (0, 0), white_border_img)
 
         self.add_text_to_image(image=avatar_background_img)

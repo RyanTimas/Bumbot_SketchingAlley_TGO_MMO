@@ -8,6 +8,7 @@ from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class BaseView(discord.ui.View):
+    """Base class for creating views displayed within the game."""
     def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=[]):
         super().__init__(timeout=None)
 

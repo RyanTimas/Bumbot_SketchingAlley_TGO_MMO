@@ -1,4 +1,3 @@
-'''GENERAL_CONSTANTS'''
 import datetime
 import pytz
 
@@ -214,7 +213,7 @@ AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY = "UNLOCKED_AVATARS"
 
 # region Avatar Board Collection Filter Keys
 AVATAR_BOARD_FILTER_SERIES = "specific_series_only"
-CREATURE_FAVORITE_FILTER_MYTHIC = "favorite_only"
+AVATAR_BOARD_FILTER_COMPLETED_QUESTS = "completed_only"
 # endregion
 # region Avatar Board Collection Sort Keys
 AVATAR_BOARD_SORT_ALPHABETICAL = 'alphabetical'
@@ -239,8 +238,8 @@ CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_FINALIZED = "finalized"
 # endregion
 
 # region Creature Expansion Keys
-CREATURE_INVENTORY_FILTER_EXPANSION_KEY = "filter_expansion"
-CREATURE_INVENTORY_ORDER_EXPANSION_KEY = "order_expansion"
+FILTER_EXPANSION_KEY = "filter_expansion"
+ORDER_EXPANSION_KEY = "order_expansion"
 CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY = "creature_management"
 # endregion
 # region Creature Inventory Filter Keys

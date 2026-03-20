@@ -15,11 +15,29 @@ class CreatureInventoryView(BaseView):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=creature_inventory_image_factory, original_view=original_view)
 
         # FILTER/ORDER STATE
+        self.order_type = CREATURE_NICKNAME_SORT_CAUGHT_DATE
+        self.expanded_display = FILTER_EXPANSION_KEY
+
+        self.order_type_options = {
+            CREATURE_NICKNAME_SORT_ALPHABETICAL: "Alphabetically",
+            CREATURE_NICKNAME_SORT_DEX_NO: "Dex Number",
+            CREATURE_NICKNAME_SORT_CAUGHT_DATE: "Caught Date"
+        }
+        self.filter_type_options = {
+            CREATURE_INVENTORY_FILTER_MYTHIC: "✨ Mythics Only",
+            CREATURE_FAVORITE_FILTER_MYTHIC: "❤️ Favorites Only",
+            CREATURE_NICKNAME_FILTER_MYTHIC: "❗Nicknames Only"
+        }
+        self.expanded_view_options = {
+            FILTER_EXPANSION_KEY: "Filters",
+            ORDER_EXPANSION_KEY: "Sort",
+            CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY: "Creature Management",
+        }
+
         self.show_only_mythics = False
         self.show_only_favorites = False
         self.show_only_nicknames = False
-        self.order_type = CREATURE_NICKNAME_SORT_CAUGHT_DATE
-        self.expanded_display = CREATURE_INVENTORY_FILTER_EXPANSION_KEY
+
         self.is_exclusive_mode = False
         self.is_ascending_order = False
 
@@ -32,18 +50,16 @@ class CreatureInventoryView(BaseView):
         # row 1
         self.storage_expansion_button = self.create_storage_expansion_button(row=1)
         # row 2
-        self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_FILTER_EXPANSION_KEY)
-        self.expand_order_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_ORDER_EXPANSION_KEY)
+        self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=FILTER_EXPANSION_KEY)
+        self.expand_order_options_button = self.create_options_expansion_button(row=2, button_type=ORDER_EXPANSION_KEY)
         self.expand_creature_management_options_button = self.create_options_expansion_button(row=2, button_type=CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY)
 
         # row 3a
-        self.exclusive_mode_button = self.create_exclusive_mode_button(row=3)
         self.show_only_mythics_button = self.create_filter_button(row=3, button_type=CREATURE_INVENTORY_FILTER_MYTHIC)
         self.show_only_favorites_button = self.create_filter_button(row=3, button_type=CREATURE_FAVORITE_FILTER_MYTHIC)
         self.show_only_nicknames_button = self.create_filter_button(row=3, button_type=CREATURE_NICKNAME_FILTER_MYTHIC)
 
         # row 3b
-        self.ascending_order_button = self.create_ascending_order_button(row=3)
         self.order_alphabetically_button = self.create_order_button(row=3, button_type=CREATURE_NICKNAME_SORT_ALPHABETICAL)
         self.order_catch_date_button = self.create_order_button(row=3, button_type=CREATURE_NICKNAME_SORT_DEX_NO)
         self.order_dex_no_button = self.create_order_button(row=3, button_type=CREATURE_NICKNAME_SORT_CAUGHT_DATE)
@@ -55,7 +71,12 @@ class CreatureInventoryView(BaseView):
         # row 4
         self.refresh_view()
 
-    # CREATE BUTTONS
+    '''----DEFINE BUTTON FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    def apply_filter_options(self, button_type):
+        self.show_only_mythics = not self.show_only_mythics if button_type == CREATURE_INVENTORY_FILTER_MYTHIC else self.show_only_mythics
+        self.show_only_favorites = not self.show_only_favorites if button_type == CREATURE_FAVORITE_FILTER_MYTHIC else self.show_only_favorites
+        self.show_only_nicknames = not self.show_only_nicknames if button_type == CREATURE_NICKNAME_FILTER_MYTHIC else self.show_only_nicknames
+
     def create_storage_expansion_button(self, row=0):
         button = discord.ui.Button(label="Expand Storage ➕", style=discord.ButtonStyle.green, row=row)
         button.callback = self.storage_expansion_callback()
@@ -68,92 +89,6 @@ class CreatureInventoryView(BaseView):
             elif self.message_author.user_id == self.target_user.user_id:
                 await interaction.followup.send(self.create_inventory_expansion_confirmation_modal())
                 return
-        return callback
-
-    # todo: move to base view
-    def create_filter_button(self, row=2, button_type=CREATURE_INVENTORY_FILTER_MYTHIC):
-        button_type_options = {
-            CREATURE_INVENTORY_FILTER_MYTHIC: "✨ Mythics Only",
-            CREATURE_FAVORITE_FILTER_MYTHIC: "❤️ Favorites Only",
-            CREATURE_NICKNAME_FILTER_MYTHIC: "❗Nicknames Only"
-        }
-
-        button = discord.ui.Button(label=button_type_options[button_type], style=discord.ButtonStyle.gray, row=row)
-        button.callback = self.filter_button_callback(button_type=button_type)
-        return button
-    def filter_button_callback(self, button_type, ):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.show_only_mythics = not self.show_only_mythics if button_type == CREATURE_INVENTORY_FILTER_MYTHIC else self.show_only_mythics
-            self.show_only_favorites = not self.show_only_favorites if button_type == CREATURE_FAVORITE_FILTER_MYTHIC else self.show_only_favorites
-            self.show_only_nicknames = not self.show_only_nicknames if button_type == CREATURE_NICKNAME_FILTER_MYTHIC else self.show_only_nicknames
-
-            self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
-        return callback
-
-    def create_order_button(self, row=2, button_type=CREATURE_NICKNAME_SORT_CAUGHT_DATE):
-        button_type_options = {
-            CREATURE_NICKNAME_SORT_ALPHABETICAL: "Alphabetically",
-            CREATURE_NICKNAME_SORT_DEX_NO: "Dex Number",
-            CREATURE_NICKNAME_SORT_CAUGHT_DATE: "Caught Date"
-        }
-        button = discord.ui.Button(label=button_type_options[button_type], style=discord.ButtonStyle.gray, row=row)
-
-        button.callback = self.order_button_callback(button_type=button_type)
-        return button
-    def order_button_callback(self, button_type, ):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.order_type = button_type
-
-            self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
-        return callback
-
-    def create_exclusive_mode_button(self, row=3):
-        button = discord.ui.Button(label="❌" if self.is_exclusive_mode else "✅", style=discord.ButtonStyle.red if self.is_exclusive_mode else discord.ButtonStyle.green, row=row,)
-        button.callback = self.exclusive_mode_button_callback()
-        return button
-    def exclusive_mode_button_callback(self):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.is_exclusive_mode = not self.is_exclusive_mode
-
-            self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
-        return callback
-
-    def create_ascending_order_button(self, row=3):
-        button = discord.ui.Button(label="⬆️" if self.is_ascending_order else "⬇️", style=discord.ButtonStyle.green if self.is_ascending_order else discord.ButtonStyle.red, row=row,)
-        button.callback = self.ascending_order_button_callback()
-        return button
-    def ascending_order_button_callback(self):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.is_ascending_order = not self.is_ascending_order
-
-            self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
-        return callback
-
-    def create_options_expansion_button(self, row=3, button_type=CREATURE_INVENTORY_FILTER_EXPANSION_KEY):
-        button_type_options = {
-            CREATURE_INVENTORY_FILTER_EXPANSION_KEY: "Filters",
-            CREATURE_INVENTORY_ORDER_EXPANSION_KEY: "Sort",
-            CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY: "Creature Management",
-        }
-        button = discord.ui.Button(label=button_type_options[button_type], style=discord.ButtonStyle.gray, row=row)
-
-        button.callback = self.options_expansion_button_callback(button_type=button_type)
-        return button
-    def options_expansion_button_callback(self, button_type, ):
-        @interaction_guard(self)
-        async def callback(interaction):
-            self.expanded_display = button_type
-
-            self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
         return callback
 
     def create_creature_management_button(self, button_type, row=3, ):
@@ -207,30 +142,25 @@ class CreatureInventoryView(BaseView):
 
     # FUNCTIONS FOR UPDATING VIEW STATE
     def refresh_view(self):
-        self.update_button_states()
+        self.update_view_items()
         self.rebuild_view()
-    def update_button_states(self):
+    def update_view_items(self):
         super().update_view_items()
 
         # UPDATE ENABLED/DISABLED STATES
 
         # UPDATE BUTTON LABELS
-        self.exclusive_mode_button.label = "❌" if self.is_exclusive_mode else "✅"
-        self.ascending_order_button.label = "⬆️" if self.is_ascending_order else "⬇️"
-        self.next_button.label = "To Next Page➡️" if self.image_factory.page_num < self.image_factory.total_pages else "To Next Page➡️"
 
         # UPDATE BUTTON STYLES
-        self.expand_order_options_button.style = discord.ButtonStyle.green if self.expanded_display == CREATURE_INVENTORY_ORDER_EXPANSION_KEY else discord.ButtonStyle.gray
-        self.expand_filter_options_button.style = discord.ButtonStyle.green if self.expanded_display == CREATURE_INVENTORY_FILTER_EXPANSION_KEY else discord.ButtonStyle.gray
+        self.expand_order_options_button.style = discord.ButtonStyle.green if self.expanded_display == ORDER_EXPANSION_KEY else discord.ButtonStyle.gray
+        self.expand_filter_options_button.style = discord.ButtonStyle.green if self.expanded_display == FILTER_EXPANSION_KEY else discord.ButtonStyle.gray
         self.expand_creature_management_options_button.style = discord.ButtonStyle.green if self.expanded_display == CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY else discord.ButtonStyle.gray
 
-        self.exclusive_mode_button.style = discord.ButtonStyle.red if self.is_exclusive_mode else discord.ButtonStyle.green
         self.show_only_mythics_button.style = discord.ButtonStyle.green if self.show_only_mythics else discord.ButtonStyle.gray
         self.show_only_favorites_button.style = discord.ButtonStyle.green if self.show_only_favorites else discord.ButtonStyle.gray
         self.show_only_nicknames_button.style = discord.ButtonStyle.green if self.show_only_nicknames else discord.ButtonStyle.gray
         self.next_button.style = discord.ButtonStyle.blurple if self.image_factory.page_num < self.image_factory.total_pages else discord.ButtonStyle.green if self.message_author.user_id == self.target_user.user_id else discord.ButtonStyle.blurple
 
-        self.ascending_order_button.style = discord.ButtonStyle.green if self.is_ascending_order else discord.ButtonStyle.red
         self.order_alphabetically_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL else discord.ButtonStyle.gray
         self.order_catch_date_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO else discord.ButtonStyle.gray
         self.order_dex_no_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_CAUGHT_DATE else discord.ButtonStyle.gray
@@ -251,13 +181,13 @@ class CreatureInventoryView(BaseView):
             self.add_item(self.expand_creature_management_options_button)
 
         # row 3a
-        if self.expanded_display == CREATURE_INVENTORY_FILTER_EXPANSION_KEY:
+        if self.expanded_display == FILTER_EXPANSION_KEY:
             self.add_item(self.exclusive_mode_button)
             self.add_item(self.show_only_mythics_button)
             self.add_item(self.show_only_favorites_button)
             self.add_item(self.show_only_nicknames_button)
         # row 3b
-        elif self.expanded_display == CREATURE_INVENTORY_ORDER_EXPANSION_KEY:
+        elif self.expanded_display == ORDER_EXPANSION_KEY:
             self.add_item(self.ascending_order_button)
             self.add_item(self.order_alphabetically_button)
             self.add_item(self.order_catch_date_button)

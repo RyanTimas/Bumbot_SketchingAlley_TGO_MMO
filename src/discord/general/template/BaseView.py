@@ -8,6 +8,9 @@ from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class BaseView(discord.ui.View):
+    # todo: consider moving to constants files
+    DEFAULT_TITLE = "Default"
+
     """Base class for creating views displayed within the game."""
     def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=[]):
         super().__init__(timeout=None)
@@ -24,12 +27,16 @@ class BaseView(discord.ui.View):
 
         # View state attributes
         self.page_num = 1
+        self.is_server_view = target_user.user_id == 0
+
         self.order_type = None
-        self.order_type_titles = {}
-        self.filter_type_titles = {}
         self.is_exclusive_mode = False
         self.is_ascending_order = False
-        self.is_server_view = target_user.user_id == 0
+        self.expanded_display = None
+
+        self.order_type_options = {}
+        self.filter_type_options = {}
+        self.expanded_view_options = {}
 
         # UI Components
         # Navigation components
@@ -165,8 +172,22 @@ class BaseView(discord.ui.View):
             await interaction.message.edit(attachments=[self.reload_image()], view=self)
         return callback
 
-    def create_order_button(self, row=2, button_type="None"):
-        button = discord.ui.Button(label=self.order_type_titles[button_type], style=discord.ButtonStyle.gray, row=row)
+    def create_options_expansion_button(self, row=2, button_type=DEFAULT_TITLE, ):
+        button = discord.ui.Button(label=self.expanded_view_options[button_type], style=discord.ButtonStyle.gray, row=row)
+        button.callback = self._options_expansion_button_callback(button_type=button_type)
+        return button
+    def _options_expansion_button_callback(self, button_type):
+        @interaction_guard(self)
+        async def callback(interaction):
+            self.expanded_display = button_type
+
+            self.refresh_view()
+            await interaction.message.edit(attachments=[self.reload_image()], view=self)
+
+        return callback
+
+    def create_order_button(self, row=2, button_type=DEFAULT_TITLE):
+        button = discord.ui.Button(label=self.order_type_options[button_type], style=discord.ButtonStyle.gray, row=row)
         button.callback = self.order_button_callback(button_type=button_type)
         return button
     def order_button_callback(self, button_type, ):
@@ -174,16 +195,16 @@ class BaseView(discord.ui.View):
         async def callback(interaction):
             self.apply_order_options(button_type)
 
+            updated_image = self.reload_image()
             self.refresh_view()
-            await interaction.message.edit(attachments=[self.reload_image()], view=self)
+            await interaction.message.edit(attachments=[updated_image], view=self)
         return callback
     def apply_order_options(self, button_type):
         """Override this method in subclasses to implement specific additional order logic if needed"""
         self.order_type = button_type
-        pass
 
-    def create_filter_button(self, row=2, button_type="None"):
-        button = discord.ui.Button(label=self.filter_type_titles[button_type], style=discord.ButtonStyle.gray, row=row)
+    def create_filter_button(self, row=2, button_type=DEFAULT_TITLE):
+        button = discord.ui.Button(label=self.filter_type_options[button_type], style=discord.ButtonStyle.gray, row=row)
         button.callback = self.filter_button_callback(button_type=button_type)
         return button
     def filter_button_callback(self, button_type):
@@ -207,6 +228,10 @@ class BaseView(discord.ui.View):
         self.rebuild_view()
    # Update all view items' properties based on view's current state.
     def update_view_items(self):
+        # Update component's titles/labels
+        self.exclusive_mode_button.label = "❌" if self.is_exclusive_mode else "✅"
+        self.ascending_order_button.label = "⬆️" if self.is_ascending_order else "⬇️"
+
         # Update component's disabled states
         self.prev_button.disabled = self.image_factory.page_num == 1
         self.next_button.disabled = self.image_factory.page_num == self.image_factory.total_pages
@@ -214,6 +239,8 @@ class BaseView(discord.ui.View):
 
         # Update component's styles
         self.server_view_button.style = discord.ButtonStyle.green if self.is_server_view else discord.ButtonStyle.red
+        self.exclusive_mode_button.style = discord.ButtonStyle.red if self.is_exclusive_mode else discord.ButtonStyle.green
+        self.ascending_order_button.style = discord.ButtonStyle.green if self.is_ascending_order else discord.ButtonStyle.red
 
         # Update component's options
         self.page_jump_dropdown.options = [discord.SelectOption(label=f"Page {i}", value=str(i), default=(i == self.image_factory.page_num)) for i in range(1, self.image_factory.total_pages + 1)]

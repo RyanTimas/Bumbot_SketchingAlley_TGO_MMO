@@ -26,14 +26,16 @@ class TGOAvatar:
         self.unlock_query = unlock_query if unlock_query else ""
         self.unlock_threshold = unlock_threshold if unlock_threshold else 0
         self.is_secret = is_secret if is_secret else False
+        self.is_completed = False
 
         # base images representing an avatar, represent the full avatar and a headshot
         self.avatar_image = None
         self.avatar_thumbnail_image = None
+        self.quest_icon_image = None
 
         # images for avatar board, represent an icon for the unlocked avatar and an icon for the avatar quest if it exists
-        self.quest_icon_image = None
         self.unlocked_avatar_icon = None
+        self.quest_progress_icon = None
 
         self.define_avatar_images()
 

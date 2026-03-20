@@ -15,6 +15,7 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
         # sorting / filtering options
         self.order_type = AVATAR_BOARD_SORT_AVATAR_TYPE
         self.is_ascending_order = False
+        self.is_exclusive_mode = False
 
         self.load_relevant_info()
         self.total_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
@@ -62,8 +63,6 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
         start_index = (self.page_num - 1) * max_icons_per_page
         end_index = start_index + max_icons_per_page
         avatars_for_page = self.unlocked_avatars[start_index:end_index]
-
-        # todo: add filtering options in future - option to show only avatars of a certain series, or type, or to add the ability to favorite avatars
 
         # Apply sorting based on the selected order type and sort direction
         sort_options = {

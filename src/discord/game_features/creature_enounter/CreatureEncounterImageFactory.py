@@ -78,7 +78,7 @@ class CreatureEncounterImageFactory:
     def build_background_image(self):
         time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
         sub_environment = self.creature.sub_environment if self.creature.sub_environment else SUB_ENVIRONMENT_FOREST
-        background_img_base = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}")
+        background_img_base = os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}")
 
         # todo: add logic for default background if specific one doesn't exist for environment + time of day combo
         background_img = Image.open(f"{background_img_base}{IMAGE_FILE_EXTENSION}")

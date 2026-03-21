@@ -1,90 +1,92 @@
 import os
 from pathlib import Path
 
+""" ----- PROJECT DIRECTORY PATHS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
+LOGS_DIR = os.path.join(PROJECT_ROOT, "logs")
+
+SRC_ROOT = os.path.join(PROJECT_ROOT, "src")
+RESOURCES_FOLDER_BASE_PATH = os.path.join(SRC_ROOT, "resources")
+
+
 
 """ ----- SUPPORT FUNCTIONS & VARIABLES---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
-RESOURCES_FOLDER_BASE_PATH = str(Path(__file__).resolve().parent.parent)
-
 IMAGE_FILE_EXTENSION = ".png"
 FONT_FILE_EXTENSION = ".otf"
-
-# small helper to join parts using the OS separator
-def join_path(*parts):
-    return os.path.join(*parts)
-
 
 """ ----- IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- FOLDER PATHS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region IMAGE FOLDER PATHS
-IMAGE_FOLDER_IMAGES_PATH = join_path(RESOURCES_FOLDER_BASE_PATH, "images")
+IMAGE_FOLDER_IMAGES_PATH = os.path.join(RESOURCES_FOLDER_BASE_PATH, "images")
 
 # region Object Paths
 # region Creatures Paths
-IMAGE_FOLDER_CREATURES_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "creatures")
-IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH = join_path(IMAGE_FOLDER_CREATURES_PATH, "thumbnails")
-IMAGE_FOLDER_CREATURE_ICONS_PATH = join_path(IMAGE_FOLDER_CREATURES_PATH, "icons")
+IMAGE_FOLDER_CREATURES_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "creatures")
+IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH = os.path.join(IMAGE_FOLDER_CREATURES_PATH, "thumbnails")
+IMAGE_FOLDER_CREATURE_ICONS_PATH = os.path.join(IMAGE_FOLDER_CREATURES_PATH, "icons")
 # endregion
 # region Environments Paths
-IMAGE_FOLDER_ENVIRONMENTS_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "environments")
+IMAGE_FOLDER_ENVIRONMENTS_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "environments")
 # endregion
 # region Avatars Paths
-IMAGE_FOLDER_AVATARS_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "avatars")
+IMAGE_FOLDER_AVATARS_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "avatars")
 
-IMAGE_FOLDER_AVATAR_ICONS_PATH = join_path(IMAGE_FOLDER_AVATARS_PATH, "avatar_icons")
-IMAGE_FOLDER_AVATAR_THUMBNAILS_PATH = join_path(IMAGE_FOLDER_AVATARS_PATH, "avatar_thumbnails")
-IMAGE_FOLDER_AVATAR_QUESTS_PATH = join_path(IMAGE_FOLDER_AVATARS_PATH, "avatar_quests")
+IMAGE_FOLDER_AVATAR_ICONS_PATH = os.path.join(IMAGE_FOLDER_AVATARS_PATH, "avatar_icons")
+IMAGE_FOLDER_AVATAR_THUMBNAILS_PATH = os.path.join(IMAGE_FOLDER_AVATARS_PATH, "avatar_thumbnails")
+IMAGE_FOLDER_AVATAR_QUESTS_PATH = os.path.join(IMAGE_FOLDER_AVATARS_PATH, "avatar_quests")
 
 
 # endregion
 # region Item Paths
-IMAGE_FOLDER_ITEMS_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "items")
+IMAGE_FOLDER_ITEMS_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "items")
 # endregion
 # endregion
 
 # region Game Feature Paths
-IMAGE_FOLDER_GAME_FEATURES_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "game_features")
+IMAGE_FOLDER_GAME_FEATURES_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "game_features")
 # region Encounter Screen Paths
 # endregion
 # region Travel Advisory Paths
-IMAGE_FOLDER_TRAVEL_ADVISORY_PATH = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, "travel_advisories")
+IMAGE_FOLDER_TRAVEL_ADVISORY_PATH = os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, "travel_advisories")
 # endregion
 
 # region Encyclopedia paths
-IMAGE_FOLDER_ENCYCLOPEDIA_PATH = join_path(IMAGE_FOLDER_GAME_FEATURES_PATH, "encyclopedia")
-IMAGE_FOLDER_ENCYCLOPEDIA_TOP_BAR_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "top_bar")
-IMAGE_FOLDER_ENCYCLOPEDIA_BOTTOM_BAR_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "bottom_bar")
-IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "encyclopedia_xl")
+IMAGE_FOLDER_ENCYCLOPEDIA_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "encyclopedia")
+IMAGE_FOLDER_ENCYCLOPEDIA_TOP_BAR_PATH = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "top_bar")
+IMAGE_FOLDER_ENCYCLOPEDIA_BOTTOM_BAR_PATH = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "bottom_bar")
+IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "encyclopedia_xl")
 # endregion
 # region Encyclopedia Location Index paths
-IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "location_tab")
-IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_PATH = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH, "environment_bgs")
+IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, "location_tab")
+IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_PATH = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH, "environment_bgs")
 # endregion
 
 # region Player Profile Paths
-IMAGE_FOLDER_PLAYER_PROFILE_PATH = join_path(IMAGE_FOLDER_GAME_FEATURES_PATH, "player_profile_images")
+IMAGE_FOLDER_PLAYER_PROFILE_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "player_profile_images")
 
-IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH = join_path(IMAGE_FOLDER_PLAYER_PROFILE_PATH, "side_panel")
-IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TABS_PATH = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "tabs")
-IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TEAM_TABS_PATH = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "team_tabs")
-IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_ENVIRONMENT_TABS_PATH = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "environment_tabs")
-IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_TABS_PATH = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "collections_tabs")
+IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_PATH, "side_panel")
+IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TABS_PATH = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "tabs")
+IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TEAM_TABS_PATH = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "team_tabs")
+IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_ENVIRONMENT_TABS_PATH = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "environment_tabs")
+IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_TABS_PATH = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "collections_tabs")
 # endregion
 
 # region Avatar Board paths
-IMAGE_FOLDER_AVATAR_BOARD_PATH = join_path(IMAGE_FOLDER_GAME_FEATURES_PATH, "avatar_board")
+IMAGE_FOLDER_AVATAR_BOARD_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "avatar_board")
 # endregion
 # region Creature Inventory Paths
-IMAGE_FOLDER_CREATURE_INVENTORY_PATH = join_path(IMAGE_FOLDER_GAME_FEATURES_PATH, "creature_inventory")
-IMAGE_FOLDER_CREATURE_INVENTORY_RELEASE_SUMMARY_PATH = join_path(IMAGE_FOLDER_CREATURE_INVENTORY_PATH, "release_summary")
+IMAGE_FOLDER_CREATURE_INVENTORY_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "creature_inventory")
+IMAGE_FOLDER_CREATURE_INVENTORY_RELEASE_SUMMARY_PATH = os.path.join(IMAGE_FOLDER_CREATURE_INVENTORY_PATH, "release_summary")
 # endregion
 # region Item Inventory Paths
-IMAGE_FOLDER_ITEM_INVENTORY_PATH = join_path(IMAGE_FOLDER_GAME_FEATURES_PATH, "item_inventory")
+IMAGE_FOLDER_ITEM_INVENTORY_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "item_inventory")
 # endregion
 # endregion
 
 # region Misc Paths
 # region Help Image Paths
-IMAGE_FOLDER_HELP_IMAGE_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "help_images")
+IMAGE_FOLDER_HELP_IMAGE_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "help_images")
 # endregion
 # endregion
 # endregion
@@ -96,11 +98,11 @@ IMAGE_FOLDER_HELP_IMAGE_PATH = join_path(IMAGE_FOLDER_IMAGES_PATH, "help_images"
 # region Environment Image Roots
 # endregion
 # region Avatar Image Roots
-PLAYER_PROFILE_AVATAR_BASE = join_path(IMAGE_FOLDER_AVATAR_THUMBNAILS_PATH, "UserProfile_Avatar")
-AVATAR_QUEST_BASE = join_path(IMAGE_FOLDER_AVATAR_QUESTS_PATH, "QuestTab_IndividualQuest")
+PLAYER_PROFILE_AVATAR_BASE = os.path.join(IMAGE_FOLDER_AVATAR_THUMBNAILS_PATH, "UserProfile_Avatar")
+AVATAR_QUEST_BASE = os.path.join(IMAGE_FOLDER_AVATAR_QUESTS_PATH, "QuestTab_IndividualQuest")
 # endregion
 # region Items Image Roots
-ITEM_BASE = join_path(IMAGE_FOLDER_ITEMS_PATH, "item_")
+ITEM_BASE = os.path.join(IMAGE_FOLDER_ITEMS_PATH, "item_")
 # endregion
 # endregion
 
@@ -108,7 +110,7 @@ ITEM_BASE = join_path(IMAGE_FOLDER_ITEMS_PATH, "item_")
 # region Encounter Screen Roots
 ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX = "EncounterScreen_BG_"
 
-ENCOUNTER_SCREEN_BASE = join_path(IMAGE_FOLDER_ENVIRONMENTS_PATH, "EncounterScreen_")
+ENCOUNTER_SCREEN_BASE = os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, "EncounterScreen_")
 ENCOUNTER_SCREEN_ENVIRONMENT_BG_BASE = ENCOUNTER_SCREEN_BASE + "BG_"
 ENCOUNTER_SCREEN_ENVIRONMENT_GLOW_BASE = ENCOUNTER_SCREEN_BASE + "GLOW_"
 
@@ -116,65 +118,65 @@ ENCOUNTER_SCREEN_OVERLAY_SUFFIX = "_overlay"
 ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX = "_THUMB" + IMAGE_FILE_EXTENSION
 # endregion
 # region Travel Advisory Roots
-TGOMMO_TRAVEL_ADVISORY_BASE = join_path(IMAGE_FOLDER_TRAVEL_ADVISORY_PATH, "travel_advisory_")
+TGOMMO_TRAVEL_ADVISORY_BASE = os.path.join(IMAGE_FOLDER_TRAVEL_ADVISORY_PATH, "travel_advisory_")
 TGOMMO_TRAVEL_ADVISORY_LANDING_BASE = TGOMMO_TRAVEL_ADVISORY_BASE + "landed_"
 # endregion
 
 # region Encyclopedia Roots
 ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX = "EncyclopediaPage"
-ENCYCLOPEDIA_OVERLAY_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX)
+ENCYCLOPEDIA_OVERLAY_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_PATH, ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX)
 
-ENCYCLOPEDIA_TOP_BAR_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_TOP_BAR_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}_TopBar")
+ENCYCLOPEDIA_TOP_BAR_IMAGE_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_TOP_BAR_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}_TopBar")
 
-ENCYCLOPEDIA_BOTTOM_BAR_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_BOTTOM_BAR_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}_BottomBar")
+ENCYCLOPEDIA_BOTTOM_BAR_IMAGE_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_BOTTOM_BAR_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}_BottomBar")
 
-ENCYCLOPEDIA_XL_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}XL")
-ENCYCLOPEDIA_XL_BOX_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH, "EncyclopediaPageXL_Box_")
+ENCYCLOPEDIA_XL_IMAGE_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH, f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}XL")
+ENCYCLOPEDIA_XL_BOX_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_XL_PATH, "EncyclopediaPageXL_Box_")
 # endregion
 # region Encyclopedia Location Index Roots
 ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX = f"{ENCYCLOPEDIA_IMAGE_FILENAME_PREFIX}_LocationTab"
-ENCYCLOPEDIA_LOCATION_INDEX_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH, ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX)
-ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_IMAGE_BASE = join_path(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_PATH, f"{ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX}_Environment")
+ENCYCLOPEDIA_LOCATION_INDEX_IMAGE_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_PATH, ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX)
+ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_IMAGE_BASE = os.path.join(IMAGE_FOLDER_ENCYCLOPEDIA_LOCATION_INDEX_ENVIRONMENT_BG_PATH, f"{ENCYCLOPEDIA_LOCATION_INDEX_ITAB_FILENAME_PREFIX}_Environment")
 # endregion
 # region Encyclopedia Dex Icon Roots
-DEX_ICON_BASE = join_path(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon")
+DEX_ICON_BASE = os.path.join(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon")
 DEX_ICON_BACKGROUND_BASE = DEX_ICON_BASE + "_BackgroundColor"
 DEX_ICON_CREATURE_BASE = DEX_ICON_BASE + "_Creature"
 # endregion
 
 # region Player Profile Roots
-PLAYER_PROFILE_BASE = join_path(IMAGE_FOLDER_PLAYER_PROFILE_PATH, "UserProfile")
-PLAYER_PROFILE_SIDE_PANEL_BASE = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "UserProfile_SidePanel")
+PLAYER_PROFILE_BASE = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_PATH, "UserProfile")
+PLAYER_PROFILE_SIDE_PANEL_BASE = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_PATH, "UserProfile_SidePanel")
 PLAYER_PROFILE_SIDE_PANEL_OVERLAY_BASE = PLAYER_PROFILE_SIDE_PANEL_BASE + "_Overlay"
 PLAYER_PROFILE_BACKGROUND_BASE = PLAYER_PROFILE_BASE + "_BG"
 # endregion
 
 # region Avatar Board Roots
-AVATAR_BOARD_IMAGE_BASE = join_path(IMAGE_FOLDER_AVATAR_BOARD_PATH, "AvatarBoard")
+AVATAR_BOARD_IMAGE_BASE = os.path.join(IMAGE_FOLDER_AVATAR_BOARD_PATH, "AvatarBoard")
 AVATAR_BOARD_BUTTON_BASE = AVATAR_BOARD_IMAGE_BASE + "_Button"
-AVATAR_QUEST_TAB_BASE = join_path(IMAGE_FOLDER_AVATAR_BOARD_PATH, "QuestTab")
+AVATAR_QUEST_TAB_BASE = os.path.join(IMAGE_FOLDER_AVATAR_BOARD_PATH, "QuestTab")
 
-AVATAR_BOARD_UNLOCKED_AVATAR_BASE = join_path(IMAGE_FOLDER_AVATAR_ICONS_PATH, "AvatarBoard_UnlockedAvatar")
+AVATAR_BOARD_UNLOCKED_AVATAR_BASE = os.path.join(IMAGE_FOLDER_AVATAR_ICONS_PATH, "AvatarBoard_UnlockedAvatar")
 AVATAR_BOARD_UNLOCKED_AVATAR_THUMBNAIL_BASE = AVATAR_BOARD_UNLOCKED_AVATAR_BASE + "_THUMB"
 AVATAR_BOARD_UNLOCKED_AVATAR_BACKGROUND_BASE = AVATAR_BOARD_UNLOCKED_AVATAR_BASE + "_Background"
 # endregion
 # region Creature Inventory Roots
-CREATURE_INVENTORY_IMAGE_BASE = join_path(IMAGE_FOLDER_CREATURE_INVENTORY_PATH, "CreatureInventory")
+CREATURE_INVENTORY_IMAGE_BASE = os.path.join(IMAGE_FOLDER_CREATURE_INVENTORY_PATH, "CreatureInventory")
 CREATURE_INVENTORY_INDIVIDUAL_CREATURE_TAB_BASE = CREATURE_INVENTORY_IMAGE_BASE + "_IndividualCreatureTab"
-CREATURE_INVENTORY_RELEASE_SUMMARY_BASE = join_path(IMAGE_FOLDER_CREATURE_INVENTORY_RELEASE_SUMMARY_PATH, "CreatureInventory_ReleaseSummary")
+CREATURE_INVENTORY_RELEASE_SUMMARY_BASE = os.path.join(IMAGE_FOLDER_CREATURE_INVENTORY_RELEASE_SUMMARY_PATH, "CreatureInventory_ReleaseSummary")
 
 CREATURE_INVENTORY_INDIVIDUAL_CREATURE_FAVORITE_STAMP_BASE = CREATURE_INVENTORY_INDIVIDUAL_CREATURE_TAB_BASE + "_Stamp"
 # endregion
 # region Item Inventory Roots
-ITEM_INVENTORY_BASE = join_path(IMAGE_FOLDER_ITEM_INVENTORY_PATH, "ItemInventory_")
+ITEM_INVENTORY_BASE = os.path.join(IMAGE_FOLDER_ITEM_INVENTORY_PATH, "ItemInventory_")
 # endregion
 # endregion
 
 """ ----- STATIC IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Object Images
 # region Creature Images
-FALLBACK_CREATURE_IMAGE = join_path(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, "NA_THUMB" + IMAGE_FILE_EXTENSION)
-FALLBACK_CREATURE_DEX_ICON_IMAGE = join_path(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon_Creature_NA" + IMAGE_FILE_EXTENSION)
+FALLBACK_CREATURE_IMAGE = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, "NA_THUMB" + IMAGE_FILE_EXTENSION)
+FALLBACK_CREATURE_DEX_ICON_IMAGE = os.path.join(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon_Creature_NA" + IMAGE_FILE_EXTENSION)
 # endregion
 # region Environment Images
 # endregion
@@ -268,7 +270,7 @@ PLAYER_PROFILE_SIDE_PANEL_COLLECTIONS_OVERLAY_IMAGE = PLAYER_PROFILE_SIDE_PANEL_
 PLAYER_PROFILE_SIDE_PANEL_OPEN_BORDER_BACKGROUND_01_IMAGE = PLAYER_PROFILE_SIDE_PANEL_BASE + "_Open_Border_Background"
 # endregion
 # region Player Profile Tab images
-PLAYER_PROFILE_SIDE_PANEL_TABS_IMAGE_BASE = join_path(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TABS_PATH, "UserProfile_SidePanel_Tabs")
+PLAYER_PROFILE_SIDE_PANEL_TABS_IMAGE_BASE = os.path.join(IMAGE_FOLDER_PLAYER_PROFILE_SIDE_PANEL_TABS_PATH, "UserProfile_SidePanel_Tabs")
 PLAYER_PROFILE_SIDE_PANEL_TABS_BACKGROUND_IMAGE_BASE = PLAYER_PROFILE_SIDE_PANEL_TABS_IMAGE_BASE + "_BG"
 PLAYER_PROFILE_SIDE_PANEL_TABS_STARS_IMAGE_BASE = PLAYER_PROFILE_SIDE_PANEL_TABS_IMAGE_BASE + "_Stars"
 PLAYER_PROFILE_SIDE_PANEL_ENVIRONMENT_IMAGE_BASE = PLAYER_PROFILE_SIDE_PANEL_TABS_IMAGE_BASE + "_Environment"
@@ -333,7 +335,7 @@ TGOMMO_CREATURE_EMBED_LOCATION_ICON = "https://cdn-icons-png.flaticon.com/512/53
 """ ----- DEPRECATED  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region DEPRECATED
 # region help menu images
-HELP_IMAGE_BASE = join_path(IMAGE_FOLDER_HELP_IMAGE_PATH, "ExplanationCard_")
+HELP_IMAGE_BASE = os.path.join(IMAGE_FOLDER_HELP_IMAGE_PATH, "ExplanationCard_")
 
 HELP_IMAGE_WELCOME_CARD = HELP_IMAGE_BASE + "HelpTitle" + IMAGE_FILE_EXTENSION
 HELP_IMAGE_BUTTON_CARD = HELP_IMAGE_BASE + "Buttons" + IMAGE_FILE_EXTENSION
@@ -351,6 +353,6 @@ HELP_IMAGE_WELCOME_CARD_FUTURE_UPDATES = HELP_IMAGE_BASE + "FutureUpdates" + IMA
 
 """ --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- FONTS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
-FONTS_PATH = join_path(RESOURCES_FOLDER_BASE_PATH, "fonts")
-FONT_FOREST_BOLD_FILE_TEMP = join_path(FONTS_PATH, "NationalForestPrintBold" + FONT_FILE_EXTENSION)
-FONT_FOREST_REGULAR_FILE = join_path(FONTS_PATH, "NationalForestPrintRegular" + FONT_FILE_EXTENSION)
+FONTS_PATH = os.path.join(RESOURCES_FOLDER_BASE_PATH, "fonts")
+FONT_FOREST_BOLD_FILE_TEMP = os.path.join(FONTS_PATH, "NationalForestPrintBold" + FONT_FILE_EXTENSION)
+FONT_FOREST_REGULAR_FILE = os.path.join(FONTS_PATH, "NationalForestPrintRegular" + FONT_FILE_EXTENSION)

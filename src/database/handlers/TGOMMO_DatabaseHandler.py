@@ -200,6 +200,9 @@ class TGOMMODatabaseHandler:
 
     # region CREATURE QUERIES
     # region select creature queries
+    def get_all_creatures(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_CREATURE_BASE} TRUE {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
+        return self.get_creatures_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
     def get_creature_by_creature_id(self, creature_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
         return self.get_creatures_from_database(query=query, params=(creature_id,), convert_to_object=convert_to_object, expect_multiple=False)
@@ -207,6 +210,9 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX};"
         return self.get_creatures_from_database(query=query, params=(dex_no, variant_no), convert_to_object=convert_to_object, expect_multiple=False)
 
+    def get_all_environment_creatures(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} TRUE {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
+        return self.get_environment_creatures_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
     def get_environment_creature_by_environment_id_and_creature_id(self, environment_id=-1, creature_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
         return self.get_environment_creatures_from_database(query=query, params=(environment_id, creature_id), convert_to_object=convert_to_object, expect_multiple=False)

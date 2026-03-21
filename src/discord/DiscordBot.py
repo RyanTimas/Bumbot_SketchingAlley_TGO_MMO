@@ -26,6 +26,8 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
+from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
+from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST
 
@@ -45,9 +47,12 @@ class DiscordBot(commands.Bot):
         self.register_tgommo_user_navigation_commands()
         self.register_tgommo_admin_commands()
 
+        self.register_test_commands()
+
         self.creature_spawner_handler = CreatureSpawnerHandler(self)
 
-    ''' EVENTS '''
+
+    '''---- EVENTS ----------------------------------------------------------------------------------------------------'''
     def register_events(self):
         @self.event
         async def on_ready():
@@ -75,6 +80,8 @@ class DiscordBot(commands.Bot):
                 shiny_message_count = get_game_state_manager().get_shiny_message_count()
                 get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
 
+            await self.process_commands(message)
+
 
         @self.event
         async def on_command_error(ctx, error):
@@ -84,7 +91,7 @@ class DiscordBot(commands.Bot):
             # Re-raise other errors so they aren't suppressed
             raise error
 
-    ''' COMMANDS '''
+    '''---- SLASH COMMANDS ----------------------------------------------------------------------------------------------------'''
     def register_core_commands(self):
         @self.tree.command(name="shutdown", description="Completely shuts down bumbot. Please for emergencies only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
         async def shutdown(interaction: discord.Interaction):
@@ -270,6 +277,12 @@ class DiscordBot(commands.Bot):
 
             except Exception as e:
                 await interaction.response.send_message(f"Error changing environment: {str(e)}", delete_after=10, ephemeral=True)
+
+
+    '''---- TEST COMMANDS ----------------------------------------------------------------------------------------------------'''
+    def register_test_commands(self):
+        register_general_tests(self)
+        register_creature_encounter_tests(self)
 
     def start_bot(self):
         self.run(self.token)

@@ -1,8 +1,6 @@
 import random
 
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
-from pygments.styles.dracula import background
-
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOCreature import TGOCreature
@@ -11,7 +9,7 @@ from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 
-class EncounterImageHandler:
+class CreatureEncounterImageFactory:
     def __init__(self, creature: TGOCreature, environment: TGOEnvironment = None, time_of_day: str = DAY):
         self.creature = creature
         self.environment = environment

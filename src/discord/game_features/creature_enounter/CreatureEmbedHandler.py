@@ -5,7 +5,7 @@ from PIL import Image
 
 from src.commons.CommonFunctions import to_grayscale, convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_enounter.EncounterImageHandler import EncounterImageHandler
+from src.discord.game_features.creature_enounter.CreatureEncounterImageFactory import CreatureEncounterImageFactory
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -31,7 +31,7 @@ class CreatureEmbedHandler:
     def generate_spawn_embed(self):
         thumbnail_img = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
 
-        encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
+        encounter_img_handler = CreatureEncounterImageFactory(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
         embed = discord.Embed(color=self.creature.local_rarity.color)
@@ -65,7 +65,7 @@ class CreatureEmbedHandler:
         return embed, thumbnail_img, encounter_img
 
     def generate_despawn_embed(self):
-        encounter_img_handler = EncounterImageHandler(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
+        encounter_img_handler = CreatureEncounterImageFactory(creature=self.creature, environment=self.environment, time_of_day=self.time_of_day)
         encounter_img = encounter_img_handler.create_encounter_image()
 
         embed = discord.Embed(color=discord.Color.dark_red())
@@ -112,11 +112,9 @@ class CreatureEmbedHandler:
 
         return embed, thumbnail_png, self.total_xp
 
-
     def get_despawn_timestamp(self, is_countdown: bool = True, timestamp: int = None):
         despawn_character = 'R' if is_countdown else 'F'
         return f"<t:{timestamp}:{despawn_character}>"
-
 
     def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
         total_xp = randint(10, 50)

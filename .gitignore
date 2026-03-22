@@ -207,3 +207,4 @@ cython_debug/
 /.idea/encodings.xml
 /.idea/copilot.data.migration.edit.xml
 output/
+logs/

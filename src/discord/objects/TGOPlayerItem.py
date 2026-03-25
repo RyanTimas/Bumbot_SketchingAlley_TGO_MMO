@@ -1,4 +1,8 @@
+import os
+
+from PIL import Image
 from src.discord.objects.CreatureRarity import CreatureRarity
+from src.resources.constants.file_paths import ITEM_BASE, IMAGE_FILE_EXTENSION
 
 
 class TGOPlayerItem:
@@ -26,3 +30,13 @@ class TGOPlayerItem:
         self.user_id = user_id if user_id else -1
         self.item_quantity = item_quantity if item_quantity else -1
         self.last_used = last_used if last_used else -1
+
+        self.item_image = None
+        self.define_item_image()
+
+    def define_item_image(self):
+        item_img_path = f"{ITEM_BASE}{self.img_root}{IMAGE_FILE_EXTENSION}"
+        fallback_img_root_path = f"{ITEM_BASE}Fallback{IMAGE_FILE_EXTENSION}"
+
+        with Image.open(item_img_path if os.path.exists(item_img_path) else fallback_img_root_path) as img:
+            self.item_image = img.copy()

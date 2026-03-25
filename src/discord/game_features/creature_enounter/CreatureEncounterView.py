@@ -1,12 +1,12 @@
 import asyncio
 from discord.ui import View
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard, retry_on_ssl_error, \
+from src.commons.CommonFunctions import convert_to_png, retry_on_ssl_error, \
     check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment

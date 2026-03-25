@@ -1,6 +1,8 @@
 from random import randint
 
 from PIL import Image
+
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockImageFactory import AvatarUnlockImageFactory
 from src.resources.constants.file_paths import *
 
 
@@ -40,10 +42,13 @@ class TGOAvatar:
         self.unlocked_avatar_icon = None
         self.quest_progress_icon = None
 
+        # image for representing the avatar being unlocked
+        self.avatar_unlock_image = None
+
         self.define_avatar_images()
 
     def define_avatar_images(self):
-        from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
+        from src.discord.game_features.avatar_board.AvatarIconFactory import AvatarIconFactory
 
         avatar_img_path = f"{PLAYER_PROFILE_AVATAR_BASE}_{self.avatar_type}_{self.img_root}{IMAGE_FILE_EXTENSION}"
         fallback_img_root_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
@@ -61,4 +66,5 @@ class TGOAvatar:
             with Image.open(quest_icon_img_path) as img:
                 self.quest_icon_image = img.copy()
 
-        self.unlocked_avatar_icon = UnlockedAvatarIconFactory(avatar=self).generate_avatar_quest_tab_image()
+        self.unlocked_avatar_icon = AvatarIconFactory(avatar=self).generate_avatar_quest_tab_image()
+        self.avatar_unlock_image = AvatarUnlockImageFactory(avatar=self).generate_avatar_quest_tab_image()

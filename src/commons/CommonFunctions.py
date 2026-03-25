@@ -101,7 +101,7 @@ def open_image_from_url(image_url):
         img = Image.open(io.BytesIO(response.content))
         return img
     else:
-        return Image.open(PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE)
+        return Image.open(AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else AVATAR_FALLBACK_2_IMAGE)
 
 def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)

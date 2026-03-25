@@ -3,7 +3,7 @@ from PIL import Image
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
-from src.discord.game_features.avatar_board.UnlockedAvatarIconFactory import UnlockedAvatarIconFactory
+from src.discord.game_features.avatar_board.AvatarIconFactory import AvatarIconFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
@@ -102,7 +102,7 @@ class AvatarBoardImageFactory(BaseImageFactory):
         # Only process avatars within our page range
         for i in range(starting_index, ending_index):
             avatar = self.unlocked_avatars[i]
-            avatar_icon = UnlockedAvatarIconFactory(avatar=avatar)
+            avatar_icon = AvatarIconFactory(avatar=avatar)
             unlocked_avatar_icon_img = avatar_icon.generate_avatar_quest_tab_image()
 
             raw_imgs.append(unlocked_avatar_icon_img)

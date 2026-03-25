@@ -1,14 +1,13 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
-from sqlalchemy.testing.plugin.plugin_base import options
 
 from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
-    check_if_user_can_interact_with_view, interaction_guard
+    interaction_guard
 from src.commons.CommonViewComponents import create_dummy_label_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PLAYER_PROFILE_TAB_CLOSED
-from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 

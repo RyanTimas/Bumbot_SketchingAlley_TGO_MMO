@@ -4,7 +4,7 @@ from src.commons.CommonFunctions import resize_text_to_fit
 from src.resources.constants.file_paths import *
 
 
-class UnlockedAvatarIconFactory:
+class AvatarIconFactory:
     def __init__(self, avatar):
         self.avatar = avatar
 

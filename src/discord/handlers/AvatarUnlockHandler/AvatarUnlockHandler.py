@@ -53,7 +53,7 @@ class AvatarUnlockHandler:
                 if unlock_term in self.nickname.lower():
                     if not any(avatar.avatar_id == secret_avatar.avatar_id for secret_avatar in unlocked_secret_avatars):
                         get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar.avatar_id)
-                        await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_image, file_name="avatar.png"))
+                        await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"))
                     return
     async  def limited_time_avatar_unlock_handler(self):
         timeline_params = [
@@ -97,7 +97,7 @@ class AvatarUnlockHandler:
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=avatar_id, user_id=self.user_id)
 
                 avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar_id)
-                await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {avatar.name}!", file=convert_to_png(image=avatar.avatar_image, file_name="avatar.png"), ephemeral=True)
+                await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {avatar.name}!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
     async  def quest_avatar_unlock_handler(self):
         unlockable_avatars = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
         for unlockable_avatar in unlockable_avatars:
@@ -109,5 +109,5 @@ class AvatarUnlockHandler:
                 for child_avatar in avatars_to_unlock:
                     if not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=self.user_id):
                         get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=self.user_id)
-                        await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_image, file_name="avatar.png"), ephemeral=True)
+                        await self.interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
 

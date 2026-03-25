@@ -28,6 +28,7 @@ from src.discord.game_features.player_profile.PlayerProfileImageFactory import P
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
 from src.discord.general.tests.GeneralTests import register_general_tests
+from src.discord.general.tests.ShopTests import register_shop_tests
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST
 
@@ -282,7 +283,10 @@ class DiscordBot(commands.Bot):
     '''---- TEST COMMANDS ----------------------------------------------------------------------------------------------------'''
     def register_test_commands(self):
         register_general_tests(self)
+
+        # GAME FEATURE TESTS
         register_creature_encounter_tests(self)
+        register_shop_tests(self)
 
     def start_bot(self):
         self.run(self.token)

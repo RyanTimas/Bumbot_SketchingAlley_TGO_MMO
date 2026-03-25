@@ -79,6 +79,22 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     y = center_pixel_location[1] - text_height // 2
     return (x, y)
 
+
+def center_image_on_image(foreground_image: Image, background_image: Image, center_pixel: tuple = None):
+    bg_width, bg_height = background_image.size
+    fg_width, fg_height = foreground_image.size
+
+    if center_pixel is None:
+        # Default behavior - center on the background image
+        x = (bg_width - fg_width) // 2
+        y = (bg_height - fg_height) // 2
+    else:
+        # Center the foreground image on the specified pixel location
+        center_x, center_y = center_pixel
+        x = center_x - (fg_width // 2)
+        y = center_y - (fg_height // 2)
+
+    return (x, y)
 def open_image_from_url(image_url):
     response = requests.get(image_url)
     if response.status_code == 200:

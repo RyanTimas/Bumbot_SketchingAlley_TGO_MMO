@@ -28,6 +28,9 @@ class TGOAvatar:
         self.is_secret = is_secret if is_secret else False
         self.is_completed = False
 
+        self.shop_price = 0
+        self.last_purchase_date = None
+
         # base images representing an avatar, represent the full avatar and a headshot
         self.avatar_image = None
         self.avatar_thumbnail_image = None

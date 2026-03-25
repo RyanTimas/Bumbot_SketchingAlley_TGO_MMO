@@ -3,21 +3,16 @@ from src.discord.game_features.avatar_board.AvatarBoardImageFactory import Avata
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
-    EncyclopediaLocationIndexImageFactory
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import \
-    EncyclopediaLocationIndexView
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 
-
-# ... other imports for views
-
 def register_general_tests(bot):
-    @bot.command(name="test")
-    async def test_all_views(ctx):
+    @bot.command(name="TEST--generate_all_views")
+    async def generate_all_views(ctx):
         """Spawns all TGOMMO views at once for testing"""
         user_id = ctx.author.id
         message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)

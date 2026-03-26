@@ -143,11 +143,13 @@ class BuyConfirmationView(discord.ui.View):
             if self.is_avatar:
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=self.purchased_item.avatar_id, user_id=self.message_author.user_id)
             else:
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=self.message_author.user_id, item_id=self.purchased_item.item_id, new_amount=self.purchased_item.item_quantity + 1)
+                users_item_total = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=self.purchased_item.item_id).item_quantity
+                get_tgommo_db_handler().update_user_profile_available_items(user_id=self.message_author.user_id, item_id=self.purchased_item.item_id, new_amount=users_item_total + 1)
                 get_tgommo_db_handler().update_user_avatar_item_last_purchased_date(user_id=self.message_author.user_id, item_id=self.purchased_item.item_id, last_purchased_date=get_game_state_manager().get_shop_date())
 
             # remove currency from user
             get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.user_id, new_currency=self.purchased_item.shop_price * -1)
+            self.parent_view.image_factory.message_author.currency -= self.purchased_item.shop_price
 
             # Refresh the parent view with updated currency
             await self.original_message.edit(attachments=[self.parent_view.reload_image()], view=self.parent_view)

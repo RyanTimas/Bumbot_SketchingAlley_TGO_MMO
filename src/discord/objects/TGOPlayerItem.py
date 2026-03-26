@@ -27,7 +27,7 @@ class TGOPlayerItem:
         self.default_uses = default_uses
 
         self.user_id = user_id if user_id else -1
-        self.item_quantity = item_quantity if item_quantity else -1
+        self.item_quantity = item_quantity
         self.last_used = last_used if last_used else -1
 
         self.shop_price = shop_price

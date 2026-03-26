@@ -52,6 +52,7 @@ def register_shop_tests(bot):
 
             await ctx.send(f"Error creating shop view: {str(e)}")
 
+    # this test is broken because the scheduler runs in the background and we can't easily stop it after a few loops without adding extra functionality to the ShopScheduler class to allow for that. For now, you can test the scheduler by starting it with a short interval and observing the output in the designated channel, then manually stopping it after a few loops.
     @bot.command(name="TEST--shop_restock_scheduler")
     async def shop_restock_scheduler_test(ctx):
         try:
@@ -64,7 +65,7 @@ def register_shop_tests(bot):
             await asyncio.sleep(9)
 
             # Stop the scheduler
-            bot.shop_restock_scheduler.scheduler.shutdown()
+            bot.shop_restock_scheduler.scheduler.shutdown(wait=True)
             await ctx.send("Shop scheduler test completed - stopped after 3 loops.")
         except Exception as e:
             await ctx.send(f"Error starting shop scheduler test: {str(e)}")

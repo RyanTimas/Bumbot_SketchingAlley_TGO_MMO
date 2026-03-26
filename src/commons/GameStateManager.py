@@ -55,9 +55,7 @@ class GameStateManager:
         if env_dex is not None and env_variant is not None:
             return env_dex, env_variant
         return None
-    def get_shiny_message_count(self) -> int:
-        state = self._load_state()
-        return state.get("shiny_message_count", 0)
+
 
     def get_shop_date(self) -> Optional[str]:
         state = self._load_state()
@@ -84,28 +82,37 @@ class GameStateManager:
                 shop_avatars.append(avatar)
         return shop_avatars
 
+    # general Bumbot state getters
+    def get_shiny_message_count(self) -> int:
+        state = self._load_state()
+        return state.get("shiny_message_count", 0)
+
     ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def set_current_environment(self, environment_dex_no: int, environment_variant_no: int):
         state = self._load_state()
-
         state.update({
             "environment_dex_no": environment_dex_no,
             "environment_variant_no": environment_variant_no
         })
         self._save_state(state)
-    def set_shiny_message_count(self, new_count: int):
-        state = self._load_state()
-        state["shiny_message_count"] = new_count
-        self._save_state(state)
+
 
     def set_shop_date(self, new_date: str):
         state = self._load_state()
         state["shop_date"] = new_date
         self._save_state(state)
+
     def set_current_shop_inventory(self, item_ids: list, avatar_ids: list):
         state = self._load_state()
-        state["current_shop_item_ids"] = item_ids
-        state["current_shop_avatar_ids"] = avatar_ids
+        state.update({
+            "current_shop_item_ids": item_ids,
+            "current_shop_avatar_ids": avatar_ids
+        })
         self._save_state(state)
 
 
+    # General Bumbot state setters
+    def set_shiny_message_count(self, new_count: int):
+        state = self._load_state()
+        state["shiny_message_count"] = new_count
+        self._save_state(state)

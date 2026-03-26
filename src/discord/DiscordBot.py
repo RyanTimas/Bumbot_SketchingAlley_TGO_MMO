@@ -26,6 +26,8 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
+from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
+from src.discord.game_features.shop.ShopView import ShopView
 from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
 from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.general.tests.ShopTests import register_shop_tests
@@ -217,6 +219,17 @@ class DiscordBot(commands.Bot):
 
 
             await interaction.followup.send('', files=[view.reload_image()], view=view)
+
+        @self.tree.command(name="open-morshus-shop-tgommo", description="Opens Morshu's Shop.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_open_shop(interaction):
+            await interaction.response.defer()
+
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+
+            shop_image_factory = ShopImageFactory(message_author=message_author)
+            view = ShopView(message_author=message_author, shop_image_factory=shop_image_factory)
+
+            await interaction.followup.send(files=[view.reload_image()], view=view)
 
     def register_tgommo_admin_commands(self):
         @admin_only()

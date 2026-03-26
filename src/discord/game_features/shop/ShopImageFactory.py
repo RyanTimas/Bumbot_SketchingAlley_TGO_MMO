@@ -8,12 +8,9 @@ from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
 
 class ShopImageFactory(BaseImageFactory):
-    def __init__(self, message_author, shop_items=[], shop_avatars=[]):
+    def __init__(self, message_author):
         super().__init__(message_author=message_author, target_user=message_author)
-        self.shop_items = shop_items
-        self.shop_avatars = shop_avatars
 
-        # todo: move out of class
         self.shop_items, self.shop_avatars = get_game_state_manager().get_current_shop_inventory()
 
         self.load_relevant_info()

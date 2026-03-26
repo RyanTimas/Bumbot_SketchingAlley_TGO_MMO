@@ -4,6 +4,7 @@ from PIL import Image
 from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_dummy_label_button
+from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import AvatarBoardAvatarQuestImageFactory
@@ -18,6 +19,8 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, PLAYER_PROFILE_TAB_OPEN_TEAM
+from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
+from src.discord.game_features.shop.ShopView import ShopView
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.file_paths import *
 
@@ -39,6 +42,7 @@ class TGOMMOMenuView(BaseView):
 
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM, row=1)
+        self.shop_button = self.create_shop_button(row=1)
 
         self.avatar_board_button = self.create_avatar_board_button(row=2)
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
@@ -123,6 +127,21 @@ class TGOMMOMenuView(BaseView):
             await interaction.message.edit(attachments=[convert_to_png(item_inventory_img_factory.reload_image(), f'item_inventory_img.png')], view=item_inventory_view)
         return callback
 
+    def create_shop_button(self, row=1):
+        button = discord.ui.Button(label="Morshu's Shop", style=discord.ButtonStyle.blurple, row=row, emoji="🆕")
+        button.callback = self.shop_callback()
+        return button
+    def shop_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
+            shop_img_factory = ShopImageFactory(message_author=self.message_author)
+            shop_view = ShopView(message_author=self.message_author, shop_image_factory=shop_img_factory, original_view=self)
+
+            await interaction.message.edit(
+                attachments=[convert_to_png(shop_img_factory.reload_image(), f'shop_img.png')], view=shop_view)
+
+        return callback
+
     def create_welcome_button(self):
         button = discord.ui.Button(label="What is TGO MMO?", style=discord.ButtonStyle.gray, row=0)
         button.callback = self.welcome_callback()
@@ -172,12 +191,10 @@ class TGOMMOMenuView(BaseView):
         
         # Create view layout
         self.add_item(self.welcome_button)
-        # self.add_item(self.help_button)
 
-        # self.add_item(self.dummy_encyclopedia_label_button)
         self.add_item(self.open_user_encyclopedia_button)
-        # self.add_item(self.open_server_encyclopedia_button)
         self.add_item(self.open_player_profile_button)
+        self.add_item(self.shop_button)
 
         self.add_item(self.avatar_board_button)
         self.add_item(self.creature_inventory_button)

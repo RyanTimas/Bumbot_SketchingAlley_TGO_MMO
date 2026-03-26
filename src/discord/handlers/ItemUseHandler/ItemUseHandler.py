@@ -11,9 +11,12 @@ from src.resources.constants.file_paths import *
 
 
 class ItemUseHandler:
-    def __init__(self, channel, discord_bot):
+    def __init__(self, channel, discord_bot, original_view=None, original_message=None):
         self.discord_bot = discord_bot
         self.channel = channel
+
+        self.original_view = original_view
+        self.original_message = original_message
 
         self.active_effect = {
             ITEM_TYPE_NAMETAG: self.use_nametag,
@@ -31,7 +34,10 @@ class ItemUseHandler:
             if affect_activated:
                 get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
-                    await interaction.channel.send(response_message, files=[item.item_image])
+                    await interaction.channel.send(response_message, files=[convert_to_png(item.item_image, "item_img.png")])
+
+                await self.original_message.edit(attachments=[self.original_view.reload_image(target_user=user)], view=self.original_view)
+
             elif response_message:
                 await interaction.followup.send(response_message, ephemeral=True)
         else:

@@ -4,6 +4,7 @@ from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
 from src.discord.game_features.shop.ShopView import ShopView
+import asyncio
 
 
 # ... other imports for views
@@ -50,3 +51,21 @@ def register_shop_tests(bot):
             traceback.print_exc()
 
             await ctx.send(f"Error creating shop view: {str(e)}")
+
+    @bot.command(name="TEST--shop_restock_scheduler")
+    async def shop_restock_scheduler_test(ctx):
+        try:
+            # Start the shop scheduler with a 3-second interval for testing
+            bot.shop_restock_scheduler.start_scheduler(test_interval=3)
+
+            await ctx.send("Shop scheduler started with 3-second interval for testing! Will stop after 3 loops.")
+
+            # Wait for 9 seconds (3 loops × 3 seconds each) then stop
+            await asyncio.sleep(9)
+
+            # Stop the scheduler
+            bot.shop_restock_scheduler.scheduler.shutdown()
+            await ctx.send("Shop scheduler test completed - stopped after 3 loops.")
+        except Exception as e:
+            await ctx.send(f"Error starting shop scheduler test: {str(e)}")
+            traceback.print_exc()

@@ -29,6 +29,7 @@ from src.discord.game_features.player_profile.PlayerProfileView import PlayerPro
 from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
 from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.general.tests.ShopTests import register_shop_tests
+from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST
 
@@ -50,7 +51,8 @@ class DiscordBot(commands.Bot):
 
         self.register_test_commands()
 
-        self.creature_spawner_handler = CreatureSpawnerHandler(self)
+        self.creature_spawner_handler = CreatureSpawnerHandler(discord_bot=self)
+        self.shop_restock_scheduler = ShopScheduler(discord_bot=self)
 
 
     '''---- EVENTS ----------------------------------------------------------------------------------------------------'''
@@ -65,7 +67,9 @@ class DiscordBot(commands.Bot):
             except Exception as e:
                 print(f"Failed to sync commands: {e}")
 
+            # Start scheduled tasks
             self.creature_spawner_handler.start_creature_spawner()
+            self.shop_restock_scheduler.start_scheduler()
 
         @self.event
         async def on_message(message):

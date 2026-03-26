@@ -8,6 +8,7 @@ from discord.ext.commands import Bot
 
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import SHOP_UPDATE_RESTOCK_IMAGE
 from src.resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHANNEL_ID
@@ -68,9 +69,8 @@ class ShopScheduler:
             (ITEM_ID_UNCOMMON_CHARM, 15),
 
             # misc items
-            (ITEM_ID_NAMETAG, 15),
+            (ITEM_ID_NAMETAG, 25),
         ]
-
 
         # Create a weighted population for sampling without duplicates
         selected_items = []
@@ -95,5 +95,5 @@ class ShopScheduler:
         return selected_items
 
     def generate_daily_avatars(self):
-        # Implement your avatar selection logic
-        return []
+        shop_avatars = get_tgommo_db_handler().get_random_shop_avatars(count=3)
+        return [avatar.avatar_id for avatar in shop_avatars]

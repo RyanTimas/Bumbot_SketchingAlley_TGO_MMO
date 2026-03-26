@@ -383,7 +383,7 @@ TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX = " e.in_circulation = ?"
 TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX = " e.is_night_environment = ?"
 
 TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY e.dex_no, e.variant_no"
-TGOMMO_ORDER_BY_RANDOM_SUFFIX = " ORDER BY RANDOM() LIMIT 1"
+TGOMMO_ORDER_BY_RANDOM_SUFFIX = " ORDER BY RANDOM() LIMIT ?"
 # endregion
 
 # region tgommo_user_profile suffixes
@@ -393,6 +393,7 @@ TGOMMO_SELECT_USER_PROFILE_BY_USER_ID_SUFFIX = " up.user_id = ?"
 # region user_avatar suffixes
 TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_ID_SUFFIX = " ua.avatar_id = ?"
 TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX = " ua.avatar_id LIKE ? || '%' AND ua.avatar_id != ?"
+TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX = "ua.avatar_type = ?"
 # endregion
 # region user_avatar_link suffixes
 TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX = " upal.user_id = ?"

@@ -434,7 +434,7 @@ class TGOMMODatabaseHandler:
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=False)
+        return self.get_environments_from_database(query=query, params=(1, is_night_environment, 1), convert_to_object=convert_to_object, expect_multiple=False)
     # endregion
     # endregion
 
@@ -474,6 +474,10 @@ class TGOMMODatabaseHandler:
     def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
+
+    def get_random_shop_avatars(self, count=3, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=('Shop', count), convert_to_object=convert_to_object,expect_multiple=True)
 
     def has_user_unlocked_avatar(self, user_id=0, avatar_id=0):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX};"

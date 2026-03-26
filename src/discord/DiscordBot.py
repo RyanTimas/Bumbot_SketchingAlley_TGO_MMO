@@ -283,6 +283,18 @@ class DiscordBot(commands.Bot):
             except Exception as e:
                 await interaction.response.send_message(f"Error changing environment: {str(e)}", delete_after=10, ephemeral=True)
 
+        @admin_only()
+        @self.tree.command(name="refresh_shop_tgommo", description="Manually refresh the daily shop. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_refresh_shop(interaction):
+            try:
+                await interaction.response.defer(ephemeral=True)
+
+                # Manually trigger the shop refresh
+                await self.shop_restock_scheduler.refresh_daily_shop()
+                await interaction.followup.send("Shop has been manually refreshed!", ephemeral=True)
+            except Exception as e:
+                await interaction.followup.send(f"Error refreshing shop: {str(e)}", ephemeral=True)
+
 
     '''---- TEST COMMANDS ----------------------------------------------------------------------------------------------------'''
     def register_test_commands(self):

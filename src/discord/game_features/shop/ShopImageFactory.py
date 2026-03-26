@@ -21,6 +21,7 @@ class ShopImageFactory(BaseImageFactory):
     def build_image(self):
         shop_image = Image.open(SHOP_BG_IMAGE)
         corner_overlay_image = Image.open(SHOP_CORNER_OVERLAY_IMAGE)
+        currency_overlay_image = Image.open(SHOP_CURRENCY_OVERLAY_IMAGE)
         morshu_overlay_image = Image.open(SHOP_MORSHU_OVERLAY_IMAGE)
         top_shelf_image = Image.open(SHOP_TOP_SHELF_IMAGE)
         bottom_shelf_image = Image.open(SHOP_BOTTOM_SHELF_IMAGE)
@@ -28,24 +29,37 @@ class ShopImageFactory(BaseImageFactory):
         shop_image.paste(top_shelf_image, (0, 0), top_shelf_image)
         shop_image.paste(bottom_shelf_image, (0, 0), bottom_shelf_image)
 
-        self.load_daily_shop_inventory(shop_image=shop_image)
+        self.place_shop_inventory_on_image(shop_image=shop_image)
 
         shop_image.paste(morshu_overlay_image, (0, 0), morshu_overlay_image)
-        shop_image.paste(corner_overlay_image, (0, 0), corner_overlay_image)
 
-        # todo: add player currency overlay
+        shop_image.paste(currency_overlay_image, (0, 0), currency_overlay_image)
+        self.add_text_to_image(shop_image)
+
+        shop_image.paste(corner_overlay_image, (0, 0), corner_overlay_image)
 
         return shop_image
 
-    def load_daily_shop_inventory(self, shop_image):
+    def place_shop_inventory_on_image(self, shop_image):
         for i, item in enumerate(self.shop_items):
             item_image_factory = ShopItemImageFactory(item=item)
-            item_image = item_image_factory.generate_shop_item_image().resize((280, 280), Image.LANCZOS)
+
+            user_bought_item_today = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=item.item_id).last_purchase_date == get_game_state_manager().get_shop_date()
+            item_image = item_image_factory.generate_shop_item_image(is_sold_out=user_bought_item_today).resize((280, 280), Image.LANCZOS)
             shop_image.paste(item_image, (860 + 300*i, 120), item_image)
 
         for i, avatar in enumerate(self.shop_avatars):
             avatar_image_factory = ShopItemImageFactory(avatar=avatar)
-            avatar_image = avatar_image_factory.generate_shop_item_image().resize((280, 280), Image.LANCZOS)
+
+            user_owns_avatar = get_tgommo_db_handler().has_user_unlocked_avatar(user_id=self.message_author.user_id, avatar_id=avatar.avatar_id)
+            avatar_image = avatar_image_factory.generate_shop_item_image(is_sold_out=user_owns_avatar).resize((280, 280), Image.LANCZOS)
             shop_image.paste(avatar_image, (960 + 340*i, 536), avatar_image)
+
+    def add_text_to_image(self, image: Image):
+        draw = ImageDraw.Draw(image)
+
+        # ADD PLAYER'S CURRENCY BALANCE TO IMAGE
+        font = resize_text_to_fit(text=f"{self.message_author.currency}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 65), max_width=276, min_font_size=7)
+        draw.text(get_centered_text_position(text=f"{self.message_author.currency}", font=font, center_pixel_location=(1686, 62)), f"{self.message_author.currency}", fill=FONT_COLOR_BLACK, font=font)
 
 

@@ -32,7 +32,7 @@ class ShopView(BaseView):
                 return
 
             # generate confirmation message based on whether the selected item is an avatar or a shop item
-            confirmation_view = BuyConfirmationView(self.message_author, self.selected_shop_item, self.is_avatar_selected, self)
+            confirmation_view = BuyConfirmationView(self.message_author, self.selected_shop_item, self.is_avatar_selected, self, interaction.message)
             message = f"Are you sure you want to buy this {"Avatar" if self.is_avatar_selected else "Item"}: {getattr(self.selected_shop_item, 'name' if self.is_avatar_selected else 'item_name')} for {self.selected_shop_item.shop_price}💰?"
             await interaction.response.send_message(message, files=[convert_to_png(image=(getattr(self.selected_shop_item, 'avatar_image' if self.is_avatar_selected else 'item_image')), file_name="selected_item.png")], view=confirmation_view, ephemeral=True)
         return callback
@@ -103,12 +103,13 @@ class ShopView(BaseView):
 
 ''' ----- SUPPORT CLASSES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 class BuyConfirmationView(discord.ui.View):
-    def __init__(self, message_author, selected_item, is_avatar, parent_view):
+    def __init__(self, message_author, selected_item, is_avatar, parent_view, original_message=None):
         super().__init__(timeout=60)
         self.message_author = message_author
         self.is_avatar = is_avatar
         self.purchased_item = get_tgommo_db_handler().get_avatar_by_id(avatar_id=selected_item.avatar_id) if is_avatar else get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=selected_item.item_id)
         self.parent_view = parent_view
+        self.original_message = original_message
 
         self.confirmation_button = self.create_confirm_purchase_button()
         self.add_item(self.confirmation_button)
@@ -146,7 +147,10 @@ class BuyConfirmationView(discord.ui.View):
                 get_tgommo_db_handler().update_user_avatar_item_last_purchased_date(user_id=self.message_author.user_id, item_id=self.purchased_item.item_id, last_purchased_date=get_game_state_manager().get_shop_date())
 
             # remove currency from user
-            get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.user_id, new_currency=self.message_author.currency - self.purchased_item.shop_price)
+            get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.user_id, new_currency=self.purchased_item.shop_price * -1)
+
+            # Refresh the parent view with updated currency
+            await self.original_message.edit(attachments=[self.parent_view.reload_image()], view=self.parent_view)
 
             message = f"Purchase confirmed! You bought the {"avatar" if self.is_avatar else "item"}: {getattr(self.purchased_item, "name" if self.is_avatar else "item_name")}!"
             await interaction.followup.send(message, file=convert_to_png(image=(getattr(self.purchased_item, ("avatar_unlock_image" if self.is_avatar else "item_unlock_image"))), file_name="purchased_shop_item.png"), ephemeral=True)

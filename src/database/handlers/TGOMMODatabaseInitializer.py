@@ -888,6 +888,11 @@ class TGOMMODatabaseInitializer:
             ('Q23', 'Marceline', AVATAR_TYPE_QUEST, 'Marceline', 'Adventure Time',),
             # WAVE 4
 
+            # ----SHOP AVATARS----
+            # WAVE 4
+            ('P1', 'Kasane Teto', AVATAR_TYPE_SHOP, 'KasaneTeto', 'Vocaloid', 250),
+            ('P2', 'Moon', AVATAR_TYPE_SHOP, 'Moon', 'Soul Eater', 1000),
+
 
             # Transcendant Avatars
             ('T1', 'Bigfoot', AVATAR_TYPE_TRANSCENDANT, 'Bigfoot', 'Cryptid',),

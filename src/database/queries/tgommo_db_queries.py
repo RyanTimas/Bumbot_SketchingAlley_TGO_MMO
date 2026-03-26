@@ -397,7 +397,7 @@ TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX = "ua.avatar_type = ?"
 # endregion
 # region user_avatar_link suffixes
 TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX = " upal.user_id = ?"
-TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX = " upal.avatar_id = ?"
+TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX = " ua.avatar_id = ?"
 # endregion
 # region tgommo_user_avatar_unlock_condition suffixes
 TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX= "auc.unlock_query is not Null"

@@ -3,6 +3,7 @@ import time
 
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
@@ -24,25 +25,24 @@ class ItemUseHandler:
     async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check to make sure user has at least 1 bait
         if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
-            affect_successful, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
+            affect_activated, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
 
             # remove an item from the user after the effect is applied
-            if affect_successful:
+            if affect_activated:
                 get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
-                    await interaction.channel.send(response_message, files=[self.get_image_for_item(item)])
+                    await interaction.channel.send(response_message, files=[item.item_image])
             elif response_message:
                 await interaction.followup.send(response_message, ephemeral=True)
         else:
             await interaction.followup.send(f"You don't got any {item.item_name}s left to use, dude...", ephemeral=True)
 
 
-    '''############ ITEM EFFECT HANDLERS ############'''
+    '''---- ITEM EFFECT HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_nametag(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        # todo: open module to rename creature
-        await interaction.followup.send(f"You used the nametag! You can now rename your creature.", ephemeral=True)
-        await self.channel.send(f"<@{user.user_id}> ({user.nickname}) used nametag! You can now rename your creature.")
-        return True
+        nametag_view = NametagUseView(user=user, item_use_handler=self)
+        await interaction.followup.send(f"You used the nametag! You can now rename your creature.", view=nametag_view, ephemeral=True)
+        return False, None
 
 
     async def use_charm(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
@@ -63,7 +63,6 @@ class ItemUseHandler:
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}. Effects are active for the next 15 minutes!"
 
 
-
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
         available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
@@ -76,8 +75,7 @@ class ItemUseHandler:
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
 
-
-    '''############ AFFECT ACTIONS ############'''
+    '''---- AFFECT ACTIONS ------------------------------------------------------------------------------------------------------------'''
     async def _schedule_charm_effect_removal(self, duration_seconds: int, item, bonus_type):
         thread = threading.Thread(target=self._execute_charm_removal, args=(duration_seconds, item, bonus_type))
         thread.daemon = True
@@ -88,7 +86,6 @@ class ItemUseHandler:
         self.discord_bot.creature_spawner_handler.remove_spawn_bonus(bonus_type=bonus_type)
         # await self.channel.send(f"The effect of {item.item_name} has worn off.", files=[self.get_image_for_item(item)])
 
-
-    '''############ SUPPORT FUNCTIONS ############'''
+    '''---- SUPPORT FUNCTIONS ------------------------------------------------------------------------------------------------------------'''
     def get_image_for_item(self, item: TGOPlayerItem):
         return convert_to_png(Image.open(f"{ITEM_BASE}{item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')

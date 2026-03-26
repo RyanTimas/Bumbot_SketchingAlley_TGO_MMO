@@ -64,12 +64,12 @@ class ShopScheduler:
             (ITEM_ID_UNCOMMON_BAIT, 25),
 
             # charms
-            (ITEM_ID_CHARM, 30),
+            (ITEM_ID_CHARM, 25),
             (ITEM_ID_COMMON_CHARM, 15),
             (ITEM_ID_UNCOMMON_CHARM, 15),
 
             # misc items
-            (ITEM_ID_NAMETAG, 25),
+            (ITEM_ID_NAMETAG, 75),
         ]
 
         # Create a weighted population for sampling without duplicates

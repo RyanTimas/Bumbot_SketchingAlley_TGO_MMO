@@ -270,6 +270,10 @@ class TGOMMODatabaseHandler:
     def has_user_caught_mythical_creature_variant(self, user_id=0, creature_id=0):
         return self.get_total_mythical_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
 
+    def does_user_own_catch_id(self, user_id=0, catch_id=0):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX};"
+        return self.QueryHandler.execute_query(query, params=(catch_id, user_id)) != []
+
     def get_total_catches_for_user(self, user_id=0, is_released=None):
         return self.get_total_catches_base(user_id=user_id, is_released=is_released)
     def get_total_mythical_catches_for_user(self, user_id=0, is_released=None):
@@ -526,8 +530,8 @@ class TGOMMODatabaseHandler:
 
     '''' ----- UPDATE QUERIES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # Creature Queries
-    def update_creature_nickname(self, creature_id, nickname):
-        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
+    def update_creature_nickname(self, catch_id, new_nickname):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_NICKNAME_BY_CATCH_ID, params=(new_nickname, catch_id))
         return response
 
     # Player Profile Queries

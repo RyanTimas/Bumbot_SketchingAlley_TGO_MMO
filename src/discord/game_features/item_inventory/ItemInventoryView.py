@@ -2,7 +2,7 @@ from discord.ui import Select
 
 from src.commons.CommonFunctions import *
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
-from src.discord.game_features.item_inventory.ItemUseHandler import ItemUseHandler
+from src.discord.handlers.ItemUseHandler.ItemUseHandler import ItemUseHandler
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
@@ -56,8 +56,6 @@ class ItemInventoryView(BaseView):
         @interaction_guard(self)
         async def callback(interaction):
             await ItemUseHandler(channel=interaction.channel, discord_bot=self.discord_bot).use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
-            if self.original_message:
-                await self.original_message.delete()
         return callback
 
 

@@ -13,7 +13,7 @@ TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (u
 TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?);"""
 
-TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used) VALUES (?, ?, ?, ?);"""
+TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used, last_purchase_date) VALUES (?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 
 TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold, is_secret) VALUES(?, ?, ?, ?);"""
@@ -133,7 +133,7 @@ TGOMMO_GET_INVENTORY_ITEM_BASE = '''
         ii.item_num, ii.item_id, 
         ii.item_name, ii.item_type, ii.item_description, 
         ii.rarity, ii.is_rewardable, ii.img_root, ii.default_uses,
-        uil.user_id, uil.item_quantity, uil.last_used
+        uil.user_id, uil.item_quantity, uil.last_used, uil.last_purchase_date
     FROM tgommo_inventory_item ii
     LEFT JOIN tgommo_user_item_inventory_link uil
         ON ii.item_id == uil.item_id
@@ -144,7 +144,7 @@ TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_BASE = """
         ui.item_num, ui.item_id, 
         ui.item_name, ui.item_type, ui.item_description, 
         ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, 
-        uil.item_quantity, uil.last_used 
+        uil.item_quantity, uil.last_used, last_purchase_date
     FROM tgommo_user_item_inventory_link uil 
     LEFT JOIN tgommo_inventory_item ui 
         ON uil.item_id == ui.item_id 
@@ -321,6 +321,7 @@ TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET
 
 TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
 TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT = """UPDATE tgommo_user_item_inventory_link SET item_quantity = ? WHERE item_id = ? AND user_id = ?;"""
+TGOMMO_UPDATE_USER_AVATAR_LINK_LAST_PURCHASE_DATE = """UPDATE tgommo_user_item_inventory_link SET last_purchase_date = ? WHERE item_id = ? AND user_id = ?;"""
 # endregion
 
 

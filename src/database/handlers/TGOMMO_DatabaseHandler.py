@@ -146,6 +146,8 @@ class TGOMMODatabaseHandler:
 
     def get_avatars_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
+        if not results:
+            return [] if expect_multiple else None
 
         avatars = results
         if convert_to_object:
@@ -173,7 +175,7 @@ class TGOMMODatabaseHandler:
                         item_num=inventory_item_details[0], item_id=inventory_item_details[1],
                         item_name=inventory_item_details[2], item_type=inventory_item_details[3], item_description=inventory_item_details[4],
                         rarity=get_rarity_by_name(inventory_item_details[5]), is_rewardable=inventory_item_details[6], img_root=inventory_item_details[7], default_uses=inventory_item_details[8],
-                        user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11],
+                        user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11], last_purchase_date=inventory_item_details[12]
                     )
                 )
         return inventory_items if expect_multiple else inventory_items[0]
@@ -471,6 +473,11 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
 
+    def has_user_unlocked_avatar(self, user_id=0, avatar_id=0):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX};"
+        result = self.get_avatars_from_database(query=query, params=(user_id, avatar_id), convert_to_object=False, expect_multiple=False)
+        return True if result else False
+
     # endregion
 
     # region INVENTORY ITEM QUERIES
@@ -479,7 +486,7 @@ class TGOMMODatabaseHandler:
         return self.get_inventory_items_from_database(query=query, params=(item_id,), convert_to_object=convert_to_object, expect_multiple=False)
     def get_inventory_item_by_user_id_and_item_id(self, user_id=0, item_id=0, item_quantity=0, convert_to_object=True):
         # todo: change this to an insert function
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, item_quantity, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, item_quantity, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
 
         query = f"{TGOMMO_GET_INVENTORY_ITEM_BASE} {TGOMMO_SELECT_INVENTORY_ITEM_BY_ITEM_ID_SUFFIX} AND {TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_ITEM_BY_USER_ID_SUFFIX};"
         return self.get_inventory_items_from_database(query=query, params=(item_id, user_id), convert_to_object=convert_to_object, expect_multiple=False)
@@ -494,7 +501,7 @@ class TGOMMODatabaseHandler:
 
     # specific item queries
     def get_creature_inventory_expansions_by_user_id(self, user_id=0):
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
         return self.get_inventory_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, item_quantity=8).item_quantity
 
     # endregion
@@ -557,8 +564,13 @@ class TGOMMODatabaseHandler:
         return response
     def update_user_profile_available_items(self, user_id, item_id, new_amount):
         # add a dummy record in case user hasn't obtained this item before
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT, params=(new_amount, item_id, user_id))
+        return response
+    def update_user_avatar_item_last_purchased_date(self, user_id, item_id, last_purchased_date):
+        # add a dummy record in case user hasn't obtained this item before
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_LAST_PURCHASE_DATE, params=(last_purchased_date, item_id, user_id))
         return response
 
     def update_creature_display_index(self, user_id, creature_id, display_index):

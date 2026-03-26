@@ -12,7 +12,8 @@ class TGOAvatar:
                  name:str, series:str,
                  avatar_type:str, is_parent_entry:bool,
                  img_root:str,
-                 unlock_query:str ="", unlock_threshold:int =0, is_secret:bool =False
+                 unlock_query:str ="", unlock_threshold:int =0, is_secret:bool =False,
+                 shop_price:int =0
     ):
         self.avatar_num = avatar_num
         self.avatar_id = avatar_id
@@ -30,7 +31,7 @@ class TGOAvatar:
         self.is_secret = is_secret if is_secret else False
         self.is_completed = False
 
-        self.shop_price = 0
+        self.shop_price = shop_price
 
         # IMAGES
         self.avatar_image = None

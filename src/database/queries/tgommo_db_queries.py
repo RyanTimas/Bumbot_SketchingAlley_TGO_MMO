@@ -10,8 +10,8 @@ TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (env
 
 # Players
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses, shop_price) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, shop_price, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"""
 
 TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used, last_purchase_date) VALUES (?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
@@ -98,7 +98,8 @@ TGOMMO_SELECT_USER_AVATAR_BASE = '''
         ua.avatar_num, ua.avatar_id, 
         ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry,
         ua.img_root,
-        auc.unlock_query, auc.unlock_threshold, auc.is_secret
+        auc.unlock_query, auc.unlock_threshold, auc.is_secret,
+        ua.shop_price
     FROM user_avatar ua
     LEFT JOIN tgommo_user_avatar_unlock_condition auc
         ON auc.avatar_id = ua.avatar_id
@@ -121,7 +122,6 @@ TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BASE = '''
     SELECT
         auc.avatar_id, ua.avatar_name, ua.img_root,
         auc.unlock_query, auc.unlock_threshold, ua.is_parent_entry
-        ua.
     FROM tgommo_user_avatar_unlock_condition auc
     LEFT JOIN user_avatar ua
         ON ua.avatar_id = auc.avatar_id
@@ -133,7 +133,8 @@ TGOMMO_GET_INVENTORY_ITEM_BASE = '''
         ii.item_num, ii.item_id, 
         ii.item_name, ii.item_type, ii.item_description, 
         ii.rarity, ii.is_rewardable, ii.img_root, ii.default_uses,
-        uil.user_id, uil.item_quantity, uil.last_used, uil.last_purchase_date
+        uil.user_id, uil.item_quantity, uil.last_used, 
+        uil.last_purchase_date, ii.shop_price
     FROM tgommo_inventory_item ii
     LEFT JOIN tgommo_user_item_inventory_link uil
         ON ii.item_id == uil.item_id
@@ -144,7 +145,8 @@ TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_BASE = """
         ui.item_num, ui.item_id, 
         ui.item_name, ui.item_type, ui.item_description, 
         ui.rarity, ui.is_rewardable, ui.img_root, ui.default_uses, 
-        uil.item_quantity, uil.last_used, last_purchase_date
+        uil.item_quantity, uil.last_used, 
+        uil.last_purchase_date, ii.shop_price
     FROM tgommo_user_item_inventory_link uil 
     LEFT JOIN tgommo_inventory_item ui 
         ON uil.item_id == ui.item_id 

@@ -159,7 +159,8 @@ class TGOMMODatabaseHandler:
                         name=avatar_details[2], avatar_type=avatar_details[3], series=avatar_details[4],
                         is_parent_entry=avatar_details[5],
                         img_root=avatar_details[6],
-                        unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9]
+                        unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9],
+                        shop_price=avatar_details[10]
                     )
                 )
         return avatars if expect_multiple else avatars[0]
@@ -175,7 +176,8 @@ class TGOMMODatabaseHandler:
                         item_num=inventory_item_details[0], item_id=inventory_item_details[1],
                         item_name=inventory_item_details[2], item_type=inventory_item_details[3], item_description=inventory_item_details[4],
                         rarity=get_rarity_by_name(inventory_item_details[5]), is_rewardable=inventory_item_details[6], img_root=inventory_item_details[7], default_uses=inventory_item_details[8],
-                        user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11], last_purchase_date=inventory_item_details[12]
+                        user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11],
+                        last_purchase_date=inventory_item_details[12], shop_price=inventory_item_details[13]
                     )
                 )
         return inventory_items if expect_multiple else inventory_items[0]

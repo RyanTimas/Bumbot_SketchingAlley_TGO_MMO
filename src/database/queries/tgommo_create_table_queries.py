@@ -29,6 +29,7 @@ TGOMMO_CREATE_AVATAR_TABLE = """CREATE TABLE IF NOT EXISTS user_avatar (
     img_root TEXT NOT NULL,
     series TEXT,
     is_parent_entry BOOLEAN DEFAULT False,
+    shop_price INTEGER NOT NULL DEFAULT 0,
     UNIQUE(avatar_id)
 )"""
 SA_CREATE_ROLES_TABLE = """CREATE TABLE IF NOT EXISTS roles (
@@ -162,6 +163,7 @@ TGOMMO_CREATE_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_invent
     is_rewardable BOOLEAN DEFAULT 0,
     img_root TEXT NOT NULL,
     default_uses INTEGER NOT NULL,
+    shop_price INTEGER NOT NULL DEFAULT 0,
     UNIQUE(item_id)
 )"""
 

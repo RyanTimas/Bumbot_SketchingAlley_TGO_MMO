@@ -1,7 +1,3 @@
-import discord
-
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.GameStateManager import get_game_state_manager
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import *
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
@@ -35,10 +31,10 @@ class ShopView(BaseView):
                 await interaction.response.send_message("Please select an item first!", ephemeral=True)
                 return
 
+            # generate confirmation message based on whether the selected item is an avatar or a shop item
             confirmation_view = BuyConfirmationView(self.message_author, self.selected_shop_item, self.is_avatar_selected, self)
-
-            item_type = "Avatar" if self.is_avatar_selected else "Item"
-            await interaction.response.send_message(f"Are you sure you want to buy this {item_type}: {getattr(self.selected_shop_item, "name" if self.is_avatar_selected else "item_name")}?", view=confirmation_view, ephemeral=True)
+            message = f"Are you sure you want to buy this {"Avatar" if self.is_avatar_selected else "Item"}: {getattr(self.selected_shop_item, 'name' if self.is_avatar_selected else 'item_name')} for {self.selected_shop_item.shop_price}💰?"
+            await interaction.response.send_message(message, files=[convert_to_png(image=(getattr(self.selected_shop_item, 'avatar_image' if self.is_avatar_selected else 'item_image')), file_name="selected_item.png")], view=confirmation_view, ephemeral=True)
         return callback
 
     def create_shop_items_dropdown(self, row=2):
@@ -152,5 +148,6 @@ class BuyConfirmationView(discord.ui.View):
             # remove currency from user
             get_tgommo_db_handler().update_user_profile_currency(user_id=self.message_author.user_id, new_currency=self.message_author.currency - self.purchased_item.shop_price)
 
-            await interaction.followup.send(f"Purchase confirmed! You bought the avatar: {self.purchased_item.name}!", file=convert_to_png(image=self.purchased_item.avatar_unlock_image, file_name="avatar.png") if self.is_avatar else None, ephemeral=True)
+            message = f"Purchase confirmed! You bought the {"avatar" if self.is_avatar else "item"}: {getattr(self.purchased_item, "name" if self.is_avatar else "item_name")}!"
+            await interaction.followup.send(message, file=convert_to_png(image=(getattr(self.purchased_item, ("avatar_unlock_image" if self.is_avatar else "item_unlock_image"))), file_name="purchased_shop_item.png"), ephemeral=True)
         return callback

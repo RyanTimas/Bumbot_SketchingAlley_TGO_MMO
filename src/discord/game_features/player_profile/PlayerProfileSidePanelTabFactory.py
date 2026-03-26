@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, center_text_on_pixel, get_query_connector
+from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position, get_query_connector
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects import TGOPlayer
 from src.discord.objects.TGOCollection import TGOCollection
@@ -51,20 +51,20 @@ class PlayerProfileSidePanelTabFactory:
         # place title text
         base_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 20)
         font = resize_text_to_fit(text=self.tab_title, draw=draw, font=base_font, max_width=100, min_font_size=10)
-        pixel_location = center_text_on_pixel(text=self.tab_title, font=font, center_pixel_location=(130, 17))
+        pixel_location = get_centered_text_position(text=self.tab_title, font=font, center_pixel_location=(130, 17))
         draw.text(pixel_location, text=self.tab_title, font=font, fill=FONT_COLOR_BLACK)
 
         # place subtitle text
         base_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)
         font = resize_text_to_fit(text=self.tab_subtitle, draw=draw, font=base_font, max_width=100, min_font_size=5)
-        pixel_location = center_text_on_pixel(text=self.tab_subtitle, font=font, center_pixel_location=(130, 42))
+        pixel_location = get_centered_text_position(text=self.tab_subtitle, font=font, center_pixel_location=(130, 42))
         draw.text(pixel_location, text=self.tab_subtitle, font=font, fill=FONT_COLOR_BLACK)
 
         if self.tab_type == 'Team':
             # place footer text
             base_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)
             font = resize_text_to_fit(text=self.tab_footer, draw=draw, font=base_font, max_width=100, min_font_size=10)
-            pixel_location = center_text_on_pixel(text=self.tab_footer, font=font, center_pixel_location=(130, 72))
+            pixel_location = get_centered_text_position(text=self.tab_footer, font=font, center_pixel_location=(130, 72))
             draw.text(pixel_location, text=self.tab_footer, font=font, fill=FONT_COLOR_BLACK)
 
         return tab_image

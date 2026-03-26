@@ -1,9 +1,6 @@
-from io import BytesIO
-
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import convert_to_png, center_text_on_pixel, resize_text_to_fit, build_user_profile_pic
+from src.commons.CommonFunctions import convert_to_png, get_centered_text_position, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaIconFactory import EncyclopediaIconFactory
 from src.discord.game_features.encyclopedia.encyclopedia_xl.EncyclopediaXLImageFactory import EncyclopediaXLImageFactory
@@ -198,17 +195,17 @@ class EncyclopediaImageFactory(BaseImageFactory):
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
 
         text = f"{'0' if self.unique_catches_for_user < 10 else ''} {self.unique_catches_for_user} / {'0' if self.unique_creatures_available_for_environment < 10 else ''} {self.unique_creatures_available_for_environment}"
-        pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(858, 109))
+        pixel_location = get_centered_text_position(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 
         text = f"{self.total_user_catches}"
-        pixel_location = center_text_on_pixel(text, bar_font, center_pixel_location=(1082, 109))
+        pixel_location = get_centered_text_position(text, bar_font, center_pixel_location=(1082, 109))
         draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
         # BOTTOM BAR TEXT
         text = f"{self.environment.name}"
         font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
-        pixel_location = center_text_on_pixel(text, font, center_pixel_location=(950, 630))
+        pixel_location = get_centered_text_position(text, font, center_pixel_location=(950, 630))
         draw.text(pixel_location, text=text, font=font, color=bar_font_color)
 
         return encyclopedia_img

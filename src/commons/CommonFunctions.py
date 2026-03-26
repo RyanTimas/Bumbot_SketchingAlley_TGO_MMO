@@ -69,7 +69,7 @@ def add_text_to_image(image: Image, font, text: str = "", position= (0,0), color
     return image
 
 
-def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
+def get_centered_text_position(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
     text_bbox = font.getbbox(text)
 
     text_width = text_bbox[2] - text_bbox[0]
@@ -80,7 +80,7 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     return (x, y)
 
 
-def center_image_on_image(foreground_image: Image, background_image: Image, center_pixel: tuple = None):
+def get_centered_image_position(foreground_image: Image, background_image: Image, center_pixel: tuple = None):
     bg_width, bg_height = background_image.size
     fg_width, fg_height = foreground_image.size
 

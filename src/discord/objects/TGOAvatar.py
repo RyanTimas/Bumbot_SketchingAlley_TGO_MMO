@@ -32,17 +32,18 @@ class TGOAvatar:
 
         self.shop_price = 0
 
-        # base images representing an avatar, represent the full avatar and a headshot
+        # IMAGES
         self.avatar_image = None
         self.avatar_thumbnail_image = None
+        self.avatar_unlock_image = None
+
+        # todo: MOVE THESE OUT OF THIS CLASS AND INTO A FACTORY CLASS, since they are only used for the avatar board and not the player profile
+        # image for representing the avatar quest, if it exists
         self.quest_icon_image = None
 
         # images for avatar board, represent an icon for the unlocked avatar and an icon for the avatar quest if it exists
         self.unlocked_avatar_icon = None
         self.quest_progress_icon = None
-
-        # image for representing the avatar being unlocked
-        self.avatar_unlock_image = None
 
         self.define_avatar_images()
 
@@ -66,4 +67,4 @@ class TGOAvatar:
                 self.quest_icon_image = img.copy()
 
         self.unlocked_avatar_icon = AvatarIconFactory(avatar=self).generate_avatar_quest_tab_image()
-        self.avatar_unlock_image = AvatarUnlockImageFactory(avatar=self).generate_avatar_quest_tab_image()
+        self.avatar_unlock_image = AvatarUnlockImageFactory(avatar=self).generate_avatar_unlock_image()

@@ -1,10 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
-from pygments.lexer import default
 
-from src.commons.CommonFunctions import center_text_on_pixel, resize_text_to_fit
-from src.discord.objects.TGOCreature import TGOCreature
+from src.commons.CommonFunctions import get_centered_text_position, resize_text_to_fit
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, TGOMMO_RARITY_MYTHICAL
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
 from src.resources.constants.file_paths import *
 
 
@@ -28,12 +26,12 @@ class CreatureInventoryReleaseResultItemImageFactory:
         # add item name to image
         item_name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 35)
         item_name_font = resize_text_to_fit(text=self.item.item_name, draw=draw, font=item_name_font, max_width=max_width, min_font_size=8)
-        pixel_location = center_text_on_pixel(text= self.item.item_name, font=item_name_font, center_pixel_location=(412, 66))
+        pixel_location = get_centered_text_position(text= self.item.item_name, font=item_name_font, center_pixel_location=(412, 66))
         draw.text(pixel_location, text=self.item.item_name, font=item_name_font, fill=FONT_COLOR_BLACK)
 
         # add item count to image
         count_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 50)
-        pixel_location = center_text_on_pixel(text= f"{self.count}", font=count_font, center_pixel_location=(742, 62))
+        pixel_location = get_centered_text_position(text=f"{self.count}", font=count_font, center_pixel_location=(742, 62))
         draw.text(pixel_location, text=f"{self.count}", font=count_font, fill=FONT_COLOR_BLACK)
 
         return image

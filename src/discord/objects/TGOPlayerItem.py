@@ -1,6 +1,7 @@
 import os
 
 from PIL import Image
+from src.discord.handlers.ItemUnlockHandler.ItemUnlockImageFactory import ItemUnlockImageFactory
 from src.discord.objects.CreatureRarity import CreatureRarity
 from src.resources.constants.file_paths import ITEM_BASE, IMAGE_FILE_EXTENSION
 
@@ -31,7 +32,9 @@ class TGOPlayerItem:
         self.shop_price = 0
         self.last_purchase_date = last_purchase_date if last_purchase_date else -1
 
+        # IMAGES
         self.item_image = None
+        self.item_unlock_image = None
         self.define_item_image()
 
     def define_item_image(self):
@@ -40,3 +43,5 @@ class TGOPlayerItem:
 
         with Image.open(item_img_path if os.path.exists(item_img_path) else fallback_img_root_path) as img:
             self.item_image = img.copy()
+
+        self.item_unlock_image = ItemUnlockImageFactory(item=self).generate_item_unlock_image()

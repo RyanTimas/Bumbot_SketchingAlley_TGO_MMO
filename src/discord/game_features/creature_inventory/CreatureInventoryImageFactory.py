@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import center_text_on_pixel
+from src.commons.CommonFunctions import get_centered_text_position
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryIconImageFactory import CreatureInventoryIconImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
@@ -169,7 +169,7 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         default_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 58)
 
         box_num_text = f"BOX {self.page_num}"
-        pixel_location = center_text_on_pixel(text=box_num_text, font=default_font, center_pixel_location=(960, 90))
+        pixel_location = get_centered_text_position(text=box_num_text, font=default_font, center_pixel_location=(960, 90))
         draw.text(pixel_location, text=box_num_text, font=default_font, fill=(200, 255, 185))
         return image
 

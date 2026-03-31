@@ -5,7 +5,7 @@ from src.database.queries.tgommo_create_table_queries import *
 from src.database.queries.tgommo_db_queries import *
 
 
-class TGOMMODatabaseInitializer:
+class TGOMMODatabase_DataEntriesInitializer:
     def __init__(self, db_handler):
         self.db_handler = db_handler
         self.queryHandler = db_handler.QueryHandler
@@ -801,12 +801,24 @@ class TGOMMODatabaseInitializer:
             # ----DEFAULT AVATARS----
             ('D1', 'Red', AVATAR_TYPE_DEFAULT, 'Red', 'Pokemon',),
             ('D2', 'Leaf', AVATAR_TYPE_DEFAULT, 'Leaf', 'Pokemon',),
-            ('D3', 'Hilbert', AVATAR_TYPE_DEFAULT, 'Hilbert', 'Pokemon',),
-            ('D4', 'Hilda', AVATAR_TYPE_DEFAULT, 'Hilda', 'Pokemon',),
-            ('D5', 'Paxton', AVATAR_TYPE_DEFAULT, 'Paxton', 'Pokemon',),
-            ('D6', 'Harmony', AVATAR_TYPE_DEFAULT, 'Harmony', 'Pokemon',),
-            ('D7', 'Brendan', AVATAR_TYPE_DEFAULT, 'Brendan', 'Pokemon',),
-            ('D8', 'May', AVATAR_TYPE_DEFAULT, 'May', 'Pokemon',),
+            ('D3', 'Ethan', AVATAR_TYPE_DEFAULT, 'Ethan', 'Pokemon',),
+            ('D4', 'Lyra', AVATAR_TYPE_DEFAULT, 'Lyra', 'Pokemon',),
+            ('D5', 'Brendan', AVATAR_TYPE_DEFAULT, 'Brendan', 'Pokemon',),
+            ('D6', 'May', AVATAR_TYPE_DEFAULT, 'May', 'Pokemon',),
+            ('D7', 'Lucas', AVATAR_TYPE_DEFAULT, 'Lucas', 'Pokemon',),
+            ('D8', 'Dawn', AVATAR_TYPE_DEFAULT, 'Dawn', 'Pokemon',),
+            ('D9', 'Hilbert', AVATAR_TYPE_DEFAULT, 'Hilbert', 'Pokemon',),
+            ('D10', 'Hilda', AVATAR_TYPE_DEFAULT, 'Hilda', 'Pokemon',),
+            ('D11', 'Callum', AVATAR_TYPE_DEFAULT, 'Callum', 'Pokemon',),
+            ('D12', 'Serena', AVATAR_TYPE_DEFAULT, 'Serena', 'Pokemon',),
+            ('D13', 'Elio', AVATAR_TYPE_DEFAULT, 'Elio', 'Pokemon',),
+            ('D14', 'Selene', AVATAR_TYPE_DEFAULT, 'Selene', 'Pokemon',),
+            ('D15', 'Victor', AVATAR_TYPE_DEFAULT, 'Victor', 'Pokemon',),
+            ('D16', 'Gloria', AVATAR_TYPE_DEFAULT, 'Gloria', 'Pokemon',),
+            ('D17', 'Florian', AVATAR_TYPE_DEFAULT, 'Florian', 'Pokemon',),
+            ('D18', 'Juliana', AVATAR_TYPE_DEFAULT, 'Juliana', 'Pokemon',),
+            ('D19', 'Paxton', AVATAR_TYPE_DEFAULT, 'Paxton', 'Pokemon',),
+            ('D20', 'Harmony', AVATAR_TYPE_DEFAULT, 'Harmony', 'Pokemon',),
 
             # ----SECRET AVATARS----
             # WAVE 1
@@ -862,9 +874,9 @@ class TGOMMODatabaseInitializer:
             ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, 'Michelangelo', 'Teenage Mutant Ninja Turtles',),
             ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, 'Donatello', 'Teenage Mutant Ninja Turtles',),
             # WAVE 1
-            ('Q7', 'HeartGold/ SoulSilver Protagonists', AVATAR_TYPE_QUEST, 'HGSS', 'Pokemon', 0, True,),
-            ('Q7a', 'Ethan', AVATAR_TYPE_QUEST, 'Ethan', 'Pokemon',),
-            ('Q7b', 'Lyra', AVATAR_TYPE_QUEST, 'Lyra', 'Pokemon',),
+            ('Q7', 'Gold/ Silver Protagonists', AVATAR_TYPE_QUEST, 'HGSS', 'Pokemon', 0, True,),
+            ('Q7a', 'Gold', AVATAR_TYPE_QUEST, 'Gold', 'Pokemon',),
+            ('Q7b', 'Kris', AVATAR_TYPE_QUEST, 'Kris', 'Pokemon',),
             ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
             # WAVE 2
             ('Q9', 'Turbo Granny', AVATAR_TYPE_QUEST, 'TurboGranny', 'DanDaDan',),

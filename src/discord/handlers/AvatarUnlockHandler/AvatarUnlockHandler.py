@@ -8,7 +8,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.file_paths import *
 
-
+# todo: separate this into three classes: one for event based unlocks and one for nicknames and one for quests
 class AvatarUnlockHandler:
     def __init__(self, user_id, nickname=None, interaction=None):
         self.user_id = user_id
@@ -85,6 +85,20 @@ class AvatarUnlockHandler:
             ("Panda", "22", datetime.datetime(2026, 3, 5, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Jogo", "23", datetime.datetime(2026, 3, 12, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
             ("Ryomen Sukuna", "24", datetime.datetime(2026, 3, 19, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 3, 26, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+
+            # Wave 3
+            ("Invincible (Blue Suit)", "25", datetime.datetime(2026, 3, 31, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Mark Grayson", "26", datetime.datetime(2026, 3, 31, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Nolan Grayson", "27", datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Monster Girl", "28", datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Robot", "29", datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Dinosaurus", "30", datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 29, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+
+            # Wave 4
+            ("Crewmate (Blue)", "31", datetime.datetime(2026, 4, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Crewmate (Yellow)", "32", datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Crewmate (Green)", "33", datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
+            ("Crewmate (Geoff Keighley)", "34", datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
         for timeline_param in timeline_params:

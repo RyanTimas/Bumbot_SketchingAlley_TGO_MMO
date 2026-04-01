@@ -17,13 +17,9 @@ SELECT * from tgommo_collection tc;
 --------------------------------------------------------------------------------------------------------
 
 
-
-
-SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 5, 56, 66, 67, 167);
-
-
-
-
+ALTER TABLE user_avatar ADD COLUMN shop_price INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE tgommo_inventory_item ADD COLUMN shop_price INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE tgommo_user_item_inventory_link ADD COLUMN last_purchase_date TIMESTAMP DEFAULT (datetime('now', '-1 day'));
 
 ---------------------------------------------------------------------------------------------------------
 DROP TABLE tgommo_creature;

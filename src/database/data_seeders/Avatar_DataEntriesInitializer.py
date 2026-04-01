@@ -159,7 +159,7 @@ def get_quest_avatar_records():
         ('Q27', 'Stinkfly', AVATAR_TYPE_QUEST, 'Stinkfly', 'Ben 10',),
         ('Q28', 'Gray Matter', AVATAR_TYPE_QUEST, 'GrayMatter', 'Ben 10',),
         ('Q29', 'King K Rool', AVATAR_TYPE_QUEST, 'KingKRool', 'Donkey Kong',),
-        ('Q30', 'Funky Kong', AVATAR_TYPE_QUEST, 'KingKRool', 'Donkey Kong',),
+        ('Q30', 'Funky Kong', AVATAR_TYPE_QUEST, 'FunkyKong', 'Donkey Kong',),
         ('Q31', 'Edelgard', AVATAR_TYPE_QUEST, 'Edelgard', 'Fire Emblem',),
         ('Q32', 'Dimitri', AVATAR_TYPE_QUEST, 'Dimitri', 'Fire Emblem',),
         ('Q33', 'Claude', AVATAR_TYPE_QUEST, 'Claude', 'Fire Emblem',),

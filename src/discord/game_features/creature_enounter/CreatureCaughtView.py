@@ -86,9 +86,11 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
         else:
             # First click - show confirmation
+            await interaction.response.defer()
+
             self._release_confirmed = True
             self.refresh_view()
-            await interaction.response.edit_message(view=self)
+            await interaction.edit_original_response(view=self)
 
     def create_favorite_button(self, row=0):
         button = Button(label="Favorite", style=discord.ButtonStyle.success, emoji="❤️", row=row)

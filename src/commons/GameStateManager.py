@@ -56,7 +56,9 @@ class GameStateManager:
             return env_dex, env_variant
         return None
 
-
+    def get_environment_change_date(self) -> Optional[str]:
+        state = self._load_state()
+        return state.get("environment_change_date")
     def get_shop_date(self) -> Optional[str]:
         state = self._load_state()
         return state.get("shop_date")
@@ -96,7 +98,10 @@ class GameStateManager:
         })
         self._save_state(state)
 
-
+    def set_environment_change_date(self, new_date: str):
+        state = self._load_state()
+        state["environment_change_date"] = new_date
+        self._save_state(state)
     def set_shop_date(self, new_date: str):
         state = self._load_state()
         state["shop_date"] = new_date

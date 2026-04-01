@@ -37,7 +37,6 @@ class CreatureSpawnerHandler:
         env_dex_no = saved_env[0] if saved_env and saved_env[0] is not None else 1
 
         self.pending_environment = None
-        self.environment_change_checked_for_today = False
 
         self.creature_spawn_pool = None
         self.last_spawn_time = None
@@ -88,6 +87,7 @@ class CreatureSpawnerHandler:
     def start_creature_spawner(self):
         if not self._spawner_running:
             asyncio.create_task(self._creature_spawner())
+            asyncio.create_task(self._environment_change_check_scheduler())
 
     # Toggles whether creatures are spawning or not
     def toggle_creature_spawner(self, ctx):
@@ -251,8 +251,6 @@ class CreatureSpawnerHandler:
         current_time = datetime.datetime.now(pytz.UTC).astimezone(self.current_environment.timezone)
 
         self._handle_day_night_cycle(current_time=current_time)
-        await self._handle_environment_change_cycle(current_time=current_time)
-
         self._handle_user_catch_limit_resets(current_time=current_time)
 
     # Handles hourly and daily resets
@@ -264,7 +262,6 @@ class CreatureSpawnerHandler:
         # Clear daily user catches if a new day has begun & reset environment change check
         if current_time.date() > self.last_spawn_time.date():
             USER_CATCHES_DAILY.clear()
-            self.environment_change_checked_for_today = False
 
         self.last_spawn_time = current_time
 
@@ -281,38 +278,51 @@ class CreatureSpawnerHandler:
             self.define_environment_and_spawn_pool(environment_dex_no=self.current_environment.dex_no, environment_variant_no=1 if self.is_day else 2)
         self.last_spawn_time = current_time
 
-    # Checks if the environment should change today, schedules the change for noon
+    # Region ENVIRONMENT CHANGE LOGIC
+    async def _environment_change_check_scheduler(self):
+        """Independent scheduler that runs daily checks regardless of spawning status"""
+        while True:
+            try:
+                # todo: update when we go to the new environments outside of est timezone
+                current_time = datetime.datetime.now(pytz.UTC).astimezone(self.current_environment.timezone)
+                environment_change_checked_for_today = get_game_state_manager().get_environment_change_date() == current_time.strftime('%Y-%m-%d')
+
+                # Check for environment change at 11 AM
+                if current_time.hour == 11 and not environment_change_checked_for_today:
+                    print("Running environment change cycle check...")
+                    get_game_state_manager().set_shop_date(datetime.datetime.now().strftime('%Y-%m-%d'))
+                    await self._handle_environment_change_cycle(current_time)
+
+                # Wait one hour before checking again
+                await asyncio.sleep(3600)  # 1 hour
+
+            except Exception as e:
+                print(f"Error in daily scheduler: {e}")
+                await asyncio.sleep(300)  # Wait 5 minutes before retrying
     async def _handle_environment_change_cycle(self, current_time: datetime.datetime = None):
-        environment_change_check_time = 11
+        # Decide if we are staying in the same environment or switching, 50/50 chance
+        should_change_environment = flip_coin(total_iterations=1)
 
-        # Check for environment change at 11 am
-        if current_time.hour == environment_change_check_time and not self.environment_change_checked_for_today:
-            self.environment_change_checked_for_today = True
+        # USE THIS FOR FORCING SPECIFIC ENVIRONMENT
+        # should_change_environment = get_game_state_manager().get_current_environment()[0] == 1
 
-            # Decide if we are staying in the same environment or switching, 50/50 chance
-            should_change_environment = flip_coin(total_iterations=1)
+        if not should_change_environment:
+            return
 
-            # USE THIS FOR FORCING SPECIFIC ENVIRONMENT
-            # should_change_environment = get_game_state_manager().get_current_environment()[0] == 1
-
-            if not should_change_environment:
-                return
-
-            # If we are changing environments, get a new random environment
+        # If we are changing environments, get a new random environment
+        new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
+        while new_environment.dex_no == self.current_environment.dex_no:
             new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
-            while new_environment.dex_no == self.current_environment.dex_no:
-                new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
-            self.pending_environment = new_environment
+        self.pending_environment = new_environment
 
-            # Schedule environment change for noon today in a separate thread
-            threading.Thread(target=self._schedule_environment_change, args=(), daemon=True).start()
-            self.environment_changed_today = current_time.date()
+        # Schedule environment change for noon today in a separate thread
+        threading.Thread(target=self._schedule_environment_change, args=(), daemon=True).start()
+        self.environment_changed_today = current_time.date()
 
-            # Announce the environment change in the spawn channel
-            await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-                f"\n\n# __⚠️✈️ **Travel Advisory️** ✈️⚠️__ \n The environment will change to: \n## **🌍 {new_environment.name} at noon! 🌍**",
-                files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ]
-            )
+        # Announce the environment change in the spawn channel
+        await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(f"\n\n# __⚠️✈️ **Travel Advisory️** ✈️⚠️__ \n The environment will change to: \n## **🌍 {new_environment.name} at noon! 🌍**", files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ])
+
+
     def _schedule_environment_change(self):
         est = pytz.timezone('US/Eastern')
         current_time = datetime.datetime.now(est)
@@ -343,3 +353,5 @@ class CreatureSpawnerHandler:
 
             # Interrupt current sleep to apply new environment immediately
             self.spawn_event.set()
+
+

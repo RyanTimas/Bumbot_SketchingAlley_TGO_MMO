@@ -91,21 +91,24 @@ class CreatureEncounterView(View):
             total_catches_for_variant_in_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=interaction.user.id, creature_id=self.creature.creature_id, environment_dex_no=self.environment.dex_no)
             total_mythical_catches_for_variant = get_tgommo_db_handler().get_total_mythical_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
 
-            message = (
-                f"You have caught **{total_catches_for_species}** {self.creature.name}(s) \n"
-                f"You have caught **{total_catches_for_variant}** of this variant! \n"
-                f"You have caught **{total_catches_for_variant_in_environment}** of this  in this environment! \n"
-                f"You have caught **{total_mythical_catches_for_variant}** Mythical {self.creature.name}(s)!"
-            )
-
+            # Check for complete message overrides first
             if total_catches_for_species == 0:
                 message = f"# ‼️You've never caught this creature before!‼️"
-            elif total_catches_for_variant == 0:
-                message = f"🔥You never caught this form for this creature before!🔥"
-            elif total_catches_for_variant_in_environment == 0:
-                message = f"🌎You've never caught this creature in this environment before!🌎"
             elif total_mythical_catches_for_variant == 0 and self.creature.local_rarity == MYTHICAL:
                 message = f"# ⭐You've never caught the Mythical form of this creature before!⭐"
+            else:
+                # Build the detailed message with conditional formatting
+                creature_name = f"{self.creature.full_name}" + (f" ({self.creature.variant_name})" if self.creature.variant_name else "")
+                variant_line = "‼️You never caught this form for this creature before!🔥" if total_catches_for_variant == 0 else f"🔥Catches For Variant: **{total_catches_for_variant}**"
+                environment_line = "‼️You've never caught this creature in this environment before!🌎" if total_catches_for_variant_in_environment == 0 else f"🌎 Catches For Variant in Environment: **{total_catches_for_variant_in_environment}**"
+
+                message = (
+                    f"# 🔍 {creature_name} - Total Catches: **{total_catches_for_species}**\n"
+                    f"### * {variant_line}\n"
+                    f"### * {environment_line}\n"
+                    f"### * ⭐ Mythical catches For Variant: **{total_mythical_catches_for_variant}**"
+                )
+
             await interaction.response.send_message(message, files=[convert_to_png(self.creature.creature_image, file_name="creature_img.png")], ephemeral=True)
         return callback
 

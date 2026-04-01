@@ -128,7 +128,7 @@ def get_quest_avatar_records():
         ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, 'Michelangelo', 'Teenage Mutant Ninja Turtles',),
         ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, 'Donatello', 'Teenage Mutant Ninja Turtles',),
         # WAVE 1
-        ('Q7', 'Gold/ Silver Protagonists', AVATAR_TYPE_QUEST, 'HGSS', 'Pokemon', 0, True,),
+        ('Q7', 'Gold/Silver & Crystal Protagonists', AVATAR_TYPE_QUEST, 'GSC', 'Pokemon', 0, True,),
         ('Q7a', 'Gold', AVATAR_TYPE_QUEST, 'Gold', 'Pokemon',),
         ('Q7b', 'Kris', AVATAR_TYPE_QUEST, 'Kris', 'Pokemon',),
         ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
@@ -152,6 +152,30 @@ def get_quest_avatar_records():
         ('Q21', 'Spider-Man', AVATAR_TYPE_QUEST, 'SpiderMan', 'Marvel',),
         ('Q22', 'Cynthia', AVATAR_TYPE_QUEST, 'Cynthia', 'Pokemon',),
         ('Q23', 'Marceline', AVATAR_TYPE_QUEST, 'Marceline', 'Adventure Time',),
+        # WAVE 4
+        ('Q24', 'Mickey Mouse', AVATAR_TYPE_QUEST, 'MickeyMouse', 'Mickey Mouse',),
+        ('Q25', 'Betel Geuse', AVATAR_TYPE_QUEST, 'Beetlejuice', 'Beetlejuice',),
+        ('Q26', 'XLR8', AVATAR_TYPE_QUEST, 'XLR8', 'Ben 10',),
+        ('Q27', 'Stinkfly', AVATAR_TYPE_QUEST, 'Stinkfly', 'Ben 10',),
+        ('Q28', 'Gray Matter', AVATAR_TYPE_QUEST, 'GrayMatter', 'Ben 10',),
+        ('Q29', 'King K Rool', AVATAR_TYPE_QUEST, 'KingKRool', 'Donkey Kong',),
+        ('Q30', 'Funky Kong', AVATAR_TYPE_QUEST, 'KingKRool', 'Donkey Kong',),
+        ('Q31', 'Edelgard', AVATAR_TYPE_QUEST, 'Edelgard', 'Fire Emblem',),
+        ('Q32', 'Dimitri', AVATAR_TYPE_QUEST, 'Dimitri', 'Fire Emblem',),
+        ('Q33', 'Claude', AVATAR_TYPE_QUEST, 'Claude', 'Fire Emblem',),
+        ('Q34', 'Fox McCloud', AVATAR_TYPE_QUEST, 'Fox', 'Star Fox',),
+        ('Q35', 'Falco Lombardi', AVATAR_TYPE_QUEST, 'Falco', 'Star Fox',),
+        ('Q36', 'Big Boss', AVATAR_TYPE_QUEST, 'BigBoss', 'MetalGear',),
+        ('Q37', 'Solid Snake', AVATAR_TYPE_QUEST, 'SolidSnake', 'MetalGear',),
+        ('Q38', 'Buck Bumble', AVATAR_TYPE_QUEST, 'BuckBumble', 'Buck Bumble',),
+        ('Q39', 'Miss Piggy', AVATAR_TYPE_QUEST, 'MissPiggy', 'Muppets',),
+        ('Q40', 'Mr. Krabs', AVATAR_TYPE_QUEST, 'MrKrabs', 'Spongebob Squarepants',),
+        ('Q41', 'Sandy Cheeks', AVATAR_TYPE_QUEST, 'SandyCheeks', 'Spongebob Squarepants',),
+        ('Q42', 'Felix the Cat', AVATAR_TYPE_QUEST, 'FelixTheCat', 'Felix the Cat',),
+        ('Q43', 'Snoopy', AVATAR_TYPE_QUEST, 'Snoopy', 'Peanuts',),
+        ('Q44', 'Marmaduke', AVATAR_TYPE_QUEST, 'Marmaduke', 'Marmaduke',),
+        ('Q45', 'Dwayne LaFontant', AVATAR_TYPE_QUEST, 'DwayneLaFontant', 'Over the Hedge',),
+        ('Q46', 'Marcus', AVATAR_TYPE_QUEST, 'Marcus', 'Roblox',),
     ]
     return quest_avatars
 
@@ -363,31 +387,59 @@ def insert_user_avatar_records(avatar_data, queryHandler):
 def insert_user_avatar_unlock_condition_records(queryHandler):
     avatar_data = [
         # COLLECTION QUESTS
-        ('Donkey Kong', ('Q1', AVATAR_DONKEY_KONG_QUEST_QUERY, 20)),
-        ('Big Bird', ('Q2', AVATAR_BIG_BIRD_QUEST_QUERY, 18)),
-        ('Gex', ('Q3', AVATAR_GEX_QUEST_QUERY, 3)),
-        ('Kermit', ('Q4', AVATAR_KERMIT_QUEST_QUERY, 2)),
-        ('Hornet', ('Q5', AVATAR_HORNET_QUEST_QUERY, 5)),
+        ('Donkey Kong', ('Q1', AVATAR_DISTINCT_MAMMAL_QUEST_QUERY, 20)),
+        ('Big Bird', ('Q2', AVATAR_DISTINCT_BIRD_QUEST_QUERY, 18)),
+        ('Gex', ('Q3', AVATAR_DISTINCT_REPTILE_QUEST_QUERY, 3)),
+        ('Kermit', ('Q4', AVATAR_DISTINCT_AMPHIBIAN_QUEST_QUERY, 2)),
+        ('Hornet', ('Q5', AVATAR_DISTINCT_BUG_QUEST_QUERY, 5)),
         ('TMNT', ('Q6', AVATAR_VARIANTS_QUEST_1_QUERY, 10)),
         ('HGSS', ('Q7', AVATAR_MYTHICAL_QUEST_QUERY, 1)),
         ('Homer', ('Q8', AVATAR_MYTHICAL_QUEST_QUERY, 5)),
         # WAVE 2
         ('Mordecai', ('Q10', AVATAR_MORDECAI_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
         ('Rigby', ('Q11', AVATAR_RIGBY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Squirrel Girl', ('Q12', AVATAR_SQUIRRELGIRL_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Noko Shikanoko', ('Q13', AVATAR_NOKOSHIKANOKO_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Squirrel Girl', ('Q12', AVTAR_SQUIRRELS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Noko Shikanoko', ('Q13', AVATAR_DEER_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Huntrix', ('Q14', AVATAR_LEGENDARY_QUEST_QUERY, 3)),
         ('Shuma Gorath', ('Q15', AVATAR_TOTAL_EPIC_QUEST_QUERY, 10)),
-        ('Gary', ('Q16', AVATAR_GARY_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+        ('Gary', ('Q16', AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
         # WAVE 3
         ('Bugs', ('Q17', AVATAR_BUGS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Daffy', ('Q18', AVATAR_DAFFY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Puss in Boots', ('Q19', AVATAR_PUSSINBOOTS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Puss in Boots', ('Q19', AVATAR_FELINES_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
-        ('Spider-Man', ('Q21', AVATAR_SPIDERMAN_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
-        ('Cynthia', ('Q22', AVATAR_CYNTHIA_QUEST_QUERY, 100)),
-        # WAVE 3.5
+        ('Spider-Man', ('Q21', AVATAR_SPIDERS_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+        ('Cynthia', ('Q22', AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY, 100)),
         ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
+        # WAVE 4
+        ('Mickey Mouse', ('Q24', AVATAR_MICKEY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Betel Geuse', ('Q25', AVATAR_BEETLEJUICE_QUEST_QUERY, 33)),
+
+        ('XLR8', ('Q26', AVATAR_TOTAL_REPTILE_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Stinkfly', ('Q27', AVATAR_TOTAL_INSECT_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Gray Matter', ('Q28', AVATAR_TOTAL_AMPHIBIAN_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+
+        ('King K Rool', ('Q29', AVATAR_CROCODILIANS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Funky Kong', ('Q30', AVATAR_DISTINCT_FL_QUERY, 500)),
+
+        ('Edelgard', ('Q31', AVATAR_TOTAL_BIRD_QUEST_QUERY, 300)),
+        ('Dimitri', ('Q32', AVATAR_FELINES_QUEST_QUERY, 300)),
+        ('Claude', ('Q33', AVATAR_DEER_QUEST_QUERY, 300)),
+
+        ('Fox McCloud', ('Q34', AVATAR_FOX_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
+        ('Falco Lombardi', ('Q35', AVATAR_BIRDS_OF_PRAY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
+
+        ('Big Boss', ('Q36', AVATAR_SNAKES_QUEST_QUERY, 120, True)),
+        ('Solid Snake', ('Q37', AVATAR_SNAKES_QUEST_QUERY, 85)),
+        ('Buck Bumble', ('Q38', AVATAR_BUCK_BUMBLE_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Miss Piggy', ('Q39', AVATAR_MISS_PIGGY_QUEST_QUERY, 20)),
+        ('Mr. Krabs', ('Q40', AVATAR_TOTAL_CRUSTACEAN_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Sandy Cheeks', ('Q41', AVTAR_SQUIRRELS_QUEST_QUERY, 200)),
+        ('Felix the Cat', ('Q42', AVATAR_FELINES_QUEST_QUERY, 200)),
+        ('Snoopy', ('Q43', AVATAR_SNOOPY_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
+        ('Marmaduke', ('Q44', AVATAR_MARMADUKE_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
+        ('Dwayne LaFontant', ('Q45', AVATAR_DWAYNE_LAFONTANT_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Marcus', ('Q46', AVATAR_MARCUS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
 
         # Transcendant Avatars
         ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY, 1, True)),

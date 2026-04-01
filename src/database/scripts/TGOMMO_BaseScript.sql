@@ -19,6 +19,7 @@ SELECT * from tgommo_collection tc;
 
 
 
+SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 5, 56, 66, 67, 167);
 
 
 

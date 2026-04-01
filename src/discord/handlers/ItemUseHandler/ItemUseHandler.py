@@ -46,7 +46,7 @@ class ItemUseHandler:
 
     '''---- ITEM EFFECT HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_nametag(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        nametag_view = NametagUseView(user=user, item_use_handler=self)
+        nametag_view = NametagUseView(target_user=user, item_use_handler=self)
         await interaction.followup.send(f"You used the nametag! You can now rename your creature.", view=nametag_view, ephemeral=True)
         return False, None
 

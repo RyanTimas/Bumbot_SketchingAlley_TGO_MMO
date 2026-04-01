@@ -54,6 +54,13 @@ AVATAR_TYPE_SORT_ORDER = {
     AVATAR_TYPE_CUSTOM: 8
 }
 
+AVATAR_SHOP_PRICE_COMMON = 100
+AVATAR_SHOP_PRICE_UNCOMMON = 250
+AVATAR_SHOP_PRICE_RARE = 375
+AVATAR_SHOP_PRICE_EPIC = 500
+AVATAR_SHOP_PRICE_LEGENDARY = 1000
+AVATAR_SHOP_PRICE_MYTHICAL = 2500
+
 # endregion
 
 """ ----- CREATURES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

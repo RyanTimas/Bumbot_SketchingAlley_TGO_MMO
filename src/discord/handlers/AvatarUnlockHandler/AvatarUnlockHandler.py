@@ -43,6 +43,16 @@ class AvatarUnlockHandler:
             (("mike", "ehrmantraut", "finger"), ("Mike Ehrmantraut", "S8", "MikeEhrmantraut")),
             (("porky", "pig"), ("Porky Pig", "S9", "Porky")),
             (("jason", "vorhees", "13"), ("Jason Vorhees", "S10", "JasonVorhees")),
+            # WAVE 3
+            (("wild", "mutt"), ("Wildmutt", "S11", "Wildmutt")),
+            (("rip", "jaw"), ("Ripjaws", "S12", "Ripjaws")),
+            (("up", "grade"), ("Upgrade", "S13", "Upgrade")),
+            (("jake", "bacon", "pancake"), ("Jake the Dog", "S14", "JakeTheDog")),
+            (("patrick", "star"), ("Patrick Star", "S15", "PatrickStar")),
+            (("plankton", "sheldon"), ("Plankton", "S16", "Plankton")),
+            (("tony", "tiger", "frosted", "flakes"), ("Plankton", "S17", "Plankton")),
+            (("incredible", "hulk", "bruce", "banner"), ("Hulk", "S18", "Hulk")),
+            (("woodstock"), ("Woodstock", "S19", "Plankton")),
         }
 
         for avatar in avatar_combos:
@@ -54,7 +64,6 @@ class AvatarUnlockHandler:
                     if not any(avatar.avatar_id == secret_avatar.avatar_id for secret_avatar in unlocked_secret_avatars):
                         get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar.avatar_id)
                         await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"))
-                    return
     async  def limited_time_avatar_unlock_handler(self):
         timeline_params = [
             # Holidays

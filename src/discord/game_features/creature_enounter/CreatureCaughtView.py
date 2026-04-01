@@ -12,6 +12,8 @@ class CreatureCaughtView(discord.ui.View):
     def __init__(self, interaction: discord.Interaction, creature_catch_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
         super().__init__(timeout=None)
 
+        self._release_confirmed = False
+
         self.creature_catch_id = creature_catch_id
         self.interaction = interaction
         self.display_index = None
@@ -22,6 +24,13 @@ class CreatureCaughtView(discord.ui.View):
         self.user_profile:TGOPlayer = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.interaction.user.id)
         self.display_creature_ids = [self.user_profile.creature_slot_id_1, self.user_profile.creature_slot_id_2, self.user_profile.creature_slot_id_3, self.user_profile.creature_slot_id_4, self.user_profile.creature_slot_id_5, self.user_profile.creature_slot_id_6, ]
         self.original_display_creature_ids = [self.user_profile.creature_slot_id_1, self.user_profile.creature_slot_id_2, self.user_profile.creature_slot_id_3, self.user_profile.creature_slot_id_4, self.user_profile.creature_slot_id_5, self.user_profile.creature_slot_id_6, ]
+
+        # buttons
+        self.favorite_button = self.create_favorite_button(row=0)
+        self.release_button = self.create_release_button(row=0)
+        self.release_confirmation_button = self.create_release_confirmation_button(row=0)
+        self.nickname_button = self.create_nickname_button(row=1)
+        self.display_creature_button = self.create_display_creature_button(row=1)
 
         # modals
         self.nickname_input = TextInput(label="Nickname", placeholder="Enter nickname (12 chars max)", max_length=20, required=True)
@@ -59,38 +68,35 @@ class CreatureCaughtView(discord.ui.View):
         await interaction.followup.send(f"Display index set to: {self.display_index + 1}", ephemeral=True)
 
     def create_release_button(self, row=0):
-        if hasattr(self, '_release_confirmed') and self._release_confirmed:
-            button = Button(label="ARE YOU SURE? THIS CANNOT BE UNDONE!", style=discord.ButtonStyle.danger, emoji="⚠️", row=row)
-        else:
-            button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
+        button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
         button.callback = self.release_button_callback
         return button
     async def release_button_callback(self, interaction: discord.Interaction):
-        # Check if this is the confirmation click
-        if hasattr(self, '_release_confirmed') and self._release_confirmed:
-            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=interaction.user.id)
+        await interaction.response.defer()
+        self._release_confirmed = True
+        self.refresh_view()
+        await interaction.edit_original_response(view=self)
 
-            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
-            if not currency_earned:
-                await interaction.response.send_message("Failed to release creature", ephemeral=True)
-                return
+    def create_release_confirmation_button(self, row=0):
+        button = Button(label="ARE YOU SURE? THIS CANNOT BE UNDONE!", style=discord.ButtonStyle.danger, emoji="⚠️", row=row)
+        button.callback = self.release_confirmation_callback
+        return button
+    async def release_confirmation_callback(self, interaction: discord.Interaction):
+        self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=interaction.user.id)
+        currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.interaction.user.id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
-            # Disable all buttons and create results file
-            for item in self.children:
-                item.disabled = True
+        if not currency_earned:
+            await interaction.response.send_message("Failed to release creature", ephemeral=True)
+            return
 
-            release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.interaction.user.id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+        for item in self.children:
+            item.disabled = True
 
-            await interaction.response.edit_message(view=self)
-            await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
-        else:
-            # First click - show confirmation
-            await interaction.response.defer()
+        release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.interaction.user.id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
 
-            self._release_confirmed = True
-            self.refresh_view()
-            await interaction.edit_original_response(view=self)
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
 
     def create_favorite_button(self, row=0):
         button = Button(label="Favorite", style=discord.ButtonStyle.success, emoji="❤️", row=row)
@@ -147,11 +153,13 @@ class CreatureCaughtView(discord.ui.View):
         return
     def rebuild_view(self):
         self.clear_items()  # Clear existing items first
-        self.add_item(self.create_favorite_button(row=0))
-        self.add_item(self.create_release_button(row=0))
-        self.add_item(self.create_nickname_button(row=1))
-        self.add_item(self.create_display_creature_button(row=1))
-        self.add_item(self.create_display_creature_index_dropdown(row=2))
+        self.add_item(self.favorite_button)
+
+        self.add_item(self.release_confirmation_button if self._release_confirmed else self.release_button)
+
+        self.add_item(self.nickname_button)
+        self.add_item(self.display_creature_button)
+        self.add_item(self.create_display_creature_index_dropdown(row=2))  # Still create fresh since content changes
 
     # MISC FUNCTIONS
     def handle_existing_display_creature_removal(self, creature_id: int, user_id: int):

@@ -114,7 +114,7 @@ class CreatureEncounterView(View):
 
     # Support Functions
     async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
-        nickname_view = CreatureCaughtView(interaction=interaction, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
+        nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
         await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}",  view=nickname_view, ephemeral=True)
 
     async def _handle_user_catch_limits(self, user_id, creature_id):

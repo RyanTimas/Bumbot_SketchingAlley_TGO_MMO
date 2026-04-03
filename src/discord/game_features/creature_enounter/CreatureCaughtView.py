@@ -125,17 +125,18 @@ class CreatureCaughtView(discord.ui.View):
         user_details_modal = Modal(title="Update Profile Details")
         user_details_modal.add_item(self.nickname_input)
 
-        user_details_modal.on_submit = self.nickname_modal_on_submit
+        user_details_modal.on_submit = self.nickname_modal_on_submit()
         return user_details_modal
-    async def nickname_modal_on_submit(self, interaction: discord.Interaction):
-        get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
-        self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
-        await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
-        await interaction.response.send_message(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
-
-        # edit original caught creature notif to show nickname
-        await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(nickname=self.nickname_input.value)[0])
-
+    def nickname_modal_on_submit(self):
+        async def callback(interaction: discord.Interaction):
+            await interaction.response.defer()
+            get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
+            self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
+            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
+            await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
+            # edit original caught creature notif to show nickname
+            await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(nickname=self.nickname_input.value)[0])
+        return callback
 
     # CREATE DROPDOWNS
     def create_display_creature_index_dropdown(self, row=1):

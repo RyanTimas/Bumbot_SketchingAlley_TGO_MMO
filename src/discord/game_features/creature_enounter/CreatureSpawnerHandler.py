@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 import pytz
 from PIL import Image
 from discord.ext.commands import Bot
-from sqlalchemy.util import await_only
 
 from src.commons.CommonFunctions import flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager

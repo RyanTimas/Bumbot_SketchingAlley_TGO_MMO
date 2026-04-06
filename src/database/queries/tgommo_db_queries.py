@@ -17,6 +17,8 @@ TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_invento
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 
 TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold, is_secret) VALUES(?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_AVATAR_NICKNAME_LINK = """INSERT OR IGNORE INTO tgommo_user_avatar_nickname_link (avatar_id, nickname_keyword) VALUES(?, ?);"""
+
 TGOMMO_INSERT_COLLECTION = """INSERT OR IGNORE INTO tgommo_collection (collection_id, title, description, image_path, background_color_path, total_count_query, caught_count_query, completion_reward_1, completion_reward_2, completion_reward_3, is_active) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 # endregion
 
@@ -105,6 +107,8 @@ TGOMMO_SELECT_USER_AVATAR_BASE = '''
         ON auc.avatar_id = ua.avatar_id
     LEFT JOIN tgommo_user_profile_avatar_link upal
     	ON upal.avatar_id = ua.avatar_id
+    LEFT JOIN tgommo_user_avatar_nickname_link uanl
+        ON uanl.avatar_id = ua.avatar_id
     WHERE 
 '''
 
@@ -339,6 +343,7 @@ TGOMMO_DELETE_ALL_RECORDS_FROM_INVENTORY_ITEM = "DELETE FROM tgommo_inventory_it
 
 TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_UNLOCK_CONDITIONS = "DELETE FROM tgommo_user_avatar_unlock_condition;"
 TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS_LINKS = "DELETE FROM tgommo_user_profile_avatar_link;"
+TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_NICKNAME_LINKS = "DELETE FROM tgommo_user_avatar_nickname_link;"
 
 TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS = "DELETE FROM tgommo_collection;"
 # endregion
@@ -398,10 +403,16 @@ TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX = "ua.avatar_type = ?"
 # region user_avatar_link suffixes
 TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX = " upal.user_id = ?"
 TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX = " ua.avatar_id = ?"
+TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX = " NOT EXISTS (SELECT 1 FROM tgommo_user_profile_avatar_link upal WHERE upal.avatar_id = ua.avatar_id)"
 # endregion
 # region tgommo_user_avatar_unlock_condition suffixes
 TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX= "auc.unlock_query is not Null"
-TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX = "GROUP BY ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry, ua.img_root"
+TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX = " GROUP BY ua.avatar_num, ua.avatar_id, ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry, ua.img_root"
+# endregion
+# region tgommo_user_avatar_nickname_link suffixes
+TGOMMO_SELECT_USER_AVATAR_BY_NICKNAME_SUFFIX= "uanl.nickname_keyword = ?"
+TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX= " ? LIKE '%' || uanl.nickname_keyword || '%'"
+TGOMMO_AVATAR_NICKNAME_LINK_GROUP_BY_DISTINCT_AVATAR_SUFFIX = " GROUP BY uanl.avatar_id"
 # endregion
 
 # region tgommo_inventory_item suffixes

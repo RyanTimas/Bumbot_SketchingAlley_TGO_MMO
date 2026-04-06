@@ -196,6 +196,13 @@ TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE = """CREATE TABLE IF NOT EXISTS tgom
     PRIMARY KEY (avatar_id),
     FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
 )"""
+TGOMMO_CREATE_AVATAR_NICKNAME_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_avatar_nickname_link (
+    avatar_id TEXT,
+    nickname_keyword TEXT DEFAULT '',
+    UNIQUE(avatar_id, nickname_keyword),
+    FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
+)"""
+
 
 TGOMMO_CREATE_COLLECTION_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_collection (
     collection_id INTEGER PRIMARY KEY AUTOINCREMENT,

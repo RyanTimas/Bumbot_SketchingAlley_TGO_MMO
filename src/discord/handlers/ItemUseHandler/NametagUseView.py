@@ -67,7 +67,7 @@ class NametagUseView(View):
             await interaction.followup.send(f"<@{self.target_user.user_id}> ({self.target_user.nickname}) used a nametag to rename their creature!", files=[self.item_use_handler.get_image_for_item(self.nametag_item)])
 
             # Check if the new nickname has unlocked a new secret avatar
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.new_nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
+            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.new_nickname_input.value, interaction=interaction).nickname_avatar_unlock_handler()
         except ValueError:
             await interaction.response.send_message("Please enter a valid numeric catch ID.", ephemeral=True)
         except Exception as e:

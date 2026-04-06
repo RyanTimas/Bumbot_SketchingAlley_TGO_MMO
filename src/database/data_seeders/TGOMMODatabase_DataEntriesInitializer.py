@@ -1,5 +1,4 @@
-from src.database.data_seeders.Avatar_DataEntriesInitializer import define_avatar_records, insert_user_avatar_records, \
-    insert_user_avatar_unlock_condition_records
+from src.database.data_seeders.Avatar_DataEntriesInitializer import insert_avatar_data_entries
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.TGO_MMO_creature_constants import *
 from src.database.queries.tgommo_avatar_quest_db_queries import *
@@ -37,6 +36,7 @@ class TGOMMODatabase_DataEntriesInitializer:
         self.queryHandler.execute_query(TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE)
 
         self.queryHandler.execute_query(TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE)
+        self.queryHandler.execute_query(TGOMMO_CREATE_AVATAR_NICKNAME_LINK_TABLE)
         self.queryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
     def clear_old_db_table_data(self):
         self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())
@@ -46,6 +46,7 @@ class TGOMMODatabase_DataEntriesInitializer:
         self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_COLLECTIONS, params=())
         self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_AVATAR, params=())
         self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_INVENTORY_ITEM, params=())
+        self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_AVATAR_NICKNAME_LINKS, params=())
         # self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_USER_PROFILE_AVATARS, params=())
     def insert_db_table_data(self):
         # insert creature records
@@ -54,8 +55,7 @@ class TGOMMODatabase_DataEntriesInitializer:
         
         self.insert_environment_records()
 
-        define_avatar_records(self.queryHandler)
-        insert_user_avatar_unlock_condition_records(queryHandler=self.queryHandler)
+        insert_avatar_data_entries(self.queryHandler)
 
         self.insert_collection_records()
         self.insert_item_records()

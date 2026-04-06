@@ -132,9 +132,10 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.response.defer()
             get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
             self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).check_avatar_unlock_conditions()
-            await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
+            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).nickname_avatar_unlock_handler()
+
             # edit original caught creature notif to show nickname
+            await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
             await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(nickname=self.nickname_input.value)[0])
         return callback
 

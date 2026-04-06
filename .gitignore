@@ -208,3 +208,5 @@ cython_debug/
 /.idea/copilot.data.migration.edit.xml
 output/
 logs/
+
+/bumbot_env/

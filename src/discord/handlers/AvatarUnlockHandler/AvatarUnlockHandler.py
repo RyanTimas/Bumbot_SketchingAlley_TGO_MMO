@@ -16,8 +16,6 @@ class AvatarUnlockHandler:
         self.interaction = interaction
 
     async def check_avatar_unlock_conditions(self, creature:TGOCreature =None):
-        if self.nickname:
-            await self.nickname_avatar_unlock_handler()
         await self.quest_avatar_unlock_handler()
         await self.limited_time_avatar_unlock_handler()
 
@@ -25,45 +23,14 @@ class AvatarUnlockHandler:
         if creature:
             pass
 
-
+    # Avatar Type Unlock Handlers
     async def nickname_avatar_unlock_handler(self):
-        unlocked_secret_avatars = get_tgommo_db_handler().get_unlocked_avatars_for_server()
-        player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id)
-
-        avatar_combos = {
-            # WAVE 1
-            (("jordo",), ("Jordo", "S1", "Jordo")),
-            (("miku",), ("Hatsune Miku", "S2", "Miku")),
-            (("garfield",), ("Garfield", "S3", "Garfield")),
-            (("samus", "aran", "metroid"),  ("Samus Aran", "S4", "Samus")),
-            (("boss", "baby"), ("the Boss Baby", "S5", "BossBaby")),
-            (("white", "walter"), ("Walter White", "S6", "WalterWhite")),
-            # WAVE 2
-            (("pink", "jesse"), ("Jesse Pinkman", "S7", "JessePinkman")),
-            (("mike", "ehrmantraut", "finger"), ("Mike Ehrmantraut", "S8", "MikeEhrmantraut")),
-            (("porky", "pig"), ("Porky Pig", "S9", "Porky")),
-            (("jason", "vorhees", "13"), ("Jason Vorhees", "S10", "JasonVorhees")),
-            # WAVE 3
-            (("wild", "mutt"), ("Wildmutt", "S11", "Wildmutt")),
-            (("rip", "jaw"), ("Ripjaws", "S12", "Ripjaws")),
-            (("up", "grade"), ("Upgrade", "S13", "Upgrade")),
-            (("jake", "bacon", "pancake"), ("Jake the Dog", "S14", "JakeTheDog")),
-            (("patrick", "star"), ("Patrick Star", "S15", "PatrickStar")),
-            (("plankton", "sheldon"), ("Plankton", "S16", "Plankton")),
-            (("tony", "tiger", "frosted", "flakes"), ("Plankton", "S17", "Plankton")),
-            (("incredible", "hulk", "bruce", "banner"), ("Hulk", "S18", "Hulk")),
-            (("woodstock"), ("Woodstock", "S19", "Plankton")),
-        }
-
-        for avatar in avatar_combos:
-            unlock_terms = avatar[0]
-            avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar[1][1])
-
-            for unlock_term in unlock_terms:
-                if unlock_term in self.nickname.lower():
-                    if not any(avatar.avatar_id == secret_avatar.avatar_id for secret_avatar in unlocked_secret_avatars):
-                        get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar.avatar_id)
-                        await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"))
+        unlocked_avatars = get_tgommo_db_handler().get_avatars_by_nickname(nickname=self.nickname.lower())
+        if unlocked_avatars:
+            player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.user_id)
+            for avatar in unlocked_avatars:
+                get_tgommo_db_handler().unlock_avatar_for_server(avatar_id=avatar.avatar_id)
+                await self.interaction.channel.send(f"The secret avatar *{avatar.name}* has been unlocked for the server thanks to @{player.nickname}!!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"))
     async  def limited_time_avatar_unlock_handler(self):
         timeline_params = [
             # Holidays
@@ -110,15 +77,20 @@ class AvatarUnlockHandler:
             ("Crewmate (Geoff Keighley)", "34", datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC), (self.user_id,)),
         ]
 
-        for timeline_param in timeline_params:
-            avatar_id = f"E{timeline_param[1]}"
-            start_time = timeline_param[2]
-            end_time = timeline_param[3]
+        # Early filtering - only check avatars within time window
+        active_avatars = [(param[0], f"E{param[1]}", param[1]) for param in timeline_params if param[2] <= datetime.datetime.now(pytz.UTC) <= param[3]]
 
-            current_time = datetime.datetime.now(pytz.UTC)
-            if start_time <= current_time <= end_time and not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=avatar_id, user_id=self.user_id):
+        # No active avatars, exit early
+        if not active_avatars:
+            return
+
+        active_avatar_ids = [f"E{avatar_data[2]}" for avatar_data in active_avatars]
+        # Get all unlocked avatar IDs as a set for O(1) lookup
+        unlocked_avatar_ids = [avatar.avatar_id for avatar in get_tgommo_db_handler().get_unlocked_avatars_by_user_id(user_id=self.user_id) if avatar.avatar_id not in active_avatar_ids]
+
+        for name, avatar_id, _ in active_avatars:
+            if avatar_id in unlocked_avatar_ids:
                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=avatar_id, user_id=self.user_id)
-
                 avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar_id)
                 await self.interaction.followup.send(f"You have unlocked the special limited time avatar: {avatar.name}!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
     async  def quest_avatar_unlock_handler(self):

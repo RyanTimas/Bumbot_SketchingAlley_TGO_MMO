@@ -124,7 +124,8 @@ class UpdatePlayerProfileView(BaseView):
             await self.original_message.edit(attachments=[self.reload_image()], view=self.original_view)
             await interaction.followup.send("Changes successfully saved!", ephemeral=True)
 
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction).check_avatar_unlock_conditions()
+            # Check if the new nickname has unlocked a new secret avatar
+            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction).nickname_avatar_unlock_handler()
             await interaction.message.delete(delay=2)
         return callback
 

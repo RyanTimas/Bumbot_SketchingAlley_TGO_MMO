@@ -479,6 +479,10 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
 
+    def get_avatars_by_nickname(self, nickname='', exclude_unlocked_avatars=True, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX} {f"AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}" if exclude_unlocked_avatars else ""} {TGOMMO_AVATAR_NICKNAME_LINK_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(nickname,), convert_to_object=convert_to_object, expect_multiple=True)
+
     def get_random_shop_avatars(self, count=3, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=('Shop', count), convert_to_object=convert_to_object,expect_multiple=True)

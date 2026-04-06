@@ -6,7 +6,7 @@ from discord.ui import View, Button, Modal
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_display_creature_collection_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.objects import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import ITEM_ID_NAMETAG
 
@@ -67,7 +67,7 @@ class NametagUseView(View):
             await interaction.followup.send(f"<@{self.target_user.user_id}> ({self.target_user.nickname}) used a nametag to rename their creature!", files=[self.item_use_handler.get_image_for_item(self.nametag_item)])
 
             # Check if the new nickname has unlocked a new secret avatar
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.new_nickname_input.value, interaction=interaction).nickname_avatar_unlock_handler()
+            await check_for_secret_avatars(user_id=interaction.user.id, nickname=self.new_nickname_input.value, interaction=interaction)
         except ValueError:
             await interaction.response.send_message("Please enter a valid numeric catch ID.", ephemeral=True)
         except Exception as e:

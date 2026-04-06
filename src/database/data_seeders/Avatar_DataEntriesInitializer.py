@@ -249,7 +249,6 @@ def get_transcendant_avatar_records():
 def insert_user_avatar_records(avatar_data, queryHandler):
     for index, avatar in enumerate(avatar_data):
         # add avatar_num as first element in tuple, starting from 1
-        print(f"Inserting avatar record for {avatar[1]} with avatar_num {index + 1}")
         avatar = (index + 1,) + avatar
 
         # add default value for shop_price

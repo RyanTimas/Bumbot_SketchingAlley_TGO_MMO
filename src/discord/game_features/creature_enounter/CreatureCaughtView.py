@@ -4,7 +4,7 @@ from discord.ui import Button, Modal, TextInput, Select
 from src.commons.CommonFunctions import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.handlers.CreatureReleaseService.CreatureReleaseService import CreatureReleaseService
 from src.discord.objects.TGOPlayer import TGOPlayer
 
@@ -26,7 +26,7 @@ class CreatureCaughtView(discord.ui.View):
         self.original_display_creature_ids = [getattr(self.message_author, f'creature_slot_id_{i}') for i in range(1, 7)]
 
         # use
-        self._release_confirmed = False
+        self.view_disabled = False
 
         # VIEW COMPONENTS
         # buttons
@@ -74,7 +74,6 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.followup.send(f"Display index set to: {self.display_index + 1}", ephemeral=True)
         return callback
 
-
     def create_release_button(self, row=0):
         button = Button(label="Release Creature", style=discord.ButtonStyle.success, emoji="🗑️", row=row)
         button.callback = self.release_button_callback()
@@ -82,7 +81,7 @@ class CreatureCaughtView(discord.ui.View):
     def release_button_callback(self):
         async def callback(interaction: discord.Interaction):
             await interaction.response.defer()
-            self._release_confirmed = True
+            self.view_disabled = True
             self.refresh_view()
             await interaction.edit_original_response(view=self)
         return callback
@@ -134,7 +133,7 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.response.defer()
             get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
             self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction).nickname_avatar_unlock_handler()
+            await check_for_secret_avatars(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction)
 
             # edit original caught creature notif to show nickname
             await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
@@ -159,7 +158,6 @@ class CreatureCaughtView(discord.ui.View):
             self.display_index = int(interaction.data["values"][0])
         return callback
 
-
     # FUNCTIONS FOR UPDATING VIEW STATE
     def refresh_view(self):
         self.update_button_states()
@@ -170,7 +168,7 @@ class CreatureCaughtView(discord.ui.View):
         self.clear_items()  # Clear existing items first
         self.add_item(self.favorite_button)
 
-        self.add_item(self.release_confirmation_button if self._release_confirmed else self.release_button)
+        self.add_item(self.release_confirmation_button if self.view_disabled else self.release_button)
 
         self.add_item(self.nickname_button)
         self.add_item(self.display_creature_button)

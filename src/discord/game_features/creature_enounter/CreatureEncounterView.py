@@ -1,4 +1,6 @@
 import asyncio
+import time
+
 from discord.ui import View
 
 from src.commons.CommonFunctions import convert_to_png, retry_on_ssl_error, \
@@ -6,7 +8,7 @@ from src.commons.CommonFunctions import convert_to_png, retry_on_ssl_error, \
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, check_for_quest_avatars
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -39,24 +41,26 @@ class CreatureEncounterView(View):
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
+            start_time = time.perf_counter()
             await interaction.response.defer()
+
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
 
+            # Double check creature hasn't already been caught while waiting for interaction lock
             async with self.interaction_lock:
-                # handle additional interaction logic here
                 if self.caught:
                     await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                can_catch, catch_message = await self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
-                self.caught = can_catch
-
-                if not can_catch:
+                self.caught, catch_message = self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
+                if not self.caught:
                     await interaction.response.send_message(catch_message, ephemeral=True)
                     return
 
             # generate the successful catch embed
+            await interaction.followup.send(f"Please wait...", ephemeral=True)
+
             self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.spawn_user)
             successful_catch_embed, successful_catch_image, total_xp = self.successful_catch_embed_handler.generate_catch_embed(interaction=interaction)
 
@@ -68,14 +72,23 @@ class CreatureEncounterView(View):
             self.successful_catch_message = await interaction.channel.send(embed=successful_catch_embed, files=[successful_catch_image])
 
             # send a personal message to user confirming the catch & seeing if they have unlocked a new avatar
-            await self.handle_successful_catch_response(interaction, catch_id)
-            await AvatarUnlockHandler(user_id=interaction.user.id, interaction=interaction).check_avatar_unlock_conditions()
+            nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
+
+            # check if player has unlocked any avatars based on their catch and unlock them if they haven't already been unlocked
+            await check_for_event_avatars(user_id=interaction.user.id, interaction=interaction)
+            await check_for_quest_avatars(user_id=interaction.user.id, interaction=interaction)
 
             # delete the original spawn message so nobody else can catch it
             try:
                 await interaction.message.delete()
             except discord.errors.NotFound:
                 print('Message was already deleted, do nothing')
+
+            # once all proccessing is done, send the success message to the user
+            await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
+            end_time = time.perf_counter()
+            execution_time = end_time - start_time
+            print(f"catch_button_callback execution time: {execution_time:.4f} seconds")
         return callback
 
     def is_creature_caught_button(self, row=0):
@@ -113,11 +126,7 @@ class CreatureEncounterView(View):
         return callback
 
     # Support Functions
-    async def handle_successful_catch_response(self, interaction: discord.Interaction, catch_id: int):
-        nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
-        await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}",  view=nickname_view, ephemeral=True)
-
-    async def _handle_user_catch_limits(self, user_id, creature_id):
+    def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
         if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             return False, "Your creature inventory is full! Please release some creatures before catching more.",

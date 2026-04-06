@@ -6,7 +6,7 @@ from src.commons.CommonViewComponents import create_dummy_label_button, create_d
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PLAYER_PROFILE_TAB_CLOSED
-from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 
@@ -125,7 +125,7 @@ class UpdatePlayerProfileView(BaseView):
             await interaction.followup.send("Changes successfully saved!", ephemeral=True)
 
             # Check if the new nickname has unlocked a new secret avatar
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction).nickname_avatar_unlock_handler()
+            await check_for_secret_avatars(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction)
             await interaction.message.delete(delay=2)
         return callback
 

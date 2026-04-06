@@ -94,13 +94,15 @@ class CreatureCaughtView(discord.ui.View):
     def release_confirmation_callback(self):
         async def callback(interaction: discord.Interaction):
             await interaction.response.defer()
-            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=self.message_author.user_id)
-            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.user_id, creature_ids=[self.creature_catch_id], interaction=interaction)
-            if not currency_earned:
-                await interaction.followup.send("Failed to release creature", ephemeral=True)
-                return
+            # disable the view so the user can't double release a creature
             for item in self.children:
                 item.disabled = True
+
+            # set the user's creature to released in the db
+            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=self.message_author.user_id)
+            # figure out how much currency the user should earn from releasing the creature and which items they earned, then update the db accordingly
+            currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.user_id, creature_ids=[self.creature_catch_id], interaction=interaction)
+
             release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.message_author.user_id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
             await interaction.edit_original_response(view=self)
             await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)

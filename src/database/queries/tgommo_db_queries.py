@@ -11,7 +11,7 @@ TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (env
 # Players
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num, item_id, item_name, item_type, item_description, rarity, is_rewardable, img_root, default_uses, shop_price) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, shop_price, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, shop_price, unlock_startdate, unlock_enddate, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
 TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used, last_purchase_date) VALUES (?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
@@ -101,7 +101,8 @@ TGOMMO_SELECT_USER_AVATAR_BASE = '''
         ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry,
         ua.img_root,
         auc.unlock_query, auc.unlock_threshold, auc.is_secret,
-        ua.shop_price
+        ua.shop_price,
+        ua.unlock_startdate, ua.unlock_enddate
     FROM user_avatar ua
     LEFT JOIN tgommo_user_avatar_unlock_condition auc
         ON auc.avatar_id = ua.avatar_id
@@ -399,6 +400,9 @@ TGOMMO_SELECT_USER_PROFILE_BY_USER_ID_SUFFIX = " up.user_id = ?"
 TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_ID_SUFFIX = " ua.avatar_id = ?"
 TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX = " ua.avatar_id LIKE ? || '%' AND ua.avatar_id != ?"
 TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX = "ua.avatar_type = ?"
+TGOMMO_SELECT_USER_AVATAR_BY_NON_NULL_START_DATE_SUFFIX = "ua.unlock_startdate is not Null"
+TGOMMO_SELECT_USER_AVATAR_BY_DATE_BETWEEN_START_AND_END_DATE_SUFFIX = "date('now') BETWEEN ua.unlock_startdate AND ua.unlock_enddate"
+TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX = " GROUP BY ua.avatar_id"
 # endregion
 # region user_avatar_link suffixes
 TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX = " upal.user_id = ?"

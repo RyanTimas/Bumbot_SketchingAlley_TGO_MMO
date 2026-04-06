@@ -160,7 +160,8 @@ class TGOMMODatabaseHandler:
                         is_parent_entry=avatar_details[5],
                         img_root=avatar_details[6],
                         unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9],
-                        shop_price=avatar_details[10]
+                        shop_price=avatar_details[10],
+                        unlock_startdate=avatar_details[11], unlock_enddate=avatar_details[12]
                     )
                 )
         return avatars if expect_multiple else avatars[0]
@@ -478,6 +479,12 @@ class TGOMMODatabaseHandler:
     def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
+    def get_all_limited_time_avatars(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_NON_NULL_START_DATE_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_all_currently_available_limited_time_avatars(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_DATE_BETWEEN_START_AND_END_DATE_SUFFIX} {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
 
     def get_avatars_by_nickname(self, nickname='', exclude_unlocked_avatars=True, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX} {f"AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}" if exclude_unlocked_avatars else ""} {TGOMMO_AVATAR_NICKNAME_LINK_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"

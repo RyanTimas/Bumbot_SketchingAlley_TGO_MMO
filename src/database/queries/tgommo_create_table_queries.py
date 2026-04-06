@@ -30,6 +30,8 @@ TGOMMO_CREATE_AVATAR_TABLE = """CREATE TABLE IF NOT EXISTS user_avatar (
     series TEXT,
     is_parent_entry BOOLEAN DEFAULT False,
     shop_price INTEGER NOT NULL DEFAULT 0,
+    unlock_startdate DATE,
+    unlock_enddate DATE,
     UNIQUE(avatar_id)
 )"""
 SA_CREATE_ROLES_TABLE = """CREATE TABLE IF NOT EXISTS roles (

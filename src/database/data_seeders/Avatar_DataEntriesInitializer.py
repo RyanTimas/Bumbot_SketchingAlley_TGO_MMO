@@ -102,17 +102,17 @@ def get_event_avatar_records():
         ('E23', 'Jogo', AVATAR_TYPE_EVENT, 'Jogo', 'Jujutsu Kaisen',),
         ('E24', 'Ryomen Sukuna', AVATAR_TYPE_EVENT, 'RyomenSukuna', 'Jujutsu Kaisen',),
         # WAVE 3
-        ('E25', 'Invincible (Blue Suit)', AVATAR_TYPE_EVENT, 'InvincibleBlueSuit', 'Invincible',),
-        ('E26', 'Mark Grayson', AVATAR_TYPE_EVENT, 'MarkGrayson', 'Invincible',),
-        ('E27', 'Nolan Grayson', AVATAR_TYPE_EVENT, 'NolanGrayson', 'Invincible',),
-        ('E28', 'Monster Girl', AVATAR_TYPE_EVENT, 'MonsterGirl', 'Invincible',),
-        ('E29', 'Robot', AVATAR_TYPE_EVENT, 'Robot', 'Invincible',),
-        ('E30', 'Dinosaurus', AVATAR_TYPE_EVENT, 'Dinosaurus', 'Invincible',),
+        ('E25', 'Invincible (Blue Suit)', AVATAR_TYPE_EVENT, 'InvincibleBlueSuit', 'Invincible', 0, datetime.datetime(2026, 3, 31, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E26', 'Mark Grayson', AVATAR_TYPE_EVENT, 'MarkGrayson', 'Invincible', 0,datetime.datetime(2026, 3, 31, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E27', 'Nolan Grayson', AVATAR_TYPE_EVENT, 'NolanGrayson', 'Invincible', 0,datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E28', 'Monster Girl', AVATAR_TYPE_EVENT, 'MonsterGirl', 'Invincible', 0,datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E29', 'Robot', AVATAR_TYPE_EVENT, 'Robot', 'Invincible', 0,datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E30', 'Dinosaurus', AVATAR_TYPE_EVENT, 'Dinosaurus', 'Invincible', 0, datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 29, 23, 59, 59, tzinfo=pytz.UTC)),
         # WAVE 4
-        ('E31', 'Crewmate (Blue)', AVATAR_TYPE_EVENT, 'CrewmateBlue', 'Among Us',),
-        ('E32', 'Crewmate (Yellow)', AVATAR_TYPE_EVENT, 'CrewmateYellow', 'Among Us',),
-        ('E33', 'Crewmate (Green)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us',),
-        ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us',),
+        ('E31', 'Crewmate (Blue)', AVATAR_TYPE_EVENT, 'CrewmateBlue', 'Among Us', 0, datetime.datetime(2026, 4, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E32', 'Crewmate (Yellow)', AVATAR_TYPE_EVENT, 'CrewmateYellow', 'Among Us', 0, datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E33', 'Crewmate (Green)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,  datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC)),
     ]
     return event_avatars
 def get_quest_avatar_records():
@@ -123,13 +123,13 @@ def get_quest_avatar_records():
         ('Q3', 'Gex', AVATAR_TYPE_QUEST, 'Gex', 'Gex',),
         ('Q4', 'Kermit', AVATAR_TYPE_QUEST, 'Kermit', 'Muppets',),
         ('Q5', 'Hornet', AVATAR_TYPE_QUEST, 'Hornet', 'Hollow Knight',),
-        ('Q6', 'TMNT', AVATAR_TYPE_QUEST, 'TMNT', 'Teenage Mutant Ninja Turtles', 0, True,),
+        ('Q6', 'TMNT', AVATAR_TYPE_QUEST, 'TMNT', 'Teenage Mutant Ninja Turtles', 0, None, None, True,),
         ('Q6a', 'Leonardo', AVATAR_TYPE_QUEST, 'Leonardo', 'Teenage Mutant Ninja Turtles',),
         ('Q6b', 'Raphael', AVATAR_TYPE_QUEST, 'Raphael', 'Teenage Mutant Ninja Turtles',),
         ('Q6c', 'Michelangelo', AVATAR_TYPE_QUEST, 'Michelangelo', 'Teenage Mutant Ninja Turtles',),
         ('Q6d', 'Donatello', AVATAR_TYPE_QUEST, 'Donatello', 'Teenage Mutant Ninja Turtles',),
         # WAVE 1
-        ('Q7', 'Gold/Silver & Crystal Protagonists', AVATAR_TYPE_QUEST, 'GSC', 'Pokemon', 0, True,),
+        ('Q7', 'Gold/Silver & Crystal Protagonists', AVATAR_TYPE_QUEST, 'GSC', 'Pokemon', 0, None, None, True,),
         ('Q7a', 'Gold', AVATAR_TYPE_QUEST, 'Gold', 'Pokemon',),
         ('Q7b', 'Kris', AVATAR_TYPE_QUEST, 'Kris', 'Pokemon',),
         ('Q8', 'Homer', AVATAR_TYPE_QUEST, 'Homer', 'The Simpsons',),
@@ -139,7 +139,7 @@ def get_quest_avatar_records():
         ('Q11', 'Rigby', AVATAR_TYPE_QUEST, 'Rigby', 'Regular Show',),
         ('Q12', 'Squirrel Girl', AVATAR_TYPE_QUEST, 'SquirrelGirl', 'Marvel',),
         ('Q13', 'Noko Shikanoko', AVATAR_TYPE_QUEST, 'NokoShikanoko', 'Anime',),
-        ('Q14', 'Huntrix', AVATAR_TYPE_QUEST, 'Huntrix', 'K-Pop Demon Hunters', 100, True,),
+        ('Q14', 'Huntrix', AVATAR_TYPE_QUEST, 'Huntrix', 'K-Pop Demon Hunters', 100, None, None, True,),
         ('Q14a', 'Rumi', AVATAR_TYPE_QUEST, 'Rumi', 'K-Pop Demon Hunters',),
         ('Q14b', 'Mira', AVATAR_TYPE_QUEST, 'Mira', 'K-Pop Demon Hunters',),
         ('Q14c', 'Zoey', AVATAR_TYPE_QUEST, 'Zoey', 'K-Pop Demon Hunters',),
@@ -248,10 +248,19 @@ def get_transcendant_avatar_records():
 
 def insert_user_avatar_records(avatar_data, queryHandler):
     for index, avatar in enumerate(avatar_data):
+        # add avatar_num as first element in tuple, starting from 1
+        print(f"Inserting avatar record for {avatar[1]} with avatar_num {index + 1}")
         avatar = (index + 1,) + avatar
+
+        # add default value for shop_price
         if len(avatar) == 6:
             avatar = avatar + (0,)
+
+        # add default value for unlock_startdate & unlock_enddate
         if len(avatar) == 7:
+            avatar = avatar + (None, None)
+        # add default value for is_parent_entry
+        if len(avatar) == 9:
             avatar = avatar + (False,)
 
         queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR, params=avatar)

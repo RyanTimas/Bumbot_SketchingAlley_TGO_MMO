@@ -28,13 +28,53 @@ async def check_for_event_avatars(user_id, interaction):
 # check if player has unlocked any quest avatars
 async def check_for_quest_avatars(user_id, interaction):
     unlockable_avatars = get_tgommo_db_handler().get_avatars_with_unlock_conditions(exclude_unlocked_avatars=True, user_id=user_id)
-    for unlockable_avatar in unlockable_avatars:
-        user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=unlockable_avatar.unlock_query, params=(user_id,))[0][0] >= unlockable_avatar.unlock_threshold
+    if not unlockable_avatars:
+        return
 
-        if user_reached_threshold:
-            avatars_to_unlock = [unlockable_avatar] if not unlockable_avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=unlockable_avatar.avatar_id)
-            for child_avatar in avatars_to_unlock:
-                if not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=user_id):
-                    get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=user_id)
-                    await interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
+    # Batch execute all unlock queries at once
+    unlock_results = []
+    for avatar in unlockable_avatars:
+        try:
+            result = get_tgommo_db_handler().QueryHandler.execute_query(query=avatar.unlock_query, params=(user_id,))[0][0]
+            unlock_results.append((avatar, result >= avatar.unlock_threshold))
+        except Exception:
+            unlock_results.append((avatar, False))
+
+        # Collect all avatars that need unlocking
+        avatars_to_process = []
+        for avatar, threshold_met in unlock_results:
+            if threshold_met:
+                if avatar.is_parent_entry:
+                    child_avatars = get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id)
+                    avatars_to_process.extend(child_avatars)
+                else:
+                    avatars_to_process.append(avatar)
+
+        if not avatars_to_process:
+            return
+
+        # Batch check which avatars are already unlocked
+        avatar_ids = [avatar.avatar_id for avatar in avatars_to_process]
+        already_unlocked = get_tgommo_db_handler().batch_check_unlocked_avatars(avatar_ids=avatar_ids, user_id=user_id)
+
+        # Batch insert new avatar unlocks
+        new_unlocks = [avatar for avatar in avatars_to_process if avatar.avatar_id not in already_unlocked]
+        if new_unlocks:
+            get_tgommo_db_handler().batch_insert_avatar_links(avatars=new_unlocks, user_id=user_id)
+
+            # Send notifications for newly unlocked avatars
+            for avatar in new_unlocks:
+                await interaction.followup.send(f"You have completed a quest & unlocked the avatar: {avatar.name}!!", file=convert_to_png(avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
+
+
+    # OLD CODE
+    # for unlockable_avatar in unlockable_avatars:
+    #     user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=unlockable_avatar.unlock_query, params=(user_id,))[0][0] >= unlockable_avatar.unlock_threshold
+    #
+    #     if user_reached_threshold:
+    #         avatars_to_unlock = [unlockable_avatar] if not unlockable_avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=unlockable_avatar.avatar_id)
+    #         for child_avatar in avatars_to_unlock:
+    #             if not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=user_id):
+    #                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=user_id)
+    #                 await interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
 

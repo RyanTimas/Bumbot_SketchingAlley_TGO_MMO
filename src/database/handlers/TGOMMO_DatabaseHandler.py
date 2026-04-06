@@ -39,6 +39,12 @@ class TGOMMODatabaseHandler:
         return self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS, params=(-1, avatar_id))
     def check_if_user_unlocked_avatar(self, user_id=-1, avatar_id=-1):
         return self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER, params=(user_id, avatar_id))[0][0] > 0
+
+    def batch_insert_avatar_links(self, avatars, user_id):
+        """Insert multiple avatar links at once"""
+        values = [(avatar.avatar_id, user_id) for avatar in avatars]
+        query = "INSERT INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES (?, ?)"
+        self.QueryHandler.execute_many(query, values)
     # endregion
 
 
@@ -491,6 +497,13 @@ class TGOMMODatabaseHandler:
     def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
+
+    def batch_check_unlocked_avatars(self, avatar_ids, user_id):
+        """Returns set of avatar_ids that are already unlocked"""
+        placeholders = ','.join(['?' for _ in avatar_ids])
+        query = f"""SELECT avatar_id FROM tgommo_user_profile_avatar_link WHERE avatar_id IN ({placeholders}) AND user_id = ?"""
+        results = self.QueryHandler.execute_query(query, avatar_ids + [user_id])
+        return {row[0] for row in results}
 
     # EVENT AVATAR QUERIES
     def get_all_limited_time_avatars(self, convert_to_object=True):

@@ -472,32 +472,59 @@ class TGOMMODatabaseHandler:
     def get_unlocked_avatars_for_server(self, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(-1,), convert_to_object=convert_to_object, expect_multiple=True)
-
-    def get_avatars_with_unlock_conditions(self):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(), convert_to_object=True, expect_multiple=True)
-    def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
-    def get_all_limited_time_avatars(self, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_NON_NULL_START_DATE_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
-    def get_all_currently_available_limited_time_avatars(self, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_DATE_BETWEEN_START_AND_END_DATE_SUFFIX} {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
-
-    def get_avatars_by_nickname(self, nickname='', exclude_unlocked_avatars=True, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX} {f"AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}" if exclude_unlocked_avatars else ""} {TGOMMO_AVATAR_NICKNAME_LINK_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(nickname,), convert_to_object=convert_to_object, expect_multiple=True)
-
-    def get_random_shop_avatars(self, count=3, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=('Shop', count), convert_to_object=convert_to_object,expect_multiple=True)
-
     def has_user_unlocked_avatar(self, user_id=0, avatar_id=0):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX};"
         result = self.get_avatars_from_database(query=query, params=(user_id, avatar_id), convert_to_object=False, expect_multiple=False)
         return True if result else False
+
+    # QUEST AVATAR QUERIES
+    def get_avatars_with_unlock_conditions(self, exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX}"
+        params = ()
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
+    def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
+
+    # EVENT AVATAR QUERIES
+    def get_all_limited_time_avatars(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_NON_NULL_START_DATE_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_currently_available_limited_time_avatars(self, exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_DATE_BETWEEN_START_AND_END_DATE_SUFFIX} "
+        params = ()
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
+
+    # SECRET AVATAR QUERIES
+    def get_avatars_by_nickname(self, nickname='', exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX}"
+        params = (nickname,)
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_USER_AVATAR_NICKNAME_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
+
+    # SHOP AVATAR QUERIES
+    def get_random_shop_avatars(self, count=3, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=('Shop', count), convert_to_object=convert_to_object,expect_multiple=True)
+
 
     # endregion
 

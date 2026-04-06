@@ -47,7 +47,6 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
                 avatar_quest_tab_factory = AvatarQuestTabFactory(avatar=avatar_with_quest, user_id=self.target_user.user_id)
 
                 avatar_with_quest.is_completed = avatar_quest_tab_factory.is_completed
-                print(f"Avatar: {avatar_with_quest.name}, Completed: {avatar_with_quest.is_completed}, Quest Value: {avatar_quest_tab_factory.completed_quest_value}, Unlock Threshold: {avatar_with_quest.unlock_threshold}")
                 avatar_with_quest.quest_progress_icon = avatar_quest_tab_factory.generate_avatar_quest_tab_image()
         return avatars_with_quests
 

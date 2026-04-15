@@ -6,7 +6,7 @@ TGOMMO_INSERT_NEW_CREATURE = """INSERT OR IGNORE INTO tgommo_creature (creature_
 TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, environment_dex_no, environment_variant_no, creature_name, environment_name, spawn_rarity, local_name, sub_environment_type, local_dex_no, local_variant_no, local_img_root) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
 
-TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate, local_img_suffix) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
 # Players
 TGOMMO_INSERT_NEW_USER_PROFILE = """INSERT OR IGNORE INTO tgommo_user_profile (user_id, nickname, avatar_id, background_id, creature_slot_id_1, creature_slot_id_2, creature_slot_id_3, creature_slot_id_4, creature_slot_id_5, creature_slot_id_6, currency, available_catch_attempts, rod_level, rod_amount, trap_level, trap_amount) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
@@ -76,8 +76,8 @@ TGOMMO_SELECT_ENVIRONMENT_BASE = """
         e.name, e.variant_name,
         e.dex_no, e.variant_no,
         e.location, e.description,
-        e.img_root,
-        e.is_night_environment, e.in_circulation, e.encounter_rate
+        e.img_root, e.local_img_suffix,
+        e.is_night_environment, e.in_circulation, e.encounter_rate,
     FROM tgommo_environment e
     WHERE 
 """

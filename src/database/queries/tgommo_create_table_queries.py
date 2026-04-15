@@ -79,6 +79,7 @@ TGOMMO_CREATE_ENVIRONMENT_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environme
     is_night_environment BOOLEAN NOT NULL,
     in_circulation BOOLEAN NOT NULL,
     encounter_rate INTEGER NOT NULL,
+    local_img_suffix TEXT DEFAULT '',
     UNIQUE(dex_no, variant_no)
 )"""
 TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment_creature (

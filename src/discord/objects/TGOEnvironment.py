@@ -7,7 +7,7 @@ class TGOEnvironment:
         name: str, variant_name: str,
         dex_no: int, variant_no: int,
         location: str, description: str,
-        img_root: str,
+        img_root: str, local_img_suffix: str,
         is_night_environment: bool, in_circulation: bool, encounter_rate: int
     ):
         self.environment_id = environment_id
@@ -22,6 +22,7 @@ class TGOEnvironment:
 
         self.short_name = img_root
         self.img_root = img_root + f'_{variant_no}'
+        self.local_img_suffix = local_img_suffix
         self.is_night_environment = is_night_environment == 1
         self.in_circulation = in_circulation
 

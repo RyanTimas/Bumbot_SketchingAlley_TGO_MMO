@@ -124,8 +124,8 @@ class TGOMMODatabaseHandler:
                         name=env_details[1], variant_name=env_details[2],
                         dex_no=env_details[3], variant_no=env_details[4],
                         location=env_details[5], description=env_details[6],
-                        img_root=env_details[7],
-                        is_night_environment=bool(env_details[8]), in_circulation=bool(env_details[9]), encounter_rate=env_details[10]
+                        img_root=env_details[7], local_img_suffix=env_details[8],
+                        is_night_environment=bool(env_details[9]), in_circulation=bool(env_details[10]), encounter_rate=env_details[11]
                     )
                 )
         return environments if expect_multiple else environments[0]

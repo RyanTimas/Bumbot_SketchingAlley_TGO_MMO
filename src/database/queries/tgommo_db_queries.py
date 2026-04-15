@@ -77,7 +77,7 @@ TGOMMO_SELECT_ENVIRONMENT_BASE = """
         e.dex_no, e.variant_no,
         e.location, e.description,
         e.img_root, e.local_img_suffix,
-        e.is_night_environment, e.in_circulation, e.encounter_rate,
+        e.is_night_environment, e.in_circulation, e.encounter_rate
     FROM tgommo_environment e
     WHERE 
 """

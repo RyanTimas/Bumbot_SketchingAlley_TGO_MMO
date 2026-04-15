@@ -102,6 +102,8 @@ TGOMMO_RARITY_OMNIPOTENT = "Omnipotent"
 # region Dex Numbers
 EASTERN_US_DEX_NO = 1
 FLORIDA_DEX_NO = 2
+ICELAND_DEX_NO = 3
+YELLOWSTONE_DEX_NO = 4
 # endregion
 # region Sub Environments
 SUB_ENVIRONMENT_FOREST = "forest"
@@ -115,6 +117,8 @@ SUB_ENVIRONMENT_CITY = "city"
 SUB_ENVIRONMENT_PIER = "pier"
 SUB_ENVIRONMENT_OCEAN = "ocean"
 SUB_ENVIRONMENT_MOUNTAIN = "mountain"
+SUB_ENVIRONMENT_CLIFF = "cliff"
+SUB_ENVIRONMENT_DESERT = "desert"
 # endregion
 
 """ ----- ITEMS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

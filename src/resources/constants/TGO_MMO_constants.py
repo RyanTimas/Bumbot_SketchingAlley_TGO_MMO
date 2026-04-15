@@ -79,6 +79,7 @@ ARACHNID = "Arachnid"
 CLITELLATA = "Clitellata"
 MYRIAPOD = "Myriapod"
 ARTHROPOD = "Arthropod"
+ASTEROIDEA = "Asteroidea"
 
 MYSTICAL = "Mystical"
 # endregion

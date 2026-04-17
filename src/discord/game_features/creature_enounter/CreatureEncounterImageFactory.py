@@ -76,13 +76,23 @@ class CreatureEncounterImageFactory:
         return None
 
     def build_background_image(self):
-        time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f'_{self.time_of_day}'
+        primary_time_of_day_suffix = NIGHT if self.environment.is_night_environment else DAY
+        secondary_time_of_day_suffix = '' if self.time_of_day in (DAY, NIGHT) or not self.time_of_day else f"_{self.time_of_day}"
         sub_environment = self.creature.sub_environment if self.creature.sub_environment else SUB_ENVIRONMENT_FOREST
-        background_img_base = os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, f"{ENCOUNTER_SCREEN_ENVIRONMENT_BG_PREFIX}{self.environment.short_name}_{sub_environment}_{self.environment.dex_no}_{self.environment.variant_no}{time_of_day_suffix}")
 
-        # todo: add logic for default background if specific one doesn't exist for environment + time of day combo
-        background_img = Image.open(f"{background_img_base}{IMAGE_FILE_EXTENSION}")
-        overlay_img = None if not os.path.exists(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}") else Image.open(f"{background_img_base}{ENCOUNTER_SCREEN_OVERLAY_SUFFIX}{IMAGE_FILE_EXTENSION}")
+        bg_image_name = f"{sub_environment}{self.environment.local_img_suffix}_{primary_time_of_day_suffix}{secondary_time_of_day_suffix}"
+        bg_image_path = f"{os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, self.environment.short_name, sub_environment, bg_image_name)}"
+        bg_overlay_image_path = f"{bg_image_path}_overlay"
+
+        if not os.path.exists(f"{bg_image_path}{IMAGE_FILE_EXTENSION}"):
+            default_bg_image_name = f"{sub_environment}_{primary_time_of_day_suffix}_{secondary_time_of_day_suffix}"
+            bg_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, "default", sub_environment, default_bg_image_name)}"
+        if not os.path.exists(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}"):
+            default_overlay_image_name = f"{sub_environment}_{primary_time_of_day_suffix}_{secondary_time_of_day_suffix}_overlay"
+            bg_overlay_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, "default", sub_environment, default_overlay_image_name)}"
+
+        background_img = Image.open(f"{bg_image_path}{IMAGE_FILE_EXTENSION}")
+        overlay_img = None if not os.path.exists(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}") else Image.open(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}")
 
         return background_img, overlay_img
 

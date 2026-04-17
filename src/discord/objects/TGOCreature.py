@@ -72,7 +72,8 @@ class TGOCreature:
 
     def define_creature_images(self):
         # always try local first
-        local_img_root = f"{self.img_root}_{REMIX_ENVIRONMENT_IMAGE_ROOT_MAP.get(self.environment_id, "")}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
+
+        local_img_root = f"{self.img_root}{REMIX_ENVIRONMENT_IMAGE_ROOT_MAP.get(self.environment_id, "")}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
         img_root = f"{self.img_root}_{self.variant_no}{"_S" if self.local_rarity.name == TGOMMO_RARITY_MYTHICAL else ""}"
 
         creature_thumb_img_path = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, f"{local_img_root}{ENCOUNTER_SCREEN_THUMBNAIL_SUFFIX}")

@@ -28,6 +28,7 @@ IMAGE_FOLDER_CREATURE_ICONS_PATH = os.path.join(IMAGE_FOLDER_CREATURES_PATH, "ic
 # endregion
 # region Environments Paths
 IMAGE_FOLDER_ENVIRONMENTS_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "environments")
+FALLBACK_ENVIRONMENT_PATH = os.path.join(IMAGE_FOLDER_ENVIRONMENTS_PATH, "default")
 # endregion
 # region Avatars Paths
 IMAGE_FOLDER_AVATARS_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "avatars")

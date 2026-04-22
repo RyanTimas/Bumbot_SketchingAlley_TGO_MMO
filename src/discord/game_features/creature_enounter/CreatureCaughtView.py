@@ -103,6 +103,7 @@ class CreatureCaughtView(discord.ui.View):
             currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.user_id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
             release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.message_author.user_id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+
             await interaction.edit_original_response(view=self)
             await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
         return callback

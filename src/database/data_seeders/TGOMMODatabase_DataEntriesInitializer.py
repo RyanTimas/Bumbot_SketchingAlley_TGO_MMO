@@ -326,7 +326,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             ('Wolf', '', 200, 1, 'Red Wolf', 'Canis rufus', MAMMAL, '', RED_WOLF_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             # endregion
             # region WAVE 5
-            ('Wolf', 'Arctic Wolf', 25, 1, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
+            ('Wolf', 'Arctic Wolf', 25, 2, 'Gray Wolf', 'Canis lupus', MAMMAL, '', WOLF_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
             ('Dog', 'Husky', 176, 12, 'Domestic Dog', 'Canis lupus familiaris', MAMMAL, '', DOMESTIC_DOG_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
             ('Dog', 'Collie', 176, 13, 'Domestic Dog', 'Canis lupus familiaris', MAMMAL, '', DOMESTIC_DOG_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
             ('Horse', 'Icelandic Horse', 179, 2, 'Domestic Horse', 'Equus ferus caballus', MAMMAL, '', DOMESTIC_HORSE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),

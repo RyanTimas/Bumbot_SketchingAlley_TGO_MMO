@@ -132,6 +132,10 @@ ITEM_TYPE_CHARM = 'Charm'
 
 ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
 # endregion
+# region Creature Item Types
+ITEM_TYPE_PEARL = 'Pearl'
+# endregion
+
 
 """ ----- GAMEPLAY MECHANICS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- CREATURE CATCH  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -329,6 +333,13 @@ ITEM_ID_MYTHICAL_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_6"
 ITEM_ID_TRANSCENDANT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_7"
 ITEM_ID_OMNIPOTENT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_8"
 # endregion
-
-
+# region CREATURE ITEM IDS
+ITEM_ID_WHITE_PEARL = f"{ITEM_TYPE_PEARL}_0"
+ITEM_ID_PINK_PEARL = f"{ITEM_TYPE_PEARL}_1"
+ITEM_ID_GREEN_PEARL = f"{ITEM_TYPE_PEARL}_2"
+ITEM_ID_PETROL_PEARL = f"{ITEM_TYPE_PEARL}_3"
+ITEM_ID_PURPLE_PEARL = f"{ITEM_TYPE_PEARL}_4"
+ITEM_ID_GOLD_PEARL = f"{ITEM_TYPE_PEARL}_5"
+ITEM_ID_BLACK_PEARL = f"{ITEM_TYPE_PEARL}_6"
+# endregion
 

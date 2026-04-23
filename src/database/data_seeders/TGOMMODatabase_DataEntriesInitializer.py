@@ -1268,6 +1268,7 @@ class TGOMMODatabase_DataEntriesInitializer:
 
     def insert_item_records(self):
         item_data = [
+            # region ITEMS
             # Creature Inventory Storage
             (ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, 'Creature Storage Upgrade', ITEM_TYPE_GAMEPLAY_MECHANICS, 'Increases your creature storage capacity by 100.', TGOMMO_RARITY_NORMAL, False, '', 1),
 
@@ -1306,6 +1307,18 @@ class TGOMMODatabase_DataEntriesInitializer:
             (ITEM_ID_MYTHICAL_CHARM, 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 30 minutes', TGOMMO_RARITY_MYTHICAL, True, '', 1, 2500),
             (ITEM_ID_TRANSCENDANT_CHARM, 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 30 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 10000),
             (ITEM_ID_OMNIPOTENT_CHARM, 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 10 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 10000),
+            # endregion
+            # region CREATURE ITEMS
+            # Pearls
+            (ITEM_ID_WHITE_PEARL, 'White Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_COMMON, False, '', 1, 35),
+            (ITEM_ID_PINK_PEARL, 'Pink Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 35),
+            (ITEM_ID_GREEN_PEARL, 'Green Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 35),
+            (ITEM_ID_PETROL_PEARL, 'Petrol Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_RARE, False, '', 1, 35),
+            (ITEM_ID_PURPLE_PEARL, 'Purple Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_EPIC, False, '', 1, 35),
+            (ITEM_ID_GOLD_PEARL, 'Gold Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 35),
+            (ITEM_ID_BLACK_PEARL, 'Black Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 35),
+            #endregion
+            #endregion
         ]
 
         for index, item in enumerate(item_data):

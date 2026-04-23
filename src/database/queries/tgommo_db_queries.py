@@ -360,6 +360,8 @@ TGOMMO_SELECT_CREATURE_BY_CLASSIFICATION_SUFFIX = "c.kingdom = ?"
 TGOMMO_SELECT_CREATURE_BY_EXCLUDING_TRANSCENDANT_DEFAULT_RARITY_SUFFIX = "c.default_rarity != 'Transcendant'"
 
 TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX = " ORDER BY c.dex_no, c.variant_no"
+
+TGOMMO_CATCH_ID_IN_SUFFIX = "uc.catch_id IN "
 # endregion
 # region tgommo_environment_creature suffixes
 TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX = "ec.environment_id = ?"

@@ -237,6 +237,11 @@ class TGOMMODatabaseHandler:
     def get_user_creature_by_catch_id(self, catch_id=0, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(catch_id,), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_user_creatures_by_catch_ids(self, catch_ids, convert_to_object=True):
+        placeholders = ','.join(['?' for _ in catch_ids])
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_CATCH_ID_IN_SUFFIX} ({placeholders});"
+        return self.get_user_creatures_from_database(query=query, params=catch_ids, convert_to_object=convert_to_object, expect_multiple=True)
+
     def get_user_creatures_by_user_id(self, user_id=0, is_released=False, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
         params = [user_id,]

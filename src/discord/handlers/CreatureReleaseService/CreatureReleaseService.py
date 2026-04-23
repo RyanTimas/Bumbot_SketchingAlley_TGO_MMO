@@ -1,4 +1,6 @@
 # src/discord/game_features/creature_inventory/CreatureReleaseService.py
+import asyncio
+
 import discord
 
 from src.commons.CommonFunctions import convert_to_png
@@ -14,19 +16,37 @@ class CreatureReleaseService:
         Release creatures and handle rewards calculation/distribution
         Returns: (currency_earned, earned_items)
         """
-        # Release creatures from database
+        loop = asyncio.get_event_loop()
+
+        # Run blocking database operations in thread
+        currency_earned, earned_items = await loop.run_in_executor(
+            None,
+            CreatureReleaseService._handle_database_operations,
+            user_id, creature_ids
+        )
+
+        # Handle Discord operations on main thread
+        if interaction:
+            # Send Discord messages here
+            pass
+
+        return currency_earned, earned_items
+
+    @staticmethod
+    def _handle_database_operations(user_id: int, creature_ids: list):
+        """Handle all blocking database operations"""
+        # All your existing database logic here (synchronous)
         success = get_tgommo_db_handler().update_user_creature_set_is_released(creature_ids=creature_ids)
         if not success:
-            return None
+            return None, None
 
-        # Calculate and distribute rewards
         reward_handler = CreatureReleaseRewardHandler(user_id)
-        currency_earned, earned_items = reward_handler.calculate_rewards(creature_ids)
+        currency_earned, earned_items = reward_handler.get_release_rewards(creature_ids)
 
-        # Update user currency and items
         get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=currency_earned)
         for item, count in earned_items:
-            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user_id, convert_to_object=True).item_quantity + count)
+            current_amount = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user_id, convert_to_object=True).item_quantity
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=item.item_id, new_amount=current_amount + count)
 
         return currency_earned, earned_items
 

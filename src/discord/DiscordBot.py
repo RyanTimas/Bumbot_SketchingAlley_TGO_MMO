@@ -3,9 +3,10 @@ import sys
 
 import aiohttp
 import discord
+from PIL import Image
 from discord.ext import commands
 
-from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin
+from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -33,7 +34,10 @@ from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.general.tests.ShopTests import register_shop_tests
 from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST
+from src.resources.constants.file_paths import TGOMMO_TRAVEL_ADVISORY_BASE, IMAGE_FILE_EXTENSION, \
+    TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
+from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
+    TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
 class DiscordBot(commands.Bot):
@@ -282,17 +286,22 @@ class DiscordBot(commands.Bot):
 
         @admin_only()
         @self.tree.command(name="change_environment_tgommo", description="Change the current TGOMMO environment. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
-        async def tgommo_change_environment(interaction, environment_dex_no: int):
+        @discord.app_commands.describe(environment_dex_no="Environment dex number (leave empty for random)")
+        async def tgommo_change_environment(interaction, environment_dex_no: int = None):
             try:
-                environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=self.creature_spawner_handler.current_environment.variant_no)
-                if not environment:
+                if environment_dex_no:
+                    new_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=self.creature_spawner_handler.current_environment.variant_no)
+                else:
+                    new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.creature_spawner_handler.is_day else 1, convert_to_object=True)
+
+                if not new_environment:
                     await interaction.response.send_message(f"Environment with dex number {environment_dex_no} not found.", delete_after=10, ephemeral=True)
                     return
-                self.creature_spawner_handler.current_environment = environment
+                self.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=new_environment.dex_no, environment_variant_no=new_environment.variant_no)
 
-                await interaction.response.send_message(
-                    f"Environment changed to: {environment.name} (Dex No: {environment_dex_no})", delete_after=10)
-
+                # Announce the environment change in the spawn channel
+                await interaction.response.send_message(f"Environment changed to: {new_environment.name} (Dex No: {environment_dex_no})", delete_after=10)
+                await self.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {new_environment.name}** 🌍", files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")])
             except Exception as e:
                 await interaction.response.send_message(f"Error changing environment: {str(e)}", delete_after=10, ephemeral=True)
 

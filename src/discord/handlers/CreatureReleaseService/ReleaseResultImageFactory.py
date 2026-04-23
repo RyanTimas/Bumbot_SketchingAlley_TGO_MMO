@@ -85,7 +85,7 @@ class ReleaseResultImageFactory(BaseImageFactory):
         name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28)
 
         # add username footer
-        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.user_id, convert_to_object=True).nickname}'s Release Summary"
+        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.user_id, convert_to_object=True).nickname}'s Release Summary - Total Lifetime Releases: {len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id, is_released=True, convert_to_object=False))}"
         pixel_location = get_centered_text_position(text=name_text, font=name_font, center_pixel_location=(960, 1034))
         draw.text(pixel_location, text=name_text, font=name_font, fill=navy_blue_color)
 

@@ -47,6 +47,7 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
         # first add avatars unlocked by all users to the list, then add avatars unlocked by the target user
         unlocked_avatars = get_tgommo_db_handler().get_unlocked_avatars_by_user_id(-1)
         unlocked_avatars += get_tgommo_db_handler().get_unlocked_avatars_by_user_id(self.target_user.user_id)
+        unlocked_avatars = self.filter_duplicate_avatars(unlocked_avatars)
 
         # by default, sort avatars by avatar type and then by avatar number within each type, with unknown types sorted at the end
         unlocked_avatars.sort(key=lambda avatar: (
@@ -78,3 +79,12 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
             )
 
         return [avatar.unlocked_avatar_icon for avatar in avatars_for_page]
+
+    def filter_duplicate_avatars(self, avatars):
+        seen_avatar_ids = set()
+        unique_avatars = []
+        for avatar in avatars:
+            if avatar.avatar_id not in seen_avatar_ids:
+                seen_avatar_ids.add(avatar.avatar_id)
+                unique_avatars.append(avatar)
+        return unique_avatars

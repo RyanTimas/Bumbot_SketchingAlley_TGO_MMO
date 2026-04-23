@@ -112,7 +112,7 @@ def get_event_avatar_records():
         ('E31', 'Crewmate (Blue)', AVATAR_TYPE_EVENT, 'CrewmateBlue', 'Among Us', 0, datetime.datetime(2026, 4, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 8, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E32', 'Crewmate (Yellow)', AVATAR_TYPE_EVENT, 'CrewmateYellow', 'Among Us', 0, datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E33', 'Crewmate (Green)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,  datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGeoff', 'Among Us', 0,datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC)),
     ]
     return event_avatars
 def get_quest_avatar_records():

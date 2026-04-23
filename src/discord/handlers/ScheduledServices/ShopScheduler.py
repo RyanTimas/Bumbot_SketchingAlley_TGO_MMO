@@ -39,14 +39,11 @@ class ShopScheduler:
                 id='daily_shop_refresh',
                 replace_existing=True
             )
-            self.scheduler.start()
+        self.scheduler.start()
 
 
     async def refresh_daily_shop(self):
         try:
-            # Add your shop update queries here
-            # todo: grab 3 random items and 3 random avatars from the database and set them as the current shop inventory in the game state manager and database
-
             get_game_state_manager().set_shop_date(datetime.datetime.now().strftime('%Y-%m-%d'))
             get_game_state_manager().set_current_shop_inventory(item_ids= self.generate_daily_items(), avatar_ids= self.generate_daily_avatars())
 

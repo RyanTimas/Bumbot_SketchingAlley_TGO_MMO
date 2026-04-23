@@ -72,7 +72,7 @@ class ItemUseHandler:
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
         available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
-        caught_unique_creatures_for_environment = get_tgommo_db_handler().get_unique_catches_base(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
+        caught_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creature_variants_caught_in_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no)
         capture_percentage = (caught_unique_creatures_for_environment / available_unique_creatures_for_environment) * 100
 
         if capture_percentage < 65:

@@ -381,6 +381,8 @@ TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX = "uc.user_id = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_FAVORITE_SUFFIX = "uc.is_favorite = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX = "uc.is_released = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX = "uc.is_mythical = ?"
+TGOMMO_SELECT_USER_CREATURE_BY_MATCHES_ENVIRONMENT_SUFFIX = "uc.environment_id = ec.environment_id"
+
 # endregion
 
 # region tgommo_environment suffixes

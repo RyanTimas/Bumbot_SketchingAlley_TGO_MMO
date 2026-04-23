@@ -333,6 +333,10 @@ class TGOMMODatabaseHandler:
     def get_total_unique_mythical_creature_variants_caught_by_user(self, user_id=0):
         return self.get_unique_catches_base(user_id=user_id, include_variants=True, is_mythical=True)
 
+    def get_total_unique_creature_variants_caught_in_environment(self, environment_dex_no=0):
+        query = f"{TGOMMO_SELECT_UNIQUE_CREATURE_VARIANTS_CAUGHT_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_MATCHES_ENVIRONMENT_SUFFIX}"
+        return self.QueryHandler.execute_query(query, params=(environment_dex_no,))[0][0]
+
     def get_total_unique_creatures_caught_by_user_and_environment_dex_no(self, user_id=0, environment_dex_no=0):
         return self.get_unique_catches_base(user_id=user_id, include_variants=False, environment_dex_no=environment_dex_no)
     def get_total_unique_creature_variants_caught_by_user_and_environment_dex_no(self, user_id=0, environment_dex_no=0):

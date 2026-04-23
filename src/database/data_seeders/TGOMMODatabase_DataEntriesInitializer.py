@@ -1310,13 +1310,13 @@ class TGOMMODatabase_DataEntriesInitializer:
             # endregion
             # region CREATURE ITEMS
             # Pearls
-            (ITEM_ID_WHITE_PEARL, 'White Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_COMMON, False, '', 1, 35),
-            (ITEM_ID_PINK_PEARL, 'Pink Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 35),
-            (ITEM_ID_GREEN_PEARL, 'Green Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 35),
-            (ITEM_ID_PETROL_PEARL, 'Petrol Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_RARE, False, '', 1, 35),
-            (ITEM_ID_PURPLE_PEARL, 'Purple Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_EPIC, False, '', 1, 35),
-            (ITEM_ID_GOLD_PEARL, 'Gold Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 35),
-            (ITEM_ID_BLACK_PEARL, 'Black Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 35),
+            (ITEM_ID_WHITE_PEARL, 'White Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_COMMON, False, f'{ITEM_TYPE_PEARL}_white'.lower(), 1, 35),
+            (ITEM_ID_PINK_PEARL, 'Pink Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, f'{ITEM_TYPE_PEARL}_pink'.lower(), 1, 35),
+            (ITEM_ID_GREEN_PEARL, 'Green Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, f'{ITEM_TYPE_PEARL}_green'.lower(), 1, 35),
+            (ITEM_ID_PETROL_PEARL, 'Petrol Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_PEARL}_petrol'.lower(), 1, 35),
+            (ITEM_ID_PURPLE_PEARL, 'Purple Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_EPIC, False, f'{ITEM_TYPE_PEARL}_purple'.lower(), 1, 35),
+            (ITEM_ID_GOLD_PEARL, 'Gold Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, f'{ITEM_TYPE_PEARL}_gold'.lower(), 1, 35),
+            (ITEM_ID_BLACK_PEARL, 'Black Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_LEGENDARY, False, f'{ITEM_TYPE_PEARL}_black'.lower(), 1, 35),
             #endregion
             #endregion
         ]

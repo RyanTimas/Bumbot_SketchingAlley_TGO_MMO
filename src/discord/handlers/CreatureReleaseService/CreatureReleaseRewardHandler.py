@@ -143,18 +143,28 @@ class CreatureReleaseRewardHandler:
     def _get_starter_pack(self):
         milestone_item_bait = self._get_item_by_id(ITEM_ID_BAIT)
         return [milestone_item_bait] * RewardConfig.STARTER_BAIT_COUNT + [self._get_item_by_id(ITEM_ID_LEGENDARY_BAIT), self._get_item_by_id(ITEM_ID_CHARM)]
-    def _check_milestone_thresholds(self, old_release_count, new_release_count):
+
+    def _check_milestone_thresholds(self, release_count_total, new_release_count):
         milestone_items = []
-        release_count_total = old_release_count + new_release_count
+        old_release_count = release_count_total - new_release_count
 
         for rarity, milestone_threshold in RewardConfig.MILESTONE_AMOUNTS.items():
-            # Check if we crossed this milestone with the new releases and weren't already past it
-            if old_release_count < milestone_threshold <= release_count_total:
+            # Calculate how many milestones the user had before and after
+            old_milestones = old_release_count // milestone_threshold
+            new_milestones = release_count_total // milestone_threshold
+            print(f"Checking milestones for rarity {rarity}: old_release_count={old_release_count}, new_release_count={new_release_count}, old_milestones={old_milestones}, new_milestones={new_milestones}")
+
+            # Number of new milestones crossed
+            milestones_earned = new_milestones - old_milestones
+
+            if milestones_earned > 0:
                 rarity_items = [item for item in self.rewardable_items if item.rarity.name == rarity]
                 if rarity_items:
-                    milestone_items.append(random.choice(rarity_items))
-        return milestone_items
-    # endregion
+                    # Give one item for each milestone crossed
+                    for _ in range(milestones_earned):
+                        milestone_items.append(random.choice(rarity_items))
+
+        return milestone_items    # endregion
 
 class RewardConfig:
     CURRENCY_RANGE = (1, 5)

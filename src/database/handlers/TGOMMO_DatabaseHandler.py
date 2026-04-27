@@ -101,7 +101,7 @@ class TGOMMODatabaseHandler:
                         catch_id=creature_details[0], creature_id=creature_details[1],
                         name=creature_details[2], variant_name=creature_details[3], local_name=creature_details[4], nickname=creature_details[5],
                         dex_no=creature_details[6], variant_no=creature_details[7], local_dex_no=creature_details[8], local_variant_no=creature_details[9],
-                        environment_id=creature_details[18], sub_environment=creature_details[16],
+                        environment_id=creature_details[24], sub_environment=creature_details[16],
                         full_name=creature_details[10], scientific_name=creature_details[11], kingdom=creature_details[12], description=creature_details[13],
                         img_root=creature_details[14], local_image_root=creature_details[15],
                         encounter_rate=creature_details[17],

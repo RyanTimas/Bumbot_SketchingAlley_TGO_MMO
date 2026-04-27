@@ -177,6 +177,7 @@ def get_quest_avatar_records():
         ('Q44', 'Marmaduke', AVATAR_TYPE_QUEST, 'Marmaduke', 'Marmaduke',),
         ('Q45', 'Dwayne LaFontant', AVATAR_TYPE_QUEST, 'DwayneLaFontant', 'Over the Hedge',),
         ('Q46', 'Marcus', AVATAR_TYPE_QUEST, 'Marcus', 'Roblox',),
+        ('Q47', 'Walter White (Cooking)', AVATAR_TYPE_QUEST, 'WalterWhiteCooking', 'BreakingBad',),
     ]
     return quest_avatars
 def get_shop_avatar_records():
@@ -291,8 +292,8 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Shuma Gorath', ('Q15', AVATAR_TOTAL_EPIC_QUEST_QUERY, 10)),
         ('Gary', ('Q16', AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
         # WAVE 3
-        ('Bugs', ('Q17', AVATAR_BUGS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Daffy', ('Q18', AVATAR_DAFFY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Bugs', ('Q17', AVATAR_RABBITS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Daffy', ('Q18', AVATAR_DUCKS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Puss in Boots', ('Q19', AVATAR_FELINES_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
         ('Spider-Man', ('Q21', AVATAR_SPIDERS_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
@@ -300,7 +301,7 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
         # WAVE 4
         ('Mickey Mouse', ('Q24', AVATAR_MICKEY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Betel Geuse', ('Q25', AVATAR_BEETLEJUICE_QUEST_QUERY, 33)),
+        ('Betel Geuse', ('Q25', AVATAR_BEETLES_QUEST_QUERY, 33)),
 
         ('XLR8', ('Q26', AVATAR_TOTAL_REPTILE_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Stinkfly', ('Q27', AVATAR_TOTAL_INSECT_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
@@ -327,12 +328,14 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Marmaduke', ('Q44', AVATAR_MARMADUKE_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
         ('Dwayne LaFontant', ('Q45', AVATAR_DWAYNE_LAFONTANT_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Marcus', ('Q46', AVATAR_MARCUS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
+        ('Walter White (Cooking)', ('Q47', AVATAR_WALTER_WHITE_COOKING_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
 
         # Transcendant Avatars
         ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY, 1, True)),
         ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY, 1, True)),
         ('Frogman', ('T3', AVATAR_FROGMAN_QUEST_QUERY, 1, True)),
         ('SkunkApe', ('T4', AVATAR_SKUNK_APE_QUEST_QUERY, 1, True)),
+        ('Wendigo', ('T5', AVATAR_WENDIGO_QUEST_QUERY, 1, True)),
     ]
 
     for index, avatar in enumerate(avatar_data):

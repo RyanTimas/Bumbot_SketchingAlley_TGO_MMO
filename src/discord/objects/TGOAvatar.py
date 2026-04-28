@@ -1,6 +1,8 @@
 from random import randint
 
 from PIL import Image
+
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockImageFactory import AvatarUnlockImageFactory
 from src.resources.constants.file_paths import *
 
 
@@ -10,7 +12,9 @@ class TGOAvatar:
                  name:str, series:str,
                  avatar_type:str, is_parent_entry:bool,
                  img_root:str,
-                 unlock_query:str ="", unlock_threshold:int =0, is_secret:bool =False
+                 unlock_query:str ="", unlock_threshold:int =0, is_secret:bool =False,
+                 shop_price:int =0,
+                 unlock_startdate = None, unlock_enddate = None
     ):
         self.avatar_num = avatar_num
         self.avatar_id = avatar_id
@@ -26,13 +30,31 @@ class TGOAvatar:
         self.unlock_query = unlock_query if unlock_query else ""
         self.unlock_threshold = unlock_threshold if unlock_threshold else 0
         self.is_secret = is_secret if is_secret else False
+        self.is_completed = False
 
+        self.shop_price = shop_price
+
+        self.unlock_startdate = unlock_startdate
+        self.unlock_enddate = unlock_enddate
+
+        # IMAGES
         self.avatar_image = None
-        self.avatar_icon_image = None
+        self.avatar_thumbnail_image = None
+        self.avatar_unlock_image = None
+
+        # todo: MOVE THESE OUT OF THIS CLASS AND INTO A FACTORY CLASS, since they are only used for the avatar board and not the player profile
+        # image for representing the avatar quest, if it exists
         self.quest_icon_image = None
+
+        # images for avatar board, represent an icon for the unlocked avatar and an icon for the avatar quest if it exists
+        self.unlocked_avatar_icon = None
+        self.quest_progress_icon = None
+
         self.define_avatar_images()
 
     def define_avatar_images(self):
+        from src.discord.game_features.avatar_board.AvatarIconFactory import AvatarIconFactory
+
         avatar_img_path = f"{PLAYER_PROFILE_AVATAR_BASE}_{self.avatar_type}_{self.img_root}{IMAGE_FILE_EXTENSION}"
         fallback_img_root_path = f"{PLAYER_PROFILE_AVATAR_BASE}_Fallback-{randint(1,2)}{IMAGE_FILE_EXTENSION}"
 
@@ -42,9 +64,12 @@ class TGOAvatar:
         with Image.open(avatar_img_path if os.path.exists(avatar_img_path) else fallback_img_root_path) as img:
             self.avatar_image = img.copy()
         with Image.open(avatar_icon_img_path if os.path.exists(avatar_icon_img_path) else fallback_icon_img_root_path) as img:
-            self.avatar_icon_image = img.copy()
+            self.avatar_thumbnail_image = img.copy()
 
         quest_icon_img_path = f'{AVATAR_QUEST_BASE}_{self.img_root}{IMAGE_FILE_EXTENSION}'
         if os.path.exists(quest_icon_img_path):
             with Image.open(quest_icon_img_path) as img:
                 self.quest_icon_image = img.copy()
+
+        self.unlocked_avatar_icon = AvatarIconFactory(avatar=self).generate_avatar_quest_tab_image()
+        self.avatar_unlock_image = AvatarUnlockImageFactory(avatar=self).generate_avatar_unlock_image()

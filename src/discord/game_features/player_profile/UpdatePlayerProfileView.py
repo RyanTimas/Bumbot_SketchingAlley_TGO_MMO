@@ -1,14 +1,12 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
-from sqlalchemy.testing.plugin.plugin_base import options
 
-from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, \
-    check_if_user_can_interact_with_view, interaction_guard
-from src.commons.CommonViewComponents import create_dummy_label_button
+from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, interaction_guard
+from src.commons.CommonViewComponents import create_dummy_label_button, create_display_creature_collection_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PLAYER_PROFILE_TAB_CLOSED
-from src.discord.general.handlers.AvatarUnlockHandler import AvatarUnlockHandler
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 
@@ -61,7 +59,7 @@ class UpdatePlayerProfileView(BaseView):
         self.update_profile_button_2 = self.create_update_profile_button(page=2, input_configs=self.profile_inputs_page_2, row=2)
 
         self.save_changes_button = self.create_save_changes_button(row=3)
-        self.display_creatures_button = self.display_creature_collection_button(row=3)
+        self.display_creatures_button =  create_display_creature_collection_button(user=self.target_user, row=3)
 
         # DROPDOWNS
         self.avatar_picker_dropdown = self.create_avatar_picker_dropdown(row=1)
@@ -126,18 +124,9 @@ class UpdatePlayerProfileView(BaseView):
             await self.original_message.edit(attachments=[self.reload_image()], view=self.original_view)
             await interaction.followup.send("Changes successfully saved!", ephemeral=True)
 
-            await AvatarUnlockHandler(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction).check_avatar_unlock_conditions()
+            # Check if the new nickname has unlocked a new secret avatar
+            await check_for_secret_avatars(user_id=interaction.user.id, nickname=self.target_user.nickname, interaction=interaction)
             await interaction.message.delete(delay=2)
-        return callback
-
-    def display_creature_collection_button(self, row=0):
-        button = Button(label="See Creature Storage", style=discord.ButtonStyle.red, row=row)
-        button.callback = self.display_creature_collection_callback()
-        return button
-    def display_creature_collection_callback(self,):
-        @interaction_guard(self)
-        async def callback(interaction):
-            await self.build_user_creature_collection(interaction)
         return callback
 
 
@@ -202,42 +191,6 @@ class UpdatePlayerProfileView(BaseView):
 
 
     # SUPPORT FUNCTIONS
-    # todo: move this to a separate class that can be used by other views that need to display the user's creature collection
-    async def build_user_creature_collection(self, interaction: discord.Interaction):
-        page_num = 0
-        pages = [f"Total Unique Creatures Caught: {len(self.user_creature_collection)}"]
-        ordered_creatures = sorted(self.user_creature_collection, key=lambda c: c.dex_no)
-
-        # add an entry for each creature in collection
-        for creature_index, creature in enumerate(ordered_creatures):
-            current_page = pages[page_num]
-
-            creature_name = f'{creature.name}{f' -  {creature.variant_name}' if creature.variant_name != '' else ''}'
-            emojiis = f"{'✨' if creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL else '' }{ '💖' if creature.is_favorite else ''}{ '❗' if creature.nickname else ''}"
-            nickname = f"**__{creature.nickname}__**" if creature.nickname != '' else creature.name
-
-            newlines = f'{'\n' if creature.creature_id != ordered_creatures[creature_index - 1].creature_id else ''}\n'
-            new_entry = f"{newlines}{creature_index + 1}.  \t\t [{creature.catch_id}] \t ({pad_text(creature_name, 20)}) \t {pad_text(f"{emojiis}{nickname}", 20)}"
-
-            # if the amount of characters passes 1900, move to a new message
-            if len(current_page) + len(new_entry) > 1900:
-                page_num += 1
-                pages.append('')
-
-            pages[page_num] += new_entry
-
-        # Send the first page as the response
-        text = f"\n# {self.target_user.nickname}'s Creature Collection (1/{len(pages)}):\n{pages[0]}"
-        await interaction.followup.send(text, ephemeral=True)
-
-        # create page images for user to see
-        for page_index, page in enumerate(pages):
-            if page_index == 0:
-                continue
-
-            text = f"\n# {self.target_user.nickname}'s Creature Collection ({page_index + 1}/{len(pages)}):\n{page}"
-            await interaction.followup.send(text, ephemeral=True)
-
     async def handle_invalid_creature_ids(self, interaction: discord.Interaction):
         warnings = ["_⚠️**WARNING:**⚠️_\n"]
 

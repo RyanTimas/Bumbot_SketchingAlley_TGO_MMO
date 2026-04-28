@@ -39,6 +39,12 @@ class TGOMMODatabaseHandler:
         return self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS, params=(-1, avatar_id))
     def check_if_user_unlocked_avatar(self, user_id=-1, avatar_id=-1):
         return self.QueryHandler.execute_query(TGOMMO_AVATAR_IS_UNLOCKED_FOR_PLAYER, params=(user_id, avatar_id))[0][0] > 0
+
+    def batch_insert_avatar_links(self, avatars, user_id):
+        """Insert multiple avatar links at once"""
+        values = [(avatar.avatar_id, user_id) for avatar in avatars]
+        query = "INSERT INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES (?, ?)"
+        self.QueryHandler.execute_many(query, values)
     # endregion
 
 
@@ -95,7 +101,7 @@ class TGOMMODatabaseHandler:
                         catch_id=creature_details[0], creature_id=creature_details[1],
                         name=creature_details[2], variant_name=creature_details[3], local_name=creature_details[4], nickname=creature_details[5],
                         dex_no=creature_details[6], variant_no=creature_details[7], local_dex_no=creature_details[8], local_variant_no=creature_details[9],
-                        environment_id=creature_details[18], sub_environment=creature_details[16],
+                        environment_id=creature_details[24], sub_environment=creature_details[16],
                         full_name=creature_details[10], scientific_name=creature_details[11], kingdom=creature_details[12], description=creature_details[13],
                         img_root=creature_details[14], local_image_root=creature_details[15],
                         encounter_rate=creature_details[17],
@@ -118,8 +124,8 @@ class TGOMMODatabaseHandler:
                         name=env_details[1], variant_name=env_details[2],
                         dex_no=env_details[3], variant_no=env_details[4],
                         location=env_details[5], description=env_details[6],
-                        img_root=env_details[7],
-                        is_night_environment=bool(env_details[8]), in_circulation=bool(env_details[9]), encounter_rate=env_details[10]
+                        img_root=env_details[7], local_img_suffix=env_details[8],
+                        is_night_environment=bool(env_details[9]), in_circulation=bool(env_details[10]), encounter_rate=env_details[11]
                     )
                 )
         return environments if expect_multiple else environments[0]
@@ -146,6 +152,8 @@ class TGOMMODatabaseHandler:
 
     def get_avatars_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
+        if not results:
+            return [] if expect_multiple else None
 
         avatars = results
         if convert_to_object:
@@ -157,7 +165,9 @@ class TGOMMODatabaseHandler:
                         name=avatar_details[2], avatar_type=avatar_details[3], series=avatar_details[4],
                         is_parent_entry=avatar_details[5],
                         img_root=avatar_details[6],
-                        unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9]
+                        unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9],
+                        shop_price=avatar_details[10],
+                        unlock_startdate=avatar_details[11], unlock_enddate=avatar_details[12]
                     )
                 )
         return avatars if expect_multiple else avatars[0]
@@ -174,6 +184,7 @@ class TGOMMODatabaseHandler:
                         item_name=inventory_item_details[2], item_type=inventory_item_details[3], item_description=inventory_item_details[4],
                         rarity=get_rarity_by_name(inventory_item_details[5]), is_rewardable=inventory_item_details[6], img_root=inventory_item_details[7], default_uses=inventory_item_details[8],
                         user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11],
+                        last_purchase_date=inventory_item_details[12], shop_price=inventory_item_details[13]
                     )
                 )
         return inventory_items if expect_multiple else inventory_items[0]
@@ -200,6 +211,9 @@ class TGOMMODatabaseHandler:
 
     # region CREATURE QUERIES
     # region select creature queries
+    def get_all_creatures(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_CREATURE_BASE} TRUE {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
+        return self.get_creatures_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
     def get_creature_by_creature_id(self, creature_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
         return self.get_creatures_from_database(query=query, params=(creature_id,), convert_to_object=convert_to_object, expect_multiple=False)
@@ -207,6 +221,9 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX};"
         return self.get_creatures_from_database(query=query, params=(dex_no, variant_no), convert_to_object=convert_to_object, expect_multiple=False)
 
+    def get_all_environment_creatures(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} TRUE {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
+        return self.get_environment_creatures_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
     def get_environment_creature_by_environment_id_and_creature_id(self, environment_id=-1, creature_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
         return self.get_environment_creatures_from_database(query=query, params=(environment_id, creature_id), convert_to_object=convert_to_object, expect_multiple=False)
@@ -220,6 +237,11 @@ class TGOMMODatabaseHandler:
     def get_user_creature_by_catch_id(self, catch_id=0, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(catch_id,), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_user_creatures_by_catch_ids(self, catch_ids, convert_to_object=True):
+        placeholders = ','.join(['?' for _ in catch_ids])
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_CATCH_ID_IN_SUFFIX} ({placeholders});"
+        return self.get_user_creatures_from_database(query=query, params=catch_ids, convert_to_object=convert_to_object, expect_multiple=True)
+
     def get_user_creatures_by_user_id(self, user_id=0, is_released=False, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
         params = [user_id,]
@@ -259,6 +281,10 @@ class TGOMMODatabaseHandler:
         return self.get_total_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
     def has_user_caught_mythical_creature_variant(self, user_id=0, creature_id=0):
         return self.get_total_mythical_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
+
+    def does_user_own_catch_id(self, user_id=0, catch_id=0):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_CATCH_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX};"
+        return self.QueryHandler.execute_query(query, params=(catch_id, user_id)) != []
 
     def get_total_catches_for_user(self, user_id=0, is_released=None):
         return self.get_total_catches_base(user_id=user_id, is_released=is_released)
@@ -306,6 +332,10 @@ class TGOMMODatabaseHandler:
         return self.get_unique_catches_base(user_id=user_id, include_variants=False, is_mythical=True)
     def get_total_unique_mythical_creature_variants_caught_by_user(self, user_id=0):
         return self.get_unique_catches_base(user_id=user_id, include_variants=True, is_mythical=True)
+
+    def get_total_unique_creature_variants_caught_in_environment(self, environment_dex_no=0):
+        query = f"{TGOMMO_SELECT_UNIQUE_CREATURE_VARIANTS_CAUGHT_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_MATCHES_ENVIRONMENT_SUFFIX}"
+        return self.QueryHandler.execute_query(query, params=(environment_dex_no,))[0][0]
 
     def get_total_unique_creatures_caught_by_user_and_environment_dex_no(self, user_id=0, environment_dex_no=0):
         return self.get_unique_catches_base(user_id=user_id, include_variants=False, environment_dex_no=environment_dex_no)
@@ -424,7 +454,7 @@ class TGOMMODatabaseHandler:
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
-        return self.get_environments_from_database(query=query, params=(1, is_night_environment), convert_to_object=convert_to_object, expect_multiple=False)
+        return self.get_environments_from_database(query=query, params=(1, is_night_environment, 1), convert_to_object=convert_to_object, expect_multiple=False)
     # endregion
     # endregion
 
@@ -457,13 +487,66 @@ class TGOMMODatabaseHandler:
     def get_unlocked_avatars_for_server(self, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(-1,), convert_to_object=convert_to_object, expect_multiple=True)
+    def has_user_unlocked_avatar(self, user_id=0, avatar_id=0):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_LINK_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_AVATAR_LINK_BY_AVATAR_ID_SUFFIX};"
+        result = self.get_avatars_from_database(query=query, params=(user_id, avatar_id), convert_to_object=False, expect_multiple=False)
+        return True if result else False
 
-    def get_avatars_with_unlock_conditions(self):
-        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
-        return self.get_avatars_from_database(query=query, params=(), convert_to_object=True, expect_multiple=True)
+    # QUEST AVATAR QUERIES
+    def get_avatars_with_unlock_conditions(self, exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BY_UNLOCK_QUERY_NOT_NULL_SUFFIX}"
+        params = ()
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
     def get_child_avatars_by_parent_id(self, parent_avatar_id=''):
         query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_CHILD_AVATAR_SUFFIX};"
         return self.get_avatars_from_database(query=query, params=(parent_avatar_id, parent_avatar_id), convert_to_object=True, expect_multiple=True)
+
+    def batch_check_unlocked_avatars(self, avatar_ids, user_id):
+        """Returns set of avatar_ids that are already unlocked"""
+        placeholders = ','.join(['?' for _ in avatar_ids])
+        query = f"""SELECT avatar_id FROM tgommo_user_profile_avatar_link WHERE avatar_id IN ({placeholders}) AND user_id = ?"""
+        results = self.QueryHandler.execute_query(query, avatar_ids + [user_id])
+        return {row[0] for row in results}
+
+    # EVENT AVATAR QUERIES
+    def get_all_limited_time_avatars(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_NON_NULL_START_DATE_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_currently_available_limited_time_avatars(self, exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_DATE_BETWEEN_START_AND_END_DATE_SUFFIX} "
+        params = ()
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_AVATAR_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
+
+    # SECRET AVATAR QUERIES
+    def get_avatars_by_nickname(self, nickname='', exclude_unlocked_avatars=False, user_id=1, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_CONTAINS_NICKNAME_SUFFIX}"
+        params = (nickname,)
+
+        if exclude_unlocked_avatars:
+            query += f" AND {TGOMMO_NOT_EXISTS_USER_AVATAR_ID_IN_USER_PROFILE_AVATAR_LINK_SUFFIX}"
+            params += (user_id,)
+
+        query += f" {TGOMMO_SELECT_USER_AVATAR_GROUP_BY_DISTINCT_USER_AVATAR_NICKNAME_SUFFIX};"
+
+        return self.get_avatars_from_database(query=query, params=params, convert_to_object=convert_to_object, expect_multiple=True)
+
+    # SHOP AVATAR QUERIES
+    def get_random_shop_avatars(self, count=3, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_AVATAR_BASE} {TGOMMO_SELECT_USER_AVATAR_BY_AVATAR_TYPE_SUFFIX} {TGOMMO_ORDER_BY_RANDOM_SUFFIX};"
+        return self.get_avatars_from_database(query=query, params=('Shop', count), convert_to_object=convert_to_object,expect_multiple=True)
+
 
     # endregion
 
@@ -473,7 +556,7 @@ class TGOMMODatabaseHandler:
         return self.get_inventory_items_from_database(query=query, params=(item_id,), convert_to_object=convert_to_object, expect_multiple=False)
     def get_inventory_item_by_user_id_and_item_id(self, user_id=0, item_id=0, item_quantity=0, convert_to_object=True):
         # todo: change this to an insert function
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, item_quantity, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, item_quantity, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
 
         query = f"{TGOMMO_GET_INVENTORY_ITEM_BASE} {TGOMMO_SELECT_INVENTORY_ITEM_BY_ITEM_ID_SUFFIX} AND {TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_ITEM_BY_USER_ID_SUFFIX};"
         return self.get_inventory_items_from_database(query=query, params=(item_id, user_id), convert_to_object=convert_to_object, expect_multiple=False)
@@ -488,7 +571,7 @@ class TGOMMODatabaseHandler:
 
     # specific item queries
     def get_creature_inventory_expansions_by_user_id(self, user_id=0):
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
         return self.get_inventory_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, item_quantity=8).item_quantity
 
     # endregion
@@ -507,8 +590,8 @@ class TGOMMODatabaseHandler:
 
     '''' ----- UPDATE QUERIES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # Creature Queries
-    def update_creature_nickname(self, creature_id, nickname):
-        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_NICKNAME_BY_CATCH_ID, params=(nickname, creature_id))
+    def update_creature_nickname(self, catch_id, new_nickname):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_NICKNAME_BY_CATCH_ID, params=(new_nickname, catch_id))
         return response
 
     # Player Profile Queries
@@ -551,8 +634,13 @@ class TGOMMODatabaseHandler:
         return response
     def update_user_profile_available_items(self, user_id, item_id, new_amount):
         # add a dummy record in case user hasn't obtained this item before
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00'))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT, params=(new_amount, item_id, user_id))
+        return response
+    def update_user_avatar_item_last_purchased_date(self, user_id, item_id, last_purchased_date):
+        # add a dummy record in case user hasn't obtained this item before
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(item_id, user_id, 0, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_LINK_LAST_PURCHASE_DATE, params=(last_purchased_date, item_id, user_id))
         return response
 
     def update_creature_display_index(self, user_id, creature_id, display_index):

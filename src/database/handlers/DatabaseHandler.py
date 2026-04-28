@@ -1,4 +1,4 @@
-from src.database.handlers.TGOMMODatabaseInitializer import TGOMMODatabaseInitializer
+from src.database.data_seeders.TGOMMODatabase_DataEntriesInitializer import TGOMMODatabase_DataEntriesInitializer
 from src.database.handlers.TGOMMO_DatabaseHandler import TGOMMODatabaseHandler
 from src.database.handlers.User_DatabaseHandler import UserDatabaseHandler
 from src.resources.constants.general_constants import DISCORD_DATABASE, RUN_TGOMMO_DB_INIT
@@ -8,11 +8,11 @@ _db_handler = None
 _tgommo_db_handler = None
 _user_db_handler = None
 
-def initialize_database():
+def initialize_database(db_file=None):
     """Initialize the global database handler instance"""
     global _db_handler, _user_db_handler, _tgommo_db_handler
 
-    _db_handler = DatabaseHandler(DISCORD_DATABASE)
+    _db_handler = DatabaseHandler(db_file if db_file else DISCORD_DATABASE)
 
     _user_db_handler = _db_handler.user_database_handler
     _tgommo_db_handler = _db_handler.tgommo_database_handler
@@ -45,7 +45,7 @@ class DatabaseHandler:
     def __init__(self, db_file):
         self.user_database_handler = UserDatabaseHandler(db_file=db_file)
         self.tgommo_database_handler = TGOMMODatabaseHandler(db_file=db_file)
-        self.tgommo_database_initializer = TGOMMODatabaseInitializer(db_handler = self.tgommo_database_handler)
+        self.tgommo_database_initializer = TGOMMODatabase_DataEntriesInitializer(db_handler = self.tgommo_database_handler)
 
         if RUN_TGOMMO_DB_INIT:
             self.tgommo_database_initializer.initialize_tgommo_database()

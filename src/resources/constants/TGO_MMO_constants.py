@@ -1,4 +1,3 @@
-'''GENERAL_CONSTANTS'''
 import datetime
 import pytz
 
@@ -47,12 +46,20 @@ AVATAR_TYPE_FALLBACK = "Fallback"
 AVATAR_TYPE_SORT_ORDER = {
     AVATAR_TYPE_DEFAULT: 1,
     AVATAR_TYPE_SECRET: 2,
-    AVATAR_TYPE_EVENT: 3,
+    AVATAR_TYPE_SHOP: 3,
     AVATAR_TYPE_QUEST: 4,
-    AVATAR_TYPE_TRANSCENDANT: 5,
-    AVATAR_TYPE_FALLBACK: 6,
-    AVATAR_TYPE_CUSTOM: 7
+    AVATAR_TYPE_EVENT: 5,
+    AVATAR_TYPE_TRANSCENDANT: 6,
+    AVATAR_TYPE_FALLBACK: 7,
+    AVATAR_TYPE_CUSTOM: 8
 }
+
+AVATAR_SHOP_PRICE_COMMON = 100
+AVATAR_SHOP_PRICE_UNCOMMON = 250
+AVATAR_SHOP_PRICE_RARE = 375
+AVATAR_SHOP_PRICE_EPIC = 500
+AVATAR_SHOP_PRICE_LEGENDARY = 1000
+AVATAR_SHOP_PRICE_MYTHICAL = 2500
 
 # endregion
 
@@ -72,6 +79,7 @@ ARACHNID = "Arachnid"
 CLITELLATA = "Clitellata"
 MYRIAPOD = "Myriapod"
 ARTHROPOD = "Arthropod"
+ASTEROIDEA = "Asteroidea"
 
 MYSTICAL = "Mystical"
 # endregion
@@ -94,6 +102,8 @@ TGOMMO_RARITY_OMNIPOTENT = "Omnipotent"
 # region Dex Numbers
 EASTERN_US_DEX_NO = 1
 FLORIDA_DEX_NO = 2
+ICELAND_DEX_NO = 3
+YELLOWSTONE_DEX_NO = 4
 # endregion
 # region Sub Environments
 SUB_ENVIRONMENT_FOREST = "forest"
@@ -107,6 +117,9 @@ SUB_ENVIRONMENT_CITY = "city"
 SUB_ENVIRONMENT_PIER = "pier"
 SUB_ENVIRONMENT_OCEAN = "ocean"
 SUB_ENVIRONMENT_MOUNTAIN = "mountain"
+SUB_ENVIRONMENT_CLIFF = "cliff"
+SUB_ENVIRONMENT_DESERT = "desert"
+SUB_ENVIRONMENT_TUNDRA = "tundra"
 # endregion
 
 """ ----- ITEMS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -119,6 +132,10 @@ ITEM_TYPE_CHARM = 'Charm'
 
 ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
 # endregion
+# region Creature Item Types
+ITEM_TYPE_PEARL = 'Pearl'
+# endregion
+
 
 """ ----- GAMEPLAY MECHANICS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- CREATURE CATCH  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -212,6 +229,18 @@ AVATAR_INVENTORY_QUEST_TAB_KEY = "AVATAR_QUESTS"
 AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY = "UNLOCKED_AVATARS"
 # endregion
 
+# region Avatar Board Collection Filter Keys
+AVATAR_BOARD_FILTER_SERIES = "specific_series_only"
+AVATAR_BOARD_FILTER_COMPLETED_QUESTS = "completed_only"
+# endregion
+# region Avatar Board Collection Sort Keys
+AVATAR_BOARD_SORT_ALPHABETICAL = 'alphabetical'
+AVATAR_BOARD_SORT_DEX_NO = 'dex_no'
+AVATAR_BOARD_SORT_SERIES = 'series'
+AVATAR_BOARD_SORT_AVATAR_TYPE = 'avatar_type'
+AVATAR_BOARD_SORT_UNLOCK_DATE = 'unlock_date'
+# endregion
+
 """ ----- CREATURE INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Creature Inventory Expansion Variables
 BASE_CREATURE_STORAGE_EXPANSIONS = 8
@@ -227,8 +256,8 @@ CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_FINALIZED = "finalized"
 # endregion
 
 # region Creature Expansion Keys
-CREATURE_INVENTORY_FILTER_EXPANSION_KEY = "filter_expansion"
-CREATURE_INVENTORY_ORDER_EXPANSION_KEY = "order_expansion"
+FILTER_EXPANSION_KEY = "filter_expansion"
+ORDER_EXPANSION_KEY = "order_expansion"
 CREATURE_INVENTORY_CREATURE_MANAGEMENT_EXPANSION_KEY = "creature_management"
 # endregion
 # region Creature Inventory Filter Keys
@@ -272,7 +301,7 @@ AVATAR_QUEST_LEGENDARY_COUNT = 5
 # region ITEM IDS
 ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION = 'Creature_Inventory_Storage_Expansion'
 
-ITEM_ID_NAMETAG  = f"{ITEM_TYPE_NAMETAG}_0"
+ITEM_ID_NAMETAG  = f"{ITEM_TYPE_NAMETAG}_1"
 
 ITEM_ID_BAIT  = f"{ITEM_TYPE_BAIT}_0"
 ITEM_ID_COMMON_BAIT  = f"{ITEM_TYPE_BAIT}_1"
@@ -304,6 +333,13 @@ ITEM_ID_MYTHICAL_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_6"
 ITEM_ID_TRANSCENDANT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_7"
 ITEM_ID_OMNIPOTENT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_8"
 # endregion
-
-
+# region CREATURE ITEM IDS
+ITEM_ID_WHITE_PEARL = f"{ITEM_TYPE_PEARL}_0"
+ITEM_ID_PINK_PEARL = f"{ITEM_TYPE_PEARL}_1"
+ITEM_ID_GREEN_PEARL = f"{ITEM_TYPE_PEARL}_2"
+ITEM_ID_PETROL_PEARL = f"{ITEM_TYPE_PEARL}_3"
+ITEM_ID_PURPLE_PEARL = f"{ITEM_TYPE_PEARL}_4"
+ITEM_ID_GOLD_PEARL = f"{ITEM_TYPE_PEARL}_5"
+ITEM_ID_BLACK_PEARL = f"{ITEM_TYPE_PEARL}_6"
+# endregion
 

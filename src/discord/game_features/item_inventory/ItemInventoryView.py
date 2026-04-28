@@ -2,7 +2,7 @@ from discord.ui import Select
 
 from src.commons.CommonFunctions import *
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
-from src.discord.game_features.item_inventory.ItemUseHandler import ItemUseHandler
+from src.discord.handlers.ItemUseHandler.ItemUseHandler import ItemUseHandler
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
@@ -14,6 +14,8 @@ class ItemInventoryView(BaseView):
         self.discord_bot = discord_bot
         self.original_message = original_message
 
+        self.item_use_handler = ItemUseHandler(channel=None, discord_bot=self.discord_bot, original_view=self)
+
         self.selected_item = None
 
         # DEFINE VIEW COMPONENTS
@@ -21,7 +23,7 @@ class ItemInventoryView(BaseView):
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
 
-        self.refresh_view(view_mode=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INITIAL)
+        self.refresh_view()
 
 
     # CREATE BUTTONS
@@ -40,11 +42,13 @@ class ItemInventoryView(BaseView):
                 await interaction.followup.send(content="You don't have any more of this item to use.", ephemeral=True)
                 return
 
-            self.original_message = interaction.message
-            self.refresh_view(view_mode=CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION)
+            self.original_message = interaction.message if not self.original_message else self.original_message
+
+            confirmation_view = discord.ui.View(timeout=60).add_item(self.create_use_item_confirm_button())
+            self.refresh_view()
 
             item_img = convert_to_png(Image.open(f"{ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
-            await interaction.followup.send(content=f"You have selected {self.selected_item.item_name} to use.\nYou have {self.selected_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=self, ephemeral=True)
+            await interaction.followup.send(content=f"You have selected {self.selected_item.item_name} to use.\nYou have {self.selected_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=confirmation_view, ephemeral=True)
         return callback
 
     def create_use_item_confirm_button(self, row=1):
@@ -55,9 +59,8 @@ class ItemInventoryView(BaseView):
     def use_item_confirm_callback(self,):
         @interaction_guard(self)
         async def callback(interaction):
-            await ItemUseHandler(channel=interaction.channel, discord_bot=self.discord_bot).use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
-            if self.original_message:
-                await self.original_message.delete()
+            self.item_use_handler.original_message = self.original_message
+            await self.item_use_handler.use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
         return callback
 
 
@@ -76,25 +79,17 @@ class ItemInventoryView(BaseView):
         await interaction.response.defer()
 
     # FUNCTIONS FOR UPDATING VIEW STATE
-    def refresh_view(self, view_mode: str = None):
+    def refresh_view(self):
         self.update_button_states()
-        self.rebuild_view(view_mode)
+        self.rebuild_view()
     def update_button_states(self):
         pass
-    def rebuild_view(self, view_mode: str = None):
+    def rebuild_view(self):
         super().rebuild_view()
 
-        if view_mode == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INITIAL:
-            super().rebuild_view()
-            if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
-                self.add_item(self.item_select_dropdown)
-                self.add_item(self.use_item_button)
-
-        if view_mode == CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_CONFIRMATION:
-            self.add_item(self.use_item_confirm_button)
-            self.remove_item(self.close_button)
-            self.remove_item(self.go_back_button)
-            self.remove_item(self.change_user_button)
+        if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
+            self.add_item(self.item_select_dropdown)
+            self.add_item(self.use_item_button)
 
 
     # SUPPORT FUNCTIONS

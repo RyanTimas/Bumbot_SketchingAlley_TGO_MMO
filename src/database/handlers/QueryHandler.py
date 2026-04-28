@@ -39,6 +39,12 @@ class QueryHandler:
 
         return return_value
 
+    def execute_many(self, query, params_list):
+        """Execute multiple queries with different parameters"""
+        self.connect_to_db()
+        self.cursor.executemany(query, params_list)
+        self.close_db()
+
 
     def get_conn(self):
         return self.conn

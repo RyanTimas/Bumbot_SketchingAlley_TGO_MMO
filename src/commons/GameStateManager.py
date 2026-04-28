@@ -2,6 +2,8 @@ import json
 import os
 from typing import Optional
 
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+
 # Global instance - initialized as None
 game_state_manager = None
 
@@ -53,23 +55,69 @@ class GameStateManager:
         if env_dex is not None and env_variant is not None:
             return env_dex, env_variant
         return None
+
+    def get_environment_change_date(self) -> Optional[str]:
+        state = self._load_state()
+        return state.get("environment_change_date")
+    def get_shop_date(self) -> Optional[str]:
+        state = self._load_state()
+        return state.get("shop_date")
+
+    def get_current_shop_inventory(self):
+        return self.get_current_shop_items(), self.get_current_shop_avatars()
+    def get_current_shop_items(self):
+        state = self._load_state()
+
+        shop_items = []
+        for item_id in state.get("current_shop_item_ids"):
+            item = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=item_id)
+            if item:
+                shop_items.append(item)
+        return shop_items
+    def get_current_shop_avatars(self):
+        state = self._load_state()
+
+        shop_avatars = []
+        for avatar_id in state.get("current_shop_avatar_ids"):
+            avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar_id)
+            if avatar:
+                shop_avatars.append(avatar)
+        return shop_avatars
+
+    # general Bumbot state getters
     def get_shiny_message_count(self) -> int:
         state = self._load_state()
         return state.get("shiny_message_count", 0)
 
-
     ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def set_current_environment(self, environment_dex_no: int, environment_variant_no: int):
         state = self._load_state()
-
         state.update({
             "environment_dex_no": environment_dex_no,
             "environment_variant_no": environment_variant_no
         })
         self._save_state(state)
+
+    def set_environment_change_date(self, new_date: str):
+        state = self._load_state()
+        state["environment_change_date"] = new_date
+        self._save_state(state)
+    def set_shop_date(self, new_date: str):
+        state = self._load_state()
+        state["shop_date"] = new_date
+        self._save_state(state)
+
+    def set_current_shop_inventory(self, item_ids: list, avatar_ids: list):
+        state = self._load_state()
+        state.update({
+            "current_shop_item_ids": item_ids,
+            "current_shop_avatar_ids": avatar_ids
+        })
+        self._save_state(state)
+
+
+    # General Bumbot state setters
     def set_shiny_message_count(self, new_count: int):
         state = self._load_state()
         state["shiny_message_count"] = new_count
         self._save_state(state)
-
-

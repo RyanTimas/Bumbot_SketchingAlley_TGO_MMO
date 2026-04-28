@@ -16,6 +16,7 @@ class AvatarQuestTabFactory:
     def __init__(self, avatar: TGOAvatar, user_id):
         self.avatar = avatar
         self.completed_quest_value = get_tgommo_db_handler().QueryHandler.execute_query(query=avatar.unlock_query, params=(user_id,))[0][0]
+        self.is_completed = self.completed_quest_value >= self.avatar.unlock_threshold
 
 
     def generate_avatar_quest_tab_image(self):
@@ -23,7 +24,7 @@ class AvatarQuestTabFactory:
         base_img = Image.open(AVATAR_QUEST_TAB_WHITE_BORDER_IMAGE)
         self.place_progress_bar_on_image(base_img)
 
-        if self.completed_quest_value >= self.avatar.unlock_threshold:
+        if self.is_completed:
             completed_stamp_img = Image.open(AVATAR_QUEST_TAB_COMPLETE_TEXT_IMAGE)
             base_img.paste(completed_stamp_img, (0, 0), completed_stamp_img)
         else:

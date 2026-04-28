@@ -1,9 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-from src.commons.CommonFunctions import center_text_on_pixel
+from src.commons.CommonFunctions import get_centered_text_position
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_inventory.CreatureInventoryReleaseResultItemImageFactory import \
-    CreatureInventoryReleaseResultItemImageFactory
+from src.discord.game_features.creature_inventory.CreatureInventoryReleaseResultItemImageFactory import CreatureInventoryReleaseResultItemImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.file_paths import *
 
@@ -86,8 +85,8 @@ class ReleaseResultImageFactory(BaseImageFactory):
         name_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28)
 
         # add username footer
-        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.user_id, convert_to_object=True).nickname}'s Release Summary"
-        pixel_location = center_text_on_pixel(text=name_text, font=name_font, center_pixel_location=(960, 1034))
+        name_text = f"{get_tgommo_db_handler().get_user_profile_by_user_id(user_id=self.target_user.user_id, convert_to_object=True).nickname}'s Release Summary - Total Lifetime Releases: {len(get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id, is_released=True, convert_to_object=False))}"
+        pixel_location = get_centered_text_position(text=name_text, font=name_font, center_pixel_location=(960, 1034))
         draw.text(pixel_location, text=name_text, font=name_font, fill=navy_blue_color)
 
         # add released count and currency earned
@@ -97,6 +96,6 @@ class ReleaseResultImageFactory(BaseImageFactory):
 
         if len(self.earned_items) == 0:
             no_items_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 48)
-            pixel_location = center_text_on_pixel(text="No Items Earned", font=no_items_font, center_pixel_location=(960, 540))
+            pixel_location = get_centered_text_position(text="No Items Earned", font=no_items_font, center_pixel_location=(960, 540))
             draw.text(pixel_location, text="No Items Earned", font=no_items_font, fill=navy_blue_color)
         return image

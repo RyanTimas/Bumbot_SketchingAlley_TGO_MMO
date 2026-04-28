@@ -69,7 +69,7 @@ def add_text_to_image(image: Image, font, text: str = "", position= (0,0), color
     return image
 
 
-def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
+def get_centered_text_position(text: str, font: ImageFont.FreeTypeFont, center_pixel_location = (0, 0)):
     text_bbox = font.getbbox(text)
 
     text_width = text_bbox[2] - text_bbox[0]
@@ -79,13 +79,29 @@ def center_text_on_pixel(text: str, font: ImageFont.FreeTypeFont, center_pixel_l
     y = center_pixel_location[1] - text_height // 2
     return (x, y)
 
+
+def get_centered_image_position(foreground_image: Image, background_image: Image, center_pixel: tuple = None):
+    bg_width, bg_height = background_image.size
+    fg_width, fg_height = foreground_image.size
+
+    if center_pixel is None:
+        # Default behavior - center on the background image
+        x = (bg_width - fg_width) // 2
+        y = (bg_height - fg_height) // 2
+    else:
+        # Center the foreground image on the specified pixel location
+        center_x, center_y = center_pixel
+        x = center_x - (fg_width // 2)
+        y = center_y - (fg_height // 2)
+
+    return (x, y)
 def open_image_from_url(image_url):
     response = requests.get(image_url)
     if response.status_code == 200:
         img = Image.open(io.BytesIO(response.content))
         return img
     else:
-        return Image.open(PLAYER_PROFILE_AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else PLAYER_PROFILE_AVATAR_FALLBACK_2_IMAGE)
+        return Image.open(AVATAR_FALLBACK_1_IMAGE if random.random() > 0.5 else AVATAR_FALLBACK_2_IMAGE)
 
 def add_border_to_image(base_image: Image, text: str, font: ImageFont, border_size: int = 10, border_color: tuple = (0, 0, 0, 255), font_color: tuple = FONT_COLOR_WHITE):
     image_draw = ImageDraw.Draw(base_image)

@@ -29,6 +29,9 @@ TGOMMO_CREATE_AVATAR_TABLE = """CREATE TABLE IF NOT EXISTS user_avatar (
     img_root TEXT NOT NULL,
     series TEXT,
     is_parent_entry BOOLEAN DEFAULT False,
+    shop_price INTEGER NOT NULL DEFAULT 0,
+    unlock_startdate DATE,
+    unlock_enddate DATE,
     UNIQUE(avatar_id)
 )"""
 SA_CREATE_ROLES_TABLE = """CREATE TABLE IF NOT EXISTS roles (
@@ -76,6 +79,7 @@ TGOMMO_CREATE_ENVIRONMENT_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environme
     is_night_environment BOOLEAN NOT NULL,
     in_circulation BOOLEAN NOT NULL,
     encounter_rate INTEGER NOT NULL,
+    local_img_suffix TEXT DEFAULT '',
     UNIQUE(dex_no, variant_no)
 )"""
 TGOMMO_CREATE_ENVIRONMENT_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_environment_creature (
@@ -162,6 +166,7 @@ TGOMMO_CREATE_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_invent
     is_rewardable BOOLEAN DEFAULT 0,
     img_root TEXT NOT NULL,
     default_uses INTEGER NOT NULL,
+    shop_price INTEGER NOT NULL DEFAULT 0,
     UNIQUE(item_id)
 )"""
 
@@ -170,6 +175,7 @@ TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgo
     user_id INTEGER NOT NULL,
     item_quantity INTEGER NOT NULL DEFAULT 0,
     last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(user_id, item_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
@@ -193,6 +199,13 @@ TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE = """CREATE TABLE IF NOT EXISTS tgom
     PRIMARY KEY (avatar_id),
     FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
 )"""
+TGOMMO_CREATE_AVATAR_NICKNAME_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_avatar_nickname_link (
+    avatar_id TEXT,
+    nickname_keyword TEXT DEFAULT '',
+    UNIQUE(avatar_id, nickname_keyword),
+    FOREIGN KEY (avatar_id) REFERENCES user_avatar (avatar_id)
+)"""
+
 
 TGOMMO_CREATE_COLLECTION_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_collection (
     collection_id INTEGER PRIMARY KEY AUTOINCREMENT,

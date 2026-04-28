@@ -125,7 +125,7 @@ class EncyclopediaXLImageFactory(BaseImageFactory):
         # BOTTOM BAR TEXT
         text = f"{self.parent_image_factory.environment.name}"
         font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
-        pixel_location = center_text_on_pixel(text, font, center_pixel_location=(2160, 73))
+        pixel_location = get_centered_text_position(text, font, center_pixel_location=(2160, 73))
         draw.text(pixel_location, text=text, font=font, color=bar_font_color)
 
         return encyclopedia_img

@@ -5,30 +5,38 @@ from src.resources.constants.file_paths import *
 
 
 class BaseImageFactory:
+    """Base class for creating images displayed within the game."""
     def __init__(self, message_author, target_user):
+        # User context
         self.message_author: TGOPlayer = message_author
         self.target_user: TGOPlayer = target_user
         self.is_server_view = target_user.user_id == 0
 
+        # Page # state
         self.page_num = 1
         self.total_pages = 1
 
+
+    '''----IMAGE GENERATION METHODS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # Reload the image with updated parameters.
     def reload_image(self, target_user=None, new_page_number = None):
         self.load_relevant_info(target_user=target_user, new_page_number=new_page_number)
         return self.build_image()
+    # Load and update relevant information for image generation. Override this method in subclasses to implement specific data loading.
     def load_relevant_info(self, target_user=None, new_page_number = None):
         self.target_user = target_user if target_user else self.target_user
         self.page_num = new_page_number if new_page_number else self.page_num
         pass
+    # Build and return the final image. Override this method in subclasses to implement specific image generation.
     def build_image(self):
         return None
 
-
-# SUPPORT FUNCTIONS
+    '''----IMAGE UTILITY METHODS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # Add text to an image using PIL ImageDraw. This is a placeholder method that can be overridden in subclasses to add specific text to images as needed.
     def add_text_to_image(self, img: Image):
-        draw = ImageDraw.Draw(img)
         return img
 
+    # Helper function to build a grid of icons with specified parameters, resizing icons as needed and applying padding between them
     def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3):
         grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
         icon_width, icon_height = icon_size
@@ -54,8 +62,3 @@ class BaseImageFactory:
                 row += 1
 
         return grid_canvas
-
-
-
-
-

@@ -1,4 +1,18 @@
 {
   "environment_dex_no": 1,
-  "environment_variant_no": 1
+  "environment_variant_no": 2,
+  "shiny_message_count": 145,
+  "shop_date": "2026-04-16",
+  "current_shop_item_ids": [
+    "Bait_0",
+    "Charm_0",
+    "NameTag_1"
+  ],
+  "current_shop_avatar_ids": [
+    "P34",
+    "P5",
+    "P30"
+  ],
+  "shop_level": 1,
+  "shop_upgrade_funds": 0
 }

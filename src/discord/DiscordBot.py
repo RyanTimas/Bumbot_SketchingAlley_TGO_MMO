@@ -3,12 +3,14 @@ import sys
 
 import aiohttp
 import discord
+from PIL import Image
 from discord.ext import commands
 
-from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin
+from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
 from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
     AvatarBoardAvatarQuestImageFactory
@@ -25,8 +27,17 @@ from src.discord.game_features.item_inventory.ItemInventoryImageFactory import I
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
+from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
+from src.discord.game_features.shop.ShopView import ShopView
+from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
+from src.discord.general.tests.GeneralTests import register_general_tests
+from src.discord.general.tests.ShopTests import register_shop_tests
+from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST
+from src.resources.constants.file_paths import TGOMMO_TRAVEL_ADVISORY_BASE, IMAGE_FILE_EXTENSION, \
+    TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
+from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
+    TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
 class DiscordBot(commands.Bot):
@@ -44,9 +55,13 @@ class DiscordBot(commands.Bot):
         self.register_tgommo_user_navigation_commands()
         self.register_tgommo_admin_commands()
 
-        self.creature_spawner_handler = CreatureSpawnerHandler(self)
+        self.register_test_commands()
 
-    ''' EVENTS '''
+        self.creature_spawner_handler = CreatureSpawnerHandler(discord_bot=self)
+        self.shop_restock_scheduler = ShopScheduler(discord_bot=self)
+
+
+    '''---- EVENTS ----------------------------------------------------------------------------------------------------'''
     def register_events(self):
         @self.event
         async def on_ready():
@@ -58,7 +73,9 @@ class DiscordBot(commands.Bot):
             except Exception as e:
                 print(f"Failed to sync commands: {e}")
 
+            # Start scheduled tasks
             self.creature_spawner_handler.start_creature_spawner()
+            self.shop_restock_scheduler.start_scheduler()
 
         @self.event
         async def on_message(message):
@@ -74,6 +91,8 @@ class DiscordBot(commands.Bot):
                 shiny_message_count = get_game_state_manager().get_shiny_message_count()
                 get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
 
+            await self.process_commands(message)
+
 
         @self.event
         async def on_command_error(ctx, error):
@@ -83,7 +102,7 @@ class DiscordBot(commands.Bot):
             # Re-raise other errors so they aren't suppressed
             raise error
 
-    ''' COMMANDS '''
+    '''---- SLASH COMMANDS ----------------------------------------------------------------------------------------------------'''
     def register_core_commands(self):
         @self.tree.command(name="shutdown", description="Completely shuts down bumbot. Please for emergencies only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
         async def shutdown(interaction: discord.Interaction):
@@ -147,10 +166,9 @@ class DiscordBot(commands.Bot):
             target_user_id = int(user_id) if user_id and user_id.isdigit() else interaction.user.id
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
-             
-            avatar_board_unlocked_avatar_image_factory = AvatarBoardUnlockedAvatarImageFactory(message_author=message_author, target_user=target_user)
-            avatar_board_quest_image_factory = AvatarBoardAvatarQuestImageFactory(message_author=message_author, target_user=target_user)
-            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_unlocked_avatar_image_factory=avatar_board_unlocked_avatar_image_factory, avatar_board_quest_image_factory=avatar_board_quest_image_factory)
+
+            avatar_board_image_factory = AvatarBoardImageFactory(message_author=message_author, target_user=target_user)
+            view = AvatarBoardView(message_author=message_author, target_user= target_user, avatar_board_image_factory=avatar_board_image_factory)
 
             await interaction.followup.send('', files=[view.reload_image()], view=view)
 
@@ -206,6 +224,17 @@ class DiscordBot(commands.Bot):
 
             await interaction.followup.send('', files=[view.reload_image()], view=view)
 
+        @self.tree.command(name="open-morshus-shop-tgommo", description="Opens Morshu's Shop.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_open_shop(interaction):
+            await interaction.response.defer()
+
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+
+            shop_image_factory = ShopImageFactory(message_author=message_author)
+            view = ShopView(message_author=message_author, shop_image_factory=shop_image_factory)
+
+            await interaction.followup.send(files=[view.reload_image()], view=view)
+
     def register_tgommo_admin_commands(self):
         @admin_only()
         @self.tree.command(name="spawn_creature_tgommo", description="Manually spawn a creature. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
@@ -257,19 +286,45 @@ class DiscordBot(commands.Bot):
 
         @admin_only()
         @self.tree.command(name="change_environment_tgommo", description="Change the current TGOMMO environment. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
-        async def tgommo_change_environment(interaction, environment_dex_no: int):
+        @discord.app_commands.describe(environment_dex_no="Environment dex number (leave empty for random)")
+        async def tgommo_change_environment(interaction, environment_dex_no: int = None):
             try:
-                environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=self.creature_spawner_handler.current_environment.variant_no)
-                if not environment:
+                if environment_dex_no:
+                    new_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=self.creature_spawner_handler.current_environment.variant_no)
+                else:
+                    new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.creature_spawner_handler.is_day else 1, convert_to_object=True)
+
+                if not new_environment:
                     await interaction.response.send_message(f"Environment with dex number {environment_dex_no} not found.", delete_after=10, ephemeral=True)
                     return
-                self.creature_spawner_handler.current_environment = environment
+                self.creature_spawner_handler.define_environment_and_spawn_pool(environment_dex_no=new_environment.dex_no, environment_variant_no=new_environment.variant_no)
 
-                await interaction.response.send_message(
-                    f"Environment changed to: {environment.name} (Dex No: {environment_dex_no})", delete_after=10)
-
+                # Announce the environment change in the spawn channel
+                await interaction.response.send_message(f"Environment changed to: {new_environment.name} (Dex No: {environment_dex_no})", delete_after=10)
+                await self.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {new_environment.name}** 🌍", files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")])
             except Exception as e:
                 await interaction.response.send_message(f"Error changing environment: {str(e)}", delete_after=10, ephemeral=True)
+
+        @admin_only()
+        @self.tree.command(name="refresh_shop_tgommo", description="Manually refresh the daily shop. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_refresh_shop(interaction):
+            try:
+                await interaction.response.defer(ephemeral=True)
+
+                # Manually trigger the shop refresh
+                await self.shop_restock_scheduler.refresh_daily_shop()
+                await interaction.followup.send("Shop has been manually refreshed!", ephemeral=True)
+            except Exception as e:
+                await interaction.followup.send(f"Error refreshing shop: {str(e)}", ephemeral=True)
+
+
+    '''---- TEST COMMANDS ----------------------------------------------------------------------------------------------------'''
+    def register_test_commands(self):
+        register_general_tests(self)
+
+        # GAME FEATURE TESTS
+        register_creature_encounter_tests(self)
+        register_shop_tests(self)
 
     def start_bot(self):
         self.run(self.token)

@@ -1,37 +1,55 @@
 select * from tgommo_creature c;
-select * from tgommo_environment e;
 select * from tgommo_environment_creature ec;
 select * from tgommo_user_creature tuc;
 
+select * from tgommo_environment e;
+
 select * from users;
+select * from tgommo_user_profile tup;
 select * from user_avatar ua;
 select * from tgommo_user_profile_avatar_link ual;
 select * from tgommo_user_avatar_unlock_condition uauc;
----------------------------------------------------------------------------------------------------------
-Delete from tgommo_user_profile_avatar_link WHERE avatar_id   = 'E13';
+select * from tgommo_user_avatar_nickname_link uanl;
 
+select * from tgommo_inventory_item tii;
+select * from tgommo_user_item_inventory_link tuiil;
 
-    SELECT 
-        DISTINCT(uc.catch_id), c.creature_id, 
-        c.name, c.variant_name, ec.local_name, uc.nickname, 
-        c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
-        c.full_name, c.scientific_name, c.kingdom, c.description, 
-        c.img_root, ec.local_img_root,
-        ec.sub_environment_type, 
-        c.encounter_rate, 
-        c.default_rarity, ec.spawn_rarity, uc.is_mythical, 
-        uc.catch_date, uc.is_favorite, uc.is_released 
-    FROM tgommo_user_creature uc 
-        LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id 
-        LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id 
+SELECT * from tgommo_collection tc;
+--------------------------------------------------------------------------------------------------------
+    SELECT
+        ua.avatar_num, ua.avatar_id, 
+        ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry,
+        ua.img_root,
+        auc.unlock_query, auc.unlock_threshold, auc.is_secret,
+        ua.shop_price,
+        ua.unlock_startdate, ua.unlock_enddate
+    FROM user_avatar ua
+    LEFT JOIN tgommo_user_avatar_unlock_condition auc
+        ON auc.avatar_id = ua.avatar_id
+    LEFT JOIN tgommo_user_profile_avatar_link upal
+    	ON upal.avatar_id = ua.avatar_id
+    LEFT JOIN tgommo_user_avatar_nickname_link uanl
+        ON uanl.avatar_id = ua.avatar_id
     WHERE 
- uc.user_id = 801108873955115028 AND uc.is_released = 0;
+ date('now') BETWEEN ua.unlock_startdate AND ua.unlock_enddate  AND  NOT EXISTS (SELECT 1 FROM tgommo_user_profile_avatar_link upal WHERE upal.avatar_id = ua.avatar_id AND upal.user_id = ?)  GROUP BY uanl.avatar_id;
 
 
-
-
-
-
+    SELECT
+        ua.avatar_num, ua.avatar_id, 
+        ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry,
+        ua.img_root,
+        auc.unlock_query, auc.unlock_threshold, auc.is_secret,
+        ua.shop_price,
+        ua.unlock_startdate, ua.unlock_enddate
+    FROM user_avatar ua
+    LEFT JOIN tgommo_user_avatar_unlock_condition auc
+        ON auc.avatar_id = ua.avatar_id
+    LEFT JOIN tgommo_user_profile_avatar_link upal
+    	ON upal.avatar_id = ua.avatar_id
+    LEFT JOIN tgommo_user_avatar_nickname_link uanl
+        ON uanl.avatar_id = ua.avatar_id
+    WHERE 
+ date('now') BETWEEN ua.unlock_startdate AND ua.unlock_enddate  GROUP BY ua.avatar_id;
 
 
 ---------------------------------------------------------------------------------------------------------

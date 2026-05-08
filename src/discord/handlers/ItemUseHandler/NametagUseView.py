@@ -3,7 +3,7 @@ import traceback
 import discord
 from discord.ui import View, Button, Modal
 
-from src.commons.CommonFunctions import retry_on_ssl_error
+from src.commons.CommonDecorators import retry_on_ssl_error
 from src.commons.CommonViewComponents import create_display_creature_collection_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars

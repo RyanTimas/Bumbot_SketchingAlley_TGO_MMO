@@ -3,12 +3,13 @@ import time
 
 from discord.ui import View
 
-from src.commons.CommonFunctions import convert_to_png, retry_on_ssl_error, \
-    check_if_user_can_interact_with_view
+from src.commons.CommonDecorators import measure_execution_time, retry_on_ssl_error
+from src.commons.CommonFunctions import convert_to_png, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
-from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, check_for_quest_avatars
+from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, \
+    check_for_quest_avatars, check_for_special_quest_avatars
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -40,8 +41,9 @@ class CreatureEncounterView(View):
         return button
     def catch_button_callback(self,):
         @retry_on_ssl_error(max_retries=3, delay=1)
+        @measure_execution_time(label="Catch Button Callback Execution Time")
         async def callback(interaction):
-            start_time = time.perf_counter()
+            self.creature.catch_time = time.time()
             await interaction.response.defer()
 
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
@@ -77,6 +79,7 @@ class CreatureEncounterView(View):
             # check if player has unlocked any avatars based on their catch and unlock them if they haven't already been unlocked
             await check_for_event_avatars(user_id=interaction.user.id, interaction=interaction)
             await check_for_quest_avatars(user_id=interaction.user.id, interaction=interaction)
+            await check_for_special_quest_avatars(user_id=interaction.user.id, creature=self.creature, interaction=interaction)
 
             # delete the original spawn message so nobody else can catch it
             try:
@@ -84,11 +87,8 @@ class CreatureEncounterView(View):
             except discord.errors.NotFound:
                 print('Message was already deleted, do nothing')
 
-            # once all proccessing is done, send the success message to the user
+            # once all processing is done, send the success message to the user
             await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
-            end_time = time.perf_counter()
-            execution_time = end_time - start_time
-            print(f"catch_button_callback execution time: {execution_time:.4f} seconds")
         return callback
 
     def is_creature_caught_button(self, row=0):

@@ -1,6 +1,5 @@
 from PIL import Image
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory

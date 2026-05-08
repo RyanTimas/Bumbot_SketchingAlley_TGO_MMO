@@ -1,7 +1,8 @@
 import discord
 from discord.ui import Select
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
+from src.commons.CommonDecorators import interaction_guard
+from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView

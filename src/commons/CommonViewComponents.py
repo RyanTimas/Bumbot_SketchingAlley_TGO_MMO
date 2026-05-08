@@ -1,7 +1,7 @@
 import discord
 from discord.ui import Button
 
-from src.commons.CommonFunctions import interaction_guard, pad_text
+from src.commons.CommonFunctions import pad_text
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 

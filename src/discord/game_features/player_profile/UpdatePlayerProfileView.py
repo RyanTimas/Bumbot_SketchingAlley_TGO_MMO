@@ -1,7 +1,8 @@
 import discord
 from discord.ui import Modal, TextInput, Button, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error, pad_text, convert_to_png, interaction_guard
+from src.commons.CommonDecorators import retry_on_ssl_error, interaction_guard
+from src.commons.CommonFunctions import convert_to_png
 from src.commons.CommonViewComponents import create_dummy_label_button, create_display_creature_collection_button
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous

@@ -6,7 +6,8 @@ import discord
 from PIL import Image
 from discord.ext import commands
 
-from src.commons.CommonFunctions import get_user_discord_profile_pic, admin_only, flip_coin, convert_to_png
+from src.commons.CommonDecorators import admin_only
+from src.commons.CommonFunctions import get_user_discord_profile_pic, flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler

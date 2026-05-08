@@ -1,7 +1,7 @@
 import discord
 from discord.ui import Button, Modal, TextInput, Select
 
-from src.commons.CommonFunctions import retry_on_ssl_error
+from src.commons.CommonDecorators import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars

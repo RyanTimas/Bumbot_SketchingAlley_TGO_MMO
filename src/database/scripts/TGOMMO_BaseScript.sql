@@ -1,11 +1,8 @@
 select * from tgommo_creature c;
-select * from tgommo_environment_creature ec;
+select * from tgommo_environment_creature ec order by ec.environment_id;
 select * from tgommo_user_creature tuc;
 
-select * from tgommo_environment e;
-
 select * from users;
-select * from tgommo_user_profile tup;
 select * from user_avatar ua;
 select * from tgommo_user_profile_avatar_link ual;
 select * from tgommo_user_avatar_unlock_condition uauc;

@@ -1,7 +1,8 @@
 import asyncio
 import discord
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard, retry_on_ssl_error
+from src.commons.CommonDecorators import interaction_guard
+from src.commons.CommonFunctions import convert_to_png
 from src.commons.Modals.ChangeUserModal import ChangeUserModal
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer

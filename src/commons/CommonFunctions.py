@@ -16,6 +16,9 @@ from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COL
 from src.resources.constants.file_paths import *
 from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, DISCORD_USER_WHITELIST
 
+from datetime import datetime, timezone
+from typing import Any
+
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
 #************************************************************************************
@@ -384,6 +387,24 @@ def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%
         return formatted_date
     return "Unknown"
 
+def convert_to_datetime(value: Any) -> datetime:
+    if isinstance(value, datetime):
+        dt = value
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+    if isinstance(value, (int, float)):
+        return datetime.fromtimestamp(value, tz=timezone.utc)
+    if isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value)
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt
+        except Exception:
+            raise ValueError("Unsupported datetime string format")
+    raise TypeError("Unsupported time type")
+
 #****************************************************************************************
 #---------------------------------------IMAGE FUNCTION--------------------------------------------
 #****************************************************************************************
@@ -405,58 +426,3 @@ def place_username_on_image(target_user, image: Image, border_color = (0, 104, 1
         # Paste the text image onto the profile image
         image.paste(username_font_image, (x_offset - border_size, y_offset - border_size), username_font_image)
         return image
-
-
-#************************************************************************************
-#---------------------------------------DECORATORS--------------------------------------------
-#************************************************************************************
-# Retry decorator for handling SSL errors
-def retry_on_ssl_error(max_retries=3, delay=1):
-    def decorator(func):
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
-            retries = 0
-            while retries < max_retries:
-                try:
-                    return await func(*args, **kwargs)
-                except discord.errors.InteractionResponded:
-                    # Interaction already responded to, so don't retry
-                    return
-                except aiohttp.client_exceptions.ClientOSError as e:
-                    if "SSL" in str(e) and retries < max_retries - 1:
-                        retries += 1
-                        await asyncio.sleep(delay)
-                    else:
-                        # If we've exhausted retries or it's not an SSL error, re-raise
-                        raise
-        return wrapper
-    return decorator
-
-def admin_only():
-    async def predicate(interaction: discord.Interaction):
-        if interaction.user.id not in DISCORD_USER_WHITELIST:
-            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True, delete_after=5)
-            return False
-        return True
-    return app_commands.check(predicate)
-
-def interaction_guard(self=None, max_retries=3, delay=1, defer_response=True):
-    def decorator(func):
-        async def wrapper(interaction):
-            if not self:
-                return await func(interaction)
-
-            if await check_if_user_can_interact_with_view(interaction, self.interaction_lock, getattr(self, 'message_author', None).user_id):
-                async with self.interaction_lock:
-                    if defer_response:
-                        await interaction.response.defer()
-
-                    for attempt in range(max_retries):
-                        try:
-                            return await func(interaction)
-                        except ssl.SSLError as e:
-                            if attempt == max_retries - 1:
-                                raise e
-                            await asyncio.sleep(delay)
-        return wrapper
-    return decorator

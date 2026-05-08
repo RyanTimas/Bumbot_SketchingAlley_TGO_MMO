@@ -2,7 +2,7 @@ import asyncio
 
 import discord
 
-from src.commons.CommonFunctions import interaction_guard
+from src.commons.CommonDecorators import interaction_guard
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.general_constants import TGOMMO_ROLE_ID
 

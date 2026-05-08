@@ -1,7 +1,7 @@
 import discord
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonFunctions import retry_on_ssl_error
+from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonDecorators import retry_on_ssl_error, interaction_guard
 from src.discord.game_features.alert_center.AlertCenterView import AlertCenterView
 from src.discord.game_features.player_profile.UpdatePlayerProfileView import UpdatePlayerProfileView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import *

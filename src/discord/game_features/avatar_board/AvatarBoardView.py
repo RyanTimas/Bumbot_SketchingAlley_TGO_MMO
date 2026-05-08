@@ -1,6 +1,7 @@
 import discord
 
-from src.commons.CommonFunctions import retry_on_ssl_error, convert_to_png, interaction_guard
+from src.commons.CommonDecorators import interaction_guard
+from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.avatar_board import AvatarBoardImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import *

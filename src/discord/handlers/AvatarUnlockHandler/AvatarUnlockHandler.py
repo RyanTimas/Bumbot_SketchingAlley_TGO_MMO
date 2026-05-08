@@ -3,7 +3,7 @@ import datetime
 import discord
 import pytz
 
-from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonFunctions import convert_to_png, convert_to_datetime
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.file_paths import *
@@ -66,15 +66,17 @@ async def check_for_quest_avatars(user_id, interaction):
             for avatar in new_unlocks:
                 await interaction.followup.send(f"You have completed a quest & unlocked the avatar: {avatar.name}!!", file=convert_to_png(avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
 
+async def check_for_special_quest_avatars(user_id, creature: TGOCreature, interaction):
+    catch_dt = convert_to_datetime(creature.catch_time)
+    spawn_dt = convert_to_datetime(creature.spawn_time)
+    diff_seconds = abs((catch_dt - spawn_dt).total_seconds())
+    print(f"Spawn time: {spawn_dt}, Catch time: {catch_dt}")
+    print(f"Time taken to catch creature: {diff_seconds} seconds")
 
-    # OLD CODE
-    # for unlockable_avatar in unlockable_avatars:
-    #     user_reached_threshold = get_tgommo_db_handler().QueryHandler.execute_query(query=unlockable_avatar.unlock_query, params=(user_id,))[0][0] >= unlockable_avatar.unlock_threshold
-    #
-    #     if user_reached_threshold:
-    #         avatars_to_unlock = [unlockable_avatar] if not unlockable_avatar.is_parent_entry else get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=unlockable_avatar.avatar_id)
-    #         for child_avatar in avatars_to_unlock:
-    #             if not get_tgommo_db_handler().check_if_user_unlocked_avatar(avatar_id=child_avatar.avatar_id, user_id=user_id):
-    #                 get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=child_avatar.avatar_id, user_id=user_id)
-    #                 await interaction.followup.send(f"You have completed a quest & unlocked the avatar: {child_avatar.name}!!", file=convert_to_png(child_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
+    if diff_seconds < 3.0:
+        print("good job")
+        turbo_granny_avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id='Q9')
+        await interaction.followup.send(f"You have completed a special quest & unlocked the avatar: {turbo_granny_avatar.name}!!", file=convert_to_png(turbo_granny_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
+        get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=turbo_granny_avatar.avatar_id, user_id=user_id)
+
 

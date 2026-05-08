@@ -59,8 +59,10 @@ class TGOCreature:
         self.define_creature_images()
 
         self.spawn_time = None
-        self.time_to_despawn = None
         self.despawn_time = None
+        self.catch_time = None
+
+        self.time_to_despawn = None
         self.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=0)
 
 

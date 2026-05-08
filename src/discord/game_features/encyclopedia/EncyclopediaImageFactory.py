@@ -44,6 +44,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         self.target_user = target_user if target_user is not None else self.target_user
         self.environment = environment if environment is not None else self.environment
         self.is_xl_mode = is_xl_mode if is_xl_mode is not None else self.is_xl_mode
+        self.is_server_view = self.target_user.user_id == 0
 
         self.page_num = 1 if any(param is not None for param in [show_variants, time_of_day, environment, rarity, creature_class]) else new_page_number if new_page_number else self.page_num
 

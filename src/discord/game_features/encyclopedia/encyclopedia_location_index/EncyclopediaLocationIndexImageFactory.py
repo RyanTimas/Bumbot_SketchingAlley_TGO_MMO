@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
+from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
@@ -148,6 +148,7 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
         bar_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 22)
 
         # NAME TEXT
+        print("IN DA FACTORY: IS SERVER VIEW: ", self.is_server_view)
         text = f"Sketching Alley" if self.is_server_view else self.target_user.nickname
         font = resize_text_to_fit(text=text, draw=draw, font=name_font, max_width=475, min_font_size=10)
         pixel_location = (70, 535)

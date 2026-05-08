@@ -12,16 +12,12 @@ from src.commons.GuildHandler import set_guild
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
-from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import \
-    AvatarBoardAvatarQuestImageFactory
-from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import \
-    AvatarBoardUnlockedAvatarImageFactory
 from src.discord.game_features.creature_enounter.CreatureSpawnerHandler import CreatureSpawnerHandler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryView import CreatureInventoryView
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
+from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import \
     EncyclopediaLocationIndexImageFactory
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexView import \
+from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexView import \
     EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
@@ -34,7 +30,7 @@ from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.general.tests.ShopTests import register_shop_tests
 from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.file_paths import TGOMMO_TRAVEL_ADVISORY_BASE, IMAGE_FILE_EXTENSION, \
+from src.resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
     TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
     TGOMMO_CREATURE_SPAWN_CHANNEL_ID

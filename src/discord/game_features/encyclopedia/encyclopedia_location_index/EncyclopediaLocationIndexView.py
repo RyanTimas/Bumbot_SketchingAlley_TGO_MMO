@@ -5,7 +5,7 @@ from src.commons.CommonFunctions import convert_to_png, interaction_guard
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.game_features.encyclopedia.EncyclopediaView import EncyclopediaView
-from src.discord.game_features.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
+from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexImageFactory import EncyclopediaLocationIndexImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 

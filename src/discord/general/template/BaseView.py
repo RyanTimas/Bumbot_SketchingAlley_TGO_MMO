@@ -138,6 +138,7 @@ class BaseView(discord.ui.View):
         async def callback(interaction):
             from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
             self.is_server_view = not self.is_server_view
+            self.image_factory.is_server_view = self.is_server_view
 
             reloaded_image = self.reload_image(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(0 if self.is_server_view else self.message_author.user_id))
             self.refresh_view()

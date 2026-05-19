@@ -59,4 +59,11 @@ class ShopImageFactory(BaseImageFactory):
         font = resize_text_to_fit(text=f"{self.message_author.currency}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 65), max_width=276, min_font_size=7)
         draw.text(get_centered_text_position(text=f"{self.message_author.currency}", font=font, center_pixel_location=(1686, 62)), f"{self.message_author.currency}", fill=FONT_COLOR_BLACK, font=font)
 
+        # ADD CURRENT DONATION & DONATION GOAL TO IMAGE
+        donation_amount = f"{get_game_state_manager().get_shop_donation_total()}"
+        donation_goal = f"{SHOP_LEVEL_COST_MAP[get_game_state_manager().get_shop_level()]}"
 
+        donation_font = resize_text_to_fit(text=donation_goal, draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 40), max_width=120, min_font_size=7)
+
+        draw.text(get_centered_text_position(text=donation_amount, font=donation_font, center_pixel_location=(272, 972)), donation_amount, fill=FONT_COLOR_WHITE, font=donation_font)
+        draw.text(get_centered_text_position(text=donation_goal, font=donation_font, center_pixel_location=(672, 972)), donation_goal, fill=FONT_COLOR_WHITE, font=donation_font)

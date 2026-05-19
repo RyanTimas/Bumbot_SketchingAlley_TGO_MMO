@@ -1269,13 +1269,31 @@ class TGOMMODatabase_DataEntriesInitializer:
     def insert_item_records(self):
         item_data = [
             # region ITEMS
-            # Creature Inventory Storage
+
+            # region invisible items
+            # region Creature Inventory Storage
             (ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, 'Creature Storage Upgrade', ITEM_TYPE_GAMEPLAY_MECHANICS, 'Increases your creature storage capacity by 100.', TGOMMO_RARITY_NORMAL, False, '', 1),
+            # endregion
+            # endregion
 
-            # Name Tags
-            (f'{ITEM_TYPE_NAMETAG}_1', 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1, 35),
+            # region USE ITEMS
+            # region Miscellaneous Items
+            (ITEM_ID_NAMETAG, 'NameTag', ITEM_TYPE_NAMETAG, 'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, '', 1, 35),
+            (ITEM_ID_AMULET_COIN, 'Amulet Coin', ITEM_TYPE_AMULET_COIN, 'Doubles the amount of coins you gain from catching creatures for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 375),
+            (ITEM_ID_BATTERY, 'Battery', ITEM_TYPE_BATTERY, 'Powers a trap for 8 captures.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 1000),
+            # endregion
 
-            # Baits
+            #region Plane Tickets
+            (ITEM_ID_PLANE_TICKET, 'Ultra Plane Ticket', ITEM_TYPE_PLANE_TICKET, 'Allows you to travel to a different environment of your choice.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 300),
+            (ITEM_ID_PLANE_TICKET_EST, 'Plane Ticket (Eastern US)', ITEM_TYPE_PLANE_TICKET, 'Allows you to travel to the eastern United States at will.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 100),
+            (ITEM_ID_PLANE_TICKET_FL, 'Plane Ticket (Everglades National Park)', ITEM_TYPE_PLANE_TICKET, 'Allows you to travel to Everglades National Park at will.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 100),
+            (ITEM_ID_PLANE_TICKET_IC, 'Plane Ticket (Iceland)', ITEM_TYPE_PLANE_TICKET, 'Allows you to travel to Iceland at will.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 100),
+            (ITEM_ID_PLANE_TICKET_WY, 'Plane Ticket (Yellowstone National Park)', ITEM_TYPE_PLANE_TICKET, 'Allows you to travel to Yellowstone National Park at will.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 100),
+            # endregion
+            # endregion
+
+            # region Creature Items
+            # region Baits
             (ITEM_ID_BAIT, 'Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch.', TGOMMO_RARITY_NORMAL, True, '', 1, 50),
             (ITEM_ID_COMMON_BAIT, 'Common Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be common.', TGOMMO_RARITY_COMMON, True, '', 1, 35),
             (ITEM_ID_UNCOMMON_BAIT, 'Uncommon Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be uncommon.', TGOMMO_RARITY_UNCOMMON, True, '', 1, 60),
@@ -1285,8 +1303,54 @@ class TGOMMODatabase_DataEntriesInitializer:
             (ITEM_ID_MYTHICAL_BAIT, 'Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '', 1, 500),
             (ITEM_ID_TRANSCENDANT_BAIT, 'Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 2500),
             (ITEM_ID_OMNIPOTENT_BAIT, 'Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 5000),
+            # endregion
 
-            # Megaphones
+            # region Charms
+            (ITEM_ID_CHARM, 'Charm', ITEM_TYPE_CHARM, 'Increases the amount of creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 75),
+            (ITEM_ID_COMMON_CHARM, 'Common Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 15 minutes', TGOMMO_RARITY_COMMON, True, '', 1, 75),
+            (ITEM_ID_UNCOMMON_CHARM, 'Uncommon Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for uncommon creatures. Lasts for 15 minutes', TGOMMO_RARITY_UNCOMMON, True, '', 1, 125),
+            (ITEM_ID_RARE_CHARM, 'Rare Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for rare creatures. Lasts for 15 minutes', TGOMMO_RARITY_RARE, True, '', 1, 200),
+            (ITEM_ID_EPIC_CHARM, 'Epic Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for epic creatures. Lasts for 15 minutes', TGOMMO_RARITY_EPIC, True, '', 1, 500),
+            (ITEM_ID_LEGENDARY_CHARM, 'Legendary Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for legendary creatures. Lasts for 15 minutes', TGOMMO_RARITY_LEGENDARY, True, '', 1, 1000),
+            (ITEM_ID_MYTHICAL_CHARM, 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 15 minutes', TGOMMO_RARITY_MYTHICAL, True, '', 1, 2500),
+            (ITEM_ID_TRANSCENDANT_CHARM, 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 15 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 10000),
+            (ITEM_ID_OMNIPOTENT_CHARM, 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 15 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 10000),
+            (ITEM_ID_MAMMAL_CHARM, 'Mammal Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mammal creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+            (ITEM_ID_BIRD_CHARM, 'Bird Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for bird creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+            (ITEM_ID_REPTILE_CHARM, 'Reptile Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for reptile creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+            (ITEM_ID_AMPHIBIAN_CHARM, 'Amphibian Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for amphibian creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+            (ITEM_ID_BUG_CHARM, 'Bug Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for "bug" creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+            # endregion
+            # region Ultra Charms
+            (ITEM_ID_ULTRA_CHARM, 'Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 500),
+            (ITEM_ID_COMMON_ULTRA_CHARM, 'Ultra Common Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of common creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 250),
+            (ITEM_ID_UNCOMMON_ULTRA_CHARM, 'Ultra Uncommon Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of uncommon creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_UNCOMMON, True, '', 1, 350),
+            (ITEM_ID_RARE_ULTRA_CHARM, 'Ultra Rare Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of rare creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_RARE, True, '', 1, 500),
+            (ITEM_ID_EPIC_ULTRA_CHARM, 'Ultra Epic Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of epic creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 750),
+            (ITEM_ID_LEGENDARY_ULTRA_CHARM, 'Ultra Legendary Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of legendary creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_LEGENDARY, True, '', 1, 1000),
+            (ITEM_ID_MYTHICAL_ULTRA_CHARM, 'Ultra Mythical Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of mythical creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_MYTHICAL, True, '', 1, 1500),
+            (ITEM_ID_TRANSCENDANT_ULTRA_CHARM, 'Ultra Transcendant Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of transcendant creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_TRANSCENDANT, True, '', 1, 5000),
+            (ITEM_ID_MAMMAL_ULTRA_CHARM, 'Ultra Mammal Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of mammal creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+            (ITEM_ID_BIRD_ULTRA_CHARM, 'Ultra Bird Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of bird creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+            (ITEM_ID_REPTILE_ULTRA_CHARM, 'Ultra Reptile Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of reptile creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+            (ITEM_ID_AMPHIBIAN_ULTRA_CHARM, 'Ultra Amphibian Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of amphibian creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+            (ITEM_ID_BUG_ULTRA_CHARM, 'Ultra Bug Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of bug creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+            # endregion
+
+            # region Time Charms
+            (ITEM_ID_TIME_CHARM_DAY, 'Day Charm', ITEM_TYPE_TIME_CHARM, 'Changes spawn pool for creatures that only appear during the day. Lasts for 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 450),
+            (ITEM_ID_TIME_CHARM_NIGHT, 'Night Charm', ITEM_TYPE_TIME_CHARM, 'Changes spawn pool for creatures that only appear at night. Lasts for 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 450),
+            # endregion
+
+            # region Miscellaneous Charms
+            (ITEM_ID_EXP_CHARM, 'Experience Charm', ITEM_TYPE_EXP_CHARM, 'Doubles the amount of experience you gain from catching creatures for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 375),
+            # endregion
+
+            # endregion
+            # endregion
+
+            # region KEY ITEMS
+            # region Megaphones
             (ITEM_TYPE_MEGAPHONE, 'Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a new creature spawns.', TGOMMO_RARITY_NORMAL, False, '', -1, 0),
             (ITEM_ID_COMMON_MEGAPHONE, 'Common Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a common creature spawns.', TGOMMO_RARITY_COMMON, False, '', -1, 250),
             (ITEM_ID_UNCOMMON_MEGAPHONE, 'Uncommon Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a uncommon creature spawns.', TGOMMO_RARITY_UNCOMMON, False, '', -1, 500),
@@ -1296,20 +1360,24 @@ class TGOMMODatabase_DataEntriesInitializer:
             (ITEM_ID_MYTHICAL_MEGAPHONE, 'Mythical Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a mythical creature spawns.', TGOMMO_RARITY_MYTHICAL, False, '', -1, 10000),
             (ITEM_ID_TRANSCENDANT_MEGAPHONE, 'Transcendant Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you whenever a transcendant creature spawns. Breaks after a single catch, though', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 10000),
             (ITEM_ID_OMNIPOTENT_MEGAPHONE, 'Omnipotent Megaphone', ITEM_TYPE_MEGAPHONE, 'Will notify you when any creature of your choice spawns. Breaks after a single catch, though.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 500),
-
-            # Charms
-            (ITEM_ID_CHARM, 'Charm', ITEM_TYPE_CHARM, 'Increases the amount of creatures that will spawn for the next 30 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 75),
-            (ITEM_ID_COMMON_CHARM, 'Common Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for common creatures. Lasts for 30 minutes', TGOMMO_RARITY_COMMON, True, '', 1, 75),
-            (ITEM_ID_UNCOMMON_CHARM, 'Uncommon Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for uncommon creatures. Lasts for 30 minutes', TGOMMO_RARITY_UNCOMMON, True, '', 1, 125),
-            (ITEM_ID_RARE_CHARM, 'Rare Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for rare creatures. Lasts for 30 minutes', TGOMMO_RARITY_RARE, True, '', 1, 200),
-            (ITEM_ID_EPIC_CHARM, 'Epic Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for epic creatures. Lasts for 30 minutes', TGOMMO_RARITY_EPIC, True, '', 1, 500),
-            (ITEM_ID_LEGENDARY_CHARM, 'Legendary Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for legendary creatures. Lasts for 30 minutes', TGOMMO_RARITY_LEGENDARY, True, '', 1, 1000),
-            (ITEM_ID_MYTHICAL_CHARM, 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 30 minutes', TGOMMO_RARITY_MYTHICAL, True, '', 1, 2500),
-            (ITEM_ID_TRANSCENDANT_CHARM, 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 30 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 10000),
-            (ITEM_ID_OMNIPOTENT_CHARM, 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 10 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 10000),
             # endregion
+
+            # region Traps
+            (ITEM_ID_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch a nearby creature while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_NORMAL, False, '', 1, 100),
+            (ITEM_ID_COMMON_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby common creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_COMMON, False, '', 1, 100),
+            (ITEM_ID_UNCOMMON_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby uncommon creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 250),
+            (ITEM_ID_RARE_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby rare creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_RARE, False, '', 1, 500),
+            (ITEM_ID_EPIC_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby epic creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_EPIC, False, '', 1, 750),
+            (ITEM_ID_LEGENDARY_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby legendary creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_LEGENDARY, False, '', 1, 1000),
+            (ITEM_ID_MYTHICAL_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby mythical creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_MYTHICAL, False, '', 1, 2500),
+            (ITEM_ID_TRANSCENDANT_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch exclusively nearby transcendant creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 5000),
+            (ITEM_ID_OMNIPOTENT_TRAP, 'Trap', ITEM_TYPE_TRAP, 'When activated, tries to catch any nearby creature of your choice while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 10000),
+            # endregion
+
+            # endregion
+
             # region CREATURE ITEMS
-            # Pearls
+            # region Pearls
             (ITEM_ID_WHITE_PEARL, 'White Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_COMMON, False, f'{ITEM_TYPE_PEARL}_white'.lower(), 1, 35),
             (ITEM_ID_PINK_PEARL, 'Pink Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, f'{ITEM_TYPE_PEARL}_pink'.lower(), 1, 35),
             (ITEM_ID_GREEN_PEARL, 'Green Pearl', ITEM_TYPE_PEARL, 'A hard, lustrous gemstone formed inside the shell of a living mollusk. It can be sold in the Shop for a high value.', TGOMMO_RARITY_UNCOMMON, False, f'{ITEM_TYPE_PEARL}_green'.lower(), 1, 35),

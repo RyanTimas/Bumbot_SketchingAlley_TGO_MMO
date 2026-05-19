@@ -39,14 +39,27 @@ class AvatarQuestTabFactory:
 
         # slice progress bar based on completion
         width, height = green_border_img.size
-        progress_bar_width = width if self.completed_quest_value == 0 else (self.avatar.unlock_threshold - self.completed_quest_value) * (width // self.avatar.unlock_threshold)
+        threshold = self.avatar.unlock_threshold or 0
 
-        progress_bar_img = green_border_img.crop((progress_bar_width, 0, width, height))
-        base_image.paste(progress_bar_img, (progress_bar_width, 0), progress_bar_img)
+        if threshold <= 0:
+            progress_bar_width = 0
+        else:
+            fraction = self.completed_quest_value / threshold
+            fraction = max(0.0, min(1.0, fraction))  # clamp between 0 and 1
+            progress_bar_width = int(round(fraction * width))
 
-        # place progress indicator
-        indicator_offset = (progress_bar_width - 18) if progress_bar_width > 18 else 0
-        base_image.paste(progress_indicator_img, (indicator_offset, 0), progress_indicator_img)
+        # crop the rightmost portion of the bar (filled area) and paste aligned to the right edge
+        if progress_bar_width > 0:
+            progress_bar_img = green_border_img.crop((width - progress_bar_width, 0, width, height))
+            paste_x = width - progress_bar_width
+            base_image.paste(progress_bar_img, (paste_x, 0), progress_bar_img)
+
+        # place progress indicator centered on the fill edge (right-to-left), clamped to image bounds
+        indicator_w, indicator_h = progress_indicator_img.size
+        edge_x = width - progress_bar_width  # x coordinate of the fill edge
+        indicator_x = edge_x - (indicator_w // 2)
+        indicator_x = max(0, min(width - indicator_w, indicator_x))
+        base_image.paste(progress_indicator_img, (indicator_x, 0), progress_indicator_img)
         return base_image
 
     def add_text_to_image(self, image: Image):

@@ -70,4 +70,4 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         if self.order_type in sort_options:
             avatar_quests_for_page.sort(key=sort_options[self.order_type], reverse= self.is_ascending_order)
 
-        return [avatar.quest_progress_icon for avatar in avatar_quests_for_page if avatar.quest_progress_icon is not None]
+        return [avatar.quest_progress_icon for avatar in avatar_quests_for_page if avatar.quest_progress_icon is not None and avatar.is_secret == False]

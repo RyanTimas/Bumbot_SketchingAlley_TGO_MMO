@@ -1,5 +1,6 @@
 from discord.ui import Select
 
+from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory

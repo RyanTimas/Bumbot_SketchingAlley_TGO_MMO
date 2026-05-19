@@ -124,18 +124,36 @@ SUB_ENVIRONMENT_TUNDRA = "tundra"
 
 """ ----- ITEMS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Item Types
+# region Invisible Item Types
 ITEM_TYPE_GAMEPLAY_MECHANICS = 'Gameplay Mechanics'
-ITEM_TYPE_NAMETAG = 'NameTag'
-ITEM_TYPE_BAIT = 'Bait'
-ITEM_TYPE_MEGAPHONE = 'Megaphone'
-ITEM_TYPE_CHARM = 'Charm'
-
-ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
 # endregion
+
+# region Use Item Types
+ITEM_TYPE_NAMETAG = 'NameTag'
+ITEM_TYPE_PLANE_TICKET = 'PlaneTicket'
+ITEM_TYPE_AMULET_COIN = 'AmuletCoin'
+ITEM_TYPE_BATTERY = 'Battery'
+# endregion
+
+# region Creature Item Types
+ITEM_TYPE_BAIT = 'Bait'
+ITEM_TYPE_CHARM = 'Charm'
+ITEM_TYPE_ULTRA_CHARM = 'UltraCharm'
+ITEM_TYPE_TIME_CHARM = 'TimeCharm'
+ITEM_TYPE_EXP_CHARM = 'EXPCharm'
+# endregion
+
+# region Key Item Types
+ITEM_TYPE_MEGAPHONE = 'Megaphone'
+ITEM_TYPE_TRAP = 'Trap'
+# endregion
+
 # region Creature Item Types
 ITEM_TYPE_PEARL = 'Pearl'
 # endregion
 
+ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
+# endregion
 
 """ ----- GAMEPLAY MECHANICS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- CREATURE CATCH  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -299,10 +317,30 @@ AVATAR_QUEST_LEGENDARY_COUNT = 5
 """ ----- SPECIFIC IDS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 """ ----- ITEM IDS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region ITEM IDS
+
+# region INVISIBLE ITEM IDS
 ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION = 'Creature_Inventory_Storage_Expansion'
+# endregion
 
+# region USE ITEM IDS
+# region Miscellaneous Item IDs
 ITEM_ID_NAMETAG  = f"{ITEM_TYPE_NAMETAG}_1"
+ITEM_ID_AMULET_COIN = f"{ITEM_TYPE_AMULET_COIN}_0"
+ITEM_ID_BATTERY = f"{ITEM_TYPE_BATTERY}_0"
+# endregion
 
+# region Plane Ticket IDs
+ITEM_ID_PLANE_TICKET  = f"{ITEM_TYPE_PLANE_TICKET}_0"
+ITEM_ID_PLANE_TICKET_EST  = f"{ITEM_TYPE_PLANE_TICKET}_1"
+ITEM_ID_PLANE_TICKET_FL  = f"{ITEM_TYPE_PLANE_TICKET}_2"
+ITEM_ID_PLANE_TICKET_IC  = f"{ITEM_TYPE_PLANE_TICKET}_3"
+ITEM_ID_PLANE_TICKET_WY  = f"{ITEM_TYPE_PLANE_TICKET}_4"
+# endregion
+
+# endregion
+
+# region CREATURE ITEM IDS
+# region Bait IDs
 ITEM_ID_BAIT  = f"{ITEM_TYPE_BAIT}_0"
 ITEM_ID_COMMON_BAIT  = f"{ITEM_TYPE_BAIT}_1"
 ITEM_ID_UNCOMMON_BAIT  = f"{ITEM_TYPE_BAIT}_2"
@@ -312,7 +350,14 @@ ITEM_ID_LEGENDARY_BAIT  = f"{ITEM_TYPE_BAIT}_5"
 ITEM_ID_MYTHICAL_BAIT  = f"{ITEM_TYPE_BAIT}_6"
 ITEM_ID_TRANSCENDANT_BAIT  = f"{ITEM_TYPE_BAIT}_7"
 ITEM_ID_OMNIPOTENT_BAIT  = f"{ITEM_TYPE_BAIT}_8"
+ITEM_ID_MAMMAL_BAIT  = f"{ITEM_TYPE_BAIT}_9"
+ITEM_ID_BIRD_BAIT  = f"{ITEM_TYPE_BAIT}_10"
+ITEM_ID_REPTILE_BAIT  = f"{ITEM_TYPE_BAIT}_11"
+ITEM_ID_AMPHIBIAN_BAIT  = f"{ITEM_TYPE_BAIT}_12"
+ITEM_ID_BUG_BAIT  = f"{ITEM_TYPE_BAIT}_13"
+# endregion
 
+# region Charm IDs
 ITEM_ID_CHARM = f"{ITEM_TYPE_CHARM}_0"
 ITEM_ID_COMMON_CHARM = f"{ITEM_TYPE_CHARM}_1"
 ITEM_ID_UNCOMMON_CHARM = f"{ITEM_TYPE_CHARM}_2"
@@ -322,7 +367,42 @@ ITEM_ID_LEGENDARY_CHARM = f"{ITEM_TYPE_CHARM}_5"
 ITEM_ID_MYTHICAL_CHARM = f"{ITEM_TYPE_CHARM}_6"
 ITEM_ID_TRANSCENDANT_CHARM = f"{ITEM_TYPE_CHARM}_7"
 ITEM_ID_OMNIPOTENT_CHARM = f"{ITEM_TYPE_CHARM}_8"
+ITEM_ID_MAMMAL_CHARM = f"{ITEM_TYPE_CHARM}_9"
+ITEM_ID_BIRD_CHARM = f"{ITEM_TYPE_CHARM}_10"
+ITEM_ID_REPTILE_CHARM = f"{ITEM_TYPE_CHARM}_11"
+ITEM_ID_AMPHIBIAN_CHARM = f"{ITEM_TYPE_CHARM}_12"
+ITEM_ID_BUG_CHARM = f"{ITEM_TYPE_CHARM}_13"
+# endregion
 
+# region Ultra Charm IDs
+ITEM_ID_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_0"
+ITEM_ID_COMMON_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_1"
+ITEM_ID_UNCOMMON_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_2"
+ITEM_ID_RARE_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_3"
+ITEM_ID_EPIC_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_4"
+ITEM_ID_LEGENDARY_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_5"
+ITEM_ID_MYTHICAL_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_6"
+ITEM_ID_TRANSCENDANT_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_7"
+ITEM_ID_OMNIPOTENT_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_8"
+ITEM_ID_MAMMAL_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_9"
+ITEM_ID_BIRD_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_10"
+ITEM_ID_REPTILE_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_11"
+ITEM_ID_AMPHIBIAN_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_12"
+ITEM_ID_BUG_ULTRA_CHARM = f"{ITEM_TYPE_ULTRA_CHARM}_13"
+# endregion
+
+# region Time Charm IDs
+ITEM_ID_TIME_CHARM_DAY = f"{ITEM_TYPE_TIME_CHARM}_0"
+ITEM_ID_TIME_CHARM_NIGHT = f"{ITEM_TYPE_TIME_CHARM}_1"
+# endregion
+
+# region Time Miscellaneous Charm IDs
+ITEM_ID_EXP_CHARM = f"{ITEM_TYPE_EXP_CHARM}_0"
+# endregion
+# endregion
+
+# region KEY ITEM IDS
+# region Megaphone IDs
 ITEM_ID_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_0"
 ITEM_ID_COMMON_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_1"
 ITEM_ID_UNCOMMON_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_2"
@@ -333,6 +413,21 @@ ITEM_ID_MYTHICAL_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_6"
 ITEM_ID_TRANSCENDANT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_7"
 ITEM_ID_OMNIPOTENT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_8"
 # endregion
+
+# region Trap IDs
+ITEM_ID_TRAP = f"{ITEM_TYPE_TRAP}_0"
+ITEM_ID_COMMON_TRAP = f"{ITEM_TYPE_TRAP}_1"
+ITEM_ID_UNCOMMON_TRAP = f"{ITEM_TYPE_TRAP}_2"
+ITEM_ID_RARE_TRAP = f"{ITEM_TYPE_TRAP}_3"
+ITEM_ID_EPIC_TRAP = f"{ITEM_TYPE_TRAP}_4"
+ITEM_ID_LEGENDARY_TRAP = f"{ITEM_TYPE_TRAP}_5"
+ITEM_ID_MYTHICAL_TRAP = f"{ITEM_TYPE_TRAP}_6"
+ITEM_ID_TRANSCENDANT_TRAP = f"{ITEM_TYPE_TRAP}_7"
+ITEM_ID_OMNIPOTENT_TRAP = f"{ITEM_TYPE_TRAP}_8"
+# endregion
+
+# endregion
+
 # region CREATURE ITEM IDS
 ITEM_ID_WHITE_PEARL = f"{ITEM_TYPE_PEARL}_0"
 ITEM_ID_PINK_PEARL = f"{ITEM_TYPE_PEARL}_1"
@@ -342,4 +437,8 @@ ITEM_ID_PURPLE_PEARL = f"{ITEM_TYPE_PEARL}_4"
 ITEM_ID_GOLD_PEARL = f"{ITEM_TYPE_PEARL}_5"
 ITEM_ID_BLACK_PEARL = f"{ITEM_TYPE_PEARL}_6"
 # endregion
+
+#endregion
+
+
 

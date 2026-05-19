@@ -14,8 +14,10 @@ from discord.ext.commands import Bot
 from src.commons.CommonFunctions import flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.game_features.creature_enounter.CatchFunctions import catch_creature
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.game_features.creature_enounter.CreatureEncounterView import CreatureEncounterView
+from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects import TGOPlayer
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
@@ -205,6 +207,14 @@ class CreatureSpawnerHandler:
             asyncio.run_coroutine_threadsafe(channel.fetch_message(spawn_message.id), self.discord_bot.loop).result()
         except discord.NotFound:
             return
+
+        # Check to see if an AFK trap should catch the creature instead of it despawning
+        afk_user_id, battery_amount, trap_type = TrapHandler.pull_random_user()
+        if afk_user_id and random.randint(1, 2) == 1:
+            result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
+            if result["user_profile"]:
+                asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]), self.discord_bot.loop)
+                return
 
         creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
         asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)

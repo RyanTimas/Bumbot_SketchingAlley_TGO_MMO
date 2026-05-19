@@ -9,6 +9,7 @@ from src.discord.game_features.creature_enounter.CreatureEncounterImageFactory i
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
+from src.discord.objects.TGOPlayer import TGOPlayer
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON
 
@@ -21,8 +22,7 @@ class CreatureEmbedHandler:
         self.active_bonuses = active_bonuses
 
         self.time_of_day = time_of_day
-        self.catch_user = None
-        self.interaction = None
+        self.catch_user:TGOPlayer = None
 
         self.total_xp = 0
         self.xp_fields = []
@@ -81,15 +81,12 @@ class CreatureEmbedHandler:
         return embed, thumbnail_img, encounter_img
 
 
-    def generate_catch_embed(self, interaction: discord.Interaction= None, nickname: str = None):
-        if interaction:
-            self.interaction = interaction
-            self.catch_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id)
+    def generate_catch_embed(self, catch_user:TGOPlayer, nickname: str = None, is_afk_catch: bool = False):
+        self.catch_user = catch_user
+        embed = discord.Embed(color=discord.Color.dark_green() if not is_afk_catch else discord.Color.yellow())
 
-        embed = discord.Embed(color=discord.Color.dark_green())
-
-        embed.set_author(name = f'The {self.creature.name.upper()} was caught!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
-        embed.add_field(name=f"✨     Caught By - **{self.catch_user.nickname}** *({self.interaction.user.name.upper()})*", value=f"", inline=False)
+        embed.set_author(name = f'The {self.creature.name.upper()} was caught! {"*(via Trap)*" if is_afk_catch else ""}', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+        embed.add_field(name=f"✨     Caught By - **{self.catch_user.nickname}** *({self.catch_user.discord_profile.name.upper()})*", value=f"", inline=False)
         if nickname:
             embed.add_field(name=f"‼️     Nickname - **{nickname}**", value=f"", inline=False)
         embed.add_field(name=f"🕒     Caught On - **{discord.utils.utcnow().strftime('%Y-%m-%d %H:%M UTC')}**\n\n\n\n", value=f"", inline=False)
@@ -98,7 +95,7 @@ class CreatureEmbedHandler:
 
         # calculate xp to add and add fields to embed
         if self.total_xp == 0:
-            self.total_xp, embed = self.calculate_catch_xp(catch_embed=embed, interaction=self.interaction)
+            self.total_xp, embed = self.calculate_catch_xp(catch_embed=embed)
         else:
             for field in self.xp_fields:
                 embed.add_field(name=field['name'], value=field['value'], inline=field['inline'])
@@ -116,17 +113,17 @@ class CreatureEmbedHandler:
         despawn_character = 'R' if is_countdown else 'F'
         return f"<t:{timestamp}:{despawn_character}>"
 
-    def calculate_catch_xp(self, catch_embed: discord.Embed, interaction: discord.Interaction):
+    def calculate_catch_xp(self, catch_embed: discord.Embed):
         total_xp = randint(10, 50)
 
         self.add_xp_field_to_embed(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
         catch_embed.add_field(name=CREATURE_SUCCESSFUL_CATCH_LINE + f'*+{total_xp} xp*', value=f"", inline=False)
 
-        if not get_tgommo_db_handler().has_user_caught_creature(user_id=interaction.user.id, dex_no=self.creature.dex_no):
+        if not get_tgommo_db_handler().has_user_caught_creature(user_id=self.catch_user.user_id, dex_no=self.creature.dex_no):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_LINE, value=f"", inline=False)
             total_xp += 250
-        if not get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id) and not any(field.name == CREATURE_FIRST_CATCH_LINE for field in catch_embed.fields):
+        if not get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=self.catch_user.user_id, creature_id=self.creature.creature_id) and not any(field.name == CREATURE_FIRST_CATCH_LINE for field in catch_embed.fields):
             self.add_xp_field_to_embed(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             catch_embed.add_field(name=CREATURE_FIRST_CATCH_VARIANT_LINE, value=f"", inline=False)
             total_xp += 175

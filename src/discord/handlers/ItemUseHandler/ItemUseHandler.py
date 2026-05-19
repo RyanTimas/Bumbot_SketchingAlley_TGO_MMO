@@ -4,6 +4,7 @@ import time
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
+from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
@@ -22,6 +23,7 @@ class ItemUseHandler:
             ITEM_TYPE_NAMETAG: self.use_nametag,
             ITEM_TYPE_CHARM: self.use_charm,
             ITEM_TYPE_BAIT: self.use_bait,
+            ITEM_TYPE_BATTERY: self.use_battery
         }
 
 
@@ -80,6 +82,13 @@ class ItemUseHandler:
 
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
+
+
+    async def use_battery(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        new_charges = TrapHandler.load_battery(user_id=user.user_id)
+        await interaction.followup.send(f"You've successfully charged your Trap! You have {new_charges} charges remaining.", ephemeral=True)
+        return True, None
+
 
     '''---- AFFECT ACTIONS ------------------------------------------------------------------------------------------------------------'''
     async def _schedule_charm_effect_removal(self, duration_seconds: int, item, bonus_type):

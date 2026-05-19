@@ -1,5 +1,6 @@
 from discord.ui import Select
 
+from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import *
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
 from src.discord.handlers.ItemUseHandler.ItemUseHandler import ItemUseHandler

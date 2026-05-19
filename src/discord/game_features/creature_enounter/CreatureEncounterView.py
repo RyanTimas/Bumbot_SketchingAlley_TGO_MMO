@@ -6,6 +6,7 @@ from discord.ui import View
 from src.commons.CommonDecorators import measure_execution_time, retry_on_ssl_error
 from src.commons.CommonFunctions import convert_to_png, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
+from src.discord.game_features.creature_enounter.CatchFunctions import catch_creature
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, \
@@ -63,15 +64,12 @@ class CreatureEncounterView(View):
             # generate the successful catch embed
             await interaction.followup.send(f"Please wait...", ephemeral=True)
 
-            self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.spawn_user)
-            successful_catch_embed, successful_catch_image, total_xp = self.successful_catch_embed_handler.generate_catch_embed(interaction=interaction)
-
-            # insert record of user catching the creature & give user xp for catching the creature
-            catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(interaction.user.id, self.creature.creature_id, self.creature.variant_no, self.creature.environment_id, self.creature.local_rarity == MYTHICAL))
-            get_user_db_handler().update_xp(total_xp, interaction.user.id, interaction.user.display_name)
+            result = catch_creature(interaction.user.id, self.creature, self.environment, spawn_user=self.spawn_user)
+            catch_id = result["catch_id"]
 
             # send a message to the channel announcing the successful catch
-            self.successful_catch_message = await interaction.channel.send(embed=successful_catch_embed, files=[successful_catch_image])
+            self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.spawn_user)
+            self.successful_catch_message = await interaction.channel.send(embed=result["catch_embed"], files=[result["catch_image"]])
 
             # send a personal message to user confirming the catch & seeing if they have unlocked a new avatar
             nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)

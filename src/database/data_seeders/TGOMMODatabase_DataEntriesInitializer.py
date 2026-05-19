@@ -1303,6 +1303,11 @@ class TGOMMODatabase_DataEntriesInitializer:
             (ITEM_ID_MYTHICAL_BAIT, 'Mythical Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be mythical.', TGOMMO_RARITY_MYTHICAL, True, '', 1, 500),
             (ITEM_ID_TRANSCENDANT_BAIT, 'Transcendant Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random creature only you can catch. The creature will always be transcendant.', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 2500),
             (ITEM_ID_OMNIPOTENT_BAIT, 'Omnipotent Bait', ITEM_TYPE_BAIT, 'Allows you to summon any discovered creature of your choice. Only you can catch this creature.', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 5000),
+            (ITEM_ID_MAMMAL_BAIT, 'Mammal Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random mammal creature only you can catch.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_BAIT}_{MAMMAL}'.lower(), 1, 75),
+            (ITEM_ID_BIRD_BAIT, 'Bird Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random bird creature only you can catch.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_BAIT}_{BIRD}'.lower(), 1, 75),
+            (ITEM_ID_REPTILE_BAIT, 'Reptile Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random reptile creature only you can catch.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_BAIT}_{REPTILE}'.lower(), 1, 75),
+            (ITEM_ID_AMPHIBIAN_BAIT, 'Amphibian Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random amphibian creature only you can catch.', TGOMMO_RARITY_RARE, True, f'{ITEM_TYPE_BAIT}_{AMPHIBIAN}'.lower(), 1, 100),
+            (ITEM_ID_BUG_BAIT, 'Bug Bait', ITEM_TYPE_BAIT, 'Allows you to summon a random "bug" creature only you can catch.', TGOMMO_RARITY_RARE, True, f'{ITEM_TYPE_BAIT}_{BUG}'.lower(), 1, 100),
             # endregion
 
             # region Charms
@@ -1315,26 +1320,28 @@ class TGOMMODatabase_DataEntriesInitializer:
             (ITEM_ID_MYTHICAL_CHARM, 'Mythical Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mythical creatures. Lasts for 15 minutes', TGOMMO_RARITY_MYTHICAL, True, '', 1, 2500),
             (ITEM_ID_TRANSCENDANT_CHARM, 'Transcendant Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for transcendant creatures. Lasts for 15 minutes', TGOMMO_RARITY_TRANSCENDANT, False, '', 1, 10000),
             (ITEM_ID_OMNIPOTENT_CHARM, 'Omnipotent Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for any creature of your choice. Lasts for 15 minutes', TGOMMO_RARITY_OMNIPOTENT, False, '', 1, 10000),
-            (ITEM_ID_MAMMAL_CHARM, 'Mammal Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for mammal creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
-            (ITEM_ID_BIRD_CHARM, 'Bird Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for bird creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
-            (ITEM_ID_REPTILE_CHARM, 'Reptile Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for reptile creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
-            (ITEM_ID_AMPHIBIAN_CHARM, 'Amphibian Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for amphibian creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
-            (ITEM_ID_BUG_CHARM, 'Bug Charm', ITEM_TYPE_CHARM, 'Increases the spawn chances for "bug" creatures. Lasts for 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 125),
+
+            (ITEM_ID_MAMMAL_CHARM, 'Mammal Charm', ITEM_TYPE_CHARM, 'Increases chance to encounter mammals.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_CHARM}_{MAMMAL}'.lower(), 1, 150),
+            (ITEM_ID_BIRD_CHARM, 'Bird Charm', ITEM_TYPE_CHARM, 'Increases chance to encounter birds.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_CHARM}_{BIRD}'.lower(), 1, 150),
+            (ITEM_ID_REPTILE_CHARM, 'Reptile Charm', ITEM_TYPE_CHARM, 'Increases chance to encounter reptiles.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_CHARM}_{REPTILE}'.lower(), 1, 150),
+            (ITEM_ID_AMPHIBIAN_CHARM, 'Amphibian Charm', ITEM_TYPE_CHARM, 'Increases chance to encounter amphibians.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_CHARM}_{AMPHIBIAN}'.lower(), 1, 225),
+            (ITEM_ID_BUG_CHARM, 'Bug Charm', ITEM_TYPE_CHARM, 'Increases chance to encounter bugs.', TGOMMO_RARITY_UNCOMMON, True, f'{ITEM_TYPE_CHARM}_{BUG}'.lower(), 1, 225),
             # endregion
             # region Ultra Charms
-            (ITEM_ID_ULTRA_CHARM, 'Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 500),
+            (ITEM_ID_ULTRA_CHARM, 'Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 750),
             (ITEM_ID_COMMON_ULTRA_CHARM, 'Ultra Common Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of common creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_COMMON, True, '', 1, 250),
-            (ITEM_ID_UNCOMMON_ULTRA_CHARM, 'Ultra Uncommon Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of uncommon creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_UNCOMMON, True, '', 1, 350),
-            (ITEM_ID_RARE_ULTRA_CHARM, 'Ultra Rare Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of rare creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_RARE, True, '', 1, 500),
-            (ITEM_ID_EPIC_ULTRA_CHARM, 'Ultra Epic Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of epic creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 750),
-            (ITEM_ID_LEGENDARY_ULTRA_CHARM, 'Ultra Legendary Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of legendary creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_LEGENDARY, True, '', 1, 1000),
-            (ITEM_ID_MYTHICAL_ULTRA_CHARM, 'Ultra Mythical Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of mythical creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_MYTHICAL, True, '', 1, 1500),
+            (ITEM_ID_UNCOMMON_ULTRA_CHARM, 'Ultra Uncommon Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of uncommon creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_UNCOMMON, True, '', 1, 500),
+            (ITEM_ID_RARE_ULTRA_CHARM, 'Ultra Rare Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of rare creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_RARE, True, '', 1, 750),
+            (ITEM_ID_EPIC_ULTRA_CHARM, 'Ultra Epic Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of epic creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 1250),
+            (ITEM_ID_LEGENDARY_ULTRA_CHARM, 'Ultra Legendary Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of legendary creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_LEGENDARY, True, '', 1, 2500),
+            (ITEM_ID_MYTHICAL_ULTRA_CHARM, 'Ultra Mythical Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of mythical creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_MYTHICAL, True, '', 1, 5000),
             (ITEM_ID_TRANSCENDANT_ULTRA_CHARM, 'Ultra Transcendant Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of transcendant creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_TRANSCENDANT, True, '', 1, 5000),
-            (ITEM_ID_MAMMAL_ULTRA_CHARM, 'Ultra Mammal Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of mammal creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
-            (ITEM_ID_BIRD_ULTRA_CHARM, 'Ultra Bird Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of bird creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
-            (ITEM_ID_REPTILE_ULTRA_CHARM, 'Ultra Reptile Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of reptile creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
-            (ITEM_ID_AMPHIBIAN_ULTRA_CHARM, 'Ultra Amphibian Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of amphibian creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
-            (ITEM_ID_BUG_ULTRA_CHARM, 'Ultra Bug Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases the amount of bug creatures that will spawn for the next 15 minutes.', TGOMMO_RARITY_NORMAL, True, '', 1, 600),
+
+            (ITEM_ID_MAMMAL_ULTRA_CHARM, 'Mammal Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases chance to encounter mammals.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_ULTRA_CHARM}_{MAMMAL}'.lower(), 1, 500),
+            (ITEM_ID_BIRD_ULTRA_CHARM, 'Bird Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases chance to encounter birds.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_ULTRA_CHARM}_{BIRD}'.lower(), 1, 500),
+            (ITEM_ID_REPTILE_ULTRA_CHARM, 'Reptile Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases chance to encounter reptiles.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_ULTRA_CHARM}_{REPTILE}'.lower(), 1, 500),
+            (ITEM_ID_AMPHIBIAN_ULTRA_CHARM, 'Amphibian Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases chance to encounter amphibians.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_ULTRA_CHARM}_{AMPHIBIAN}'.lower(), 1, 775),
+            (ITEM_ID_BUG_ULTRA_CHARM, 'Bug Ultra Charm', ITEM_TYPE_ULTRA_CHARM, 'Greatly increases chance to encounter bugs.', TGOMMO_RARITY_RARE, False, f'{ITEM_TYPE_ULTRA_CHARM}_{BUG}'.lower(), 1, 775),
             # endregion
 
             # region Time Charms

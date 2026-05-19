@@ -54,24 +54,60 @@ class ShopScheduler:
             print(f"Error refreshing shop: {e}")
 
     def generate_daily_items(self):
+        current_shop_level = get_game_state_manager().get_shop_level()
+
+        # tuple format: (item_id, weight, min_shop_level)
         shop_item_pool = [
-            # baits
-            (ITEM_ID_BAIT, 100),
-            (ITEM_ID_COMMON_BAIT, 50),
-            (ITEM_ID_UNCOMMON_BAIT, 25),
+            # region Shop L1 items
+            (ITEM_ID_BAIT, 100, 1),
+            (ITEM_ID_COMMON_BAIT, 50, 1),
+            (ITEM_ID_UNCOMMON_BAIT, 25, 1),
 
-            # charms
-            (ITEM_ID_CHARM, 25),
-            (ITEM_ID_COMMON_CHARM, 15),
-            (ITEM_ID_UNCOMMON_CHARM, 15),
+            (ITEM_ID_MAMMAL_BAIT, 35, 1),
+            (ITEM_ID_BIRD_BAIT, 35, 1),
+            (ITEM_ID_REPTILE_BAIT, 35, 1),
 
-            # misc items
-            (ITEM_ID_NAMETAG, 75),
+            (ITEM_ID_CHARM, 25, 1),
+            (ITEM_ID_COMMON_CHARM, 15, 1),
+            (ITEM_ID_UNCOMMON_CHARM, 15, 1),
+
+            (ITEM_ID_NAMETAG, 75, 1),
+            # endregion
+
+            # region Shop L2 items
+            (ITEM_ID_RARE_BAIT, 25, 2),
+
+            (ITEM_ID_PLANE_TICKET_EST, 275, 2),
+            (ITEM_ID_PLANE_TICKET_FL, 275, 2),
+
+            # endregion
+
+            # region Shop L3 items
+            (ITEM_ID_EPIC_BAIT, 15, 3),
+
+            (ITEM_ID_AMPHIBIAN_BAIT, 35, 3),
+            (ITEM_ID_BUG_BAIT, 35, 3),
+
+            (ITEM_ID_PLANE_TICKET_IC, 275, 3),
+            (ITEM_ID_PLANE_TICKET_WY, 275, 3),
+            # endregion
+
+            # region Shop L4 items
+            (ITEM_ID_PLANE_TICKET, 15, 4),
+
+            (ITEM_ID_ULTRA_CHARM, 1, 4),
+            (ITEM_ID_COMMON_ULTRA_CHARM, 1, 4),
+            (ITEM_ID_UNCOMMON_ULTRA_CHARM, 1, 4),
+            (ITEM_ID_RARE_ULTRA_CHARM, 1, 4),
+            # endregion
         ]
+
+        # Filter pool by current shop level
+        available_pool = [(item, weight) for item, weight, min_level in shop_item_pool if current_shop_level >= min_level]
 
         # Create a weighted population for sampling without duplicates
         selected_items = []
-        remaining_pool = shop_item_pool.copy()
+        remaining_pool = available_pool.copy()
 
         for _ in range(3):
             if not remaining_pool:

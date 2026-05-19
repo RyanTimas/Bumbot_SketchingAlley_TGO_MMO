@@ -48,6 +48,11 @@ class GameStateManager:
 
 
     ''' ----- GETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # ENVIRONMENT GETTERS
+    def get_environment_change_date(self) -> Optional[str]:
+        state = self._load_state()
+        return state.get("environment_change_date")
+
     def get_current_environment(self) -> Optional[tuple]:
         state = self._load_state()
         env_dex = state.get("environment_dex_no")
@@ -56,9 +61,7 @@ class GameStateManager:
             return env_dex, env_variant
         return None
 
-    def get_environment_change_date(self) -> Optional[str]:
-        state = self._load_state()
-        return state.get("environment_change_date")
+    # SHOP GETTERS
     def get_shop_date(self) -> Optional[str]:
         state = self._load_state()
         return state.get("shop_date")
@@ -84,12 +87,27 @@ class GameStateManager:
                 shop_avatars.append(avatar)
         return shop_avatars
 
+    def get_shop_level(self) -> int:
+        """Return the saved shop level (defaults to 1)."""
+        state = self._load_state()
+        return state.get("shop_level", 1)
+    def get_shop_donation_total(self) -> int:
+        """Return the saved shop donation total (defaults to 0)."""
+        state = self._load_state()
+        return state.get("shop_donation_total", 0)
+
     # general Bumbot state getters
     def get_shiny_message_count(self) -> int:
         state = self._load_state()
         return state.get("shiny_message_count", 0)
 
     ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # ENVIRONMENT SETTERS
+    def set_environment_change_date(self, new_date: str):
+        state = self._load_state()
+        state["environment_change_date"] = new_date
+        self._save_state(state)
+
     def set_current_environment(self, environment_dex_no: int, environment_variant_no: int):
         state = self._load_state()
         state.update({
@@ -98,15 +116,12 @@ class GameStateManager:
         })
         self._save_state(state)
 
-    def set_environment_change_date(self, new_date: str):
-        state = self._load_state()
-        state["environment_change_date"] = new_date
-        self._save_state(state)
+
+    # SHOP SETTERS
     def set_shop_date(self, new_date: str):
         state = self._load_state()
         state["shop_date"] = new_date
         self._save_state(state)
-
     def set_current_shop_inventory(self, item_ids: list, avatar_ids: list):
         state = self._load_state()
         state.update({
@@ -115,6 +130,15 @@ class GameStateManager:
         })
         self._save_state(state)
 
+    def set_shop_level(self, new_level: int):
+        state = self._load_state()
+        state["shop_level"] = new_level
+        self._save_state(state)
+    def set_shop_donation_total(self, new_total: int):
+        """Set and persist the shop donation total."""
+        state = self._load_state()
+        state["shop_donation_total"] = new_total
+        self._save_state(state)
 
     # General Bumbot state setters
     def set_shiny_message_count(self, new_count: int):

@@ -181,10 +181,10 @@ class TGOMMODatabaseHandler:
                 inventory_items.append(
                     TGOPlayerItem(
                         item_num=inventory_item_details[0], item_id=inventory_item_details[1],
-                        item_name=inventory_item_details[2], item_type=inventory_item_details[3], item_description=inventory_item_details[4],
-                        rarity=get_rarity_by_name(inventory_item_details[5]), is_rewardable=inventory_item_details[6], img_root=inventory_item_details[7], default_uses=inventory_item_details[8],
-                        user_id=inventory_item_details[9], item_quantity=inventory_item_details[10], last_used=inventory_item_details[11],
-                        last_purchase_date=inventory_item_details[12], shop_price=inventory_item_details[13]
+                        item_name=inventory_item_details[2], item_type=inventory_item_details[3], item_category=inventory_item_details[4], item_description=inventory_item_details[5],
+                        rarity=get_rarity_by_name(inventory_item_details[6]), is_rewardable=inventory_item_details[7], img_root=inventory_item_details[8], default_uses=inventory_item_details[9],
+                        user_id=inventory_item_details[10], item_quantity=inventory_item_details[11], last_used=inventory_item_details[12],
+                        last_purchase_date=inventory_item_details[13], shop_price=inventory_item_details[14]
                     )
                 )
         return inventory_items if expect_multiple else inventory_items[0]

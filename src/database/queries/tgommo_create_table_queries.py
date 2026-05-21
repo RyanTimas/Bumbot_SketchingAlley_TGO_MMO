@@ -160,6 +160,7 @@ TGOMMO_CREATE_INVENTORY_ITEM_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_invent
     
     item_name TEXT NOT NULL,
     item_type TEXT NOT NULL,
+    item_category TEXT NOT NULL,
     item_description TEXT DEFAULT '',
     
     rarity TEXT NOT NULL,

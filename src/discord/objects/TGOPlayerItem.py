@@ -9,7 +9,7 @@ from src.resources.constants.file_paths import ITEM_BASE, IMAGE_FILE_EXTENSION
 class TGOPlayerItem:
     def __init__(self,
         item_num:int, item_id: int,
-        item_name: str, item_type: str, item_description: str,
+        item_name: str, item_type: str, item_category: str, item_description: str,
         rarity:CreatureRarity, is_rewardable: bool, img_root: str, default_uses: int =0,
         user_id: int =0, item_quantity: int =0, last_used: int =0,
         last_purchase_date: int =0, shop_price: int =0
@@ -19,6 +19,7 @@ class TGOPlayerItem:
 
         self.item_name = item_name
         self.item_type = item_type
+        self.item_category = item_category
         self.item_description = item_description
 
         self.rarity = rarity

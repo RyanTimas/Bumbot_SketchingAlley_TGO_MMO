@@ -1,7 +1,9 @@
 import threading
 import time
+from typing import List, Tuple, Optional
 
 from src.commons.CommonFunctions import *
+from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
 from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
@@ -21,14 +23,14 @@ class ItemUseHandler:
 
         self.active_effect = {
             ITEM_TYPE_NAMETAG: self.use_nametag,
-            ITEM_TYPE_CHARM: self.use_charm,
+            ITEM_TYPE_CHARM: self.use_creature_charm,
             ITEM_TYPE_BAIT: self.use_bait,
             ITEM_TYPE_BATTERY: self.use_battery
         }
 
 
     async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        # check to make sure user has at least 1 bait
+        # check to make sure user has at least 1 in their inventory before allowing use
         if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
             affect_activated, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
 
@@ -47,30 +49,26 @@ class ItemUseHandler:
 
 
     '''---- ITEM EFFECT HANDLERS ------------------------------------------------------------------------------------------------------------'''
+
     async def use_nametag(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         nametag_view = NametagUseView(target_user=user, item_use_handler=self)
-        await interaction.followup.send(f"You used the nametag! You can now rename your creature.", view=nametag_view, ephemeral=True)
+        await interaction.followup.send(f"You used the {item.item_name}! You can now rename your creature.", view=nametag_view, ephemeral=True)
         return False, None
 
+    async def use_plane_ticket(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        # todo: logic for wildcard plane ticket for user to select their environment
 
-    async def use_charm(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        bonus_type = ITEM_TYPE_CHARM
-        if item.item_id == ITEM_ID_CHARM:
-            bonus_type += TGOMMO_RARITY_NORMAL
-        elif item.item_id == ITEM_ID_MYTHICAL_CHARM:
-            bonus_type += TGOMMO_RARITY_MYTHICAL
+        # logic to determine the kingdom and rarity of the creature to spawn based on the plane ticket item used
+        new_environment_dex_no = item_id_plane_ticket_map.get(item.item_id)
+        new_environment = get_tgommo_db_handler().get_environments_by_dex_no(dex_no=new_environment_dex_no, convert_to_object=True)
 
-        # add spawn bonus to creature spawner
-        bonus_added = self.discord_bot.creature_spawner_handler.add_spawn_bonus(bonus_type=bonus_type, bonus_name=item.item_name, rarity=item.rarity.name, image=self.get_image_for_item(item))
+        # todo: add a function to creature_spawner_handler to gracefully change the environment and handle any necessary cleanup or state updates
+        self.discord_bot.creature_spawner_handler.current_environment = new_environment
 
-        if not bonus_added:
-            return False, f"A charm with this effect is already active! Please wait for it to wear off before using another charm."
+        return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
 
-        # schedule effect removal
-        await asyncio.create_task(self._schedule_charm_effect_removal(duration_seconds=15 * 60, item=item, bonus_type = bonus_type))
-        return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}. Effects are active for the next 15 minutes!"
-
-
+    '''---- CREATURE SPAWN BONUS HANDLERS ------------------------------------------------------------------------------------------------------------'''
+    # Applies the effect of a bait item. Before applying the effect, it checks if the server has captured at least 65% of the unique creatures in the current environment. If not, it returns False and a message indicating that bait use is locked until 65% capture is reached. If the capture requirement is met, it spawns a creature with the appropriate rarity and returns True along with a message indicating that the bait was used.
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
         available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
@@ -80,26 +78,65 @@ class ItemUseHandler:
         if capture_percentage < 65:
             return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
 
-        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=item.rarity if item.rarity.name != TGOMMO_RARITY_NORMAL else None)
+        # logic to determine the kingdom and rarity of the creature to spawn based on the bait item used
+        kingdom = kingdom_bait_map.get(item.item_id)
+        rarity = rarity_bait_map.get(item.item_id)
+
+        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=rarity, kingdom=kingdom)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
 
+    # Applies the effect of a charm item. If a charm of the same type is already active, it returns False and a message indicating that the charm is already active. Otherwise, it adds the charm effect to the game state manager and schedules its removal after 15 minutes.
+    async def use_creature_charm(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        charm_groups = [
+            (set(CHARM_IDS), f"A Charm is already active! Please wait for it to wear off before using another Charm."),
+            (set(MYTHICAL_CHARM_IDS), f"A Mythical Charm is already active! Please wait for it to wear off before using another Mythical Charm."),
+            (set(RARITY_CHARM_IDS), f"A Rarity Charm is already active! Please wait for it to wear off before using another Rarity Charm."),
+            (set(KINGDOM_CHARM_IDS), f"A Kingdom Charm is already active! Please wait for it to wear off before using another Kingdom Charm."),
+        ]
+        return await self._use_timed_item(user=user, item=item, interaction=interaction, groups=charm_groups, failure_msg="A charm with this effect is already active! Please wait for it to wear off before using another charm.", item_type=ITEM_TYPE_CHARM, duration_minutes=15)
 
+    #todo: use amulet coin
+    #todo: use time charm
+
+
+    '''---- CREATURE TRAP HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_battery(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         new_charges = TrapHandler.load_battery(user_id=user.user_id)
         await interaction.followup.send(f"You've successfully charged your Trap! You have {new_charges} charges remaining.", ephemeral=True)
         return True, None
 
 
-    '''---- AFFECT ACTIONS ------------------------------------------------------------------------------------------------------------'''
-    async def _schedule_charm_effect_removal(self, duration_seconds: int, item, bonus_type):
-        thread = threading.Thread(target=self._execute_charm_removal, args=(duration_seconds, item, bonus_type))
-        thread.daemon = True
-        thread.start()
+    '''---- TIMED ITEM ACTIONS ------------------------------------------------------------------------------------------------------------'''
+    # Generalized function for using timed items like charms. It checks if an item from the same group is already active, and if not, it adds the new item effect to the game state manager and schedules its removal after a specified duration. The groups parameter is a list of tuples, where each tuple contains a set of item IDs that belong to the same group and a message to display if an item from that group is already active.
+    async def _use_timed_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction, groups: List[Tuple[set, str]], failure_msg: str, item_type=ITEM_TYPE_CHARM, duration_minutes: int = 15):
+        active_bonuses = get_game_state_manager().get_active_spawn_bonuses()
 
-    def _execute_charm_removal(self, duration_seconds: int, item, bonus_type):
-        time.sleep(duration_seconds)
-        self.discord_bot.creature_spawner_handler.remove_spawn_bonus(bonus_type=bonus_type)
-        # await self.channel.send(f"The effect of {item.item_name} has worn off.", files=[self.get_image_for_item(item)])
+        # check if a same-group item is already active
+        for group_ids, msg in groups:
+            if item.item_id in group_ids and any(b.get("item_id") in group_ids for b in active_bonuses):
+                return False, msg
+
+        # add the timed effect
+        despawn_timestamp = int(time.time()) + (duration_minutes * 60)
+        bonus_added = get_game_state_manager().add_active_spawn_bonus(item_id=item.item_id, item_type=item_type, despawn_ts=despawn_timestamp)
+        if not bonus_added:
+            return False, failure_msg
+
+        # schedule removal (background) — do NOT await create_task
+        await asyncio.create_task(self._schedule_effect_removal(despawn_ts=despawn_timestamp, item=item))
+        return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}. Effects are active for the next {duration_minutes} minutes!"
+
+    # Schedules the removal of an active item effect after a specified delay. It calculates the delay based on the current time and the provided despawn timestamp, then sleeps for that duration before removing the effect from the game state manager and sending a message to the channel indicating that the effect has worn off.
+    async def _schedule_effect_removal(self, despawn_ts: int, item):
+        async def _execute_item_removal(delay_seconds: float, active_item):
+            await asyncio.sleep(delay_seconds)
+            get_game_state_manager().remove_active_spawn_bonus(item_id=active_item.item_id)
+            await self.channel.send(f"The effect of {active_item.item_name} has worn off.", files=[self.get_image_for_item(active_item)])
+
+        # run the removal coroutine in the background
+        delay = max(0, despawn_ts - int(time.time()))
+        await asyncio.create_task(_execute_item_removal(delay, item))
+
 
     '''---- SUPPORT FUNCTIONS ------------------------------------------------------------------------------------------------------------'''
     def get_image_for_item(self, item: TGOPlayerItem):

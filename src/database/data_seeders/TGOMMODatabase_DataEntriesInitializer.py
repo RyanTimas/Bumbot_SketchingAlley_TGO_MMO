@@ -1398,7 +1398,7 @@ class TGOMMODatabase_DataEntriesInitializer:
 
         for index, item in enumerate(item_data):
             item = (index + 1,) + item
-            if len(item) == 9:
+            if len(item) == 10:
                 item = item + (0,)
 
             self.queryHandler.execute_query(TGOMMO_INSERT_NEW_INVENTORY_ITEM, params=item)

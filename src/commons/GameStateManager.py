@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+import threading
 from typing import Optional
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -8,13 +10,11 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 game_state_manager = None
 
 def initialize_game_state_manager(state_file_path: str = "resources/constants/game_state.json"):
-    """Initialize the global game state manager instance"""
     global game_state_manager
     game_state_manager = GameStateManager(state_file_path)
     return game_state_manager
 
 def get_game_state_manager() -> 'GameStateManager':
-    """Get the global game state manager instance"""
     global game_state_manager
     if game_state_manager is None:
         raise RuntimeError("Game state manager not initialized. Call initialize_game_state_manager() first.")
@@ -23,6 +23,7 @@ def get_game_state_manager() -> 'GameStateManager':
 class GameStateManager:
     def __init__(self, state_file_path: str = "resources/constants/game_state.json"):
         self.state_file_path = state_file_path
+        self._lock = threading.RLock()
         self._ensure_directory_exists()
 
     def _ensure_directory_exists(self):
@@ -33,17 +34,27 @@ class GameStateManager:
     def _load_state(self) -> dict:
         try:
             if os.path.exists(self.state_file_path):
-                with open(self.state_file_path, 'r') as f:
+                with open(self.state_file_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
             print(f"Error loading game state: {e}")
         return {}
+
     def _save_state(self, state: dict):
-        """Save the entire state to file."""
+        """Save the entire state to file atomically (write to temp file then replace)."""
+        tmp_path = None
         try:
-            with open(self.state_file_path, 'w') as f:
-                json.dump(state, f, indent=2)
+            directory = os.path.dirname(self.state_file_path) or '.'
+            with tempfile.NamedTemporaryFile('w', dir=directory, delete=False, encoding='utf-8') as tf:
+                json.dump(state, tf, indent=2)
+                tmp_path = tf.name
+            os.replace(tmp_path, self.state_file_path)
         except Exception as e:
+            if tmp_path and os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
             print(f"Error saving game state: {e}")
 
 
@@ -101,6 +112,12 @@ class GameStateManager:
         state = self._load_state()
         return state.get("shiny_message_count", 0)
 
+    # SPAWN BONUS GETTERS
+    def get_active_spawn_bonuses(self) -> list:
+        """Return the saved list of active spawn bonuses (list of dicts)."""
+        state = self._load_state()
+        return state.get("active_spawn_bonuses", [])
+
     ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # ENVIRONMENT SETTERS
     def set_environment_change_date(self, new_date: str):
@@ -115,7 +132,6 @@ class GameStateManager:
             "environment_variant_no": environment_variant_no
         })
         self._save_state(state)
-
 
     # SHOP SETTERS
     def set_shop_date(self, new_date: str):
@@ -140,8 +156,41 @@ class GameStateManager:
         state["shop_donation_total"] = new_total
         self._save_state(state)
 
+    def set_active_spawn_bonuses(self, bonuses: list):
+        """Set and persist the list of active spawn bonuses (list of dicts)."""
+        state = self._load_state()
+        state["active_spawn_bonuses"] = bonuses
+        self._save_state(state)
+
     # General Bumbot state setters
     def set_shiny_message_count(self, new_count: int):
         state = self._load_state()
         state["shiny_message_count"] = new_count
         self._save_state(state)
+
+    ''' ----- ADDERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # SPAWN BONUS ADDERS
+    def add_active_spawn_bonus(self, item_id: int, item_type: str, despawn_ts: int) -> bool:
+        """ Add a bonus entry if one with the same item_id doesn't already exist. """
+        with self._lock:
+            state = self._load_state()
+            active_spawn_bonuses = state.get("active_spawn_bonuses", [])
+            if any(b.get("item_id") == item_id for b in active_spawn_bonuses):
+                return False
+            active_spawn_bonuses.append({"item_id": item_id, "item_type": item_type, "despawn_ts": despawn_ts})
+            state["active_spawn_bonuses"] = active_spawn_bonuses
+            self._save_state(state)
+            return True
+
+    ''' ----- REMOVERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # SPAWN BONUS REMOVERS
+    def remove_active_spawn_bonus(self, item_id: str) -> None:
+        """Remove any entries matching item_id and persist."""
+        with self._lock:
+            state = self._load_state()
+
+            active_spawn_bonuses = state.get("active_spawn_bonuses", [])
+            active_spawn_bonuses = [bonus for bonus in active_spawn_bonuses if bonus.get("item_id") != item_id]
+            state["active_spawn_bonuses"] = active_spawn_bonuses
+
+            self._save_state(state)

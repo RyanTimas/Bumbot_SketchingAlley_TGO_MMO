@@ -130,8 +130,8 @@ class CreatureSpawnerHandler:
 
     '''FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC'''
     # Spawns a creature and sends a message to the discord channel
-    async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None):
-        creature = creature if creature else await self.creature_picker(rarity= rarity)
+    async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None, kingdom = None):
+        creature = creature if creature else await self.creature_picker(rarity= rarity, kingdom= kingdom)
         creature_embed, creature_thumb_img, creature_encounter_img = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day, spawn_user=user, active_bonuses=self.active_bonuses).generate_spawn_embed()
 
         spawn_message = await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(content=TGOMMO_ROLE, view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user), files=[creature_thumb_img, creature_encounter_img], embed=creature_embed)
@@ -167,7 +167,14 @@ class CreatureSpawnerHandler:
         return
 
     # Picks a random creature from the spawn pool
-    async def creature_picker(self, rarity= None):
+    async def creature_picker(self, rarity= None, kingdom= None):
+        # if we got a kingdom bait use a different logic path
+        if kingdom:
+            available_creatures = [creature for creature in self.creature_spawn_pool if creature.kingdom.name in kingdom.name]
+            selected_creature_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
+            selected_creature = deepcopy(available_creatures[selected_creature_index])
+            return selected_creature
+
         mythical = rarity and rarity.name == TGOMMO_RARITY_MYTHICAL
         rarity = rarity if rarity and rarity.name != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
 
@@ -222,38 +229,56 @@ class CreatureSpawnerHandler:
 
 
     '''FUNCTIONS TO HANDLE ADDING / REMOVING SPAWN BONUSES'''
-    def add_spawn_bonus(self, bonus_type: str, bonus_name:str, rarity: str, image):
-        spawn_ceiling_rate = {
-            TGOMMO_RARITY_NORMAL: 0,
-            TGOMMO_RARITY_MYTHICAL: 0,
-
-            TGOMMO_RARITY_COMMON: 1,
-            TGOMMO_RARITY_UNCOMMON: 2,
-            TGOMMO_RARITY_RARE: 4,
-            TGOMMO_RARITY_EPIC: 8,
-            TGOMMO_RARITY_LEGENDARY: 16,
-        }
-
-        if not any(bonus.bonus_type == bonus_type for bonus in self.active_bonuses):
-            self.active_bonuses.append(
-                CreatureSpawnBonus(
-                    bonus_type=bonus_type,
-                    bonus_name=bonus_name,
-                    rarity=get_rarity_by_name(rarity),
-                    spawn_odds=spawn_ceiling_rate[rarity],
-                    image=image
-                )
-            )
-
-            # Interrupt current sleep to apply new bonus immediately
-            self.spawn_event.set()
-
-            return True
-        return False
-
-    def remove_spawn_bonus(self, bonus_type: str, ):
-        self.active_bonuses = [bonus for bonus in self.active_bonuses if not (bonus.bonus_type == bonus_type)]
-
+    '''REMOVED DUE TO PERSISTENT JSON GAMESTATE'''
+    # def add_spawn_bonus(self, bonus_type: str, bonus_name:str, rarity: str, image):
+    #     spawn_ceiling_rate = {
+    #         TGOMMO_RARITY_NORMAL: 0,
+    #         TGOMMO_RARITY_MYTHICAL: 0,
+    #
+    #         TGOMMO_RARITY_COMMON: 1,
+    #         TGOMMO_RARITY_UNCOMMON: 2,
+    #         TGOMMO_RARITY_RARE: 4,
+    #         TGOMMO_RARITY_EPIC: 8,
+    #         TGOMMO_RARITY_LEGENDARY: 16,
+    #     }
+    #
+    #     if not any(bonus.bonus_type == bonus_type for bonus in self.active_bonuses):
+    #         new_bonus = CreatureSpawnBonus(
+    #             bonus_type=bonus_type,
+    #             bonus_name=bonus_name,
+    #             rarity=get_rarity_by_name(rarity),
+    #             spawn_odds=spawn_ceiling_rate[rarity],
+    #             image=image
+    #         )
+    #         self.active_bonuses.append(new_bonus)
+    #
+    #         # Persist the bonus via the manager (use bonus_type as the item id).
+    #         # Default despawn TTL: 24 hours from now; adjust if a different lifetime is required.
+    #         despawn_ts = int(time.time()) + 24 * 60 * 60
+    #         try:
+    #             asyncio.create_task(self.spawn_bonus_manager.add_spawn_bonus(item_id=bonus_type, despawn_ts=despawn_ts))
+    #         except RuntimeError:
+    #             # If no running loop is available, ignore persistence for now.
+    #             pass
+    #
+    #         # Interrupt current sleep to apply new bonus immediately
+    #         self.spawn_event.set()
+    #
+    #         return True
+    #     return False
+    #
+    # def remove_spawn_bonus(self, bonus_type: str):
+    #     self.active_bonuses = [bonus for bonus in self.active_bonuses if not (bonus.bonus_type == bonus_type)]
+    #
+    #     try:
+    #         asyncio.create_task(self.spawn_bonus_manager.remove_spawn_bonus(item_id=bonus_type))
+    #     except RuntimeError:
+    #         # If no running loop is available, ignore persistence removal for now.
+    #         pass
+    #
+    #     # Interrupt current sleep to apply removal immediately
+    #     self.spawn_event.set()
+    #
 
     '''FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES'''
     async def handle_post_spawn_events(self):

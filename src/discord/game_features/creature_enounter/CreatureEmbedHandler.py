@@ -4,6 +4,7 @@ import discord
 from PIL import Image
 
 from src.commons.CommonFunctions import to_grayscale, convert_to_png
+from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEncounterImageFactory import CreatureEncounterImageFactory
 from src.discord.objects import TGOCreature
@@ -19,7 +20,7 @@ class CreatureEmbedHandler:
         self.creature = creature
         self.environment = environment
         self.spawn_user = spawn_user
-        self.active_bonuses = active_bonuses
+        self.active_bonuses = get_game_state_manager().get_active_spawn_bonuses()
 
         self.time_of_day = time_of_day
         self.catch_user:TGOPlayer = None
@@ -48,8 +49,8 @@ class CreatureEmbedHandler:
 
         # add active bonuses to embed
         bonus_description = ''
-        for bonus in self.active_bonuses:
-            bonus_description += f"-#\t{bonus.rarity.emojii} {bonus.bonus_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(bonus.despawn_time.timestamp()))}*\n"
+        for active_item in self.active_bonuses:
+            bonus_description += f"-#\t{active_item.rarity.emojii} {active_item.item_name} - *Expires in {self.get_despawn_timestamp(timestamp=int(active_item.despawn_timestamp))}*\n"
         if len(self.active_bonuses) > 0:
             embed.add_field(name=f"", value=f"", inline=False)
             embed.add_field(name=f"Active Bonuses", value=f"{bonus_description}", inline=False)
@@ -80,7 +81,6 @@ class CreatureEmbedHandler:
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         return embed, thumbnail_img, encounter_img
 
-
     def generate_catch_embed(self, catch_user:TGOPlayer, nickname: str = None, is_afk_catch: bool = False):
         self.catch_user = catch_user
         embed = discord.Embed(color=discord.Color.dark_green() if not is_afk_catch else discord.Color.yellow())
@@ -109,6 +109,8 @@ class CreatureEmbedHandler:
 
         return embed, thumbnail_png, self.total_xp
 
+
+    '''---- SUPPORTING FUNCTIONS --------------------------------------------------------------------------------'''
     def get_despawn_timestamp(self, is_countdown: bool = True, timestamp: int = None):
         despawn_character = 'R' if is_countdown else 'F'
         return f"<t:{timestamp}:{despawn_character}>"

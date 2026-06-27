@@ -5,7 +5,7 @@ import threading
 from typing import Optional
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-
+from src.discord.objects import TGOPlayerItem
 # Global instance - initialized as None
 game_state_manager = None
 
@@ -113,10 +113,19 @@ class GameStateManager:
         return state.get("shiny_message_count", 0)
 
     # SPAWN BONUS GETTERS
-    def get_active_spawn_bonuses(self) -> list:
-        """Return the saved list of active spawn bonuses (list of dicts)."""
+    def get_active_spawn_bonuses(self) -> list[TGOPlayerItem]:
         state = self._load_state()
-        return state.get("active_spawn_bonuses", [])
+        raw = state.get("active_spawn_bonuses", [])
+        bonuses: list[TGOPlayerItem] = []
+        for b in raw:
+            try:
+                active_item = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=b.get("item_id"))
+                if active_item:
+                    active_item.despawn_timestamp = int(b.get("despawn_ts"))
+                    bonuses.append(active_item)
+            except Exception:
+                continue
+        return bonuses
 
     ''' ----- SETTERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # ENVIRONMENT SETTERS
@@ -170,14 +179,14 @@ class GameStateManager:
 
     ''' ----- ADDERS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # SPAWN BONUS ADDERS
-    def add_active_spawn_bonus(self, item_id: int, item_type: str, despawn_ts: int) -> bool:
+    def add_active_spawn_bonus(self, item_id: int, despawn_ts: int) -> bool:
         """ Add a bonus entry if one with the same item_id doesn't already exist. """
         with self._lock:
             state = self._load_state()
             active_spawn_bonuses = state.get("active_spawn_bonuses", [])
             if any(b.get("item_id") == item_id for b in active_spawn_bonuses):
                 return False
-            active_spawn_bonuses.append({"item_id": item_id, "item_type": item_type, "despawn_ts": despawn_ts})
+            active_spawn_bonuses.append({"item_id": item_id, "despawn_ts": despawn_ts})
             state["active_spawn_bonuses"] = active_spawn_bonuses
             self._save_state(state)
             return True

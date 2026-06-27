@@ -93,7 +93,13 @@ class ItemUseHandler:
             (set(RARITY_CHARM_IDS), f"A Rarity Charm is already active! Please wait for it to wear off before using another Rarity Charm."),
             (set(KINGDOM_CHARM_IDS), f"A Kingdom Charm is already active! Please wait for it to wear off before using another Kingdom Charm."),
         ]
-        return await self._use_timed_item(user=user, item=item, interaction=interaction, groups=charm_groups, failure_msg="A charm with this effect is already active! Please wait for it to wear off before using another charm.", item_type=ITEM_TYPE_CHARM, duration_minutes=15)
+        successful, msg = await self._use_timed_item(user=user, item=item, interaction=interaction, groups=charm_groups, failure_msg="A charm with this effect is already active! Please wait for it to wear off before using another charm.", item_type=ITEM_TYPE_CHARM, duration_minutes=15)
+
+        # todo: this is not working correctly
+        # spawn a bonus creature if the charm was successfully activated
+        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=None, kingdom=None)
+
+        return successful, msg
 
     #todo: use amulet coin
     #todo: use time charm
@@ -113,29 +119,30 @@ class ItemUseHandler:
 
         # check if a same-group item is already active
         for group_ids, msg in groups:
-            if item.item_id in group_ids and any(b.get("item_id") in group_ids for b in active_bonuses):
+            if item.item_id in group_ids and any(active_item.item_id in group_ids for active_item in active_bonuses):
                 return False, msg
 
         # add the timed effect
         despawn_timestamp = int(time.time()) + (duration_minutes * 60)
-        bonus_added = get_game_state_manager().add_active_spawn_bonus(item_id=item.item_id, item_type=item_type, despawn_ts=despawn_timestamp)
+        bonus_added = get_game_state_manager().add_active_spawn_bonus(item_id=item.item_id, despawn_ts=despawn_timestamp)
         if not bonus_added:
             return False, failure_msg
 
         # schedule removal (background) — do NOT await create_task
-        await asyncio.create_task(self._schedule_effect_removal(despawn_ts=despawn_timestamp, item=item))
+        asyncio.create_task(self._schedule_effect_removal(despawn_ts=despawn_timestamp, item=item))
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}. Effects are active for the next {duration_minutes} minutes!"
 
     # Schedules the removal of an active item effect after a specified delay. It calculates the delay based on the current time and the provided despawn timestamp, then sleeps for that duration before removing the effect from the game state manager and sending a message to the channel indicating that the effect has worn off.
     async def _schedule_effect_removal(self, despawn_ts: int, item):
-        async def _execute_item_removal(delay_seconds: float, active_item):
-            await asyncio.sleep(delay_seconds)
-            get_game_state_manager().remove_active_spawn_bonus(item_id=active_item.item_id)
-            await self.channel.send(f"The effect of {active_item.item_name} has worn off.", files=[self.get_image_for_item(active_item)])
-
-        # run the removal coroutine in the background
+        # compute remaining delay and sleep inside this coroutine
         delay = max(0, despawn_ts - int(time.time()))
-        await asyncio.create_task(_execute_item_removal(delay, item))
+        await asyncio.sleep(delay)
+
+        # remove the effect and notify channel
+        get_game_state_manager().remove_active_spawn_bonus(item_id=item.item_id)
+
+        #todo: this line isn't working
+        await self.channel.send(f"The effect of {item.item_name} has worn off.", files=[self.get_image_for_item(item)])
 
 
     '''---- SUPPORT FUNCTIONS ------------------------------------------------------------------------------------------------------------'''

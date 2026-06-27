@@ -70,8 +70,9 @@ async def check_for_special_quest_avatars(user_id, creature: TGOCreature, intera
     catch_dt = convert_to_datetime(creature.catch_time)
     spawn_dt = convert_to_datetime(creature.spawn_time)
     diff_seconds = abs((catch_dt - spawn_dt).total_seconds())
-    print(f"Spawn time: {spawn_dt}, Catch time: {catch_dt}")
-    print(f"Time taken to catch creature: {diff_seconds} seconds")
+    #todo: add these to a log file instead of printing to console
+    # print(f"Spawn time: {spawn_dt}, Catch time: {catch_dt}")
+    # print(f"Time taken to catch creature: {diff_seconds} seconds")
 
     if diff_seconds < 3.0:
         print("good job")

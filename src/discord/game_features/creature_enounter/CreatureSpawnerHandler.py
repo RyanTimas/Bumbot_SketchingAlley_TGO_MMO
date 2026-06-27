@@ -20,7 +20,6 @@ from src.discord.game_features.creature_enounter.CreatureEncounterView import Cr
 from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects import TGOPlayer
 from src.discord.objects.CreatureRarity import *
-from src.discord.objects.CreatureSpawnBonus import CreatureSpawnBonus
 from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
@@ -170,7 +169,7 @@ class CreatureSpawnerHandler:
     async def creature_picker(self, rarity= None, kingdom= None):
         # if we got a kingdom bait use a different logic path
         if kingdom:
-            available_creatures = [creature for creature in self.creature_spawn_pool if creature.kingdom.name in kingdom.name]
+            available_creatures = [creature for creature in self.creature_spawn_pool if creature.kingdom in kingdom]
             selected_creature_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
             selected_creature = deepcopy(available_creatures[selected_creature_index])
             return selected_creature

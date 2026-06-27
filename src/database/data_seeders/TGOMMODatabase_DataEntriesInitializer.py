@@ -1214,7 +1214,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             EnvironmentCreatureLink(BIGFOOT_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST, ),
             EnvironmentCreatureLink(MOTHMAN_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER, ),
             EnvironmentCreatureLink(FROGMAN_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER, ),
-            EnvironmentCreatureLink(WENDIGO_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_RIVER, ),
+            EnvironmentCreatureLink(WENDIGO_DEX_NO, 1, EASTERN_US_DEX_NO, BOTH, TGOMMO_RARITY_TRANSCENDANT, '', SUB_ENVIRONMENT_FOREST, ),
             # endregion
 
             # region Everglades
@@ -1350,7 +1350,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             # endregion
 
             # region Miscellaneous Charms
-            (ITEM_ID_EXP_CHARM, 'Experience Charm', ITEM_TYPE_EXP_CHARM, ITEM_CATEGORY_USE, 'Doubles the amount of experience you gain from catching creatures for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 375),
+            (ITEM_ID_EXP_CHARM, 'XP Charm', ITEM_TYPE_EXP_CHARM, ITEM_CATEGORY_USE, 'Doubles the amount of experience you gain from catching creatures for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, '', 1, 375),
             # endregion
 
             # endregion

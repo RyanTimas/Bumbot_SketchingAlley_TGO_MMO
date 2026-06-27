@@ -1,8 +1,8 @@
 import discord
 from PIL import Image
 
-from src.commons.CommonFunctions import convert_to_png, interaction_guard
-from src.commons.CommonDecorators import retry_on_ssl_error
+from src.commons.CommonFunctions import convert_to_png
+from src.commons.CommonDecorators import retry_on_ssl_error, interaction_guard
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.DiscordBot import DiscordBot
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory

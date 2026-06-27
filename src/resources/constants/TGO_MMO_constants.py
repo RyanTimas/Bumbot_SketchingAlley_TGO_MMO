@@ -154,7 +154,7 @@ ITEM_TYPE_TRAP = 'Trap'
 ITEM_TYPE_PEARL = 'Pearl'
 # endregion
 
-ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
+ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE, ITEM_TYPE_PEARL]
 # endregion
 
 """ ----- GAMEPLAY MECHANICS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -414,14 +414,12 @@ rarity_bait_map = {
 }
 
 kingdom_bait_map = {
-    MAMMAL: ITEM_ID_MAMMAL_BAIT,
-    BIRD: ITEM_ID_BIRD_BAIT,
-    REPTILE: ITEM_ID_REPTILE_BAIT,
-    AMPHIBIAN: ITEM_ID_AMPHIBIAN_BAIT,
-    BUG_EXTENDED: ITEM_ID_BUG_BAIT
+    ITEM_ID_MAMMAL_BAIT: MAMMAL,
+    ITEM_ID_BIRD_BAIT: BIRD,
+    ITEM_ID_REPTILE_BAIT: REPTILE,
+    ITEM_ID_AMPHIBIAN_BAIT: AMPHIBIAN,
+    ITEM_ID_BUG_BAIT: BUG_EXTENDED
 }
-
-
 # endregion
 
 # region Charm IDs

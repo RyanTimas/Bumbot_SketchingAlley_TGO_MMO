@@ -26,10 +26,32 @@ class GameStateManager:
         self._lock = threading.RLock()
         self._ensure_directory_exists()
 
+        # Remove any expired spawn bonuses on startup so state file is clean
+        try:
+            self._cleanup_expired_spawn_bonuses()
+        except Exception as e:
+            print(f"Error cleaning up expired spawn bonuses: {e}")
+
     def _ensure_directory_exists(self):
         directory = os.path.dirname(self.state_file_path)
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
+
+    def _cleanup_expired_spawn_bonuses(self):
+        """Remove any active_spawn_bonuses whose despawn_ts is in the past and persist the change."""
+        import time
+        with self._lock:
+            state = self._load_state() or {}
+            raw = state.get("active_spawn_bonuses", [])
+            if not raw:
+                return
+            now_ts = int(time.time())
+            filtered = [b for b in raw if int(b.get("despawn_ts", 0)) > now_ts]
+            if len(filtered) != len(raw):
+                state["active_spawn_bonuses"] = filtered
+                self._save_state(state)
+                removed = len(raw) - len(filtered)
+                print(f"GameStateManager: removed {removed} expired active_spawn_bonuses on startup")
 
     def _load_state(self) -> dict:
         try:

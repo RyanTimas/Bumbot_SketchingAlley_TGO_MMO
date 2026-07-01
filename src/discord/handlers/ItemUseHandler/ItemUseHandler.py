@@ -1,6 +1,6 @@
-import threading
 import time
-from typing import List, Tuple, Optional
+import asyncio
+from typing import List, Tuple
 
 from src.commons.CommonFunctions import *
 from src.commons.GameStateManager import get_game_state_manager
@@ -30,6 +30,9 @@ class ItemUseHandler:
 
 
     async def use_item(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        # capture the channel where the interaction occurred so background tasks can send messages later
+        self.channel = interaction.channel
+
         # check to make sure user has at least 1 in their inventory before allowing use
         if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity > 0 and item.item_type in self.active_effect:
             affect_activated, response_message = await self.active_effect[item.item_type](user=user, item=item, interaction=interaction)
@@ -141,8 +144,11 @@ class ItemUseHandler:
         # remove the effect and notify channel
         get_game_state_manager().remove_active_spawn_bonus(item_id=item.item_id)
 
-        #todo: this line isn't working
-        await self.channel.send(f"The effect of {item.item_name} has worn off.", files=[self.get_image_for_item(item)])
+        # Attempt to send a notification to the stored channel. If none is available, skip sending but
+        try:
+            await self.channel.send(f"The effect of {item.item_name} has worn off.", files=[to_grayscale(self.get_image_for_item(item))])
+        except Exception as e:
+            print(f"ItemUseHandler: failed to send expiration message for {item.item_name}: {e}")
 
 
     '''---- SUPPORT FUNCTIONS ------------------------------------------------------------------------------------------------------------'''

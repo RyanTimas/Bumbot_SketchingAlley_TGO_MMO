@@ -36,20 +36,13 @@ def get_rarity_by_name(name: str):
     return None
 
 def get_rarity():
+    from bisect import bisect_left
     roll = random.randint(1, 10000)
-    # Select rarity based on defined probabilities
-    if roll <= 33:  # 0.33% chance for LEGENDARY
-        selected_rarity = LEGENDARY
-    elif roll <= 133:  # 1% chance for EPIC (rolls 34-133)
-        selected_rarity = EPIC
-    elif roll <= 533:  # 4% chance for RARE (rolls 134-533)
-        selected_rarity = RARE
-    elif roll <= 3833:  # 33% chance for UNCOMMON (rolls 534-3833)
-        selected_rarity = UNCOMMON
-    else:  # 61.67% chance for COMMON (rolls 3834-10000)
-        selected_rarity = COMMON
-
-    return selected_rarity
+    # cumulative upper bounds matching the original probabilities
+    thresholds = [33, 133, 533, 3833, 10000]
+    rarities = [LEGENDARY, EPIC, RARE, UNCOMMON, COMMON]
+    idx = bisect_left(thresholds, roll)
+    return rarities[idx]
 
 def get_rarity_hierarchy_value(rarity_name):
     rarity_hierarchy = {
@@ -58,8 +51,8 @@ def get_rarity_hierarchy_value(rarity_name):
         TGOMMO_RARITY_COMMON: 1,
         TGOMMO_RARITY_UNCOMMON: 2,
         TGOMMO_RARITY_RARE: 3,
-        TGOMMO_RARITY_EPIC: 4,
-        TGOMMO_RARITY_LEGENDARY: 5,
+        TGOMMO_RARITY_EPIC: 3,
+        TGOMMO_RARITY_LEGENDARY: 4,
         TGOMMO_RARITY_MYTHICAL: 4,
         TGOMMO_RARITY_TRANSCENDANT: 7,
         TGOMMO_RARITY_OMNIPOTENT: 10,

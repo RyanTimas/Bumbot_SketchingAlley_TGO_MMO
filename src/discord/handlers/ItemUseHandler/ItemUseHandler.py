@@ -93,8 +93,8 @@ class ItemUseHandler:
         charm_groups = [
             (set(CHARM_IDS), f"A Charm is already active! Please wait for it to wear off before using another Charm."),
             (set(MYTHICAL_CHARM_IDS), f"A Mythical Charm is already active! Please wait for it to wear off before using another Mythical Charm."),
-            (set(RARITY_CHARM_IDS), f"A Rarity Charm is already active! Please wait for it to wear off before using another Rarity Charm."),
-            (set(KINGDOM_CHARM_IDS), f"A Kingdom Charm is already active! Please wait for it to wear off before using another Kingdom Charm."),
+            (set(RARITY_CHARM_MAP.keys()), f"A Rarity Charm is already active! Please wait for it to wear off before using another Rarity Charm."),
+            (set(KINGDOM_CHARM_MAP.keys()), f"A Kingdom Charm is already active! Please wait for it to wear off before using another Kingdom Charm."),
         ]
         successful, msg = await self._use_timed_item(user=user, item=item, interaction=interaction, groups=charm_groups, failure_msg="A charm with this effect is already active! Please wait for it to wear off before using another charm.", item_type=ITEM_TYPE_CHARM, duration_minutes=15)
 

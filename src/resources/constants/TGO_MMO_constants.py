@@ -1,6 +1,7 @@
 import datetime
 import pytz
 
+from src.resources.constants.file_paths import *
 
 # todo: move to file paths
 '''EMBED ICONS'''
@@ -154,7 +155,6 @@ ITEM_TYPE_TRAP = 'Trap'
 ITEM_TYPE_PEARL = 'Pearl'
 # endregion
 
-ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE, ITEM_TYPE_PEARL]
 # endregion
 
 """ ----- GAMEPLAY MECHANICS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -298,7 +298,18 @@ CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
 # endregion
 
 """ ----- ITEM INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE, ITEM_TYPE_PEARL]
 
+ITEM_INVENTORY_ICON_ORDER_MAP = {
+    ITEM_INVENTORY_ICON_BAIT_IMAGE: [ITEM_TYPE_BAIT],
+    ITEM_INVENTORY_ICON_CHARM_IMAGE: [ITEM_TYPE_CHARM, ITEM_TYPE_ULTRA_CHARM],
+    ITEM_INVENTORY_ICON_ANIMAL_IMAGE: [ITEM_TYPE_PEARL],
+    ITEM_INVENTORY_ICON_MISC_ITEM_IMAGE: [ITEM_TYPE_NAMETAG, ITEM_TYPE_AMULET_COIN, ITEM_TYPE_PLANE_TICKET],
+    ITEM_INVENTORY_ICON_KEY_ITEM_IMAGE: [ITEM_TYPE_MEGAPHONE, ITEM_TYPE_TRAP, ITEM_TYPE_BATTERY],
+
+    # ITEM_INVENTORY_ICON_MEGAPHONE_IMAGE: ["megaphone"],
+    # ITEM_INVENTORY_ICON_TRAP_IMAGE: ["trap"],
+}
 
 """ ----- SHOP  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 SHOP_LEVEL_COST_MAP = {

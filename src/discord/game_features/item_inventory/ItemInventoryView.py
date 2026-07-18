@@ -23,6 +23,7 @@ class ItemInventoryView(BaseView):
         self.item_select_dropdown = self.create_items_dropdown(row=0)
         self.use_item_button = self.create_use_item_button(row=1)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
+        self.inventory_section_toggle_button = self.create_inventory_section_toggle_button(row=1)
 
         self.refresh_view()
 
@@ -64,6 +65,29 @@ class ItemInventoryView(BaseView):
             await self.item_use_handler.use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
         return callback
 
+    def create_inventory_section_toggle_button(self, row=1):
+        button = discord.ui.Button(label=f"{ITEM_INVENTORY_ICON_ORDER_MAP.get(self.image_factory.active_tab)}", style=discord.ButtonStyle.blurple, row=row)
+
+        button.callback = self.inventory_section_toggle_callback()
+        return button
+    def inventory_section_toggle_callback(self, ):
+        @interaction_guard(self, defer_response=False)
+        async def callback(interaction):
+            keys = list(ITEM_INVENTORY_ICON_ORDER_MAP.keys())
+            if not keys:
+                return  # nothing to toggle
+
+            # find current index (fallback to 0 if not found)
+            try:
+                current_tab_index = keys.index(self.image_factory.active_tab)
+            except ValueError:
+                current_tab_index = 0
+
+            next_tab = keys[(current_tab_index + 1) % len(keys)]
+            await interaction.response.edit_message(content=None, attachments=[self.reload_image(active_tab=next_tab)], view=self)
+
+        return callback
+
 
     # CREATE DROPDOWNS
     def create_items_dropdown(self, row=1):
@@ -91,9 +115,10 @@ class ItemInventoryView(BaseView):
         if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
             self.add_item(self.item_select_dropdown)
             self.add_item(self.use_item_button)
+            self.add_item(self.inventory_section_toggle_button)
 
 
     # SUPPORT FUNCTIONS
-    def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
-        new_image = self.image_factory.reload_image(target_user=target_user)
+    def reload_image(self, target_user= None, image_factory= None, new_page_number=None, active_tab=None):
+        new_image = self.image_factory.reload_image(target_user=target_user, active_tab=active_tab)
         return convert_to_png(new_image, f'item_inventory_page.png')

@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 """ ----- PROJECT DIRECTORY PATHS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -80,6 +79,7 @@ IMAGE_FOLDER_CREATURE_INVENTORY_RELEASE_SUMMARY_PATH = os.path.join(IMAGE_FOLDER
 # endregion
 # region Item Inventory Paths
 IMAGE_FOLDER_ITEM_INVENTORY_PATH = os.path.join(IMAGE_FOLDER_GAME_FEATURES_PATH, "item_inventory")
+IMAGE_FOLDER_ITEM_INVENTORY_ICON_PATH = os.path.join(IMAGE_FOLDER_ITEM_INVENTORY_PATH, "icons")
 # endregion
 
 # region Shop Paths
@@ -173,6 +173,8 @@ CREATURE_INVENTORY_INDIVIDUAL_CREATURE_FAVORITE_STAMP_BASE = CREATURE_INVENTORY_
 # endregion
 # region Item Inventory Roots
 ITEM_INVENTORY_BASE = os.path.join(IMAGE_FOLDER_ITEM_INVENTORY_PATH, "ItemInventory_")
+ITEM_INVENTORY_ICON_BASE = os.path.join(IMAGE_FOLDER_ITEM_INVENTORY_ICON_PATH, "ItemInventory_Icon_")
+
 # endregion
 
 # region Shop Paths
@@ -334,6 +336,16 @@ CREATURE_INVENTORY_RELEASE_SUMMARY_TAB_BG_IMAGE = CREATURE_INVENTORY_RELEASE_SUM
 ITEM_INVENTORY_BG_IMAGE = ITEM_INVENTORY_BASE + "BG" + IMAGE_FILE_EXTENSION
 ITEM_INVENTORY_CORNER_OVERLAY_IMAGE = ITEM_INVENTORY_BASE + "CornerOverlay" + IMAGE_FILE_EXTENSION
 ITEM_INVENTORY_TAB_BG_IMAGE = ITEM_INVENTORY_BASE + "TabBG" + IMAGE_FILE_EXTENSION
+# endregion
+# region Item Inventory Icons images
+ITEM_INVENTORY_ICON_BAIT_IMAGE = ITEM_INVENTORY_ICON_BASE + "Bait" + IMAGE_FILE_EXTENSION
+ITEM_INVENTORY_ICON_CHARM_IMAGE = ITEM_INVENTORY_ICON_BASE + "Charm" + IMAGE_FILE_EXTENSION
+ITEM_INVENTORY_ICON_ANIMAL_IMAGE = ITEM_INVENTORY_ICON_BASE + "Animal" + IMAGE_FILE_EXTENSION
+ITEM_INVENTORY_ICON_MISC_ITEM_IMAGE = ITEM_INVENTORY_ICON_BASE + "MiscItem" + IMAGE_FILE_EXTENSION
+ITEM_INVENTORY_ICON_KEY_ITEM_IMAGE = ITEM_INVENTORY_ICON_BASE + "KeyItem" + IMAGE_FILE_EXTENSION
+
+ITEM_INVENTORY_ICON_MEGAPHONE_IMAGE = ITEM_INVENTORY_ICON_BASE + "Megaphone" + IMAGE_FILE_EXTENSION
+ITEM_INVENTORY_ICON_TRAP_IMAGE = ITEM_INVENTORY_ICON_BASE + "Trap" + IMAGE_FILE_EXTENSION
 # endregion
 
 # region Shop Paths

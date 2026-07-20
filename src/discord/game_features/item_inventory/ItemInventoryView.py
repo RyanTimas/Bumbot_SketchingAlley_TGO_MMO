@@ -74,16 +74,10 @@ class ItemInventoryView(BaseView):
         @interaction_guard(self, defer_response=False)
         async def callback(interaction):
             keys = list(ITEM_INVENTORY_ICON_ORDER_MAP.keys())
-            if not keys:
-                return  # nothing to toggle
-
-            # find current index (fallback to 0 if not found)
-            try:
-                current_tab_index = keys.index(self.image_factory.active_tab)
-            except ValueError:
-                current_tab_index = 0
-
+            current_tab_index = keys.index(self.image_factory.active_tab)
             next_tab = keys[(current_tab_index + 1) % len(keys)]
+
+            self.refresh_view()
             await interaction.response.edit_message(content=None, attachments=[self.reload_image(active_tab=next_tab)], view=self)
 
         return callback
@@ -108,6 +102,7 @@ class ItemInventoryView(BaseView):
         self.update_button_states()
         self.rebuild_view()
     def update_button_states(self):
+        self.inventory_section_toggle_button.label = f"{ITEM_INVENTORY_ICON_ORDER_MAP.get(self.image_factory.active_tab)}"
         pass
     def rebuild_view(self):
         super().rebuild_view()

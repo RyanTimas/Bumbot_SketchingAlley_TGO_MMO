@@ -16,14 +16,13 @@ class CreatureEncounterImageFactory:
         self.time_of_day = time_of_day if time_of_day else DAY
 
     # handler for generating encounter image
-    def create_encounter_image(self):
+    def create_encounter_image(self, is_basic_image=False):
         final_img, background_overlay_img = self.build_background_image()
 
         if IS_EVENT:
             event_glow = Image.open(ENCOUNTER_SCREEN_EVENT_HALLOWEEN_GLOW_IMAGE)
             final_img.paste(event_glow, (0, 0), event_glow)
 
-        textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
         camera_overlay_img = Image.open(ENCOUNTER_SCREEN_CAMERA_OVERLAY_IMAGE)
         glow = self.get_glow_overlay()
 
@@ -48,10 +47,12 @@ class CreatureEncounterImageFactory:
 
         # Paste the textbox onto the background
         final_img.paste(camera_overlay_img, (0, 0), camera_overlay_img)
-        final_img.paste(textbox_img, (0, 0), textbox_img)
 
-        # Add text for creature name
-        final_img = self.add_text_to_image(base_img=final_img.copy(), max_width=CREATURE_ENCOUNTER_TEXT_BOX_WIDTH - (120 * 2), )
+        # by default, the encounter image will have a textbox with the creature name and "A Wild Appears" text. If is_basic_image is True, then the textbox will not be added to the image.
+        if not is_basic_image:
+            textbox_img = Image.open(ENCOUNTER_SCREEN_TEXT_BOX_IMAGE)
+            final_img.paste(textbox_img, (0, 0), textbox_img)
+            final_img = self.add_text_to_image(base_img=final_img.copy(), max_width=CREATURE_ENCOUNTER_TEXT_BOX_WIDTH - (120 * 2), )
         return convert_to_png(final_img, 'encounter_image.png')
 
     def get_glow_overlay(self):

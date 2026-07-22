@@ -15,6 +15,7 @@ class BaseImageFactory:
         # Page # state
         self.page_num = 1
         self.total_pages = 1
+        self.open_tab = None
 
 
     '''----IMAGE GENERATION METHODS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''

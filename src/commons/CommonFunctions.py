@@ -1,23 +1,16 @@
-import asyncio
-import functools
-import os
-import random
-import ssl
-
-import aiohttp
-import discord
 import io
+import random
+from datetime import datetime, timezone
+from typing import Any
 
+import discord
 import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
-from discord import File, app_commands
+from discord import File
 
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES, DISCORD_USER_WHITELIST
-
-from datetime import datetime, timezone
-from typing import Any
+from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------
@@ -309,24 +302,33 @@ def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-def convert_date_format_to_month_name(date_str: str, current_format: str = "%Y-%m-%d %H:%M:%S") -> str:
-    if date_str is not None and date_str != "Unknown":
-        try:
-            from datetime import datetime
-            catch_date = datetime.strptime(date_str, current_format)
-            day = catch_date.day
-            # Add suffix to day (1st, 2nd, 3rd, etc.)
-            if 11 <= day <= 13:
-                suffix = "th"
-            else:
-                suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-            month_abbr = catch_date.strftime("%b")
-            formatted_date = f"{month_abbr} {day}{suffix} {catch_date.year}"
-        except (ValueError, TypeError):
-            formatted_date = date_str
+#************************************************************************************
+#------------------------------- DATE FUNCTIONS ------------------------------------
+#************************************************************************************
+def convert_date_format_to_month_name(date_str: str, input_format: str = "%Y-%m-%d %H:%M:%S", include_time: bool = False, split_date_time: bool = False):
+    try:
+        catch_date = datetime.strptime(date_str, input_format)
 
-        return formatted_date
-    return "Unknown"
+        day = catch_date.day
+        # Correct ordinal logic using modulo 100 to handle 11-13 properly
+        if 11 <= (day % 100) <= 13:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+
+        month_abbr = catch_date.strftime("%b")
+        date_part = f"{month_abbr} {day}{suffix} {catch_date.year}"
+
+        if include_time:
+            time_str = catch_date.strftime("%I:%M %p")
+            if time_str.startswith("0"):
+                time_str = time_str[1:]  # remove leading zero from hour
+            return (date_part, time_str) if split_date_time else f"{date_part} {time_str}"
+        return (date_part, "") if split_date_time else date_part
+    except (ValueError, TypeError):
+        # date_str is None or "Unknown"
+        return ("Unknown", "N/A") if split_date_time else "Unknown"
+
 
 def convert_to_datetime(value: Any) -> datetime:
     if isinstance(value, datetime):

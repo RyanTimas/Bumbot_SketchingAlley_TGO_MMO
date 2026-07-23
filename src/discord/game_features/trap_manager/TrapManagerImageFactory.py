@@ -14,7 +14,9 @@ class TrapManagerImageFactory(BaseImageFactory):
 
         # Image Factory Variables
         self.open_tab = open_tab
+        self.open_tab = TRAP_MANAGER_OPEN_TAB_CAPTURES
 
+        # Summary Tab Variables
         # todo: pull these from the database based on the player profile id
         (self.active_trap_rarity,
          self.active_trap_mode,
@@ -24,10 +26,30 @@ class TrapManagerImageFactory(BaseImageFactory):
         self.scheduled_trap_mode_start_time = "12:00 am"
         self.scheduled_trap_mode_end_time = "12:00 pm"
 
+        # Captures Tab Variables
+        # todo: grab these from db, add a flag for if the creature was remotely caught or not, and sort by most recent catch date first
+        self.creatures_caught_by_trap = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)[1:]
+        self.creature_icons = self.build_creature_cell_images()
+        self.total_pages = math.ceil(len(self.creature_icons) / 32) if len(self.creature_icons) > 0 else 1
 
+        # todo: grab the active trap from the database based on the player profile id
+        self.page_num = 2
         self.active_trap = get_tgommo_db_handler().get_inventory_item_by_item_id(ITEM_ID_EPIC_TRAP)
 
         self.load_relevant_info()
+
+    def reload_image(self, target_user=None, new_page_number=None, open_tab=None, order_type=None, active_trap_mode=None, active_trap_rarity=None, player_trap_charges=None, active_trap=None):
+        self.load_relevant_info(target_user= target_user, new_page_number=new_page_number, open_tab=open_tab, order_type=order_type, active_trap_mode=active_trap_mode, active_trap_rarity=active_trap_rarity, player_trap_charges=player_trap_charges, active_trap=active_trap,)
+        return self.build_image()
+    def load_relevant_info(self, target_user=None, new_page_number=None, open_tab=None, order_type=None, active_trap_mode=None, active_trap_rarity=None, player_trap_charges=None, active_trap=None):
+        self.target_user = target_user if target_user else self.target_user
+        self.page_num = new_page_number if new_page_number else self.page_num
+        self.open_tab = open_tab if open_tab else self.open_tab
+
+        self.active_trap_mode = active_trap_mode if active_trap_mode else self.active_trap_mode
+        self.active_trap_rarity = active_trap_rarity if active_trap_rarity else self.active_trap_rarity
+        self.player_trap_charges = player_trap_charges if player_trap_charges else self.player_trap_charges
+        self.active_trap = active_trap if active_trap else self.active_trap
 
     def build_image(self):
         trap_manager_image = Image.open(TRAP_MANAGER_BG_IMAGE)
@@ -45,22 +67,29 @@ class TrapManagerImageFactory(BaseImageFactory):
 
             trap_manager_image.paste(open_menu_overlay_image, (0, 0), open_menu_overlay_image)
             trap_manager_image.paste(trap_manager_mode_image, (0, 0), trap_manager_mode_image)
+            trap_manager_image.paste(active_trap, get_centered_image_position(foreground_image=active_trap, background_image=trap_manager_image, center_pixel=(1041, 527)), active_trap)
 
             # add the battery section to the trap manager image
             trap_manager_image = self.build_summary_battery_section(trap_manager_image)
+
         # otherwise build the captures menu
-        else:
+        elif self.open_tab == TRAP_MANAGER_OPEN_TAB_CAPTURES:
+            open_menu_overlay_image = Image.open(TRAP_MANAGER_CAPTURES_OVERLAY_IMAGE)
+            trap_manager_image.paste(open_menu_overlay_image, (0, 0), open_menu_overlay_image)
+
+            # add active arrows to the trap manager image if there are more pages of creatures to show
             if self.page_num > 1:
                 left_active_arrow = Image.open(TRAP_MANAGER_CAPTURES_ACTIVE_ARROW_LEFT_IMAGE)
                 trap_manager_image.paste(left_active_arrow, (0, 0), left_active_arrow)
             if self.page_num < self.total_pages:
                 right_active_arrow = Image.open(TRAP_MANAGER_CAPTURES_ACTIVE_ARROW_RIGHT_IMAGE)
                 trap_manager_image.paste(right_active_arrow, (0, 0), right_active_arrow)
+
+            # build the captures creature menu and paste it onto the trap manager image
             trap_manager_image = self.build_captures_creature_menu(trap_manager_image)
 
         # paste FG resources
         trap_manager_image.paste(corner_overlay_image, (0,0), corner_overlay_image)
-        trap_manager_image.paste(active_trap, get_centered_image_position(foreground_image=active_trap, background_image=trap_manager_image, center_pixel=(1041, 527)), active_trap)
         return self.add_text_to_image(image = trap_manager_image)
 
     def build_summary_battery_section(self, base_image: Image):
@@ -114,17 +143,9 @@ class TrapManagerImageFactory(BaseImageFactory):
         return base_image
 
     def build_captures_creature_menu(self, base_image: Image):
-        creature_icons = []
-
-        # todo: grab these from db, add a flag for if the creature was remotely caught or not, and sort by most recent catch date first
-        creatures_caught_by_trap = []
-
-        for creature in creatures_caught_by_trap:
-            creature_cell_image = TrapManagerCreatureCellImageFactory(creature=creature).generate_creature_cell_image()
-            creature_icons.append(creature_cell_image)
-        creature_grid = self.build_grid(icons=creature_icons, grid_size=(1172, 631), icon_size=(142, 150), icons_per_page=32, icons_per_row=8, horizontal_padding=5, vertical_padding=10)
-
-        return base_image.paste(creature_grid, (68, 260), creature_grid)
+        creature_grid = self.build_grid(icons=self.creature_icons, grid_size=(1172, 631), icon_size=(142, 150), icons_per_page=32, icons_per_row=8, horizontal_padding=5, vertical_padding=10)
+        base_image.paste(creature_grid, (68, 260), creature_grid)
+        return base_image
 
     def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
@@ -148,4 +169,47 @@ class TrapManagerImageFactory(BaseImageFactory):
             font = resize_text_to_fit(text=f"{charges_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 16), max_width=58, min_font_size=10)
             draw.text(get_centered_text_position(text=charges_text, font=font, center_pixel_location=(1544, 957)), f"{charges_text}", fill=FONT_COLOR_TRAP_MANAGER_OFF_BROWN, font=font)
 
+        elif self.open_tab == TRAP_MANAGER_OPEN_TAB_CAPTURES:
+            # add page number text to image
+            page_text = f"Page {self.page_num}/{self.total_pages}"
+            font = resize_text_to_fit(text=f"{page_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 22), max_width=100, min_font_size=10)
+            draw.text(get_centered_text_position(text=page_text, font=font, center_pixel_location=(654, 954)), f"{page_text}", fill=FONT_COLOR_TRAP_MANAGER_OFF_BROWN, font=font)
+
+            # ADD TEXT FOR AFK CATCH RESULTS
+            # add xp text to image
+            total_catch_text = f"{len(self.creatures_caught_by_trap)}"
+            font = resize_text_to_fit(text=f"{total_catch_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=104, min_font_size=10)
+            draw.text(get_centered_text_position(text=f"{total_catch_text}", font=font, center_pixel_location=(1496, 720)), f"{total_catch_text}", fill=FONT_COLOR_WHITE, font=font)
+
+            # add xp text to image
+            xp_text = sum(creature.xp_earned for creature in self.creatures_caught_by_trap)
+            font = resize_text_to_fit(text=f"{xp_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=104, min_font_size=10)
+            draw.text(get_centered_text_position(text=f"{xp_text}", font=font, center_pixel_location=(1496, 832)), f"{xp_text}", fill=FONT_COLOR_WHITE, font=font)
+
+            # add gold text to image
+            gold_text = sum(creature.gold_earned for creature in self.creatures_caught_by_trap)
+            font = resize_text_to_fit(text=f"{gold_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=104, min_font_size=10)
+            draw.text(get_centered_text_position(text=f"{gold_text}", font=font, center_pixel_location=(1496, 934)), f"{gold_text}", fill=FONT_COLOR_WHITE, font=font)
+
+            # add rarity results text to image
+            rarity_counts = {
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_COMMON): (1800, 685),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_UNCOMMON): (1800, 735),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_RARE): (1800, 785),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_EPIC): (1800, 835),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_LEGENDARY): (1800, 885),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL): (1800, 935),
+                sum(1 for creature in self.creatures_caught_by_trap if creature.local_rarity.name == TGOMMO_RARITY_TRANSCENDANT): (1800, 985),
+            }
+            for count, position in rarity_counts.items():
+                font = resize_text_to_fit(text=f"{count}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=100, min_font_size=10)
+                draw.text(get_centered_text_position(text=f"{count}", font=font, center_pixel_location=position), f"{count}", fill=FONT_COLOR_WHITE, font=font)
         return image
+
+    '''---- SUPPORT FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    def build_creature_cell_images(self):
+        creature_icons = []
+        for creature in self.creatures_caught_by_trap:
+            creature_cell_image = TrapManagerCreatureCellImageFactory(creature=creature).generate_creature_cell_image()
+            creature_icons.append(creature_cell_image)
+        return creature_icons

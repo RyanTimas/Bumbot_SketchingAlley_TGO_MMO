@@ -54,6 +54,10 @@ class TGOCreature:
         self.is_favorite = is_favorite
         self.is_released = is_released
 
+        # todo: add these as new columns to user creature db
+        self.gold_earned = random.randint(1, 100)  # Placeholder for gold earned, can be modified based on game logic
+        self.xp_earned = random.randint(1, 50)  # Placeholder for XP earned, can be modified based on game logic
+
         self.creature_image = None
         self.dex_icon_image = None
         self.define_creature_images()

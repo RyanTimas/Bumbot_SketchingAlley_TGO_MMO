@@ -28,6 +28,9 @@ FONT_COLOR_BLACK = (0, 0, 0)
 FONT_COLOR_WHITE = (255, 255, 255)
 FONT_COLOR_GOLD = (241, 196, 15)
 FONT_COLOR_DARK_GRAY = (88, 88, 87)
+FONT_COLOR_TRAP_MANAGER_OFF_GREEN = (172, 172, 141)
+FONT_COLOR_TRAP_MANAGER_OFF_BROWN = (135, 126, 111)
+
 TRANSPARENT_IMG_BG = (0, 0, 0, 0)
 # endregion
 
@@ -326,6 +329,7 @@ TRAP_MODE_OFF = "Off"
 TRAP_MODE_ON = "On"
 TRAP_MODE_SCHEDULED = "Scheduled"
 
+TRAP_MODE_SCHEDULED_MESSAGE = "Trap is currently in timed mode. will try to capture creatures from {} to {}."
 
 """ ----- COLLECTIONS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Collection Keywords

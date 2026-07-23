@@ -24,6 +24,7 @@ from src.discord.game_features.player_profile.PlayerProfileImageFactory import P
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
 from src.discord.game_features.shop.ShopView import ShopView
+from src.discord.game_features.trap_manager.TrapManagerImageFactory import TrapManagerImageFactory
 from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
 from src.discord.general.tests.GeneralTests import register_general_tests
 from src.discord.general.tests.ShopTests import register_shop_tests
@@ -229,6 +230,15 @@ class DiscordBot(commands.Bot):
             view = ShopView(message_author=message_author, shop_image_factory=shop_image_factory)
 
             await interaction.followup.send(files=[view.reload_image()], view=view)
+
+        @self.tree.command(name="open-trap-manager", description="Opens the Trap Manager.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_open_shop(interaction):
+            await interaction.response.defer()
+
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+
+            trap_manager_image_factory = TrapManagerImageFactory(message_author=message_author)
+            await interaction.followup.send(files=[convert_to_png(trap_manager_image_factory.reload_image(), 'trap_manager_image.png')])
 
     def register_tgommo_admin_commands(self):
         @admin_only()

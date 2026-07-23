@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import get_centered_text_position, resize_text_to_fit, resize_text_to_fit_with_newlines
+from src.commons.CommonFunctions import get_centered_text_position, resize_text_to_fit, resize_text_to_fit_newline
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
 from src.resources.constants.file_paths import *
@@ -29,7 +29,7 @@ class ItemInventoryIconImageFactory:
 
         # add item description to image
         image_description_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 12)
-        item_description_font, item_description_text  = resize_text_to_fit_with_newlines(text=self.item.item_description, draw=draw, font=image_description_font, max_width=max_width, min_font_size=12, allow_newlines=True)
+        item_description_font, item_description_text  = resize_text_to_fit_newline(text=self.item.item_description, draw=draw, font=image_description_font, max_width=max_width, min_font_size=12, allow_newlines=True)
         draw.text((75, 25), text=item_description_text, font=item_description_font, fill=FONT_COLOR_WHITE)
 
         # add item uses to image

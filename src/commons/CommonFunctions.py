@@ -195,114 +195,55 @@ def resize_text_to_fit(text, draw, font, max_width, min_font_size=10):
 
         return current_font
 
-def resize_text_to_fit_with_newlines(text, draw, font, max_width, min_font_size=10, allow_newlines=False, max_lines=5):
+def resize_text_to_fit_newline(text, draw, font, max_width, min_font_size=10, allow_newlines=False, max_lines=5):
     current_font = font
     current_font_size = font.size
-    current_text = text
 
-    # Check if the text already fits on one line
-    text_width = draw.textlength(text, font=current_font)
-
-    if text_width <= max_width:
+    # Check if the text already fits
+    if draw.textlength(text, font=current_font) <= max_width:
         return current_font, text
 
-    # If newlines are allowed, try word wrapping first
-    if allow_newlines and max_lines > 1:
-        words = text.split()
-        lines = []
-        current_line = ""
+    # if text doesn't fit, try newline wrapping first if allowed
+    elif allow_newlines and max_lines > 1 and current_font_size > min_font_size:
+        lines = split_text_into_lines(text, draw, current_font, max_width)
 
-        for word in words:
-            test_line = current_line + (" " if current_line else "") + word
-            test_width = draw.textlength(test_line, font=current_font)
+        # if the number of lines is within the max_lines limit, return the font and wrapped text
+        if len(lines) <= max_lines:
+            return current_font, "\n".join(lines)
 
-            if test_width <= max_width:
-                current_line = test_line
-            else:
-                if current_line:
-                    lines.append(current_line)
-                    current_line = word
+    # if text still doesn't fit, try reducing font size
+    if current_font_size >= min_font_size:
+        smaller_font = ImageFont.truetype(font.path, current_font_size-1)
+        return resize_text_to_fit_newline(text, draw, smaller_font, max_width, min_font_size, allow_newlines, max_lines)
 
-                    # Check if we've reached max lines
-                    if len(lines) >= max_lines:
-                        # Truncate the last line if needed
-                        if len(lines) == max_lines:
-                            ellipsis = "..."
-                            last_line = lines[-1]
-                            while draw.textlength(last_line + ellipsis, font=current_font) > max_width and len(
-                                    last_line) > 0:
-                                last_line = last_line[:-1]
-                            lines[-1] = last_line + ellipsis if last_line else ellipsis
-                        break
-                else:
-                    # Single word is too long, handle it separately
-                    current_line = word
-
-        # Add the last line if we haven't exceeded max_lines
-        if current_line and len(lines) < max_lines:
-            lines.append(current_line)
-
-        # Check if wrapped text fits
-        wrapped_text = "\n".join(lines)
-        max_line_width = max(draw.textlength(line, font=current_font) for line in lines)
-
-        if max_line_width <= max_width and len(lines) <= max_lines:
-            return current_font, wrapped_text
-
-    # If text doesn't fit or newlines aren't allowed, try reducing font size
-    while text_width > max_width and current_font_size > min_font_size:
-        current_font_size -= 1
-
-        # Create a new font with smaller size
-        try:
-            current_font = ImageFont.truetype(font.path, current_font_size)
-        except IOError:
-            current_font = ImageFont.load_default()
-
-        # Re-check with newlines if allowed
-        if allow_newlines and max_lines > 1:
-            words = text.split()
-            lines = []
-            current_line = ""
-
-            for word in words:
-                test_line = current_line + (" " if current_line else "") + word
-                test_width = draw.textlength(test_line, font=current_font)
-
-                if test_width <= max_width:
-                    current_line = test_line
-                else:
-                    if current_line:
-                        lines.append(current_line)
-                        current_line = word
-                        if len(lines) >= max_lines:
-                            break
-                    else:
-                        current_line = word
-
-            if current_line and len(lines) < max_lines:
-                lines.append(current_line)
-
-            wrapped_text = "\n".join(lines[:max_lines])
-            max_line_width = max(draw.textlength(line, font=current_font) for line in lines[:max_lines])
-
-            if max_line_width <= max_width:
-                return current_font, wrapped_text
-        else:
-            text_width = draw.textlength(text, font=current_font)
-
-    # If reducing font size didn't work, truncate the text
-    if not allow_newlines or max_lines == 1:
-        if draw.textlength(text, font=current_font) > max_width:
-            ellipsis = "..."
-            truncated_text = text
-
-            while draw.textlength(truncated_text + ellipsis, font=current_font) > max_width and len(truncated_text) > 0:
-                truncated_text = truncated_text[:-1]
-
-            current_text = truncated_text + ellipsis if truncated_text else ellipsis
-
+    # finally, If reducing font size didn't work or wasn't possible, truncate the text
+    ellipsis = "..."
+    truncated_text = text
+    while draw.textlength(truncated_text + ellipsis, font=font) > max_width and len(truncated_text) > 0:
+        truncated_text = truncated_text[:-1]
+    current_text = truncated_text + ellipsis if truncated_text else ellipsis
     return current_font, current_text
+
+# evenly splits text into lines that fit within the max_width, without exceeding max_lines if specified
+def split_text_into_lines(text, draw, font, max_width):
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        test_line = current_line + (" " if current_line else "") + word
+        test_width = draw.textlength(test_line, font=font)
+
+        if test_width <= max_width:
+            current_line = test_line
+        else:
+            if current_line:
+                lines.append(current_line)
+            current_line = word
+
+    if current_line:
+        lines.append(current_line)
+    return lines
 
 
 #************************************************************************************

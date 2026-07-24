@@ -14,8 +14,9 @@ TGOMMO_INSERT_NEW_INVENTORY_ITEM = """INSERT INTO tgommo_inventory_item(item_num
 TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num, avatar_id, avatar_name, avatar_type, img_root, series, shop_price, unlock_startdate, unlock_enddate, is_parent_entry) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
 TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used, last_purchase_date) VALUES (?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
+TGOMMO_INSERT_USER_TRAP_LINK = """INSERT OR IGNORE INTO tgommo_user_trap_link (user_id, item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time) VALUES (?, ?, ?, ?, ?, ?, ?);"""
 
+TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
 TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold, is_secret) VALUES(?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_AVATAR_NICKNAME_LINK = """INSERT OR IGNORE INTO tgommo_user_avatar_nickname_link (avatar_id, nickname_keyword) VALUES(?, ?);"""
 
@@ -157,6 +158,14 @@ TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_BASE = """
         ON uil.item_id == ui.item_id 
     WHERE 
 """
+TGOMMO_SELECT_USER_TRAP_LINK_BASE = """
+    SELECT
+        utl.user_id, utl.item_id,
+        utl.active_trap_mode, utl.player_trap_charges, utl.player_max_trap_charges,
+        utl.trap_scheduled_start_time, utl.trap_scheduled_mode_end_time
+    FROM tgommo_user_trap_link utl
+    WHERE
+"""
 
 TGOMMO_SELECT_COLLECTION_BASE = """
     SELECT
@@ -227,7 +236,7 @@ TGOMMO_SELECT_TOTAL_UNIQUE_VARIANTS_AVAILABLE_BASE = '''
 # endregion
 
 
-# encyclopedia queries
+# region ENCYCLOPEDIA QUERIES
 TGOMMO_SELECT_FIRST_CAUGHT_VARIANT_FOR_SPECIES_BASE = """
     SELECT 
         MIN(uc.creature_variant_no) as min_variant_no
@@ -325,6 +334,13 @@ TGOMMO_UPDATE_USER_PROFILE_ROD_AMOUNT = """UPDATE tgommo_user_profile SET rod_am
 TGOMMO_UPDATE_USER_PROFILE_TRAP_LEVEL = """UPDATE tgommo_user_profile SET trap_level = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_TRAP_AMOUNT = """UPDATE tgommo_user_profile SET trap_amount = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ?, creature_slot_id_2 = ?, creature_slot_id_3 = ?, creature_slot_id_4 = ?, creature_slot_id_5 = ?,creature_slot_id_6 = ? WHERE user_id = ?;"""
+
+TGOMMO_UPDATE_USER_TRAP_LINK = """UPDATE tgommo_user_trap_link SET item_id = ?, active_trap_mode = ?, player_trap_charges = ?, player_max_trap_charges = ?, trap_scheduled_start_time = ?, trap_scheduled_mode_end_time = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_ACTIVE_TRAP_MODE = """UPDATE tgommo_user_trap_link SET active_trap_mode = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_TRAP_CHARGES = """UPDATE tgommo_user_trap_link SET player_trap_charges = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_MAX_TRAP_CHARGES = """UPDATE tgommo_user_trap_link SET player_max_trap_charges = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_START_TIME = """UPDATE tgommo_user_trap_link SET trap_scheduled_start_time = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_END_TIME = """UPDATE tgommo_user_trap_link SET trap_scheduled_mode_end_time = ? WHERE user_id = ?;"""
 
 TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
 TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT = """UPDATE tgommo_user_item_inventory_link SET item_quantity = ? WHERE item_id = ? AND user_id = ?;"""
@@ -430,6 +446,12 @@ TGOMMO_SELECT_INVENTORY_ITEM_BY_IS_REWARDABLE_SUFFIX = " ii.is_rewardable = ?"
 # region tgommo_user_item_inventory_link suffixes
 TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_ITEM_BY_USER_ID_SUFFIX = " uil.user_id = ?"
 TGOMMO_SELECT_USER_INVENTORY_ITEM_LINK_ITEM_BY_ITEM_ID_SUFFIX = " uil.item_id = ?"
+# endregion
+# region tgommo_user_trap_link suffixes
+TGOMMO_SELECT_USER_TRAP_LINK_BY_USER_ID_SUFFIX = " utl.user_id = ?"
+TGOMMO_SELECT_USER_TRAP_LINK_BY_ITEM_ID_SUFFIX = " utl.item_id = ?"
+TGOMMO_SELECT_USER_TRAP_LINK_BY_SCHEDULED_START_TIME_SUFFIX = " utl.trap_scheduled_start_time = ?"
+TGOMMO_SELECT_USER_TRAP_LINK_BY_SCHEDULED_END_TIME_SUFFIX = " utl.trap_scheduled_mode_end_time = ?"
 # endregion
 
 # region tgommo_collection suffixes

@@ -9,6 +9,7 @@ from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
+from src.discord.objects.TGOPlayerTrapLink import TGOPlayerTrapLink
 from src.resources.constants.TGO_MMO_constants import *
 
 
@@ -31,6 +32,9 @@ class TGOMMODatabaseHandler:
 
     def insert_new_user_profile(self, user_id=-1, nickname = ''):
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=(user_id, nickname, 'D1', 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0))
+        return True
+    def insert_new_user_trap_link(self, user_id=-1, item_id=ITEM_ID_TRAP):
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_TRAP_LINK, params=(user_id, item_id, TRAP_MODE_OFF, 0, 8, 0, 24))
         return True
 
     def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1):
@@ -171,6 +175,7 @@ class TGOMMODatabaseHandler:
                     )
                 )
         return avatars if expect_multiple else avatars[0]
+
     def get_inventory_items_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -188,6 +193,22 @@ class TGOMMODatabaseHandler:
                     )
                 )
         return inventory_items if expect_multiple else inventory_items[0]
+    def get_user_trap_links_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
+        results = self.QueryHandler.execute_query(query, params=params)
+
+        user_trap_links = results
+        if convert_to_object:
+            user_trap_links = []
+            for user_trap_link_details in results:
+                user_trap_links.append(
+                    TGOPlayerTrapLink(
+                        player_id=user_trap_link_details[0], active_trap=self.get_inventory_item_by_item_id(item_id=user_trap_link_details[1]),
+                        active_trap_mode=user_trap_link_details[2],
+                        player_trap_charges=user_trap_link_details[3], player_max_trap_charges=user_trap_link_details[4],
+                        trap_scheduled_start_time=user_trap_link_details[5], trap_scheduled_mode_end_time=user_trap_link_details[6]
+                    )
+                )
+        return user_trap_links if expect_multiple else user_trap_links[0]
 
     def get_collections_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
@@ -573,7 +594,25 @@ class TGOMMODatabaseHandler:
     def get_creature_inventory_expansions_by_user_id(self, user_id=0):
         self.QueryHandler.execute_query(TGOMMO_INSERT_USER_ITEM_LINK, params=(ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, user_id, 8, '1970-01-01 00:00:00', '1970-01-01 00:00:00'))
         return self.get_inventory_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, item_quantity=8).item_quantity
+    # endregion
 
+    # region USER TRAP LINK QUERIES
+    def get_player_trap_link_by_user_id(self, user_id=0, convert_to_object=True):
+        # add a dummy record in case user hasn't been assigned a trap link before
+        self.insert_new_user_trap_link(user_id=user_id)
+
+        query = f"{TGOMMO_SELECT_USER_TRAP_LINK_BASE} {TGOMMO_SELECT_USER_TRAP_LINK_BY_USER_ID_SUFFIX};"
+        return self.get_user_trap_links_from_database(query=query, params=(user_id,), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_player_trap_link_by_item_id(self, user_id=0, item_id=0, convert_to_object=True):
+        # add a dummy record in case user hasn't been assigned a trap link before
+        self.insert_new_user_trap_link(user_id=user_id)
+
+        query = f"{TGOMMO_SELECT_USER_TRAP_LINK_BASE} {TGOMMO_SELECT_USER_TRAP_LINK_BY_ITEM_ID_SUFFIX};"
+        return self.get_user_trap_links_from_database(query=query, params=(user_id, item_id), convert_to_object=convert_to_object, expect_multiple=False)
+
+    def get_player_trap_links_for_server(self, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_TRAP_LINK_BASE} TRUE;"
+        return self.get_user_trap_links_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
     # endregion
 
     # region COLLECTION QUERIES
@@ -671,6 +710,30 @@ class TGOMMODatabaseHandler:
                 self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_CREATURE_IS_RELEASED, params=(1 if is_released else 0, creature_id))
         return True
 
+    def update_user_trap_link(self, user_id, item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK, params=(item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time, user_id))
+        return response
+    def update_user_trap_link_active_trap_mode(self, user_id, active_trap_mode):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_ACTIVE_TRAP_MODE, params=(active_trap_mode, user_id))
+        return response
+    def update_user_trap_link_charges(self, user_id, player_trap_charges):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_TRAP_CHARGES, params=(player_trap_charges, user_id))
+        return response
+    def update_user_trap_link_max_charges(self, user_id, player_max_trap_charges):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_MAX_TRAP_CHARGES, params=(player_max_trap_charges, user_id))
+        return response
+
+    # User Trap Link Queries
+    def update_user_trap_link_scheduled_times(self, user_id, trap_scheduled_start_time, trap_scheduled_mode_end_time):
+        self.update_user_trap_link_scheduled_start_time(user_id, trap_scheduled_start_time)
+        self.update_user_trap_link_scheduled_end_time(user_id, trap_scheduled_mode_end_time)
+        return True
+    def update_user_trap_link_scheduled_start_time(self, user_id, trap_scheduled_start_time):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_START_TIME, params=(trap_scheduled_start_time, user_id))
+        return response
+    def update_user_trap_link_scheduled_end_time(self, user_id, trap_scheduled_mode_end_time):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_END_TIME, params=(trap_scheduled_mode_end_time, user_id))
+        return response
 
     ''' SUPPORT FUNCTIONS '''
     def handle_user_creature_optional_query_extensions(self, base_query, params=[], user_id=None, creature_id=None, creature_dex_no=None, environment_dex_no=None, environment_variant_no=None, is_mythical=None, rarity=None, creature_class=None, is_released=None):

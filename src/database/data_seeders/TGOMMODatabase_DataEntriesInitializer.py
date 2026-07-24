@@ -34,9 +34,11 @@ class TGOMMODatabase_DataEntriesInitializer:
 
         self.queryHandler.execute_query(TGOMMO_CREATE_USER_AVATAR_LINK_TABLE)
         self.queryHandler.execute_query(TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE)
+        self.queryHandler.execute_query(TGOMMO_CREATE_USER_TRAP_LINK_TABLE)
 
         self.queryHandler.execute_query(TGOMMO_CREATE_AVATAR_UNLOCK_CONDITION_TABLE)
         self.queryHandler.execute_query(TGOMMO_CREATE_AVATAR_NICKNAME_LINK_TABLE)
+
         self.queryHandler.execute_query(TGOMMO_CREATE_COLLECTION_TABLE)
     def clear_old_db_table_data(self):
         self.queryHandler.execute_query(TGOMMO_DELETE_ALL_RECORDS_FROM_CREATURES, params=())

@@ -10,6 +10,7 @@ select * from tgommo_user_avatar_nickname_link uanl;
 
 select * from tgommo_inventory_item tii;
 select * from tgommo_user_item_inventory_link tuiil;
+select * from tgommo_user_trap_link tutl;
 
 SELECT * from tgommo_collection tc;
 --------------------------------------------------------------------------------------------------------

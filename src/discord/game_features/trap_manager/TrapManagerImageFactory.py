@@ -12,44 +12,39 @@ class TrapManagerImageFactory(BaseImageFactory):
     def __init__(self, message_author, open_tab=TRAP_MANAGER_OPEN_TAB_SUMMARY):
         super().__init__(message_author=message_author, target_user=message_author)
 
-        # Image Factory Variables
+        # Image Factory Properties
         self.open_tab = open_tab
-        self.open_tab = TRAP_MANAGER_OPEN_TAB_CAPTURES
 
-        # Summary Tab Variables
-        # todo: pull these from the database based on the player profile id
-        (self.active_trap_rarity,
-         self.active_trap_mode,
-         self.player_trap_charges,
-         self.player_trap_max_charges) = TGOMMO_RARITY_EPIC, TRAP_MODE_SCHEDULED, 32, 32
+        self.player_trap_link = get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=self.target_user.user_id)
+        self.active_trap = self.player_trap_link.active_trap
+        self.active_trap_rarity = self.active_trap.rarity.name
 
-        self.scheduled_trap_mode_start_time = "12:00 am"
-        self.scheduled_trap_mode_end_time = "12:00 pm"
-
-        # Captures Tab Variables
+        # Captures Tab Properties
         # todo: grab these from db, add a flag for if the creature was remotely caught or not, and sort by most recent catch date first
         self.creatures_caught_by_trap = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)[1:]
         self.creature_icons = self.build_creature_cell_images()
         self.total_pages = math.ceil(len(self.creature_icons) / 32) if len(self.creature_icons) > 0 else 1
 
-        # todo: grab the active trap from the database based on the player profile id
+        # todo: remove
         self.page_num = 2
-        self.active_trap = get_tgommo_db_handler().get_inventory_item_by_item_id(ITEM_ID_EPIC_TRAP)
 
         self.load_relevant_info()
 
-    def reload_image(self, target_user=None, new_page_number=None, open_tab=None, order_type=None, active_trap_mode=None, active_trap_rarity=None, player_trap_charges=None, active_trap=None):
-        self.load_relevant_info(target_user= target_user, new_page_number=new_page_number, open_tab=open_tab, order_type=order_type, active_trap_mode=active_trap_mode, active_trap_rarity=active_trap_rarity, player_trap_charges=player_trap_charges, active_trap=active_trap,)
+    def reload_image(self, target_user=None, player_trap_link=None, new_page_number=None, open_tab=None):
+        self.load_relevant_info(target_user= target_user, player_trap_link=player_trap_link, new_page_number=new_page_number, open_tab=open_tab)
         return self.build_image()
-    def load_relevant_info(self, target_user=None, new_page_number=None, open_tab=None, order_type=None, active_trap_mode=None, active_trap_rarity=None, player_trap_charges=None, active_trap=None):
+    def load_relevant_info(self, target_user=None, player_trap_link=None, new_page_number=None, open_tab=None):
         self.target_user = target_user if target_user else self.target_user
         self.page_num = new_page_number if new_page_number else self.page_num
         self.open_tab = open_tab if open_tab else self.open_tab
 
-        self.active_trap_mode = active_trap_mode if active_trap_mode else self.active_trap_mode
-        self.active_trap_rarity = active_trap_rarity if active_trap_rarity else self.active_trap_rarity
-        self.player_trap_charges = player_trap_charges if player_trap_charges else self.player_trap_charges
-        self.active_trap = active_trap if active_trap else self.active_trap
+        if player_trap_link:
+            self.player_trap_link = player_trap_link
+            self.active_trap = self.player_trap_link.active_trap
+            self.active_trap_rarity = self.active_trap.rarity.name
+
+
+
 
     def build_image(self):
         trap_manager_image = Image.open(TRAP_MANAGER_BG_IMAGE)
@@ -63,7 +58,7 @@ class TrapManagerImageFactory(BaseImageFactory):
         # build the summary menus if the summary tab is open
         if self.open_tab == TRAP_MANAGER_OPEN_TAB_SUMMARY:
             open_menu_overlay_image = Image.open(TRAP_MANAGER_SUMMARY_OVERLAY_IMAGE)
-            trap_manager_mode_image = Image.open(f"{TRAP_MANAGER_OVERLAY_SUMMARY_TRAP_MODE_BASE}_{self.active_trap_mode}{IMAGE_FILE_EXTENSION}")
+            trap_manager_mode_image = Image.open(f"{TRAP_MANAGER_OVERLAY_SUMMARY_TRAP_MODE_BASE}_{self.player_trap_link.active_trap_mode}{IMAGE_FILE_EXTENSION}")
 
             trap_manager_image.paste(open_menu_overlay_image, (0, 0), open_menu_overlay_image)
             trap_manager_image.paste(trap_manager_mode_image, (0, 0), trap_manager_mode_image)
@@ -100,20 +95,20 @@ class TrapManagerImageFactory(BaseImageFactory):
         battery_glow_icon_image = Image.open(TRAP_MANAGER_SUMMARY_BATTERY_GLOW_ICON_IMAGE)
 
         # if the player has max charges, draw the fully charged battery image
-        if self.player_trap_charges == self.player_trap_max_charges:
+        if self.player_trap_link.player_trap_charges == self.player_trap_link.player_max_trap_charges:
             base_image.paste(battery_full_image, (0, 0), battery_full_image)
 
         # Draw battery bars cropped from right to left based on charge ratio
-        ratio = (self.player_trap_charges / self.player_trap_max_charges) if self.player_trap_max_charges > 0 else 0
+        ratio = (self.player_trap_link.player_trap_charges / self.player_trap_link.player_max_trap_charges) if self.player_trap_link.player_max_trap_charges > 0 else 0
         width_to_show = int(battery_bars_image.width * ratio)
         if width_to_show > 0:
             cropped_bars = battery_bars_image.crop((0, 0, width_to_show, battery_bars_image.height))
             base_image.paste(cropped_bars, (1377, 946), cropped_bars)
 
         # Draw battery icons based on the number of charges, with a maximum of 8 charges per icon
-        full_batteries = self.player_trap_charges // 8
-        remainder = self.player_trap_charges % 8
-        max_battery_slots = math.ceil(self.player_trap_max_charges / 8) if self.player_trap_max_charges > 0 else 0
+        full_batteries = self.player_trap_link.player_trap_charges // 8
+        remainder = self.player_trap_link.player_trap_charges % 8
+        max_battery_slots = math.ceil(self.player_trap_link.player_max_trap_charges / 8) if self.player_trap_link.player_max_trap_charges > 0 else 0
         icon_w, icon_h = battery_icon_image.size
 
         starting_pos = (1583, 898)
@@ -151,9 +146,9 @@ class TrapManagerImageFactory(BaseImageFactory):
         draw = ImageDraw.Draw(image)
 
         if self.open_tab == TRAP_MANAGER_OPEN_TAB_SUMMARY:
-            if self.active_trap_mode == TRAP_MODE_SCHEDULED:
+            if self.player_trap_link.active_trap_mode == TRAP_MODE_SCHEDULED:
                 # Add scheduled trap mode message to image
-                font, wrapped_text = resize_text_to_fit_newline(text=TRAP_MODE_SCHEDULED_MESSAGE.format(self.scheduled_trap_mode_start_time, self.scheduled_trap_mode_end_time ), draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 19), max_width=432, min_font_size=12, allow_newlines=True, max_lines=2)
+                font, wrapped_text = resize_text_to_fit_newline(text=TRAP_MODE_SCHEDULED_MESSAGE.format(self.player_trap_link.trap_scheduled_start_time, self.player_trap_link.trap_scheduled_mode_end_time), draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 19), max_width=432, min_font_size=12, allow_newlines=True, max_lines=2)
                 draw.text((240, 412), f"{wrapped_text}", fill=FONT_COLOR_TRAP_MANAGER_OFF_GREEN, font=font)
 
             # add active trap name to image
@@ -165,7 +160,7 @@ class TrapManagerImageFactory(BaseImageFactory):
             draw.text((844, 846), f"{wrapped_text}", fill=FONT_COLOR_TRAP_MANAGER_OFF_BROWN, font=font)
 
             # add total charges text to image
-            charges_text = f"{self.player_trap_charges}/{self.player_trap_max_charges}"
+            charges_text = f"{self.player_trap_link.player_trap_charges}/{self.player_trap_link.player_max_trap_charges}"
             font = resize_text_to_fit(text=f"{charges_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 16), max_width=58, min_font_size=10)
             draw.text(get_centered_text_position(text=charges_text, font=font, center_pixel_location=(1544, 957)), f"{charges_text}", fill=FONT_COLOR_TRAP_MANAGER_OFF_BROWN, font=font)
 

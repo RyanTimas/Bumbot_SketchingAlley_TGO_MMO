@@ -182,6 +182,21 @@ TGOMMO_CREATE_USER_ITEM_INVENTORY_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgo
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (item_id) REFERENCES tgommo_inventory_item (item_id)
 )"""
+TGOMMO_CREATE_USER_TRAP_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_trap_link (
+    user_id INTEGER NOT NULL,
+    item_id TEXT,
+
+    active_trap_mode TEXT DEFAULT 'Off',
+    player_trap_charges INTEGER DEFAULT 0,
+    player_max_trap_charges INTEGER DEFAULT 0,
+
+    trap_scheduled_start_time INTEGER DEFAULT 0,
+    trap_scheduled_mode_end_time INTEGER DEFAULT 12,
+
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (item_id) REFERENCES tgommo_inventory_item (item_id)
+)"""
 
 TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile_avatar_link (
     avatar_id TEXT,

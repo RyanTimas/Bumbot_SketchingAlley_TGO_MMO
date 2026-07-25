@@ -336,6 +336,7 @@ TGOMMO_UPDATE_USER_PROFILE_TRAP_AMOUNT = """UPDATE tgommo_user_profile SET trap_
 TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ?, creature_slot_id_2 = ?, creature_slot_id_3 = ?, creature_slot_id_4 = ?, creature_slot_id_5 = ?,creature_slot_id_6 = ? WHERE user_id = ?;"""
 
 TGOMMO_UPDATE_USER_TRAP_LINK = """UPDATE tgommo_user_trap_link SET item_id = ?, active_trap_mode = ?, player_trap_charges = ?, player_max_trap_charges = ?, trap_scheduled_start_time = ?, trap_scheduled_mode_end_time = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_TRAP_LINK_ITEM_ID = """UPDATE tgommo_user_trap_link SET item_id = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_TRAP_LINK_ACTIVE_TRAP_MODE = """UPDATE tgommo_user_trap_link SET active_trap_mode = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_TRAP_CHARGES = """UPDATE tgommo_user_trap_link SET player_trap_charges = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_TRAP_LINK_PLAYER_MAX_TRAP_CHARGES = """UPDATE tgommo_user_trap_link SET player_max_trap_charges = ? WHERE user_id = ?;"""

@@ -16,8 +16,9 @@ class TrapManagerImageFactory(BaseImageFactory):
         self.open_tab = open_tab
 
         self.player_trap_link = get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=self.target_user.user_id)
+
         self.active_trap = self.player_trap_link.active_trap
-        self.active_trap_rarity = self.active_trap.rarity.name
+        self.available_traps = [trap for trap in get_tgommo_db_handler().get_inventory_item_collection_by_user_id(user_id=self.message_author.user_id) if trap.item_type == ITEM_TYPE_TRAP]
 
         # Captures Tab Properties
         # todo: grab these from db, add a flag for if the creature was remotely caught or not, and sort by most recent catch date first
@@ -30,25 +31,21 @@ class TrapManagerImageFactory(BaseImageFactory):
 
         self.load_relevant_info()
 
-    def reload_image(self, target_user=None, player_trap_link=None, new_page_number=None, open_tab=None):
-        self.load_relevant_info(target_user= target_user, player_trap_link=player_trap_link, new_page_number=new_page_number, open_tab=open_tab)
+    def reload_image(self, target_user=None, new_player_trap_link=None, new_page_number=None, open_tab=None):
+        self.load_relevant_info(target_user= target_user, new_player_trap_link=new_player_trap_link, new_page_number=new_page_number, open_tab=open_tab)
         return self.build_image()
-    def load_relevant_info(self, target_user=None, player_trap_link=None, new_page_number=None, open_tab=None):
+    def load_relevant_info(self, target_user=None, new_player_trap_link=None, new_page_number=None, open_tab=None):
         self.target_user = target_user if target_user else self.target_user
         self.page_num = new_page_number if new_page_number else self.page_num
         self.open_tab = open_tab if open_tab else self.open_tab
 
-        if player_trap_link:
-            self.player_trap_link = player_trap_link
+        if new_player_trap_link:
+            self.player_trap_link = new_player_trap_link
             self.active_trap = self.player_trap_link.active_trap
-            self.active_trap_rarity = self.active_trap.rarity.name
-
-
-
 
     def build_image(self):
         trap_manager_image = Image.open(TRAP_MANAGER_BG_IMAGE)
-        foreground_overlay_image = Image.open(f"{TRAP_MANAGER_FOREGROUND_TREE_BASE}_{self.active_trap_rarity}{IMAGE_FILE_EXTENSION}")
+        foreground_overlay_image = Image.open(f"{TRAP_MANAGER_FOREGROUND_TREE_BASE}_{self.active_trap.rarity.name}{IMAGE_FILE_EXTENSION}")
         corner_overlay_image = Image.open(TRAP_MANAGER_CORNER_OVERLAY_IMAGE)
         active_trap = self.active_trap.item_image
 
@@ -113,6 +110,8 @@ class TrapManagerImageFactory(BaseImageFactory):
 
         starting_pos = (1583, 898)
         for i in range(max_battery_slots):
+            #todo: bug where if 8 charges exactly 2 batteries showing up?
+
             # use a normal battery icon by default
             current_battery_icon = battery_icon_image
             # if the player has a partial battery left, crop the icon to show the correct charge level

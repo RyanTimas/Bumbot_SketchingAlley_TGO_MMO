@@ -34,7 +34,7 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=(user_id, nickname, 'D1', 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0))
         return True
     def insert_new_user_trap_link(self, user_id=-1, item_id=ITEM_ID_TRAP):
-        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_TRAP_LINK, params=(user_id, item_id, TRAP_MODE_OFF, 0, 8, 0, 24))
+        self.QueryHandler.execute_query(TGOMMO_INSERT_USER_TRAP_LINK, params=(user_id, item_id, TRAP_MODE_OFF, 0, 8, 18, 8))
         return True
 
     def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1):
@@ -712,6 +712,9 @@ class TGOMMODatabaseHandler:
 
     def update_user_trap_link(self, user_id, item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK, params=(item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time, user_id))
+        return response
+    def update_user_trap_link_item_id(self, user_id, item_id):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_ITEM_ID, params=(item_id, user_id))
         return response
     def update_user_trap_link_active_trap_mode(self, user_id, active_trap_mode):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_TRAP_LINK_ACTIVE_TRAP_MODE, params=(active_trap_mode, user_id))

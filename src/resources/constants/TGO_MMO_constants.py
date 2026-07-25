@@ -330,6 +330,15 @@ TRAP_MODE_OFF = "Off"
 TRAP_MODE_ON = "On"
 TRAP_MODE_SCHEDULED = "Scheduled"
 
+ACTIVE_TRAP_MODES_LIST = [
+    TRAP_MODE_OFF,
+    TRAP_MODE_ON,
+    TRAP_MODE_SCHEDULED
+]
+
+TRAP_MANAGER_OPEN_OPTION_MODE = "Trap Mode"
+TRAP_MANAGER_OPEN_OPTION_DEFAULT = "Default"
+
 TRAP_MODE_SCHEDULED_MESSAGE = "Trap is currently in timed mode. will try to capture creatures from {} to {}."
 
 """ ----- COLLECTIONS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

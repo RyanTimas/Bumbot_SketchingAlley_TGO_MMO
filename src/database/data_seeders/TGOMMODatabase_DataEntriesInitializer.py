@@ -1373,7 +1373,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             # endregion
 
             # region Traps
-            (ITEM_ID_TRAP, 'Trap', ITEM_TYPE_TRAP, ITEM_CATEGORY_KEY_ITEM, 'When activated, tries to catch a nearby creature while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_NORMAL, False, '', 1, 100),
+            (ITEM_ID_TRAP, 'Basic Trap', ITEM_TYPE_TRAP, ITEM_CATEGORY_KEY_ITEM, 'When activated, tries to catch a nearby creature while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_NORMAL, False, '', 1, 100),
             (ITEM_ID_COMMON_TRAP, 'Common Trap', ITEM_TYPE_TRAP, ITEM_CATEGORY_KEY_ITEM, 'When activated, tries to catch exclusively nearby common creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_COMMON, False, '', 1, 100),
             (ITEM_ID_UNCOMMON_TRAP, 'Uncommon Trap', ITEM_TYPE_TRAP, ITEM_CATEGORY_KEY_ITEM, 'When activated, tries to catch exclusively nearby uncommon creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_UNCOMMON, False, '', 1, 250),
             (ITEM_ID_RARE_TRAP, 'Rare Trap', ITEM_TYPE_TRAP, ITEM_CATEGORY_KEY_ITEM, 'When activated, tries to catch exclusively nearby rare creatures while AFK. Can only target creatures you\'ve already caught & are about to despawn. Consumes batteries to operate.', TGOMMO_RARITY_RARE, False, '', 1, 500),

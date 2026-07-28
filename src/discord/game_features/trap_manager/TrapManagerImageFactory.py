@@ -23,11 +23,9 @@ class TrapManagerImageFactory(BaseImageFactory):
         # Captures Tab Properties
         # todo: grab these from db, add a flag for if the creature was remotely caught or not, and sort by most recent catch date first
         self.creatures_caught_by_trap = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)[1:]
+        self.creatures_caught_by_trap.sort(key=lambda creature: creature.caught_date, reverse=True)
         self.creature_icons = self.build_creature_cell_images()
         self.total_pages = math.ceil(len(self.creature_icons) / 32) if len(self.creature_icons) > 0 else 1
-
-        # todo: remove
-        self.page_num = 2
 
         self.load_relevant_info()
 

@@ -42,10 +42,12 @@ class BaseImageFactory:
         grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
         icon_width, icon_height = icon_size
 
+        start_index = (self.page_num - 1) * icons_per_page
+        end_index = start_index + icons_per_page
+
         # Calculate padding
         row, col = 0, 0
-
-        for i, icon in enumerate(icons):
+        for i, icon in enumerate(icons[start_index:end_index]):
             if icon.size != icon_size:
                 icon = icon.resize(icon_size, Image.LANCZOS)
 

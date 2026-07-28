@@ -18,6 +18,7 @@ class TrapManagerView(BaseView):
         self.swap_tab_button = self.create_swap_tab_button(row=0)
         self.battery_charge_button = self.create_battery_charge_button(row=0)
         # row 1
+        self.page_jump_dropdown.row = 1
         self.trap_swap_dropdown = self.create_active_trap_swap_dropdown(row=1)
         # row 2
         self.trap_mode_swap_dropdown = self.create_trap_mode_swap_dropdown(row=2)
@@ -172,15 +173,26 @@ class TrapManagerView(BaseView):
     def rebuild_view(self):
         self.clear_items()
 
-        # row 0
-        self.add_item(self.swap_tab_button)
-        self.add_item(self.battery_charge_button)
-        # row 1
-        self.add_item(self.trap_swap_dropdown)
-        # row 2
-        self.add_item(self.trap_mode_swap_dropdown)
-    def reload_image(self, target_user= None, image_factory= None, new_page_number=None, new_player_trap_link=None):
-        new_image = self.image_factory.reload_image(new_player_trap_link=new_player_trap_link)
+        if self.image_factory.open_tab == TRAP_MANAGER_OPEN_TAB_SUMMARY:
+            # row 0
+            self.add_item(self.swap_tab_button)
+            self.add_item(self.battery_charge_button)
+            # row 1
+            self.add_item(self.trap_swap_dropdown)
+            # row 2
+            self.add_item(self.trap_mode_swap_dropdown)
+        elif self.image_factory.open_tab == TRAP_MANAGER_OPEN_TAB_CAPTURES:
+            self.add_item(self.swap_tab_button)
+            self.add_item(self.page_jump_dropdown)
+
+        # Add action components
+        self.add_item(self.close_button)
+        if self.original_view:
+            self.add_item(self.go_back_button)
+            
+            
+    def reload_image(self, target_user= None, new_page_number=None, new_player_trap_link=None):
+        new_image = self.image_factory.reload_image(new_page_number=new_page_number, new_player_trap_link=new_player_trap_link)
         return convert_to_png(new_image, 'trap_manager_view.png')
 
 

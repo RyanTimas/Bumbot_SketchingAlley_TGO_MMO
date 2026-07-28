@@ -4,6 +4,7 @@ from src.discord.game_features.player_profile.PlayerProfileImageFactory import *
 from src.discord.game_features.trap_manager.TrapManagerImageFactory import TrapManagerImageFactory
 from src.discord.general.template.BaseView import BaseView
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 
 
 class TrapManagerView(BaseView):
@@ -72,14 +73,13 @@ class TrapManagerView(BaseView):
 
             # create confirm handler that will be called when view button pressed
             async def _on_confirm(inter: discord.Interaction):
-                battery_total = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=ITEM_ID_BATTERY).item_quantity
-                if battery_total >= 0:
-                    self.image_factory.player_trap_link.player_trap_charges = actual_total
-                    get_tgommo_db_handler().update_user_trap_link_charges(user_id=self.message_author.user_id, player_trap_charges=actual_total)
-                    get_tgommo_db_handler().update_user_profile_available_items(user_id=self.message_author.user_id, item_id=ITEM_ID_BATTERY, new_amount=battery_total-1)
-                else:
+                new_charge_count = TrapHandler.charge_trap(user_id=self.message_author.user_id, charge_count=8)
+
+                # if the user has no batteries, send an ephemeral message and return
+                if new_charge_count == 0:
                     await inter.followup.send("You don't have any batteries to use.", ephemeral=True)
                     return
+                self.image_factory.player_trap_link.player_trap_charges = actual_total
 
                 # refresh view image and edit the original trap manager message
                 self.refresh_view()
@@ -117,7 +117,7 @@ class TrapManagerView(BaseView):
                     # update data
                     new_active_trap = next((trap for trap in self.image_factory.available_traps if trap.item_id == selected_value), None)
                     self.image_factory.active_trap = new_active_trap
-                    get_tgommo_db_handler().update_user_trap_link_item_id(user_id=self.message_author.user_id, item_id=new_active_trap.item_id)
+                    TrapHandler.switch_trap(user_id=self.message_author.user_id, new_trap_id=new_active_trap.item_id)
 
                     # refresh view image and edit the original trap manager message
                     self.refresh_view()

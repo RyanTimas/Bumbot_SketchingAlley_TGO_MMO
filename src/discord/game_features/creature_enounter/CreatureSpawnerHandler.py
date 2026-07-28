@@ -56,13 +56,6 @@ class CreatureSpawnerHandler:
     def define_time_of_day(self):
         timezone = self.current_environment.timezone if self.current_environment else BASE_TIMEZONE
 
-        dawn_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 6, 59, 0).astimezone(timezone)
-        dawn_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 7, 59, 0).astimezone(timezone)
-        day_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 8, 59, 0).astimezone(timezone)
-        dusk_timestamp_1 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 18, 59, 0).astimezone(timezone)
-        dusk_timestamp_2 = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 19, 59, 0).astimezone(timezone)
-        night_timestamp = datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day, 20, 59, 0).astimezone(timezone)
-
         # todo: update to pull from environment timezone
         current_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)
 
@@ -174,20 +167,15 @@ class CreatureSpawnerHandler:
         try:
             channel = self.discord_bot.get_channel(spawn_message.channel.id)
             asyncio.run_coroutine_threadsafe(channel.fetch_message(spawn_message.id), self.discord_bot.loop).result()
+            asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
         except discord.NotFound:
             return
 
-        # Check to see if an AFK trap should catch the creature instead of it despawning
-        afk_user_id, battery_amount, trap_type = TrapHandler.pull_random_user()
-        if afk_user_id and random.randint(1, 2) == 1:
-            result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
-            if result["user_profile"]:
-                asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]), self.discord_bot.loop)
-                return
-
-        creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
-        asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
-        asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(files=[creature_embed[1]], embed=creature_embed[0]), self.discord_bot.loop)
+        # perform a check to see if an afk catch should occur
+        caught_by_afk_trap = self.handle_afk_trap_catch(creature=creature)
+        if not caught_by_afk_trap:
+            creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
+            asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(files=[creature_embed[1]], embed=creature_embed[0]), self.discord_bot.loop)
 
     ''' ---- HELPER FUNCTIONS FOR CREATURE SPAWNING LOGIC ------------------------------------------------------------'''
     # Picks a random creature from the spawn pool
@@ -267,6 +255,16 @@ class CreatureSpawnerHandler:
                 rarity = selected_rarity if selected_rarity and random.randint(1, activation_chance_ceiling) == 1 else None
         return kingdom, rarity
 
+    # Handles AFK Trap catch logic
+    def handle_afk_trap_catch(self, creature: TGOCreature):
+        perform_afk_catch = random.randint(1, 4) != 4
+        if perform_afk_catch:
+            afk_user_id = TrapHandler.select_user_for_trap_capture(creature_rarity=creature.local_rarity.name)
+            if afk_user_id:
+                result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
+                if result["user_profile"]:
+                    asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]), self.discord_bot.loop)
+        return perform_afk_catch
 
     ''' ---- FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES --------------------------------------------------------------------------------------------'''
     async def handle_post_spawn_events(self):

@@ -81,6 +81,8 @@ class CreatureEmbedHandler:
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         return embed, thumbnail_img, encounter_img
 
+    def generate_afk_catch_embed(self, catch_user:TGOPlayer, nickname: str = None):
+        return self.generate_afk_catch_embed(catch_user=catch_user, nickname=nickname)
     def generate_catch_embed(self, catch_user:TGOPlayer, nickname: str = None, is_afk_catch: bool = False):
         self.catch_user = catch_user
         embed = discord.Embed(color=discord.Color.dark_green() if not is_afk_catch else discord.Color.yellow())

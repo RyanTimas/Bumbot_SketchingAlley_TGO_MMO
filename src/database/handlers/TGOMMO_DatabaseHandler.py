@@ -33,7 +33,7 @@ class TGOMMODatabaseHandler:
     def insert_new_user_profile(self, user_id=-1, nickname = ''):
         self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=(user_id, nickname, 'D1', 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0))
         return True
-    def insert_new_user_trap_link(self, user_id=-1, item_id=ITEM_ID_TRAP):
+    def insert_new_user_trap_link(self, user_id=-1, item_id=ITEM_ID_BASIC_TRAP):
         self.QueryHandler.execute_query(TGOMMO_INSERT_USER_TRAP_LINK, params=(user_id, item_id, TRAP_MODE_OFF, 0, 8, 18, 8))
         return True
 

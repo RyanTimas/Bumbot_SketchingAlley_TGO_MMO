@@ -110,7 +110,7 @@ class ItemUseHandler:
 
     '''---- CREATURE TRAP HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_battery(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        new_charges = TrapHandler.load_battery(user_id=user.user_id)
+        new_charges = TrapHandler.charge_trap(user_id=user.user_id)
         await interaction.followup.send(f"You've successfully charged your Trap! You have {new_charges} charges remaining.", ephemeral=True)
         return True, None
 

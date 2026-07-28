@@ -215,6 +215,23 @@ CREATURE_ENCOUNTER_FOREGROUND_IMAGE_Y_OFFSET = -24
 CREATURE_ENCOUNTER_NAME_TEXT_SIZE = 48
 # endregion
 
+#region timezone constants
+EASTERN_US_TIMEZONE = pytz.timezone('US/Eastern')
+GREENWICH_MEAN_TIMEZONE = pytz.timezone('GMT')
+MOUNTAIN_US_TIMEZONE = pytz.timezone('US/Mountain')
+PACIFIC_US_TIMEZONE = pytz.timezone('US/Pacific')
+HAWAIAN_US_TIMEZONE = pytz.timezone('US/Hawaii')
+# endregion
+#region test timestamp hours
+dawn_timestamp_hour_1 = 6
+dawn_timestamp_hour_2 = 7
+day_timestamp_hour = 8
+dusk_timestamp_hour_1 = 18
+dusk_timestamp_hour_2 = 19
+night_timestamp_hour = 20
+# endregion
+
+
 """ ----- ENCYCLOPEDIA  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Encyclopedia Display Keys
 ENCYCLOPEDIA_VARIANTS_DISPLAY_KEY = "variants"
@@ -555,7 +572,7 @@ ITEM_ID_OMNIPOTENT_MEGAPHONE = f"{ITEM_TYPE_MEGAPHONE}_8"
 # endregion
 
 # region Trap IDs
-ITEM_ID_TRAP = f"{ITEM_TYPE_TRAP}_0"
+ITEM_ID_BASIC_TRAP = f"{ITEM_TYPE_TRAP}_0"
 ITEM_ID_COMMON_TRAP = f"{ITEM_TYPE_TRAP}_1"
 ITEM_ID_UNCOMMON_TRAP = f"{ITEM_TYPE_TRAP}_2"
 ITEM_ID_RARE_TRAP = f"{ITEM_TYPE_TRAP}_3"
@@ -564,6 +581,17 @@ ITEM_ID_LEGENDARY_TRAP = f"{ITEM_TYPE_TRAP}_5"
 ITEM_ID_MYTHICAL_TRAP = f"{ITEM_TYPE_TRAP}_6"
 ITEM_ID_TRANSCENDANT_TRAP = f"{ITEM_TYPE_TRAP}_7"
 ITEM_ID_OMNIPOTENT_TRAP = f"{ITEM_TYPE_TRAP}_8"
+
+TRAP_ID_RARITY_MAP = {
+    ITEM_ID_COMMON_TRAP: TGOMMO_RARITY_COMMON,
+    ITEM_ID_UNCOMMON_TRAP: TGOMMO_RARITY_UNCOMMON,
+    ITEM_ID_RARE_TRAP: TGOMMO_RARITY_RARE,
+    ITEM_ID_EPIC_TRAP: TGOMMO_RARITY_EPIC,
+    ITEM_ID_LEGENDARY_TRAP: TGOMMO_RARITY_LEGENDARY,
+    ITEM_ID_MYTHICAL_TRAP: TGOMMO_RARITY_MYTHICAL,
+    ITEM_ID_TRANSCENDANT_TRAP: TGOMMO_RARITY_TRANSCENDANT,
+    ITEM_ID_OMNIPOTENT_TRAP: TGOMMO_RARITY_OMNIPOTENT
+}
 # endregion
 
 # endregion

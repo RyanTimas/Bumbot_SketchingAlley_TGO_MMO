@@ -87,7 +87,7 @@ class CreatureEmbedHandler:
         self.catch_user = catch_user
         embed = discord.Embed(color=discord.Color.dark_green() if not is_afk_catch else discord.Color.yellow())
 
-        embed.set_author(name = f'The {self.creature.name.upper()} was caught! {"*(via Trap)*" if is_afk_catch else ""}', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
+        embed.set_author(name = f'The {self.creature.name.upper()} was caught{" via Trap " if is_afk_catch else ""}!', icon_url= TGOMMO_CREATURE_EMBED_GRASS_ICON),
         embed.add_field(name=f"✨     Caught By - **{self.catch_user.nickname}** *({self.catch_user.discord_profile.name.upper()})*", value=f"", inline=False)
         if nickname:
             embed.add_field(name=f"‼️     Nickname - **{nickname}**", value=f"", inline=False)

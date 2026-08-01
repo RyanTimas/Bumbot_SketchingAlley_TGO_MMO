@@ -25,7 +25,8 @@ class ItemUseHandler:
             ITEM_TYPE_NAMETAG: self.use_nametag,
             ITEM_TYPE_CHARM: self.use_creature_charm,
             ITEM_TYPE_BAIT: self.use_bait,
-            ITEM_TYPE_BATTERY: self.use_battery
+            ITEM_TYPE_BATTERY: self.use_battery,
+            ITEM_TYPE_TRAP: self.use_trap
         }
 
 
@@ -111,7 +112,12 @@ class ItemUseHandler:
     '''---- CREATURE TRAP HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_battery(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
         new_charges = TrapHandler.charge_trap(user_id=user.user_id)
-        await interaction.followup.send(f"You've successfully charged your Trap! You have {new_charges} charges remaining.", ephemeral=True)
+        await interaction.followup.send(f"You've successfully charged your Trap! You now have {new_charges} charges remaining.", ephemeral=True)
+        return True, None
+
+    async def use_trap(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        TrapHandler.switch_trap(user_id=user.user_id, new_trap_id=item.item_id, interaction=interaction)
+        await interaction.followup.send(f"You've successfully switched your Trap! {item.item_name} is now active.", ephemeral=True)
         return True, None
 
 

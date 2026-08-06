@@ -9,12 +9,15 @@ select * from tgommo_user_avatar_unlock_condition uauc;
 select * from tgommo_user_avatar_nickname_link uanl;
 
 select * from tgommo_inventory_item tii;
-select * from tgommo_user_item_inventory_link tuiil;
+select * from tgommo_user_item_inventory_link tuiil where item_id="Trap_0";
 select * from tgommo_user_trap_link tutl;
 
 SELECT * from tgommo_collection tc;
 --------------------------------------------------------------------------------------------------------
 ALTER TABLE tgommo_environment ADD COLUMN local_img_suffix TEXT DEFAULT '';
+
+/* Update 2.5 Alter table queries */
+ALTER TABLE tgommo_user_creature ADD COLUMN is_afk_catch BOOLEAN DEFAULT 0;
 --------------------------------------------------------------------------------------------------------
 
 

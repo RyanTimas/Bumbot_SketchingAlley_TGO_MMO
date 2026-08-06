@@ -2,17 +2,19 @@
   "environment_dex_no": 1,
   "environment_variant_no": 2,
   "shiny_message_count": 145,
-  "shop_date": "2026-04-16",
+  "shop_date": "2026-07-28",
   "current_shop_item_ids": [
-    "Bait_0",
-    "Charm_0",
-    "NameTag_1"
+    "PlaneTicket_2",
+    "Bait_10",
+    "Bait_0"
   ],
   "current_shop_avatar_ids": [
-    "P34",
-    "P5",
-    "P30"
+    "P21",
+    "P24",
+    "P47"
   ],
-  "shop_level": 1,
-  "shop_upgrade_funds": 0
+  "shop_level": 2,
+  "shop_upgrade_funds": 0,
+  "shop_donation_total": 76,
+  "active_spawn_bonuses": []
 }

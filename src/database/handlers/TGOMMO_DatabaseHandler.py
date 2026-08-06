@@ -26,7 +26,7 @@ class TGOMMODatabaseHandler:
     # region INSERT QUERIES
     def insert_new_creature(self, params=(0,'', '', '', 0, 0, 0, 0, 0, 0, 0)):
         return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_CREATURE, params=params)
-    def insert_new_user_creature(self, params=(0,0,0,0,0)):
+    def insert_new_user_creature(self, params=(0,0,0,0,0,0)):
         return_value = self.QueryHandler.execute_query(TGOMMO_INSERT_USER_CREATURE, params=params)
         return return_value[0][0]
 
@@ -102,15 +102,16 @@ class TGOMMODatabaseHandler:
             for creature_details in results:
                 creatures.append(
                     TGOCreature(
-                        catch_id=creature_details[0], creature_id=creature_details[1],
-                        name=creature_details[2], variant_name=creature_details[3], local_name=creature_details[4], nickname=creature_details[5],
-                        dex_no=creature_details[6], variant_no=creature_details[7], local_dex_no=creature_details[8], local_variant_no=creature_details[9],
-                        environment_id=creature_details[24], sub_environment=creature_details[16],
-                        full_name=creature_details[10], scientific_name=creature_details[11], kingdom=creature_details[12], description=creature_details[13],
-                        img_root=creature_details[14], local_image_root=creature_details[15],
-                        encounter_rate=creature_details[17],
-                        default_rarity=get_rarity_by_name(creature_details[18]), local_rarity=MYTHICAL if creature_details[20] else get_rarity_by_name(creature_details[19]),
-                        caught_date=creature_details[21], is_favorite=bool(creature_details[22]),  is_released=bool(creature_details[23]),
+                        catch_id=creature_details[0], creature_id=creature_details[1], user_id=creature_details[2],
+                        name=creature_details[3], variant_name=creature_details[4], local_name=creature_details[5], nickname=creature_details[6],
+                        dex_no=creature_details[7], variant_no=creature_details[8], local_dex_no=creature_details[9], local_variant_no=creature_details[10],
+                        full_name=creature_details[11], scientific_name=creature_details[12], kingdom=creature_details[13], description=creature_details[14],
+                        img_root=creature_details[15], local_image_root=creature_details[16],
+                        environment_id=creature_details[17], sub_environment=creature_details[18],
+                        encounter_rate=creature_details[19],
+                        default_rarity=get_rarity_by_name(creature_details[20]), local_rarity=MYTHICAL if creature_details[23] else get_rarity_by_name(creature_details[21]),
+                        caught_date=creature_details[22],
+                        is_released=bool(creature_details[24]), is_favorite=bool(creature_details[25]), is_afk_catch=bool(creature_details[26])
                     )
                 )
         return creatures if expect_multiple else creatures[0]
@@ -263,6 +264,16 @@ class TGOMMODatabaseHandler:
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_CATCH_ID_IN_SUFFIX} ({placeholders});"
         return self.get_user_creatures_from_database(query=query, params=catch_ids, convert_to_object=convert_to_object, expect_multiple=True)
 
+    def get_user_creatures_by_dex_no(self, dex_no=0, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX};"
+        return self.get_user_creatures_from_database(query=query, params=(dex_no,), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_user_creatures_by_dex_no_and_variant_no(self, dex_no=0, variant_no=0, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX};"
+        return self.get_user_creatures_from_database(query=query, params=(dex_no, variant_no), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_user_creatures_by_creature_id(self, creature_id=0, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
+        return self.get_user_creatures_from_database(query=query, params=(creature_id,), convert_to_object=convert_to_object, expect_multiple=True)
+
     def get_user_creatures_by_user_id(self, user_id=0, is_released=False, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
         params = [user_id,]
@@ -284,6 +295,34 @@ class TGOMMODatabaseHandler:
     def get_mythical_user_creatures_by_user_id_and_dex_no_and_variant_no(self, user_id=0, dex_no=0, variant_no=1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_VARIANT_NO_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX};"
         return self.get_user_creatures_from_database(query=query, params=(user_id, dex_no, variant_no), convert_to_object=convert_to_object, expect_multiple=True)
+    def get_afk_user_creatures_by_user_id(self, user_id=0, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_USER_CREATURE_BASE} {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_AFK_CATCH_SUFFIX} AND  {TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX};"
+        return self.get_user_creatures_from_database(query=query, params=(user_id, 1, 0), convert_to_object=convert_to_object, expect_multiple=True)
+
+    def get_users_who_caught_creature_by_dex_no(self, dex_no=0, convert_to_object=True):
+        all_catches_for_creature_dex_no = self.get_user_creatures_by_dex_no(dex_no=dex_no, convert_to_object=convert_to_object)
+
+        # return a list of unique user_ids who have caught the creature with the given dex_no
+        unique_user_ids = set()
+        for catch in all_catches_for_creature_dex_no:
+            unique_user_ids.add(catch.user_id)
+        return list(unique_user_ids)
+    def get_users_who_caught_creature_variant_by_creature_id(self, creature_id=0, convert_to_object=True):
+        all_catches_for_creature_variant = self.get_user_creatures_by_creature_id(creature_id=creature_id, convert_to_object=convert_to_object)
+
+        # return a list of unique user_ids who have caught the creature with the given creature_id
+        unique_user_ids = set()
+        for catch in all_catches_for_creature_variant:
+            unique_user_ids.add(catch.user_id)
+        return list(unique_user_ids)
+    def get_users_who_caught_mythical_creature_by_dex_no(self, dex_no=0, convert_to_object=True):
+        all_catches_for_mythical_creature_dex_no = self.get_mythical_user_creatures_by_user_id_and_dex_no(dex_no=dex_no, convert_to_object=convert_to_object)
+
+        # return a list of unique user_ids who have caught the mythical creature with the given dex_no
+        unique_user_ids = set()
+        for catch in all_catches_for_mythical_creature_dex_no:
+            unique_user_ids.add(catch.user_id)
+        return list(unique_user_ids)
     # endregion
 
     # region CATCH STAT QUERIES
@@ -785,5 +824,3 @@ class TGOMMODatabaseHandler:
             base_query += f" AND {TGOMMO_SELECT_ENVIRONMENT_BY_VARIANT_NO_SUFFIX}"
             params.append(variant_no)
         return base_query, params
-
-

@@ -7,7 +7,7 @@ from PIL import Image
 class TGOCreature:
     def __init__(
             self,
-            catch_id=-1, creature_id=-1,
+            catch_id=-1, creature_id=-1, user_id=None,
             name='', variant_name='', local_name ='', nickname ='',
             dex_no=-1, variant_no=-1, local_dex_no=None, local_variant_no=None,
             environment_id=-1, sub_environment='',
@@ -15,12 +15,13 @@ class TGOCreature:
             img_root='', local_image_root=None,
             encounter_rate=-1,
             default_rarity=COMMON, local_rarity=COMMON,
-            caught_date='', is_favorite=False, is_released=False,
+            caught_date='', is_favorite=False, is_released=False, is_afk_catch=False
     ):
         self.timezone = pytz.timezone('US/Eastern')
 
         self.catch_id = catch_id
         self.creature_id = creature_id
+        self.user_id = user_id
 
         self.creature_name = name
         self.local_name = local_name
@@ -53,6 +54,7 @@ class TGOCreature:
         self.caught_date = caught_date
         self.is_favorite = is_favorite
         self.is_released = is_released
+        self.is_afk_catch = is_afk_catch
 
         # todo: add these as new columns to user creature db
         self.gold_earned = random.randint(1, 100)  # Placeholder for gold earned, can be modified based on game logic

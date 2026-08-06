@@ -259,8 +259,11 @@ class CreatureSpawnerHandler:
     def handle_afk_trap_catch(self, creature: TGOCreature):
         perform_afk_catch = random.randint(1, 4) != 4
         if perform_afk_catch:
-            afk_user_id = TrapHandler.select_user_for_trap_capture(creature_rarity=creature.local_rarity.name)
+            afk_user_id = TrapHandler.select_user_for_trap_capture(creature=creature)
             if afk_user_id:
+                # remove one charge from the user trap link
+                get_tgommo_db_handler().update_user_trap_link_charges(user_id=afk_user_id, player_trap_charges=max(0, get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=afk_user_id).player_trap_charges - 1))
+                # now catch the creature for the user and send the catch embed to the channel
                 result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
                 if result["user_profile"]:
                     asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]), self.discord_bot.loop)

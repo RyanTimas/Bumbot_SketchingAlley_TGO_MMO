@@ -1,11 +1,11 @@
 import asyncio
 from discord.ui import Select, Modal
 
+from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import *
-from src.database.handlers.DatabaseHandler import get_user_db_handler, get_tgommo_db_handler
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.game_features.creature_inventory.CreatureInventoryManagementView import CreatureInventoryManagementView
-from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previous, jump
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import *
 

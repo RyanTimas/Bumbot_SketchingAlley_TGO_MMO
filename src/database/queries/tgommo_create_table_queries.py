@@ -121,6 +121,7 @@ TGOMMO_CREATE_USER_CREATURE_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_cr
     
     is_released BOOLEAN DEFAULT 0,
     is_favorite BOOLEAN DEFAULT 0,
+    is_afk_catch BOOLEAN DEFAULT 0,
 
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (creature_id) REFERENCES tgommo_creature (creature_id),

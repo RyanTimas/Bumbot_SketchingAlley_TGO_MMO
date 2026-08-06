@@ -4,6 +4,7 @@ import threading
 from typing import Optional, Tuple, Dict
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.objects.TGOCreature import TGOCreature
 from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, TRAP_ID_RARITY_MAP
 
 # Global map storing user_id -> (battery_count, trap_id)
@@ -24,23 +25,26 @@ class TrapHandler:
                 return user_trap_link.player_trap_charges + charge_count
 
     @staticmethod
-    def select_user_for_trap_capture(creature_rarity: str):
+    def select_user_for_trap_capture(creature: TGOCreature):
         with _TRAP_MAP_LOCK:
             trap_battery_map: Dict[int, Tuple[int, int]] = {}
 
-            # reload from DB if empty
-            if len(trap_battery_map) == 0:
-                player_trap_links = get_tgommo_db_handler().get_player_trap_links_for_server()
-                for link in player_trap_links:
-                    trap_battery_map[link.player_id] = (link.player_trap_charges, link.active_trap.item_id)
+            player_trap_links = get_tgommo_db_handler().get_player_trap_links_for_server()
+            for link in player_trap_links:
+                trap_battery_map[link.player_id] = (link.player_trap_charges, link.active_trap.item_id)
 
             # first, filter out users with no battery chargers
             eligible_users = {uid: (count, trap_id) for uid, (count, trap_id) in trap_battery_map.items() if count > 0}
+
+            # next, filter out users who have never caught a creature with this dex number
+            users_who_have_caught_dex = get_tgommo_db_handler().get_users_who_caught_creature_by_dex_no(dex_no=creature.dex_no)
+            eligible_users = {uid: (count, trap_id) for uid, (count, trap_id) in eligible_users.items() if uid in users_who_have_caught_dex}
+
             if len(eligible_users) == 0:
                 return None
 
             # next, see if anyone has an active trap that coincides with the despawning creature's rarity
-            users_with_matching_rarity = {uid: (count, trap_id) for uid, (count, trap_id) in eligible_users.items() if TRAP_ID_RARITY_MAP.get(trap_id) == creature_rarity}
+            users_with_matching_rarity = {uid: (count, trap_id) for uid, (count, trap_id) in eligible_users.items() if TRAP_ID_RARITY_MAP.get(trap_id) == creature.local_rarity.name}
             if users_with_matching_rarity:
                 eligible_users = users_with_matching_rarity
             else:

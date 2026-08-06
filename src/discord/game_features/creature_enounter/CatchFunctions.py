@@ -16,7 +16,7 @@ def catch_creature(user_id: int, creature: TGOCreature, environment: TGOEnvironm
     successful_catch_embed, successful_catch_image, total_xp = embed_handler.generate_catch_embed(catch_user=catch_user, is_afk_catch=is_afk_catch)
 
     # insert record of user catching the creature & give user xp for catching the creature
-    catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(user_id, creature.creature_id, creature.variant_no, creature.environment_id, creature.local_rarity == MYTHICAL))
+    catch_id = get_tgommo_db_handler().insert_new_user_creature(params=(user_id, creature.creature_id, creature.variant_no, creature.environment_id, creature.local_rarity == MYTHICAL, is_afk_catch))
     get_user_db_handler().update_xp(total_xp, user_id, catch_user.nickname)
 
     # Optionally run avatar unlock checks (UI callers can await these if they are async; keep them here for shared logic)

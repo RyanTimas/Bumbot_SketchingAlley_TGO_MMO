@@ -138,7 +138,7 @@ class CreatureCaughtView(discord.ui.View):
 
             # edit original caught creature notif to show nickname
             await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
-            await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(nickname=self.nickname_input.value)[0])
+            await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(catch_user=get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id),nickname=self.nickname_input.value)[0])
         return callback
 
     # CREATE DROPDOWNS

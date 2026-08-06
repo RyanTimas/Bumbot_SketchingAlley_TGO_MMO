@@ -1,10 +1,8 @@
-
-
 """ ----- INSERT QUERIES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region INSERT QUERIES
 TGOMMO_INSERT_NEW_CREATURE = """INSERT OR IGNORE INTO tgommo_creature (creature_id, name, variant_name, dex_no, variant_no, full_name, scientific_name, kingdom, description, img_root, encounter_rate, default_rarity) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_ENVIRONMENT_CREATURE = """INSERT OR IGNORE INTO tgommo_environment_creature (creature_id, environment_id, spawn_time, environment_dex_no, environment_variant_no, creature_name, environment_name, spawn_rarity, local_name, sub_environment_type, local_dex_no, local_variant_no, local_img_root) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '') RETURNING catch_id;"""
+TGOMMO_INSERT_USER_CREATURE = """INSERT INTO tgommo_user_creature(user_id, creature_id, creature_variant_no, environment_id, is_mythical, catch_date, nickname, is_released, is_favorite, is_afk_catch) VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '', 0, 0, ?) RETURNING catch_id;"""
 
 TGOMMO_INSERT_NEW_ENVIRONMENT = """INSERT OR IGNORE INTO tgommo_environment (environment_id, name, variant_name, dex_no, variant_no, location, description, img_root, is_night_environment, in_circulation, encounter_rate, local_img_suffix) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
@@ -55,16 +53,16 @@ TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE = """
 """
 TGOMMO_SELECT_USER_CREATURE_BASE = """
     SELECT 
-        DISTINCT(uc.catch_id), c.creature_id, 
+        DISTINCT(uc.catch_id), c.creature_id, uc.user_id,
         c.name, c.variant_name, ec.local_name, uc.nickname, 
         c.dex_no, c.variant_no, ec.local_dex_no, ec.local_variant_no,
         c.full_name, c.scientific_name, c.kingdom, c.description, 
         c.img_root, ec.local_img_root,
-        ec.sub_environment_type, 
+        ec.environment_id, ec.sub_environment_type,
         c.encounter_rate, 
-        c.default_rarity, ec.spawn_rarity, uc.is_mythical, 
-        uc.catch_date, uc.is_favorite, uc.is_released,
-        ec.environment_id
+        c.default_rarity, ec.spawn_rarity, 
+        uc.catch_date,
+        uc.is_mythical, uc.is_released, uc.is_favorite, uc.is_afk_catch
     FROM tgommo_user_creature uc 
         LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id AND uc.environment_id = ec.environment_id 
         LEFT JOIN tgommo_creature c ON c.creature_id = ec.creature_id 
@@ -399,7 +397,7 @@ TGOMMO_SELECT_USER_CREATURE_BY_IS_FAVORITE_SUFFIX = "uc.is_favorite = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_RELEASED_SUFFIX = "uc.is_released = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX = "uc.is_mythical = ?"
 TGOMMO_SELECT_USER_CREATURE_BY_MATCHES_ENVIRONMENT_SUFFIX = "uc.environment_id = ec.environment_id"
-
+TGOMMO_SELECT_USER_CREATURE_BY_IS_AFK_CATCH_SUFFIX = "uc.is_afk_catch = ?"
 # endregion
 
 # region tgommo_environment suffixes
@@ -460,6 +458,3 @@ TGOMMO_SELECT_COLLECTION_BY_COLLECTION_ID_SUFFIX = "collection_id = ?"
 TGOMMO_SELECT_COLLECTION_BY_IS_ACTIVE_SUFFIX = "is_active = ?"
 # endregion
 # endregion
-
-
-

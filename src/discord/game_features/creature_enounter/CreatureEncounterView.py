@@ -11,6 +11,7 @@ from src.discord.game_features.creature_enounter.CreatureCaughtView import Creat
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, \
     check_for_quest_avatars, check_for_special_quest_avatars
+from src.discord.handlers.ItemUnlockHandler.ItemUnlockHandler import check_for_milestone_catch_rewards
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -78,6 +79,9 @@ class CreatureEncounterView(View):
             await check_for_event_avatars(user_id=interaction.user.id, interaction=interaction)
             await check_for_quest_avatars(user_id=interaction.user.id, interaction=interaction)
             await check_for_special_quest_avatars(user_id=interaction.user.id, creature=self.creature, interaction=interaction)
+
+            # check if player has unlocked any items based on their catch and unlock them if they haven't already been unlocked
+            await  check_for_milestone_catch_rewards(user_id=interaction.user.id, interaction=interaction)
 
             # delete the original spawn message so nobody else can catch it
             try:

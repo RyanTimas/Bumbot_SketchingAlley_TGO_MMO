@@ -108,10 +108,9 @@ class TrapManagerImageFactory(BaseImageFactory):
 
         starting_pos = (1583, 898)
         for i in range(max_battery_slots):
-            #todo: bug where if 8 charges exactly 2 batteries showing up?
-
             # use a normal battery icon by default
             current_battery_icon = battery_icon_image
+
             # if the player has a partial battery left, crop the icon to show the correct charge level
             if i == full_batteries and remainder > 0:
                 crop_ratio = remainder / 8.0
@@ -125,7 +124,7 @@ class TrapManagerImageFactory(BaseImageFactory):
 
                 current_battery_icon = full_battery_icon
             # if the player has an entire battery slot missing, use a blank
-            elif i > full_batteries:
+            elif i >= full_batteries:
                 current_battery_icon = None
 
             base_image.paste(battery_glow_icon_image, starting_pos, battery_glow_icon_image)

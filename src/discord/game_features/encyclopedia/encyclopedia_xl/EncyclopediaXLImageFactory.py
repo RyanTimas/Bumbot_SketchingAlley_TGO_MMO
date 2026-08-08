@@ -35,8 +35,7 @@ class EncyclopediaXLImageFactory(BaseImageFactory):
 
         return self.add_text_to_encyclopedia_image(encyclopedia_img)
 
-    # Calculate optimal icon dimensions for a grid layout.
-    # Returns: tuple: ((icon_width, icon_height), icons_per_row, total_rows)
+    # Calculate optimal icon dimensions for a grid layout. Returns: tuple: ((icon_width, icon_height), icons_per_row, total_rows)
     def calculate_dex_grid_information(self, total_icons = 1000):
         target_grid_width = 2020
         target_grid_height = 942

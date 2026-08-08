@@ -333,8 +333,10 @@ class TGOMMODatabaseHandler:
 
         return self.QueryHandler.execute_query(query, params=params)[0][0]
 
-    def has_user_caught_creature(self, user_id=0, dex_no=0):
-        return self.get_total_catches_for_creature_by_user(user_id=user_id, dex_no=dex_no) > 0
+    def has_user_caught_creature(self, user_id=0, dex_no=0, creature_id=0):
+        if dex_no != 0:
+            return self.get_total_catches_for_creature_by_user(user_id=user_id, dex_no=dex_no) > 0
+        return self.get_total_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
     def has_user_caught_mythical_creature(self, user_id=0, dex_no=0):
         return self.get_total_mythical_catches_for_creature_by_user(user_id=user_id, dex_no=dex_no) > 0
     def has_user_caught_creature_variant(self, user_id=0, creature_id=0):

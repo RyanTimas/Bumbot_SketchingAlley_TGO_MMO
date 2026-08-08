@@ -26,9 +26,10 @@ from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
 from src.discord.game_features.shop.ShopView import ShopView
 from src.discord.game_features.trap_manager.TrapManagerImageFactory import TrapManagerImageFactory
 from src.discord.game_features.trap_manager.TrapManagerView import TrapManagerView
-from src.discord.general.tests.CreatureEncounterTests import register_creature_encounter_tests
-from src.discord.general.tests.GeneralTests import register_general_tests
-from src.discord.general.tests.ShopTests import register_shop_tests
+from src.discord.tests.CreatureEncounterTests import register_creature_encounter_tests
+from src.discord.tests.GeneralTests import register_general_tests
+from src.discord.tests.ShopTests import register_shop_tests
+from src.discord.tests.EncyclopediaTests import register_encyclopedia_tests
 from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
@@ -333,7 +334,7 @@ class DiscordBot(commands.Bot):
         # GAME FEATURE TESTS
         register_creature_encounter_tests(self)
         register_shop_tests(self)
+        register_encyclopedia_tests(self)
 
     def start_bot(self):
         self.run(self.token)
-

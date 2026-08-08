@@ -50,17 +50,12 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         return avatars_with_quests
 
     def get_avatar_quests_for_grid(self):
-        max_icons_per_page = 16
-        avatar_quests_for_page = self.avatars_with_quests
+        # Return all eligible avatar quest icons (no pagination slicing here). Filtering and sorting still apply.
+        avatar_quests_for_page = list(self.avatars_with_quests) if self.avatars_with_quests else []
 
-        # First step is to filter the avatar quests based on whether we want to display completed quests or not
-        # Filter based on quest completion status
-        avatar_quests_for_page = [quest for quest in avatar_quests_for_page if (quest.is_completed == self.is_exclusive_mode  if self.display_completed_quests else True)]
-
-        # Then slice the list to get only the quests for the current page
-        starting_index = (self.page_num - 1) * max_icons_per_page
-        ending_index = min(starting_index + max_icons_per_page, len(avatar_quests_for_page))
-        avatar_quests_for_page = avatar_quests_for_page[starting_index:ending_index]
+        # Filter based on quest completion status when requested. If display_completed_quests is True,
+        # include only avatars where is_completed == is_exclusive_mode. Otherwise include all avatars.
+        avatar_quests_for_page = [q for q in avatar_quests_for_page if (q.is_completed == self.is_exclusive_mode if self.display_completed_quests else True)]
 
         # Apply sorting based on the selected order type and sort direction
         sort_options = {
@@ -68,6 +63,8 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         }
 
         if self.order_type in sort_options:
-            avatar_quests_for_page.sort(key=sort_options[self.order_type], reverse= self.is_ascending_order)
+            avatar_quests_for_page.sort(key=sort_options[self.order_type], reverse=self.is_ascending_order)
 
-        return [avatar.quest_progress_icon for avatar in avatar_quests_for_page if avatar.quest_progress_icon is not None and avatar.is_secret == False]
+        # Exclude secret avatars and any without a generated icon, and return the icons for the grid builder to paginate/display
+        return [avatar.quest_progress_icon for avatar in avatar_quests_for_page if avatar.quest_progress_icon is not None and not avatar.is_secret]
+

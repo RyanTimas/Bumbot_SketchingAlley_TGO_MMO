@@ -38,18 +38,49 @@ def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) 
 #************************************************************************************
 #-------------------------------IMAGE FUNCTIONS----------------------------------------------
 #************************************************************************************
-def to_grayscale(discord_file, file_name=None) -> discord.File:
-    discord_file.fp.seek(0)
-    img = Image.open(discord_file.fp)
-    if img.mode in ("RGBA", "LA"):
-        img = img.convert("LA")  # Grayscale + alpha
-    else:
-        img = img.convert("L")  # Grayscale only
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    buf.seek(0)
-    return discord.File(buf, filename=file_name if file_name else discord_file.filename)
+# desaturate image to grayscale and return it as a discord.File
+def to_grayscale(image: Image.Image) -> Image.Image:
+    # Ensure a mode that exposes an alpha channel if present
+    img = image.convert("RGBA")
+    bands = img.split()
 
+    # If there's an alpha channel, preserve it
+    if len(bands) == 4:
+        _, _, _, a = bands
+        gray = img.convert("L")
+        gray_rgba = Image.merge("RGBA", (gray, gray, gray, a))
+        return gray_rgba
+
+    # No alpha channel: create an opaque alpha and return RGBA
+    gray = img.convert("L")
+    alpha = Image.new("L", img.size, 255)
+    gray_rgba = Image.merge("RGBA", (gray, gray, gray, alpha))
+    return gray_rgba
+
+# Create a black silhouette from a PIL Image and return it as a discord.File.
+def convert_image_to_silhouette(image: Image.Image) -> Image.Image:
+    if not isinstance(image, Image.Image):
+        raise TypeError("convert_image_to_silhouette expects a PIL Image")
+
+    img = image.convert("RGBA")
+
+    # Use alpha channel if present
+    if "A" in img.getbands():
+        alpha = img.split()[3]
+        black = Image.new("RGBA", img.size, (0, 0, 0, 255))
+        transparent = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        silhouette = Image.composite(black, transparent, alpha)
+        return silhouette
+
+    # Fallback for images without alpha: create mask from luminance
+    gray = img.convert("L")
+    # threshold: treat near-white as background; adjust if needed
+    threshold = 250
+    mask = gray.point(lambda p: 255 if p < threshold else 0).convert("L")
+    black = Image.new("RGBA", img.size, (0, 0, 0, 255))
+    transparent = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    silhouette = Image.composite(black, transparent, mask)
+    return silhouette
 
 def convert_to_png(image: Image, file_name):
      with io.BytesIO() as image_binary:
@@ -57,6 +88,15 @@ def convert_to_png(image: Image, file_name):
         image_binary.seek(0)
         png_img = File(fp=image_binary, filename=file_name)
         return png_img
+
+
+def set_image_opacity(image: Image.Image, opacity: float) -> Image.Image:
+    img = image.convert("RGBA")
+    r, g, b, a = img.split()
+
+    # scale alpha channel
+    new_a = a.point(lambda p: int(p * opacity))
+    return Image.merge("RGBA", (r, g, b, new_a))
 
 
 def add_text_to_image(image: Image, font, text: str = "", position= (0,0), color: tuple = FONT_COLOR_BLACK):

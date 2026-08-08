@@ -91,9 +91,14 @@ class TGOCreature:
         if not os.path.exists(dex_icon_img_path):
             dex_icon_img_path = f"{DEX_ICON_CREATURE_BASE}_{img_root}{IMAGE_FILE_EXTENSION}"
 
+        # load creature thumbnail and dex icon images, using fallback images if the specified paths do not exist
         with Image.open(creature_thumb_img_path if os.path.exists(creature_thumb_img_path) else FALLBACK_CREATURE_IMAGE) as img:
+            if not os.path.exists(creature_thumb_img_path):
+                print(f"❗THUMB Warning❗: Creature thumbnail image not found at {creature_thumb_img_path}. Using fallback image.")
             self.creature_image = img.copy()
         with Image.open(dex_icon_img_path if os.path.exists(dex_icon_img_path) else FALLBACK_CREATURE_DEX_ICON_IMAGE) as img:
+            if not os.path.exists(dex_icon_img_path):
+                print(f"⚠️ICON Warning⚠️: Dex icon image not found at {dex_icon_img_path}. Using fallback image.")
             self.dex_icon_image = img.copy()
 
     '''GETTERS AND SETTERS'''
@@ -106,4 +111,4 @@ CURRENT_SPAWN_POOL = [
 
 ]
 
-PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=0, variant_no=0, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, default_rarity=COMMON)
+PLACEHOLDER_CREATURE = TGOCreature(creature_id= -1, name='Placeholder Creature', variant_name='', dex_no=1, variant_no=1, full_name='Placeholder Creature', scientific_name='Placeholderus', kingdom='Unknown', description='This is a placeholder creature.', img_root=CHIPMUNK_IMAGE_ROOT, encounter_rate=0, default_rarity=COMMON)

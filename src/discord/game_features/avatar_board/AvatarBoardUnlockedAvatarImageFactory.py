@@ -1,3 +1,5 @@
+from math import ceil
+
 from PIL import Image
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -18,7 +20,7 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
         self.is_exclusive_mode = False
 
         self.load_relevant_info()
-        self.total_pages = len(self.unlocked_avatars) // 75 + (1 if len(self.unlocked_avatars) % 75 > 0 else 0)
+        self.total_pages = max(1, ceil(len(self.unlocked_avatars) / 75))
 
     def load_relevant_info(self, target_user=None, new_page_number = None, order_type=None, is_ascending_order=None):
         super().load_relevant_info(target_user=target_user, new_page_number=new_page_number)
@@ -59,11 +61,7 @@ class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):
 
     # method to get the avatar icons for the current page of unlocked avatars, based on the current sorting and filtering options
     def get_avatars_for_grid(self):
-        max_icons_per_page = 75
-
-        start_index = (self.page_num - 1) * max_icons_per_page
-        end_index = start_index + max_icons_per_page
-        avatars_for_page = self.unlocked_avatars[start_index:end_index]
+        avatars_for_page = list(self.unlocked_avatars) if self.unlocked_avatars else []
 
         # Apply sorting based on the selected order type and sort direction
         sort_options = {

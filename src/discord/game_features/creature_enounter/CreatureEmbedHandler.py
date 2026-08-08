@@ -74,10 +74,7 @@ class CreatureEmbedHandler:
 
         embed.add_field(name=f"Despawned - {self.get_despawn_timestamp(is_countdown=False, timestamp=int(self.creature.despawn_time.timestamp()))}", value=f'', inline=True)
 
-        thumbnail_img = convert_to_png(image=self.creature.creature_image, file_name="thumbnail.png")
-        thumbnail_img = to_grayscale(thumbnail_img)
-        thumbnail_img.filename = "thumbnail.png"
-
+        thumbnail_img = convert_to_png(to_grayscale(self.creature.creature_image), file_name="thumbnail.png")
         embed.set_thumbnail(url=f"attachment://thumbnail.png")
         return embed, thumbnail_img, encounter_img
 

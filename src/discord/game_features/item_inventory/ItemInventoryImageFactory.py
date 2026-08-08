@@ -43,7 +43,7 @@ class ItemInventoryImageFactory(BaseImageFactory):
 
 
         active_item_icons = [self.user_item_icons[i] for i in  [i for i, item in enumerate(self.user_items) if item.item_id in {item.item_id for item in self.active_items}]]
-        item_grid_img = self.build_grid(icons=active_item_icons[self.starting_index: self.ending_index], grid_size=(1512, 700), icons_per_page=20, icon_size=(500, 70), icons_per_row=3, horizontal_padding=6, vertical_padding=3)
+        item_grid_img = self.build_grid(icons=active_item_icons, grid_size=(1512, 700), icons_per_page=20, icon_size=(500, 70), icons_per_row=3, horizontal_padding=6, vertical_padding=3)
 
 
         item_inventory_image.paste(item_grid_img, (216, 270), item_grid_img)

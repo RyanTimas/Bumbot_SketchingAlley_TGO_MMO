@@ -102,7 +102,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         # generate dex icons
         starting_index = (self.page_num - 1) * 25  # Adjust calculation to start from 0
         ending_index = min(starting_index + 25, len(self.creatures))  # Ensure we don't go past the end of the list
-        icons_grid = self.build_grid(icons=self.dex_icons[starting_index: ending_index], grid_size=(520, 535), icon_size=(100, 75), icons_per_page=25, icons_per_row=5, horizontal_padding=3, vertical_padding=20)
+        icons_grid = self.build_grid(icons=self.dex_icons, grid_size=(520, 535), icon_size=(100, 75), icons_per_page=25, icons_per_row=5, horizontal_padding=3, vertical_padding=20)
 
         # add bottom bar and top bar
         encyclopedia_img = self.build_encyclopedia_dex_top_bar(encyclopedia_img)
@@ -120,6 +120,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
 
         # Only process creatures within our page range
         for i, creature in enumerate(self.creatures):
+            # grab information about the creature for this user in this environment
             total_catches_for_creature_for_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user.user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day)
             total_mythical_catches_for_species = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=self.target_user.user_id, creature_dex_no=creature.dex_no if not self.show_variants else None, creature_id=creature.creature_id  if self.show_variants else None, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, is_mythical=True)
             creature_is_locked = total_mythical_catches_for_species == 0 if self.show_mythics else total_catches_for_creature_for_environment == 0
@@ -131,12 +132,15 @@ class EncyclopediaImageFactory(BaseImageFactory):
                 imgs.append(convert_to_png(dex_icon_img, f'creature_icon_{creature.name}_{creature.variant_name}.png'))
 
         # in the case the amount of dex icons has changed, we need to update the total pages and reset to page 1
-        if self.total_pages != (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0):
-            self.total_pages = (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0)
+        self.total_pages = (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0) if self.total_pages != (len(self.creatures) // 25) + (1 if len(self.creatures) % 25 > 0 else 0) else self.total_pages
         return raw_imgs  #, imgs
+    # build an individual dex icon for a creature, taking into account the user's catches and whether the creature is locked
     def build_dex_icon(self, creature: TGOCreature, total_catches: int, total_mythical_catches: int, creature_is_locked: bool):
+        # if the user has selected to show mythics, and this creature is not transcendant, then we need to set the creature rarity to mythical so that the dex icon will display the correct image
         if self.show_mythics and creature.local_rarity.name != TRANSCENDANT.name:
             creature.set_creature_rarity(MYTHICAL)
+
+        # if the user has caught this creature before, but not the first variant, and we are not showing variants, then we need to get the first caught variant for this creature and display that instead of the default variant
         if not self.show_variants:
             first_caught_variant = get_tgommo_db_handler().get_first_caught_variant_for_creature(creature_dex_no=creature.dex_no, user_id=self.target_user.user_id, environment_dex_no=self.environment.dex_no, is_mythical=self.show_mythics)
             if first_caught_variant != 1:
@@ -144,7 +148,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
                 creature.define_creature_images()
 
         dex_icon = EncyclopediaIconFactory(creature=creature, environment=self.environment, total_catches=total_catches, total_mythical_catches=total_mythical_catches, creature_is_locked=creature_is_locked, show_stats=self.is_verbose)
-        return dex_icon.generate_dex_entry_image()
+        return dex_icon.generate_dex_entry_image(self.target_user.user_id)
 
     def build_encyclopedia_dex_top_bar(self, encyclopedia_img: Image):
         top_bar_img = Image.open(ENCYCLOPEDIA_TOP_BAR_DEFAULT_IMAGE if not self.show_mythics else ENCYCLOPEDIA_TOP_BAR_SHINY_IMAGE)

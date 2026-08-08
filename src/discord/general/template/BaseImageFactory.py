@@ -16,6 +16,7 @@ class BaseImageFactory:
         self.page_num = 1
         self.total_pages = 1
         self.open_tab = None
+        self.grid_icons = []
 
 
     '''----IMAGE GENERATION METHODS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
@@ -39,29 +40,41 @@ class BaseImageFactory:
 
     # Helper function to build a grid of icons with specified parameters, resizing icons as needed and applying padding between them
     def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3):
-        grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
         icon_width, icon_height = icon_size
 
-        start_index = (self.page_num - 1) * icons_per_page
-        end_index = start_index + icons_per_page
+        # Use centralized pagination helper to obtain the page icons and update page state
+        page_icons = self.get_page_icons(icons=icons, icons_per_page=icons_per_page, page=self.page_num)
 
-        # Calculate padding
+        grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
+
         row, col = 0, 0
-        for i, icon in enumerate(icons[start_index:end_index]):
+        for icon in page_icons:
             if icon.size != icon_size:
                 icon = icon.resize(icon_size, Image.LANCZOS)
 
-            # Calculate position
-            x = col * (icon_width + horizontal_padding if i != 0 else 0)
-            y = row * (icon_height + vertical_padding if i != 0 else 0)
+            x = col * (icon_width + horizontal_padding)
+            y = row * (icon_height + vertical_padding)
 
-            # Paste icon onto canvas
-            grid_canvas.paste(icon, (int(x), int(y)), icon)
+            # Use the icon itself as mask if it has an alpha channel
+            mask = icon if icon.mode in ("RGBA", "LA") else None
+            grid_canvas.paste(icon, (int(x), int(y)), mask)
 
-            # Move to next position
             col += 1
             if col >= icons_per_row:
                 col = 0
                 row += 1
 
         return grid_canvas
+
+    # Return the sublist of icons for open page.
+    def get_page_icons(self, icons=None, icons_per_page=25, page=None):
+        from math import ceil
+        icons = icons if icons is not None else self.grid_icons
+        self.total_pages = max(1, ceil(len(icons) / icons_per_page))
+
+        page = page if page is not None else self.page_num
+        page = max(1, min(page, self.total_pages))
+        self.page_num = page
+        start = (page - 1) * icons_per_page
+        end = start + icons_per_page
+        return icons[start:end]

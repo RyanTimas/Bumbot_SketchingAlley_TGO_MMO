@@ -337,6 +337,8 @@ class TGOMMODatabaseHandler:
         if dex_no != 0:
             return self.get_total_catches_for_creature_by_user(user_id=user_id, dex_no=dex_no) > 0
         return self.get_total_catches_for_creature_variant_by_user(user_id=user_id, creature_id=creature_id) > 0
+    def has_server_caught_creature(self, dex_no=0, creature_id=0):
+        return self.has_user_caught_creature(user_id=0, dex_no=dex_no, creature_id=creature_id)
     def has_user_caught_mythical_creature(self, user_id=0, dex_no=0):
         return self.get_total_mythical_catches_for_creature_by_user(user_id=user_id, dex_no=dex_no) > 0
     def has_user_caught_creature_variant(self, user_id=0, creature_id=0):
@@ -493,7 +495,8 @@ class TGOMMODatabaseHandler:
             query += f" AND {TGOMMO_SELECT_USER_CREATURE_BY_IS_MYTHICAL_SUFFIX}"
             params.append(1)
 
-        return self.QueryHandler.execute_query(query, params=params)[0][0]
+        first_caught_variant = self.QueryHandler.execute_query(query, params=params)[0][0]
+        return first_caught_variant if first_caught_variant is not None else 1
     # endregion
     # endregion
 

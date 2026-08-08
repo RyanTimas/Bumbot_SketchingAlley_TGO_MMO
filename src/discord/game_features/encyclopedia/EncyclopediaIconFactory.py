@@ -1,6 +1,7 @@
 from PIL import ImageDraw, ImageFont, Image
 
-from src.commons.CommonFunctions import get_image_path
+from src.commons.CommonFunctions import get_image_path, to_grayscale, convert_image_to_silhouette, set_image_opacity
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
@@ -23,7 +24,7 @@ class EncyclopediaIconFactory:
         self.show_stats = False if creature_is_locked or self.creature.default_rarity.name == TGOMMO_RARITY_TRANSCENDANT else show_stats
 
 
-    def generate_dex_entry_image(self):
+    def generate_dex_entry_image(self, user_id=0):
         # Create a copy of the background to serve as the canvas
         dex_icon_img = Image.open(f"{DEX_ICON_BACKGROUND_BASE}_{self.creature.local_rarity.name if self.environment.environment_id > 0 or self.creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL else self.creature.kingdom}{IMAGE_FILE_EXTENSION}")
 
@@ -31,8 +32,14 @@ class EncyclopediaIconFactory:
         shadow_img = Image.open(DEX_ICON_SHADOW_IMAGE)
         dex_icon_img.paste(shadow_img, (0, 0), shadow_img)
 
-        # Paste the creature icon onto the final image
-        creature_icon_img = Image.open(DEX_ICON_CREATURE_LOCKED_ICON_IMAGE) if self.creature_is_locked else self.creature.dex_icon_image
+        # display a lowered opacity for creatures that have been caught by the user in another environment, but are locked in the current environment
+        if self.creature_is_locked and get_tgommo_db_handler().has_user_caught_creature(user_id=user_id, creature_id=self.creature.creature_id):
+            creature_icon_img = set_image_opacity(to_grayscale(self.creature.dex_icon_image), opacity=0.5)
+        # display a silhouette if the creature is locked and has been caught by the server, but not by the user
+        elif self.creature_is_locked and get_tgommo_db_handler().has_server_caught_creature(creature_id=self.creature.creature_id):
+            creature_icon_img = convert_image_to_silhouette(self.creature.dex_icon_image)
+        else:
+            creature_icon_img = Image.open(DEX_ICON_CREATURE_LOCKED_ICON_IMAGE) if self.creature_is_locked else self.creature.dex_icon_image
         dex_icon_img.paste(creature_icon_img, (0, 0), creature_icon_img)
 
         if self.show_stats:

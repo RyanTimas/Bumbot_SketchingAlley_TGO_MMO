@@ -21,24 +21,30 @@ class AvatarBoardImageFactory(BaseImageFactory):
         return self.build_image()
     def load_relevant_info(self, target_user=None, new_page_number=None, open_tab=None, order_type=None, is_ascending_order=None, is_exclusive_mode=None):
         self.target_user = target_user if target_user else self.target_user
+
+        # propagate settings to active factory after handling tab switch
+        if open_tab != self.open_tab:
+            self.open_tab = open_tab
+
+            # reset page number to 1 unless a new_page_number is provided
+            self.page_num = new_page_number if new_page_number else 1
+            self.get_active_image_factory().page_num = new_page_number
+
+            # update total_pages from the newly active factory
+            self.total_pages = self.get_active_image_factory().total_pages
+
+        # Update active factory options
         self.get_active_image_factory().order_type = order_type if order_type is not None else self.get_active_image_factory().order_type
         self.get_active_image_factory().is_ascending_order = is_ascending_order if is_ascending_order is not None else self.get_active_image_factory().is_ascending_order
         self.get_active_image_factory().is_exclusive_mode = is_exclusive_mode if is_exclusive_mode is not None else self.get_active_image_factory().is_exclusive_mode
 
-        # Handle tab switching
-        if open_tab:
-            self.open_tab = open_tab
-            # if the tab is changed, update total_pages and reset page number to 1 unless specified otherwise
-            if open_tab != self.open_tab:
-                self.total_pages = self.get_active_image_factory().total_pages
-                new_page_number = new_page_number if new_page_number else 1
         if new_page_number:
             self.page_num = new_page_number
             self.get_active_image_factory().page_num = new_page_number
 
-        # Update both factories with relevant info
-        self.avatar_board_unlocked_avatar_image_factory.load_relevant_info(target_user=target_user)
-        self.avatar_board_quest_image_factory.load_relevant_info(target_user=target_user)
+        # Update both factories with relevant info (forward target_user and page)
+        self.avatar_board_unlocked_avatar_image_factory.load_relevant_info(target_user=target_user, new_page_number=self.page_num)
+        self.avatar_board_quest_image_factory.load_relevant_info(target_user=target_user, new_page_number=self.page_num)
     def build_image(self):
         return self.get_active_image_factory().build_image()
 

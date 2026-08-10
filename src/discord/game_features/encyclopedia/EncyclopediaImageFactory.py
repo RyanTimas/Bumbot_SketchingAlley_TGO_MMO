@@ -62,6 +62,7 @@ class EncyclopediaImageFactory(BaseImageFactory):
         if data_changed:
             self.is_server_view = self.target_user.user_id == 0
             self.total_user_catches = get_tgommo_db_handler().get_total_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
+            # todo: gotta use the suffix here AND uc.environment_id IN (day_id, night_id)
             self.unique_catches_for_user = get_tgommo_db_handler().get_unique_catches_base(user_id=self.target_user.user_id, include_variants=self.show_variants, is_mythical=self.show_mythics, environment_dex_no=self.environment.dex_no, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
             self.unique_creatures_available_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.environment.dex_no, include_variants=self.show_variants, time_of_day=self.time_of_day, rarity=self.rarity_filter, creature_class=self.creature_class_filter)
 
@@ -199,15 +200,18 @@ class EncyclopediaImageFactory(BaseImageFactory):
         # TOP BAR TEXT
         bar_font_color = FONT_COLOR_DARK_GRAY if self.show_mythics else FONT_COLOR_WHITE
 
+        # add the unique catches / total available creatures for this environment to the top bar
         text = f"{'0' if self.unique_catches_for_user < 10 else ''} {self.unique_catches_for_user} / {'0' if self.unique_creatures_available_for_environment < 10 else ''} {self.unique_creatures_available_for_environment}"
         pixel_location = get_centered_text_position(text, bar_font, center_pixel_location=(858, 109))
         draw.text(pixel_location, text= text, font=bar_font, fill=bar_font_color)
 
+        # add the total amount of creatures user has caught in this environment
         text = f"{self.total_user_catches}"
         pixel_location = get_centered_text_position(text, bar_font, center_pixel_location=(1082, 109))
         draw.text(pixel_location, text=text, font=bar_font, fill=bar_font_color)
 
         # BOTTOM BAR TEXT
+        # add the open environment name
         text = f"{self.environment.name}"
         font = resize_text_to_fit(text=text, draw=draw, font=bar_font, max_width=225, min_font_size=10)
         pixel_location = get_centered_text_position(text, font, center_pixel_location=(950, 630))

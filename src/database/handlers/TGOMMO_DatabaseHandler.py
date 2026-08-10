@@ -468,6 +468,7 @@ class TGOMMODatabaseHandler:
         else:
             encyclopedia_creatures = self.get_environment_creatures_from_database(query=query, params=params, convert_to_object=True, expect_multiple=True)
         return encyclopedia_creatures
+    # get the total unique catches for a user in a specific environment, including variants and mythical creatures
     def get_environment_catch_stats_for_user(self, user_id=None, environment_dex_no=None):
         user_unique_creature_catches = self.get_total_unique_creatures_caught_by_user(user_id=user_id) if environment_dex_no is None else self.get_total_unique_creatures_caught_by_user_and_environment_dex_no(user_id=user_id, environment_dex_no=environment_dex_no)
         user_unique_creature_variant_catches = self.get_total_unique_creature_variants_caught_by_user(user_id=user_id) if environment_dex_no is None else self.get_total_unique_creature_variants_caught_by_user_and_environment_dex_no(user_id=user_id, environment_dex_no=environment_dex_no)

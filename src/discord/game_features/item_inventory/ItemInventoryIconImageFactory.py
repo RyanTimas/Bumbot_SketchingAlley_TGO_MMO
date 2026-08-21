@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import get_centered_text_position, resize_text_to_fit, resize_text_to_fit_newline
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
+from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, UNLIMITED_INVENTORY_ITEM_TYPES
 from src.resources.constants.file_paths import *
 
 
@@ -33,10 +33,11 @@ class ItemInventoryIconImageFactory:
         draw.text((75, 25), text=item_description_text, font=item_description_font, fill=FONT_COLOR_WHITE)
 
         # add item uses to image
-        item_use_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 26)
-        item_use_font = resize_text_to_fit(text= f'{self.item.item_quantity}', draw=draw, font=item_use_font, max_width=32, min_font_size=6)
-        pixel_location = get_centered_text_position(text=f'{self.item.item_quantity}', font=item_use_font, center_pixel_location=(476, 36))
-        draw.text(pixel_location, text= f'{self.item.item_quantity}', font=item_use_font, fill=FONT_COLOR_WHITE)
+        if self.item.item_type not in UNLIMITED_INVENTORY_ITEM_TYPES:
+            item_use_font = ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 26)
+            item_use_font = resize_text_to_fit(text= f'{self.item.item_quantity}', draw=draw, font=item_use_font, max_width=32, min_font_size=6)
+            pixel_location = get_centered_text_position(text=f'{self.item.item_quantity}', font=item_use_font, center_pixel_location=(476, 36))
+            draw.text(pixel_location, text= f'{self.item.item_quantity}', font=item_use_font, fill=FONT_COLOR_WHITE)
 
         return image
 

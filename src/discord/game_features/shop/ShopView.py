@@ -1,5 +1,5 @@
 from src.commons.CommonDecorators import interaction_guard
-from src.commons.GameStateManager import get_game_state_manager
+from src.commons.GameStateManager import get_game_state_manager, game_state_manager
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import *
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
 from src.discord.general.template.BaseView import BaseView
@@ -231,7 +231,11 @@ class DonationModal(discord.ui.Modal):
         gsm.set_shop_donation_total(donation_total)
 
         if leveled_up:
+            # Set the shop upgrade in progress flag if the new level is less than the max level
+            gsm.set_shop_upgrade_in_progress(gsm.get_max_shop_level() > new_level)
+
             await interaction.followup.send(f"Thank you for your donation of {amount}💰! The shop has leveled up to Level {new_level}! New items may be available, so be sure to check back!",ephemeral=True)
+            await interaction.followup.send(f"🎉 The shop has leveled up to Level {new_level}! 🎉", files=[convert_to_png(Image.open(SHOP_UPDATE_UPGRADE_IMAGE), file_name="shop_upgrade.png")], ephemeral=False)
 
         # Refresh the parent view image
         if self.original_message:

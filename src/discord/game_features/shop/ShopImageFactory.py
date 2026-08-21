@@ -16,23 +16,33 @@ class ShopImageFactory(BaseImageFactory):
         self.load_relevant_info()
 
     def build_image(self):
+        # build base shop image
         shop_image = Image.open(SHOP_BG_IMAGE)
-        corner_overlay_image = Image.open(SHOP_CORNER_OVERLAY_IMAGE)
         currency_overlay_image = Image.open(SHOP_CURRENCY_OVERLAY_IMAGE)
-        morshu_overlay_image = Image.open(SHOP_MORSHU_OVERLAY_IMAGE)
         top_shelf_image = Image.open(SHOP_TOP_SHELF_IMAGE)
         bottom_shelf_image = Image.open(SHOP_BOTTOM_SHELF_IMAGE)
 
+        # build shelves and place inventory on image
         shop_image.paste(top_shelf_image, (0, 0), top_shelf_image)
         shop_image.paste(bottom_shelf_image, (0, 0), bottom_shelf_image)
-
         self.place_shop_inventory_on_image(shop_image=shop_image)
 
+        # build morshu section
+        morshu_overlay_image = Image.open(SHOP_MORSHU_OVERLAY_IMAGE)
         shop_image.paste(morshu_overlay_image, (0, 0), morshu_overlay_image)
+        if get_game_state_manager().get_shop_level() == 2:
+            battery_overlay_image = Image.open(SHOP_BATTERY_BASKET_IMAGE)
+            shop_image.paste(battery_overlay_image, (0, 0), battery_overlay_image)
+        if get_game_state_manager().get_shop_upgrade_in_progress():
+            upgrade_overlay_image = Image.open(SHOP_UPGRADE_SIGN_IMAGE)
+            shop_image.paste(upgrade_overlay_image, (0, 0), upgrade_overlay_image)
 
+        # add currency overlay to image
         shop_image.paste(currency_overlay_image, (0, 0), currency_overlay_image)
         self.add_text_to_image(shop_image)
 
+        # add corner overlay to image
+        corner_overlay_image = Image.open(SHOP_CORNER_OVERLAY_IMAGE)
         shop_image.paste(corner_overlay_image, (0, 0), corner_overlay_image)
 
         return shop_image
@@ -60,10 +70,11 @@ class ShopImageFactory(BaseImageFactory):
         draw.text(get_centered_text_position(text=f"{self.message_author.currency}", font=font, center_pixel_location=(1686, 62)), f"{self.message_author.currency}", fill=FONT_COLOR_BLACK, font=font)
 
         # ADD CURRENT DONATION & DONATION GOAL TO IMAGE
-        donation_amount = f"{get_game_state_manager().get_shop_donation_total()}"
-        donation_goal = f"{SHOP_LEVEL_COST_MAP[get_game_state_manager().get_shop_level()]}"
+        if get_game_state_manager().get_shop_upgrade_in_progress():
+            donation_amount = f"{get_game_state_manager().get_shop_donation_total()}"
+            donation_goal = f"{SHOP_LEVEL_COST_MAP[get_game_state_manager().get_shop_level()]}"
 
-        donation_font = resize_text_to_fit(text=donation_goal, draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 40), max_width=120, min_font_size=7)
+            donation_font = resize_text_to_fit(text=donation_goal, draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 40), max_width=120, min_font_size=7)
 
-        draw.text(get_centered_text_position(text=donation_amount, font=donation_font, center_pixel_location=(272, 972)), donation_amount, fill=FONT_COLOR_WHITE, font=donation_font)
-        draw.text(get_centered_text_position(text=donation_goal, font=donation_font, center_pixel_location=(672, 972)), donation_goal, fill=FONT_COLOR_WHITE, font=donation_font)
+            draw.text(get_centered_text_position(text=donation_amount, font=donation_font, center_pixel_location=(272, 972)), donation_amount, fill=FONT_COLOR_WHITE, font=donation_font)
+            draw.text(get_centered_text_position(text=donation_goal, font=donation_font, center_pixel_location=(672, 972)), donation_goal, fill=FONT_COLOR_WHITE, font=donation_font)

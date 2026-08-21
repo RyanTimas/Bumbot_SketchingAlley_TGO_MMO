@@ -124,6 +124,13 @@ class GameStateManager:
         """Return the saved shop level (defaults to 1)."""
         state = self._load_state()
         return state.get("shop_level", 1)
+    def get_max_shop_level(self) -> int:
+        """Return the maximum shop level (defaults to 3)."""
+        state = self._load_state()
+        return state.get("max_shop_level", 3)
+    def get_shop_upgrade_in_progress(self):
+        state = self._load_state()
+        return state.get("shop_upgrade_in_progress", False) == 1
     def get_shop_donation_total(self) -> int:
         """Return the saved shop donation total (defaults to 0)."""
         state = self._load_state()
@@ -180,6 +187,10 @@ class GameStateManager:
     def set_shop_level(self, new_level: int):
         state = self._load_state()
         state["shop_level"] = new_level
+        self._save_state(state)
+    def set_shop_upgrade_in_progress(self, in_progress):
+        state = self._load_state()
+        state["shop_upgrade_in_progress"] = 1 if in_progress else 0
         self._save_state(state)
     def set_shop_donation_total(self, new_total: int):
         """Set and persist the shop donation total."""

@@ -2,7 +2,8 @@ import random
 
 from PIL import Image, ImageDraw, ImageFont
 
-from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position, get_centered_image_position
+from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position, get_centered_image_position, \
+    resize_text_to_fit_newline
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.file_paths import *
@@ -45,7 +46,7 @@ class ShopItemImageFactory:
 
         # ADD NAME TO IMAGE
         name = self.avatar.name if self.is_shop_item_avatar else self.item.item_name
-        font = resize_text_to_fit(text=name, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28), max_width=220, min_font_size=7)
-        draw.text(get_centered_text_position(text=name, font=font, center_pixel_location=(332, 137)), name, fill=(0, 0, 0), font=font)
+        font, wrapped_text = resize_text_to_fit_newline(text=name, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, 28), max_width=180, min_font_size=7, allow_newlines=True, max_lines=3)
+        draw.text(get_centered_text_position(text=wrapped_text, font=font, center_pixel_location=(332, 137)), name, fill=(0, 0, 0), font=font)
         return image
 

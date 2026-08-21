@@ -319,24 +319,46 @@ CREATURE_INVENTORY_MODE_RELEASE_RESULTS = "Release Results"
 # endregion
 
 """ ----- ITEM INVENTORY  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
-ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE, ITEM_TYPE_PEARL]
+ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE]
 
-ITEM_INVENTORY_ICON_ORDER_MAP = {
-    ITEM_INVENTORY_ICON_BAIT_IMAGE: [ITEM_TYPE_BAIT],
-    ITEM_INVENTORY_ICON_CHARM_IMAGE: [ITEM_TYPE_CHARM, ITEM_TYPE_ULTRA_CHARM],
-    ITEM_INVENTORY_ICON_ANIMAL_IMAGE: [ITEM_TYPE_PEARL],
-    ITEM_INVENTORY_ICON_MISC_ITEM_IMAGE: [ITEM_TYPE_NAMETAG, ITEM_TYPE_AMULET_COIN, ITEM_TYPE_PLANE_TICKET],
-    ITEM_INVENTORY_ICON_KEY_ITEM_IMAGE: [ITEM_TYPE_MEGAPHONE, ITEM_TYPE_TRAP, ITEM_TYPE_BATTERY],
-
-    # ITEM_INVENTORY_ICON_MEGAPHONE_IMAGE: ["megaphone"],
-    # ITEM_INVENTORY_ICON_TRAP_IMAGE: ["trap"],
+# python
+# Add to src/resources/constants/TGO_MMO_constants.py
+ITEM_INVENTORY_TABS = {
+    "bait": {
+        "icon": ITEM_INVENTORY_ICON_BAIT_IMAGE,
+        "label": "Bait",
+        "item_types": [ITEM_TYPE_BAIT],
+    },
+    "charms": {
+        "icon": ITEM_INVENTORY_ICON_CHARM_IMAGE,
+        "label": "Charms",
+        "item_types": [ITEM_TYPE_CHARM, ITEM_TYPE_ULTRA_CHARM],
+    },
+    "creature_drops": {
+        "icon": ITEM_INVENTORY_ICON_ANIMAL_IMAGE,
+        "label": "Creature Drops",
+        "item_types": [ITEM_TYPE_PEARL],
+    },
+    "misc": {
+        "icon": ITEM_INVENTORY_ICON_MISC_ITEM_IMAGE,
+        "label": "Miscellaneous",
+        "item_types": [ITEM_TYPE_NAMETAG, ITEM_TYPE_AMULET_COIN, ITEM_TYPE_PLANE_TICKET],
+    },
+    "key_items": {
+        "icon": ITEM_INVENTORY_ICON_KEY_ITEM_IMAGE,
+        "label": "Key Items",
+        "item_types": [ITEM_TYPE_MEGAPHONE, ITEM_TYPE_TRAP, ITEM_TYPE_BATTERY],
+    },
 }
+
+# Backwards-compatible derived maps (optional — remove old maps once migrated)
+ITEM_INVENTORY_ICON_ORDER_MAP = {v["icon"]: v["item_types"] for v in ITEM_INVENTORY_TABS.values()}
 
 """ ----- SHOP  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 SHOP_LEVEL_COST_MAP = {
-    1: 2500,
-    2: 5000,
-    3: 5000,
+    1: 5000,
+    2: 10000,
+    # 3: 5000,
 }
 
 """ ----- TRAP MANAGER  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""

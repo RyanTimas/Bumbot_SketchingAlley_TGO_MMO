@@ -20,10 +20,12 @@ class ItemInventoryView(BaseView):
         self.selected_item = None
 
         # DEFINE VIEW COMPONENTS
-        self.item_select_dropdown = self.create_items_dropdown(row=0)
-        self.use_item_button = self.create_use_item_button(row=1)
-        self.use_item_confirm_button = self.create_use_item_confirm_button(row=1)
-        self.inventory_section_toggle_button = self.create_inventory_section_toggle_button(row=1)
+        self.inventory_section_dropdown = self.create_inventory_section_dropdown(row=0)
+        self.item_select_dropdown = self.create_items_dropdown(row=1)
+
+        self.use_item_button = self.create_use_item_button(row=2)
+        self.use_item_confirm_button = self.create_use_item_confirm_button(row=2)
+        self.inventory_section_toggle_button = self.create_inventory_section_toggle_button(row=2)
 
         self.refresh_view()
 
@@ -66,8 +68,7 @@ class ItemInventoryView(BaseView):
         return callback
 
     def create_inventory_section_toggle_button(self, row=1):
-        button = discord.ui.Button(label=f"{ITEM_INVENTORY_ICON_ORDER_MAP.get(self.image_factory.active_tab)}", style=discord.ButtonStyle.blurple, row=row)
-
+        button = discord.ui.Button(label=f"{ITEM_INVENTORY_TABS.get(self.image_factory.active_tab).get("label")}", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.inventory_section_toggle_callback()
         return button
     def inventory_section_toggle_callback(self, ):
@@ -82,10 +83,31 @@ class ItemInventoryView(BaseView):
 
         return callback
 
-
     # CREATE DROPDOWNS
+    def create_inventory_section_dropdown(self, row=1):
+        options = [discord.SelectOption(label=data["label"], value=tab_id) for tab_id, data in ITEM_INVENTORY_TABS.items()]
+        placeholder_label = ITEM_INVENTORY_TABS.get(self.image_factory.active_tab, {}).get("label", "Section")
+        dropdown = Select(placeholder=f"Section -> {placeholder_label}", options=options, min_values=1, max_values=1, row=row)
+        dropdown.callback = self.inventory_section_dropdown_callback
+        return dropdown
+
+    async def inventory_section_dropdown_callback(self, interaction: discord.Interaction):
+        selected_tab_id = interaction.data["values"][0]  # this is the short id (e.g. "bait")
+        # update active tab using the short id
+        old_tab = self.image_factory.active_tab
+        if selected_tab_id != old_tab:
+            self.image_factory.active_tab = selected_tab_id
+            new_page_number = 1
+            self.page_num = new_page_number
+            self.image_factory.page_num = new_page_number
+
+        reloaded_image = self.reload_image(active_tab=selected_tab_id)
+        self.refresh_view()
+        await interaction.response.edit_message(content=None, attachments=[reloaded_image], view=self)
+
+
     def create_items_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"{item.item_name} - ({item.item_quantity} left)", value=item.item_id) for item in self.image_factory.user_items[0:min(24, len(self.image_factory.user_items))]]
+        options = [discord.SelectOption(label=f"{item.item_name} - ({item.item_quantity} left)", value=item.item_id) for item in self.image_factory.active_items[0:min(24, len(self.image_factory.active_items))]]
         dropdown = Select(placeholder="Select Item to Use", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.items_dropdown_callback
         return dropdown
@@ -102,13 +124,20 @@ class ItemInventoryView(BaseView):
         self.update_button_states()
         self.rebuild_view()
     def update_button_states(self):
+        # update labels
         self.inventory_section_toggle_button.label = f"{ITEM_INVENTORY_ICON_ORDER_MAP.get(self.image_factory.active_tab)}"
+        self.inventory_section_dropdown.placeholder =f"🎒Open Section -> {ITEM_INVENTORY_TABS.get(self.image_factory.active_tab, {}).get("label", "")}"
+
+        # update the item select dropdown to reflect the current items
+        self.item_select_dropdown = self.create_items_dropdown(row=1)
         pass
     def rebuild_view(self):
         super().rebuild_view()
 
         if len(self.image_factory.user_items) > 0 and self.target_user.user_id == self.message_author.user_id:
+            self.add_item(self.inventory_section_dropdown)
             self.add_item(self.item_select_dropdown)
+
             self.add_item(self.use_item_button)
             self.add_item(self.inventory_section_toggle_button)
 

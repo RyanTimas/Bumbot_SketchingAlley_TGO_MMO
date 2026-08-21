@@ -323,6 +323,8 @@ ITEM_INVENTORY_EXCLUDED_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_ME
 
 # python
 # Add to src/resources/constants/TGO_MMO_constants.py
+ITEM_TAB_KEY_ITEMS = "key_items"
+
 ITEM_INVENTORY_TABS = {
     "bait": {
         "icon": ITEM_INVENTORY_ICON_BAIT_IMAGE,
@@ -344,7 +346,7 @@ ITEM_INVENTORY_TABS = {
         "label": "Miscellaneous",
         "item_types": [ITEM_TYPE_NAMETAG, ITEM_TYPE_AMULET_COIN, ITEM_TYPE_PLANE_TICKET],
     },
-    "key_items": {
+    ITEM_TAB_KEY_ITEMS: {
         "icon": ITEM_INVENTORY_ICON_KEY_ITEM_IMAGE,
         "label": "Key Items",
         "item_types": [ITEM_TYPE_MEGAPHONE, ITEM_TYPE_TRAP, ITEM_TYPE_BATTERY],
@@ -353,6 +355,8 @@ ITEM_INVENTORY_TABS = {
 
 # Backwards-compatible derived maps (optional — remove old maps once migrated)
 ITEM_INVENTORY_ICON_ORDER_MAP = {v["icon"]: v["item_types"] for v in ITEM_INVENTORY_TABS.values()}
+
+UNLIMITED_INVENTORY_ITEM_TYPES = [ITEM_TYPE_GAMEPLAY_MECHANICS, ITEM_TYPE_MEGAPHONE, ITEM_TYPE_TRAP]
 
 """ ----- SHOP  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 SHOP_LEVEL_COST_MAP = {

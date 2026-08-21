@@ -1,3 +1,5 @@
+import asyncio
+
 from discord.ui import Select
 
 from src.commons.CommonDecorators import interaction_guard

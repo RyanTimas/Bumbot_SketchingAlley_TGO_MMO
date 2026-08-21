@@ -25,7 +25,6 @@ class ItemInventoryView(BaseView):
 
         self.use_item_button = self.create_use_item_button(row=2)
         self.use_item_confirm_button = self.create_use_item_confirm_button(row=2)
-        self.inventory_section_toggle_button = self.create_inventory_section_toggle_button(row=2)
 
         self.refresh_view()
 
@@ -90,7 +89,6 @@ class ItemInventoryView(BaseView):
         dropdown = Select(placeholder=f"Section -> {placeholder_label}", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.inventory_section_dropdown_callback
         return dropdown
-
     async def inventory_section_dropdown_callback(self, interaction: discord.Interaction):
         selected_tab_id = interaction.data["values"][0]  # this is the short id (e.g. "bait")
         # update active tab using the short id
@@ -107,7 +105,7 @@ class ItemInventoryView(BaseView):
 
 
     def create_items_dropdown(self, row=1):
-        options = [discord.SelectOption(label=f"{item.item_name} - ({item.item_quantity} left)", value=item.item_id) for item in self.image_factory.active_items[0:min(24, len(self.image_factory.active_items))]]
+        options = [discord.SelectOption(label=f"{item.item_name} {f"- ({item.item_quantity} left)" if item.item_type not in UNLIMITED_INVENTORY_ITEM_TYPES else ""}", value=item.item_id) for item in self.image_factory.active_items[0:min(24, len(self.image_factory.active_items))]]
         dropdown = Select(placeholder="Select Item to Use", options=options, min_values=1, max_values=1, row=row)
         dropdown.callback = self.items_dropdown_callback
         return dropdown
@@ -125,7 +123,6 @@ class ItemInventoryView(BaseView):
         self.rebuild_view()
     def update_button_states(self):
         # update labels
-        self.inventory_section_toggle_button.label = f"{ITEM_INVENTORY_ICON_ORDER_MAP.get(self.image_factory.active_tab)}"
         self.inventory_section_dropdown.placeholder =f"🎒Open Section -> {ITEM_INVENTORY_TABS.get(self.image_factory.active_tab, {}).get("label", "")}"
 
         # update the item select dropdown to reflect the current items
@@ -139,8 +136,6 @@ class ItemInventoryView(BaseView):
             self.add_item(self.item_select_dropdown)
 
             self.add_item(self.use_item_button)
-            self.add_item(self.inventory_section_toggle_button)
-
 
     # SUPPORT FUNCTIONS
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None, active_tab=None):

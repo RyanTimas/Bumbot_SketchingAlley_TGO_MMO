@@ -15,6 +15,7 @@ class ChangeUserModal(discord.ui.Modal):
         try:
             await interaction.response.defer()
 
+            # Determine the user ID to use based on the input and server access
             user_id = self.user_id_input.value
             if self.user_id_input.value.strip() == "":
                 user_id = 0 if self.server_access else interaction.user.id
@@ -23,6 +24,6 @@ class ChangeUserModal(discord.ui.Modal):
             self.view.target_user = new_target_user
             reloaded_image = self.view.reload_image(target_user=new_target_user)
             self.view.refresh_view()
-            await interaction.response.edit_message(attachments=[reloaded_image], view=self.view)
+            await interaction.followup.edit_message(message_id=interaction.message.id, attachments=[reloaded_image], view=self.view,)
         except ValueError:
             await interaction.response.send_message("Invalid user ID format!", ephemeral=True)

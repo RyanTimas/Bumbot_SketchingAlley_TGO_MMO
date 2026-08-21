@@ -40,7 +40,9 @@ class ItemUseHandler:
 
             # remove an item from the user after the effect is applied
             if affect_activated:
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
+                # remove the item from the user's inventory assuming its not a key item
+                if item.item_type not in UNLIMITED_INVENTORY_ITEM_TYPES:
+                    get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
                     await interaction.channel.send(response_message, files=[convert_to_png(item.item_image, "item_img.png")])
 
@@ -74,6 +76,10 @@ class ItemUseHandler:
     '''---- CREATURE SPAWN BONUS HANDLERS ------------------------------------------------------------------------------------------------------------'''
     # Applies the effect of a bait item. Before applying the effect, it checks if the server has captured at least 65% of the unique creatures in the current environment. If not, it returns False and a message indicating that bait use is locked until 65% capture is reached. If the capture requirement is met, it spawns a creature with the appropriate rarity and returns True along with a message indicating that the bait was used.
     async def use_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        # omnipotent bait bypasses the 65% capture requirement and allows the user to spawn a creature of their choice
+        if item.item_id == ITEM_ID_OMNIPOTENT_BAIT:
+            return await self.use_omnipotent_bait(user=user, item=item, interaction=interaction)
+
         # check if server has captured at least 65% of creatures in the current environment before allowing bait use
         available_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creatures_available_for_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no, include_variants=True)
         caught_unique_creatures_for_environment = get_tgommo_db_handler().get_total_unique_creature_variants_caught_in_environment(environment_dex_no=self.discord_bot.creature_spawner_handler.current_environment.dex_no)
@@ -87,6 +93,12 @@ class ItemUseHandler:
         rarity = rarity_bait_map.get(item.item_id)
 
         await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=rarity, kingdom=kingdom)
+        return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
+
+    # Applies the effect of the omnipotent bait item. This item bypasses the 65% capture requirement and allows the user to spawn a creature of their choice. The function calls the creature spawner handler to spawn a creature without specifying rarity or kingdom, allowing for user selection.
+    async def use_omnipotent_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        # todo: pull up menu for selecting a specific creature to spawn
+        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=None, kingdom=None)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
 
     # Applies the effect of a charm item. If a charm of the same type is already active, it returns False and a message indicating that the charm is already active. Otherwise, it adds the charm effect to the game state manager and schedules its removal after 15 minutes.
@@ -116,7 +128,7 @@ class ItemUseHandler:
         return True, None
 
     async def use_trap(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        TrapHandler.switch_trap(user_id=user.user_id, new_trap_id=item.item_id, interaction=interaction)
+        await TrapHandler.switch_trap(user_id=user.user_id, new_trap_id=item.item_id, interaction=interaction)
         await interaction.followup.send(f"You've successfully switched your Trap! {item.item_name} is now active.", ephemeral=True)
         return True, None
 

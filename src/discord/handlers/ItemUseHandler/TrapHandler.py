@@ -59,12 +59,12 @@ class TrapHandler:
 
     # swap trap associated with user's player trap link
     @staticmethod
-    def switch_trap(user_id: int, new_trap_id: int, interaction=None):
+    async def switch_trap(user_id: int, new_trap_id: int, interaction=None):
         with _TRAP_MAP_LOCK:
             try:
                 get_tgommo_db_handler().update_user_trap_link_item_id(user_id=user_id, item_id=new_trap_id)
                 if interaction:
-                    interaction.response.send_message(f"Successfully switched trap to {new_trap_id} for user {user_id}.", ephemeral=True)
+                   await interaction.response.send_message(f"Successfully switched trap to {new_trap_id} for user {user_id}.", ephemeral=True)
                 return True
             except Exception as e:
                 print(f"Error switching trap for user {user_id}: {e}")

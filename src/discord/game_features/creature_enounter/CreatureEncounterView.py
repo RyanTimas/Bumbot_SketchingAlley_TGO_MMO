@@ -1,11 +1,12 @@
 import asyncio
 import time
 
-from discord.ui import View
+from discord import errors, ButtonStyle
+from discord.ui import View, Button
 
 from src.commons.CommonDecorators import measure_execution_time, retry_on_ssl_error
 from src.commons.CommonFunctions import convert_to_png, check_if_user_can_interact_with_view
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
+from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CatchFunctions import catch_creature
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
@@ -16,7 +17,7 @@ from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import USER_CATCHES_DAILY, USER_CATCHES_HOURLY
+from src.resources.constants.TGO_MMO_constants import USER_CATCHES_DAILY, USER_CATCHES_HOURLY, BASE_CREATURE_STORAGE_EXPANSIONS, MAX_CREATURE_STORAGE_EXPANSIONS, CREATURE_STORAGE_EXPANSION_BASE_COST, ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION
 
 
 class CreatureEncounterView(View):
@@ -38,7 +39,7 @@ class CreatureEncounterView(View):
         self.add_item(self.is_creature_caught_button())
 
     def create_catch_button(self, row=0):
-        button = discord.ui.Button(label="Catch Critter!!", style=discord.ButtonStyle.blurple, row=row)
+        button = Button(label="Catch Critter!!", style=ButtonStyle.blurple, row=row)
         button.callback = self.catch_button_callback()
         return button
     def catch_button_callback(self,):
@@ -46,7 +47,7 @@ class CreatureEncounterView(View):
         @measure_execution_time(label="Catch Button Callback Execution Time")
         async def callback(interaction):
             self.creature.catch_time = time.time()
-            await interaction.response.defer()
+            await interaction.response.defer(ephemeral=True)
 
             if not await check_if_user_can_interact_with_view(interaction, self.interaction_lock, None if not self.spawn_user else self.spawn_user.user_id):
                 return
@@ -54,12 +55,15 @@ class CreatureEncounterView(View):
             # Double check creature hasn't already been caught while waiting for interaction lock
             async with self.interaction_lock:
                 if self.caught:
-                    await interaction.response.send_message("Someone else already caught this creature...", ephemeral=True)
+                    await interaction.followup.send("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                self.caught, catch_message = self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
+                self.caught, catch_message, expansion_view = self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
                 if not self.caught:
-                    await interaction.response.send_message(catch_message, ephemeral=True)
+                    if expansion_view:
+                        await interaction.followup.send(catch_message, view=expansion_view, ephemeral=True)
+                    else:
+                        await interaction.followup.send(catch_message, ephemeral=True)
                     return
 
             # generate the successful catch embed
@@ -86,7 +90,7 @@ class CreatureEncounterView(View):
             # delete the original spawn message so nobody else can catch it
             try:
                 await interaction.message.delete()
-            except discord.errors.NotFound:
+            except errors.NotFound:
                 print('Message was already deleted, do nothing')
 
             # once all processing is done, send the success message to the user
@@ -94,7 +98,7 @@ class CreatureEncounterView(View):
         return callback
 
     def is_creature_caught_button(self, row=0):
-        button = discord.ui.Button(label="Analyze Creature", style=discord.ButtonStyle.gray, emoji="🔎", row=row)
+        button = Button(label="Analyze Creature", style=ButtonStyle.gray, emoji="🔎", row=row)
         button.callback = self.creature_analyze_button_callback()
         return button
     def creature_analyze_button_callback(self):
@@ -131,45 +135,47 @@ class CreatureEncounterView(View):
     def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
         if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
-            return False, "Your creature inventory is full! Please release some creatures before catching more.",
+            message, expansion_view = self.create_storage_expansion_view(user_id)
+            return False, message, expansion_view
 
-        # Mythical creatures & spawned creatures can always be caught
-        if self.creature.local_rarity.name == MYTHICAL.name or self.spawn_user:
-            return True, ""
+    def create_storage_expansion_view(self, user_id):
+        """Builds and returns (message, view) for expanding creature storage for the given user_id.
+        This mirrors the Create Storage Expansion button behavior in CreatureInventoryView.
+        """
+        message = "Your creature inventory is full! Please release some creatures before catching more."
 
-        # handle hourly catch limits
-        if user_id in USER_CATCHES_HOURLY:
-            if USER_CATCHES_HOURLY[user_id] >= 12:
-                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
-                return True, "",
-                # return False, "You're catching guys too fast save some for the rest of us! Try again at the top of the hour.",
-            else:
-                USER_CATCHES_HOURLY[user_id] += 1
-        else:
-            USER_CATCHES_HOURLY[user_id] = 1
+        expansion_view = View(timeout=None)
+        expansion_button = Button(label="Expand Storage ➕", style=ButtonStyle.green)
 
-        # handle daily catch limits
-        if user_id in USER_CATCHES_DAILY:
-            count_for_creature = sum(1 for cid in USER_CATCHES_DAILY[user_id] if cid == creature_id)
-            too_many_catches = False
-            if self.creature.local_rarity.name == LEGENDARY.name:
-                too_many_catches = count_for_creature >= 1
-            elif self.creature.local_rarity.name == EPIC.name:
-                too_many_catches = count_for_creature >= 1
-            elif self.creature.local_rarity.name == RARE.name:
-                too_many_catches = count_for_creature >= 3
-            elif self.creature.local_rarity.name == UNCOMMON.name:
-                too_many_catches = count_for_creature >= 5
-            elif self.creature.local_rarity.name == COMMON.name:
-                too_many_catches = count_for_creature >= 10
+        async def expansion_button_callback(interaction):
+            # Only allow the user who saw the message to expand their own storage
+            if interaction.user.id != user_id:
+                await interaction.response.send_message("You cannot expand someone else's storage.", ephemeral=True)
+                return
 
-            if too_many_catches:
-                # TODO: THIS IS A BANDAID SOLUTION, USER CATCHES NOT RESETTING PROPERLY. FIX THIS LATER
-                return True, "",
-                # return False, f"You've reached the {self.creature.name} catch limit today! You can more again tomorrow.",
-            else:
-                USER_CATCHES_DAILY[user_id] += (creature_id,)
-                return True, ""
-        else:
-            USER_CATCHES_DAILY[user_id] = (creature_id,)
-            return True, ""
+            # Determine current pages and cost
+            total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id)
+            if total_pages + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
+                await interaction.response.send_message("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
+                return
+
+            already_purchased_expansions = total_pages - BASE_CREATURE_STORAGE_EXPANSIONS
+            expansion_cost = (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_BASE_COST
+
+            # Process payment and expansion using consistent DB API
+            user_profile = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
+            if user_profile.currency < expansion_cost:
+                await interaction.response.send_message("❌ You do not have enough coins to expand your creature storage.", ephemeral=True)
+                return
+
+            # Update DB: increment expansion item and deduct currency
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, new_amount=total_pages + 1)
+            get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=expansion_cost * -1)
+
+            await interaction.response.send_message("✅ Your creature storage has been expanded by 100 slots!", ephemeral=True)
+            return
+
+        expansion_button.callback = expansion_button_callback
+        expansion_view.add_item(expansion_button)
+
+        return message, expansion_view

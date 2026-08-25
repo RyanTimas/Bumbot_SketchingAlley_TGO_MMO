@@ -37,8 +37,8 @@ class TGOMMODatabaseHandler:
         self.QueryHandler.execute_query(TGOMMO_INSERT_USER_TRAP_LINK, params=(user_id, item_id, TRAP_MODE_OFF, 0, 8, 18, 8))
         return True
 
-    def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1):
-        return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id))
+    def insert_new_user_profile_avatar_link(self, user_id=-1, avatar_id=-1, is_favorite=0, is_archived=0):
+        return self.QueryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id, is_favorite, is_archived))
     def unlock_avatar_for_server(self, avatar_id=-1):
         return self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS, params=(-1, avatar_id))
     def check_if_user_unlocked_avatar(self, user_id=-1, avatar_id=-1):
@@ -172,7 +172,8 @@ class TGOMMODatabaseHandler:
                         img_root=avatar_details[6],
                         unlock_query=avatar_details[7], unlock_threshold=avatar_details[8], is_secret=avatar_details[9],
                         shop_price=avatar_details[10],
-                        unlock_startdate=avatar_details[11], unlock_enddate=avatar_details[12]
+                        unlock_startdate=avatar_details[11], unlock_enddate=avatar_details[12],
+                        is_favorite=bool(avatar_details[13]), is_archived=bool(avatar_details[14])
                     )
                 )
         return avatars if expect_multiple else avatars[0]
@@ -708,6 +709,9 @@ class TGOMMODatabaseHandler:
         return True if response else False
     def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
+        return response
+    def update_user_profile_display_avatar(self, user_id, avatar_id):
+        response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_AVATAR, params=(avatar_id, user_id))
         return response
 
     def update_user_profile_currency(self, user_id, new_currency):

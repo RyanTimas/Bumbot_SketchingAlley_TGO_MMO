@@ -14,7 +14,8 @@ class TGOAvatar:
                  img_root:str,
                  unlock_query:str ="", unlock_threshold:int =0, is_secret:bool =False,
                  shop_price:int =0,
-                 unlock_startdate = None, unlock_enddate = None
+                 unlock_startdate = None, unlock_enddate = None,
+                 is_favorite:bool =False, is_archived:bool =False
     ):
         self.avatar_num = avatar_num
         self.avatar_id = avatar_id
@@ -36,6 +37,9 @@ class TGOAvatar:
 
         self.unlock_startdate = unlock_startdate
         self.unlock_enddate = unlock_enddate
+
+        self.is_favorite = is_favorite
+        self.is_archived = is_archived
 
         # IMAGES
         self.avatar_image = None

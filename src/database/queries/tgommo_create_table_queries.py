@@ -202,6 +202,8 @@ TGOMMO_CREATE_USER_TRAP_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_t
 TGOMMO_CREATE_USER_AVATAR_LINK_TABLE = """CREATE TABLE IF NOT EXISTS tgommo_user_profile_avatar_link (
     avatar_id TEXT,
     user_id INTEGER NOT NULL,
+    is_favorite BOOLEAN DEFAULT 0,
+    is_archived BOOLEAN DEFAULT 0,
     UNIQUE(avatar_id, user_id),
     PRIMARY KEY (avatar_id, user_id),
     FOREIGN KEY (user_id) REFERENCES users (user_id),

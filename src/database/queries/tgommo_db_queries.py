@@ -14,7 +14,7 @@ TGOMMO_INSERT_NEW_USER_AVATAR = """INSERT OR IGNORE INTO user_avatar (avatar_num
 TGOMMO_INSERT_USER_ITEM_LINK = """INSERT OR IGNORE INTO tgommo_user_item_inventory_link (item_id, user_id, item_quantity, last_used, last_purchase_date) VALUES (?, ?, ?, ?, ?);"""
 TGOMMO_INSERT_USER_TRAP_LINK = """INSERT OR IGNORE INTO tgommo_user_trap_link (user_id, item_id, active_trap_mode, player_trap_charges, player_max_trap_charges, trap_scheduled_start_time, trap_scheduled_mode_end_time) VALUES (?, ?, ?, ?, ?, ?, ?);"""
 
-TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id) VALUES(?, ?);"""
+TGOMMO_INSERT_NEW_USER_AVATAR_LINK = """INSERT OR IGNORE INTO tgommo_user_profile_avatar_link (avatar_id, user_id, is_favorite, is_archived) VALUES(?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_AVATAR_UNLOCK_CONDITION = """INSERT OR IGNORE INTO tgommo_user_avatar_unlock_condition (avatar_id, unlock_query, unlock_threshold, is_secret) VALUES(?, ?, ?, ?);"""
 TGOMMO_INSERT_NEW_AVATAR_NICKNAME_LINK = """INSERT OR IGNORE INTO tgommo_user_avatar_nickname_link (avatar_id, nickname_keyword) VALUES(?, ?);"""
 
@@ -101,7 +101,8 @@ TGOMMO_SELECT_USER_AVATAR_BASE = '''
         ua.img_root,
         auc.unlock_query, auc.unlock_threshold, auc.is_secret,
         ua.shop_price,
-        ua.unlock_startdate, ua.unlock_enddate
+        ua.unlock_startdate, ua.unlock_enddate,
+        upal.is_favorite, upal.is_archived
     FROM user_avatar ua
     LEFT JOIN tgommo_user_avatar_unlock_condition auc
         ON auc.avatar_id = ua.avatar_id
@@ -116,7 +117,8 @@ TGOMMO_SELECT_USER_AVATAR_LINK_BASE = '''
     SELECT
         ua.avatar_num, ua.avatar_id,
         ua.avatar_name, ua.avatar_type, ua.series, ua.is_parent_entry,
-        ua.img_root
+        ua.img_root,
+        upal.is_favorite, upal.is_archived
     FROM user_avatar ua
     LEFT JOIN tgommo_user_profile_avatar_link upal
         ON upal.avatar_id  = ua.avatar_id
@@ -319,6 +321,7 @@ TGOMMO_UPDATE_USER_CREATURE_IS_FAVORITE = """UPDATE tgommo_user_creature SET is_
 
 TGOMMO_UPDATE_USER_PROFILE = """UPDATE tgommo_user_profile SET nickname=?, avatar_id=?, background_id=?, creature_slot_id_1=?, creature_slot_id_2=?, creature_slot_id_3=?, creature_slot_id_4=?, creature_slot_id_5=?, creature_slot_id_6=?, currency=?, available_catch_attempts=?, rod_level=?, rod_amount=?, trap_level=?, trap_amount=? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_NICKNAME = """UPDATE tgommo_user_profile SET nickname = ? WHERE user_id = ?;"""
+TGOMMO_UPDATE_USER_PROFILE_DISPLAY_AVATAR = """UPDATE tgommo_user_profile SET avatar_id = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_1 = """UPDATE tgommo_user_profile SET creature_slot_id_1 = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_2 = """UPDATE tgommo_user_profile SET creature_slot_id_2 = ? WHERE user_id = ?;"""
 TGOMMO_UPDATE_USER_PROFILE_CREATURE_3 = """UPDATE tgommo_user_profile SET creature_slot_id_3 = ? WHERE user_id = ?;"""
@@ -342,6 +345,9 @@ TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_START_TIME = """UPDATE tgommo_user_trap_l
 TGOMMO_UPDATE_USER_TRAP_LINK_SCHEDULED_END_TIME = """UPDATE tgommo_user_trap_link SET trap_scheduled_mode_end_time = ? WHERE user_id = ?;"""
 
 TGOMMO_UPDATE_USER_AVATAR_UNLOCK_STATUS = """UPDATE tgommo_user_profile_avatar_link SET user_id = ? WHERE avatar_id = ?;"""
+TGOMMO_UPDATE_USER_AVATAR_LINK_FAVORITE_STATUS = """UPDATE tgommo_user_profile_avatar_link SET is_favorite = ? WHERE avatar_id = ? AND user_id = ?;"""
+TGOMMO_UPDATE_USER_AVATAR_LINK_ARCHIVED_STATUS = """UPDATE tgommo_user_profile_avatar_link SET is_archived = ? WHERE avatar_id = ? AND user_id = ?;"""
+
 TGOMMO_UPDATE_USER_AVATAR_LINK_ITEM_COUNT = """UPDATE tgommo_user_item_inventory_link SET item_quantity = ? WHERE item_id = ? AND user_id = ?;"""
 TGOMMO_UPDATE_USER_AVATAR_LINK_LAST_PURCHASE_DATE = """UPDATE tgommo_user_item_inventory_link SET last_purchase_date = ? WHERE item_id = ? AND user_id = ?;"""
 # endregion

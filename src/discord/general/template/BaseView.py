@@ -57,6 +57,7 @@ class BaseView(discord.ui.View):
 
 
     '''----DEFINE VIEW COMPONENTS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    '''----BUTTONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # region navigation components
     def create_navigation_button(self, is_next, callback_func=None, row=0, disabled=False):
         button = discord.ui.Button(label="To Next Page➡️" if is_next else "⬅️To Previous Page", style=discord.ButtonStyle.blurple, row=row, disabled=disabled)
@@ -82,7 +83,7 @@ class BaseView(discord.ui.View):
         async def callback(interaction):
             new_page_number = int(interaction.data["values"][0])
 
-            reloaded_image = self.reload_image(new_page_number=new_page_number)
+            reloaded_image = self.reload_image(new_page_number=new_page_number, image_factory=self.image_factory)
             self.refresh_view()
             await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback

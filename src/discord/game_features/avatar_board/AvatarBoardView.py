@@ -3,6 +3,7 @@ import discord
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.avatar_board import AvatarBoardImageFactory
+from src.discord.game_features.avatar_board.AvatarChangeView import AvatarChangeView
 from src.discord.general.template.BaseView import BaseView
 from src.resources.constants.TGO_MMO_constants import *
 
@@ -31,9 +32,11 @@ class AvatarBoardView(BaseView):
         }
 
         # UI Components
-        # row 2
-        self.open_tab_toggle_button = self.create_open_tab_toggle_button(row=2, open_tab=AVATAR_INVENTORY_QUEST_TAB_KEY)
+        # row 1
+        self.open_tab_toggle_button = self.create_open_tab_toggle_button(row=1, open_tab=AVATAR_INVENTORY_QUEST_TAB_KEY)
+        self.change_avatar_button = self.create_change_avatar_button(row=1)
 
+        # row 2
         self.expand_order_options_button = self.create_options_expansion_button(row=2, button_type=ORDER_EXPANSION_KEY)
         self.expand_filter_options_button = self.create_options_expansion_button(row=2, button_type=FILTER_EXPANSION_KEY)
 
@@ -64,8 +67,21 @@ class AvatarBoardView(BaseView):
             self.image_factory.avatar_board_quest_image_factory.display_completed_quests = not self.image_factory.avatar_board_quest_image_factory.display_completed_quests
 
     '''----BUTTONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    def create_change_avatar_button(self, row=4):
+        button = discord.ui.Button(label="Change Avatar", style=discord.ButtonStyle.green, row=row)
+        button.callback = self.change_avatar_callback()
+        return button
+    def change_avatar_callback(self):
+        @interaction_guard(self, defer_response=False)
+        async def callback(interaction):
+            avatar_change_view = AvatarChangeView(message_author=self.message_author, original_view=self, unlocked_avatars=self.image_factory.avatar_board_unlocked_avatar_image_factory.unlocked_avatars)
+            avatar_change_view.refresh_view()
+
+            await interaction.response.send_message("Change your avatar:", view=avatar_change_view, ephemeral=False)
+        return callback
+
     def create_open_tab_toggle_button(self, row=1, open_tab=AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY):
-        button = discord.ui.Button(label=f"Open Tab: {"Unlocked Avatars" if open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else "Avatar Quests"}", style=discord.ButtonStyle.green, row=row)
+        button = discord.ui.Button(label=f"Open Tab: {'Unlocked Avatars' if open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY else 'Avatar Quests'}", style=discord.ButtonStyle.green, row=row)
         button.callback = self.avatar_board_panel_callback(open_tab=open_tab)
         return button
     def avatar_board_panel_callback(self, open_tab):
@@ -77,7 +93,7 @@ class AvatarBoardView(BaseView):
             await interaction.message.edit(attachments=[self.reload_image()], view=self)
         return callback
 
-    # FUNCTIONS FOR UPDATING VIEW STATE
+    '''----UPDATE VIEW STATE------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def refresh_view(self):
         self.image_factory.open_tab = self.open_tab
 
@@ -112,8 +128,9 @@ class AvatarBoardView(BaseView):
         # add the navigation buttons only if there are enough items for more than one page
         if (len(self.image_factory.avatar_board_unlocked_avatar_image_factory.unlocked_avatars) > 75 and self.open_tab == AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY) or (len(self.image_factory.avatar_board_quest_image_factory.avatars_with_quests) > 16 and self.open_tab == AVATAR_INVENTORY_QUEST_TAB_KEY):
             self.add_item(self.page_jump_dropdown)
-            self.add_item(self.prev_button)
-            self.add_item(self.next_button)
+            # removed for experimental purposes, may re-add later if needed
+            # self.add_item(self.prev_button)
+            # self.add_item(self.next_button)
 
         # row 1 - tab buttons
         self.add_item(self.open_tab_toggle_button)
@@ -147,8 +164,10 @@ class AvatarBoardView(BaseView):
         if self.original_view:
             self.add_item(self.go_back_button)
         self.add_item(self.change_user_button)
+        # Only allow owner to change their avatar
+        if self.message_author.user_id == self.target_user.user_id:
+            self.add_item(self.change_avatar_button)
 
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         new_image = self.image_factory.reload_image(target_user=target_user, new_page_number=new_page_number, open_tab=self.open_tab, order_type=self.order_type, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode)
         return convert_to_png(new_image, 'avatar_board_image.png')
-

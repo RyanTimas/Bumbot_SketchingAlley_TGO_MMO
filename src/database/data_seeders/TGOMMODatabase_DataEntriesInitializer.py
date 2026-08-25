@@ -1490,7 +1490,7 @@ class TGOMMODatabase_DataEntriesInitializer:
 
     def insert_default_player_records(self):
         self.queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_PROFILE, params=(0, 'Sketching Alley', 'F1', 1, -1, -1, -1, -1, -1, -1, 0, 3, 1, 0,  1, 0))
-        self.queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=('F1', 0))
+        self.queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=('F1', 0, 0, 0))
 
 
 '''HELPER METHODS FOR TGOMMO DATABASE INITIALIZER CLASS BELOW'''

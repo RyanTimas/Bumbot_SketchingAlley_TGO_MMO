@@ -18,6 +18,8 @@ ALTER TABLE tgommo_environment ADD COLUMN local_img_suffix TEXT DEFAULT '';
 
 /* Update 2.5 Alter table queries */
 ALTER TABLE tgommo_user_creature ADD COLUMN is_afk_catch BOOLEAN DEFAULT 0;
+ALTER TABLE tgommo_user_profile_avatar_link ADD COLUMN is_favorite BOOLEAN DEFAULT 0;
+ALTER TABLE tgommo_user_profile_avatar_link ADD COLUMN is_archived BOOLEAN DEFAULT 0;
 --------------------------------------------------------------------------------------------------------
 
 

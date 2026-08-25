@@ -269,7 +269,7 @@ def insert_user_avatar_records(avatar_data, queryHandler):
         if avatar[3] == AVATAR_TYPE_DEFAULT or avatar[3] == AVATAR_TYPE_SECRET:
             avatar_id = avatar[1]
             user_id = -1 if avatar[3] == AVATAR_TYPE_DEFAULT else 1
-            queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id))
+            queryHandler.execute_query(TGOMMO_INSERT_NEW_USER_AVATAR_LINK, params=(avatar_id, user_id, 0, 0))
 
 # insert records for avatar quests.
 def insert_user_avatar_unlock_condition_records(queryHandler):

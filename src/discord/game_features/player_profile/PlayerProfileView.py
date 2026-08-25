@@ -75,7 +75,7 @@ class PlayerProfileView(BaseView):
         @interaction_guard(self)
         async def callback(interaction):
             update_player_profile_view = UpdatePlayerProfileView(message_author=self.message_author, player_profile_image_factory=self.image_factory, interaction=interaction, original_view=self, original_message=interaction.message)
-            await interaction.followup.send(f"{self.target_user.discord_profile.mention} Welcome to the Player Profile Editor!*", view=update_player_profile_view, ephemeral=False)
+            await interaction.followup.send(f"{self.target_user.discord_profile.mention} Welcome to the Player Profile Editor!", view=update_player_profile_view, ephemeral=False)
         return callback
 
     def create_alert_center_button(self, row=0):

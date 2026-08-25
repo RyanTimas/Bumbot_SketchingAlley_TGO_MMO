@@ -9,7 +9,6 @@ from src.discord.game_features.encyclopedia.EncyclopediaView import next_, previ
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PLAYER_PROFILE_TAB_CLOSED
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import TGOMMO_RARITY_MYTHICAL
 
 
 class UpdatePlayerProfileView(BaseView):
@@ -258,12 +257,21 @@ class UpdatePlayerProfileView(BaseView):
         return has_violations, invalid_ids, duplicates, unowned_creatures
 
     def reset_display_creature_ids(self, positions):
-        # Create attribute mapping for easier setting
-        creature_id_attrs = {1: 'creature_id_1', 2: 'creature_id_2', 3: 'creature_id_3', 4: 'creature_id_4', 5: 'creature_id_5', 6: 'creature_id_6'}
+        # Use the temporary "new_" slot attributes that the view manipulates while editing
+        creature_id_attrs = {
+            1: 'new_creature_slot_id_1',
+            2: 'new_creature_slot_id_2',
+            3: 'new_creature_slot_id_3',
+            4: 'new_creature_slot_id_4',
+            5: 'new_creature_slot_id_5',
+            6: 'new_creature_slot_id_6',
+        }
 
-        # For each duplicate ID, clear all but the first occurrence
-        for duplicate_id, position in positions:
-            setattr(self, creature_id_attrs[position], "-1")
+        # Reset the provided positions to the empty marker "-1". Ignore invalid positions gracefully.
+        for _creature_id, position in positions:
+            attr = creature_id_attrs.get(position)
+            if attr:
+                setattr(self, attr, "-1")
 
 
     # BUILD VIEW CONTENT
@@ -298,9 +306,20 @@ class UpdatePlayerProfileView(BaseView):
     def get_avatar_dropdown_options(self):
         first_index = ((self.avatar_dropdown_page_num - 1) * self.avatar_page_capacity)
         last_index = min(self.avatar_dropdown_page_num * self.avatar_page_capacity, len(self.unlocked_avatars))
-        return [discord.SelectOption(label=f"Avatar {i+1} - {self.unlocked_avatars[i].name}", value=str(self.unlocked_avatars[i].avatar_id)) for i in range(first_index, last_index)]
 
-    def reload_image(self):
-        new_image = self.image_factory.reload_image(open_tab=PLAYER_PROFILE_TAB_CLOSED)
-        return convert_to_png(new_image, 'player_profile_image.png')
+        options = []
+        seen_values = set()
+        for i in range(first_index, last_index):
+            avatar = self.unlocked_avatars[i]
+            value = str(avatar.avatar_id)
+            if value in seen_values:
+                continue
+            seen_values.add(value)
+            options.append(discord.SelectOption(label=f"Avatar {i+1} - {avatar.name}", value=value))
 
+        return options
+
+    def reload_image(self, target_user=None, image_factory=None, new_page_number=None):
+        image_factory = image_factory if image_factory else self.image_factory
+        new_image = image_factory.reload_image(target_user=target_user, new_page_number=new_page_number, open_tab=PLAYER_PROFILE_TAB_CLOSED)
+        return new_image if new_image is None else convert_to_png(new_image, 'player_profile_image.png')

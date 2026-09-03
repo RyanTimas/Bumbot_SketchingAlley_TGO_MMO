@@ -39,11 +39,11 @@ class BaseImageFactory:
         return img
 
     # Helper function to build a grid of icons with specified parameters, resizing icons as needed and applying padding between them
-    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3):
+    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3, use_page_number=True):
         icon_width, icon_height = icon_size
 
         # Use centralized pagination helper to obtain the page icons and update page state
-        page_icons = self.get_page_icons(icons=icons, icons_per_page=icons_per_page, page=self.page_num)
+        page_icons = self.get_page_icons(icons=icons, icons_per_page=icons_per_page, page=self.page_num) if use_page_number else icons
 
         grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
 

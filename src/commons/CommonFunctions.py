@@ -36,8 +36,7 @@ def get_image_path(image_name: str, folder_location: str = IMAGE_FOLDER_IMAGES) 
 
 
 #************************************************************************************
-#-------------------------------IMAGE FUNCTIONS----------------------------------------------
-#************************************************************************************
+'''-------------------------------IMAGE FUNCTIONS----------------------------------------------'''
 # desaturate image to grayscale and return it as a discord.File
 def to_grayscale(image: Image.Image) -> Image.Image:
     # Ensure a mode that exposes an alpha channel if present
@@ -180,10 +179,48 @@ def add_blur_mask_to_image(image: Image):
 
         return image
 
+# python
+from PIL import Image, ImageChops
 
-#************************************************************************************
-#-------------------------------FONT FUNCTIONS-------------------------------------
-#************************************************************************************
+def crop_to_content(image: Image.Image, bg_color=None, threshold: int = 10, padding: int = 0) -> Image.Image:
+    """
+    Crop empty space around the visible object in `image`.
+    - If the image has an alpha channel, uses it.
+    - Otherwise, computes difference from `bg_color` (if None, uses top-left pixel).
+    - `threshold` ignores small differences (useful for anti-aliased edges).
+    - `padding` adds pixels around the detected bbox.
+    """
+    # Ensure a working copy
+    img = image if image.mode in ("RGB", "RGBA", "L", "LA") else image.convert("RGBA")
+
+    # 1) Use alpha channel when available
+    if "A" in img.getbands():
+        alpha = img.convert("RGBA").split()[-1]
+        bbox = alpha.getbbox()
+    else:
+        # 2) Compute difference from background color
+        src = img.convert("RGB")
+        if bg_color is None:
+            bg_color = src.getpixel((0, 0))
+        bg = Image.new("RGB", src.size, bg_color)
+        diff = ImageChops.difference(src, bg)
+        gray = diff.convert("L")
+        bw = gray.point(lambda p: 255 if p > threshold else 0)
+        bbox = bw.getbbox()
+
+    if not bbox:
+        # Nothing detected; return original (or optionally return a small transparent image)
+        return image.copy()
+
+    left, upper, right, lower = bbox
+    left = max(0, left - padding)
+    upper = max(0, upper - padding)
+    right = min(image.width, right + padding)
+    lower = min(image.height, lower + padding)
+
+    return image.crop((left, upper, right, lower))
+
+'''-------------------------------FONT FUNCTIONS-------------------------------------'''
 def load_font(font_path, font_size):
     try:
         font = ImageFont.truetype(font_path, font_size)

@@ -253,8 +253,8 @@ class TGOMMODatabaseHandler:
     def get_creatures_for_environment_by_environment_id(self, environment_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environment_creatures_from_database(query=query, params=(environment_id, ), convert_to_object=convert_to_object, expect_multiple=True)
-    def get_creatures_for_environment_by_dex_no(self, dex_no=0, convert_to_object=True):
-        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX};"
+    def get_creatures_for_environment_by_dex_no(self, dex_no=0, exclude_duplicates=False, convert_to_object=True):
+        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX} {TGOMMO_GROUP_BY_CREATURE_BY_CREATURE_ID_SUFFIX if exclude_duplicates else ""};"
         return self.get_environment_creatures_from_database(query=query, params=(dex_no,), convert_to_object=convert_to_object, expect_multiple=True)
 
     def get_user_creature_by_catch_id(self, catch_id=0, convert_to_object=True):
@@ -397,6 +397,9 @@ class TGOMMODatabaseHandler:
         return self.get_unique_catches_base(user_id=user_id, include_variants=False, is_mythical=True)
     def get_total_unique_mythical_creature_variants_caught_by_user(self, user_id=0):
         return self.get_unique_catches_base(user_id=user_id, include_variants=True, is_mythical=True)
+
+    def get_total_unique_creatures_caught_by_server(self, environment_dex_no=0):
+        return self.get_total_unique_creature_variants_caught_by_user()
 
     def get_total_unique_creature_variants_caught_in_environment(self, environment_dex_no=0):
         query = f"{TGOMMO_SELECT_UNIQUE_CREATURE_VARIANTS_CAUGHT_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_DEX_NO_SUFFIX} AND {TGOMMO_SELECT_USER_CREATURE_BY_MATCHES_ENVIRONMENT_SUFFIX}"

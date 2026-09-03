@@ -20,6 +20,9 @@ from src.discord.game_features.encyclopedia.encyclopedia_location_index.Encyclop
 from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexView import EncyclopediaLocationIndexView
 from src.discord.game_features.item_inventory.ItemInventoryImageFactory import ItemInventoryImageFactory
 from src.discord.game_features.item_inventory.ItemInventoryView import ItemInventoryView
+from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerImageFactory import \
+    OmnipotentBaitManagerImageFactory
+from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerView import OmnipotentBaitManagerView
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory
 from src.discord.game_features.player_profile.PlayerProfileView import PlayerProfileView
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
@@ -243,6 +246,18 @@ class DiscordBot(commands.Bot):
             trap_manager_view = TrapManagerView(message_author=message_author, trap_manager_image_factory=trap_manager_image_factory)
 
             await interaction.followup.send(files=[trap_manager_view.reload_image()], view=trap_manager_view)
+
+        @self.tree.command(name="open-omnipotent-bait-manager", description="placeholder", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def tgommo_open_shop(interaction):
+            await interaction.response.defer()
+
+            message_author = get_tgommo_db_handler().get_user_profile_by_user_id(interaction.user.id)
+
+            omnipotent_bait_image_factory = OmnipotentBaitManagerImageFactory(message_author=message_author, active_environment=self.creature_spawner_handler.current_environment)
+            omnipotent_bait_view = OmnipotentBaitManagerView(message_author=message_author, omnipotent_bait_image_factory=omnipotent_bait_image_factory, discord_bot=self)
+
+            omnipotent_bait = OmnipotentBaitManagerImageFactory(message_author=message_author, active_environment=self.creature_spawner_handler.current_environment)
+            await interaction.followup.send(files=[convert_to_png(omnipotent_bait.reload_image(), 'omnipotent_bait_image.png')], view=omnipotent_bait_view)
 
     def register_tgommo_admin_commands(self):
         @admin_only()

@@ -13,7 +13,7 @@ class BaseView(discord.ui.View):
     DEFAULT_TITLE = "Default"
 
     """Base class for creating views displayed within the game."""
-    def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=[]):
+    def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=None):
         super().__init__(timeout=None)
 
         # Core attributes
@@ -22,12 +22,11 @@ class BaseView(discord.ui.View):
 
         self.image_factory = image_factory if image_factory else BaseImageFactory(message_author=message_author, target_user=target_user)
         self.original_view = original_view
-        self.original_image_files = original_view_files
+        self.original_image_files = original_view_files if original_view_files else []
 
         self.interaction_lock = asyncio.Lock()
 
         # View state attributes
-        self.page_num = 1
         self.is_server_view = target_user.user_id == 0
 
         self.order_type = None
@@ -56,6 +55,20 @@ class BaseView(discord.ui.View):
         self.server_view_button = self.create_server_view_button(row=4)
 
 
+    # Proxy property so BaseView.page_num always reflects image_factory.page_num
+    @property
+    def page_num(self):
+        return self.image_factory.page_num
+
+    @page_num.setter
+    def page_num(self, value):
+        # sanitize value via image_factory helper
+        try:
+            self.image_factory.page_num = int(value)
+        except Exception:
+            # ignore invalid assignments
+            pass
+
     '''----DEFINE VIEW COMPONENTS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     '''----BUTTONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     # region navigation components
@@ -66,7 +79,7 @@ class BaseView(discord.ui.View):
     def navigation_button_callback(self, is_next):
         @interaction_guard(self)
         async def callback(interaction):
-            new_page_number = self.image_factory.page_num + (1 if is_next else -1)
+            new_page_number = self.page_num + (1 if is_next else -1)
 
             reloaded_image = self.reload_image(new_page_number=new_page_number)
             self.refresh_view()
@@ -269,5 +282,6 @@ class BaseView(discord.ui.View):
     # Reload display image
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         image_factory =  image_factory if image_factory else self.image_factory
-        new_image = image_factory.reload_image(target_user=target_user, new_page_number=self.page_num)
+        # Pass new_page_number through to the image factory so the single source of pagination truth is updated there
+        new_image = image_factory.reload_image(target_user=target_user, new_page_number=new_page_number)
         return new_image if new_image is None else convert_to_png(new_image, 'image_factory_image.png')

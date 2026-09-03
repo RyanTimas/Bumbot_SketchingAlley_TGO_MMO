@@ -1,6 +1,5 @@
 import datetime
 import pytz
-
 from src.resources.constants.file_paths import *
 
 # todo: move to file paths
@@ -31,6 +30,8 @@ FONT_COLOR_DARK_GRAY = (88, 88, 87)
 FONT_COLOR_TRAP_MANAGER_OFF_GREEN = (172, 172, 141)
 FONT_COLOR_TRAP_MANAGER_FOREST_GREEN = (116, 136, 56)
 FONT_COLOR_TRAP_MANAGER_OFF_BROWN = (135, 126, 111)
+
+FONT_COLOR_OMNIPOTENT_BAIT_MANAGER_BEIGE = (244, 211, 168)
 
 TRANSPARENT_IMG_BG = (0, 0, 0, 0)
 # endregion
@@ -383,6 +384,14 @@ TRAP_MANAGER_OPEN_OPTION_MODE = "Trap Mode"
 TRAP_MANAGER_OPEN_OPTION_DEFAULT = "Default"
 
 TRAP_MODE_SCHEDULED_MESSAGE = "Trap is currently in timed mode. will try to capture creatures from {} to {}."
+
+""" ----- OMNIPOTENT BAIT MANAGER  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
+OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_CAUGHT = "caught"
+OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_ENVIRONMENT = "environment"
+OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_SERVER = "server"
+OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_UNCAUGHT = "uncaught"
+
+
 
 """ ----- COLLECTIONS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Collection Keywords

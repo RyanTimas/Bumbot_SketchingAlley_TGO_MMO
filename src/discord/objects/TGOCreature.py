@@ -71,6 +71,8 @@ class TGOCreature:
         self.time_to_despawn = None
         self.refresh_spawn_and_despawn_time(timezone=self.timezone, minute_offset=0)
 
+        self.caught_type = None
+
 
     def refresh_spawn_and_despawn_time(self, timezone, minute_offset=None):
         self.spawn_time = datetime.datetime.now(pytz.UTC).astimezone(timezone)

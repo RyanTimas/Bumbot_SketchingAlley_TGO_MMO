@@ -131,12 +131,13 @@ class CreatureEncounterView(View):
             await interaction.response.send_message(message, files=[convert_to_png(self.creature.creature_image, file_name="creature_img.png")], ephemeral=True)
         return callback
 
-    # Support Functions
+    '''---------------SUPPORTING FUNCTIONS---------------------------------------------------------------------------------------------------------'''
     def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
         if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
             message, expansion_view = self.create_storage_expansion_view(user_id)
             return False, message, expansion_view
+        return True, None, None
 
     def create_storage_expansion_view(self, user_id):
         """Builds and returns (message, view) for expanding creature storage for the given user_id.

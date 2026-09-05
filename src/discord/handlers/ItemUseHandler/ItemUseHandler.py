@@ -1,10 +1,13 @@
-import time
 import asyncio
+import time
 from typing import List, Tuple
 
 from src.commons.CommonFunctions import *
 from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerImageFactory import \
+    OmnipotentBaitManagerImageFactory
+from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerView import OmnipotentBaitManagerView
 from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
 from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects.TGOPlayer import TGOPlayer
@@ -97,9 +100,11 @@ class ItemUseHandler:
 
     # Applies the effect of the omnipotent bait item. This item bypasses the 65% capture requirement and allows the user to spawn a creature of their choice. The function calls the creature spawner handler to spawn a creature without specifying rarity or kingdom, allowing for user selection.
     async def use_omnipotent_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        # todo: pull up menu for selecting a specific creature to spawn
-        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=None, kingdom=None)
-        return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
+        omnipotent_bait_image_factory = OmnipotentBaitManagerImageFactory(message_author=user, active_environment=self.discord_bot.creature_spawner_handler.current_environment)
+        omnipotent_bait_view = OmnipotentBaitManagerView(message_author=user, omnipotent_bait_image_factory=omnipotent_bait_image_factory, original_view=self.original_view, discord_bot=self.discord_bot)
+
+        await self.channel.send(f"You used the {item.item_name}! You can now select a creature to spawn.", files=[omnipotent_bait_view.reload_image()], view=omnipotent_bait_view)
+        return False, f""
 
     # Applies the effect of a charm item. If a charm of the same type is already active, it returns False and a message indicating that the charm is already active. Otherwise, it adds the charm effect to the game state manager and schedules its removal after 15 minutes.
     async def use_creature_charm(self, user: TGOPlayer, item: TGOPlayerItem, interaction):

@@ -107,7 +107,6 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
                 creature.caught_type = OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_SERVER
             else:
                 creature.caught_type = OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_UNCAUGHT
-            creature.caught_type = random.choice(seq=[OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_CAUGHT, OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_ENVIRONMENT, OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_SERVER, OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_UNCAUGHT])
         return creatures
 
     # python

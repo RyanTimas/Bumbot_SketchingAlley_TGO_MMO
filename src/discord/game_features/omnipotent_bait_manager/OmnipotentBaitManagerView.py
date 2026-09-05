@@ -62,6 +62,8 @@ class OmnipotentBaitManagerView(BaseView):
                 await original_trap_manager_message.edit(attachments=[self.reload_image()], view=self)
 
                 await self.discord_bot.creature_spawner_handler.spawn_creature(user=self.message_author, creature=self.selected_creature)
+                await inter.followup.send(f"<@{self.message_author.user_id}> *({self.message_author.nickname})* used the Omnipotent Bait!", ephemeral=True)
+
                 return True, f"<@{self.message_author.user_id}> *({self.message_author.nickname})* used the Omnipotent Bait!"
 
             await interaction.response.send_message(confirmation_message, files=[convert_to_png(image=self.selected_creature.creature_image, file_name="creature_img.png")], view=ConfirmationView(original_view=self, original_message=original_trap_manager_message, on_confirm=_on_confirm), ephemeral=True)
@@ -73,7 +75,9 @@ class OmnipotentBaitManagerView(BaseView):
         if not options:
             options.append(discord.SelectOption(label="No creatures available.", value="none"))
 
-        low_bound, high_bound = (self.page_num - 1) * self.image_factory.max_icons_per_page +1 , min((self.page_num - 1) * self.image_factory.max_icons_per_page + self.image_factory.max_icons_per_page, len(self.image_factory.creatures))
+        low_bound = (self.page_num - 1) * self.image_factory.max_icons_per_page
+        high_bound = min((self.page_num - 1) * self.image_factory.max_icons_per_page + self.image_factory.max_icons_per_page, len(self.image_factory.creatures))
+
         dropdown = discord.ui.Select(placeholder=f"🐾 Selected Creature - {self.selected_creature.full_name}", options=options[low_bound:high_bound], row=row)
         dropdown.callback = self.creature_select_dropdown_callback()
         return dropdown
@@ -103,7 +107,6 @@ class OmnipotentBaitManagerView(BaseView):
             await interaction.message.edit(attachments=[new_image], view=self)
         return callback
 
-
     ''' ----- SUPPORT FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def update_view_items(self):
         super().update_view_items()
@@ -115,7 +118,6 @@ class OmnipotentBaitManagerView(BaseView):
         # update labels
         self.creature_select_dropdown.placeholder = f"🐾 Selected Creature - {self.selected_creature.full_name}"
         self.environment_select_dropdown.placeholder = f"🌍 Selected Environment - {self.image_factory.active_environment.name}"
-
     def rebuild_view(self):
         self.clear_items()
 
@@ -132,13 +134,11 @@ class OmnipotentBaitManagerView(BaseView):
         self.add_item(self.close_button)
         if self.original_view:
             self.add_item(self.go_back_button)
-            
-            
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None, active_environment=None):
         # Forward pagination and environment parameters to the image factory reload so it remains sole owner of pagination state
         new_image = self.image_factory.reload_image(target_user=target_user, new_page_number=new_page_number, active_environment=active_environment)
         return convert_to_png(new_image, 'omnipotent_bait_manager_view.png')
 
 
-''' ----- SUPPORT CLASSES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    ''' ----- SUPPORT CLASSES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
 

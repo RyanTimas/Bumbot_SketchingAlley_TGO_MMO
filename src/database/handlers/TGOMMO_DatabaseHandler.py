@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from src.commons.GuildHandler import get_guild
 from src.database.handlers.QueryHandler import QueryHandler
 from src.database.queries.tgommo_avatar_quest_db_queries import *
@@ -425,6 +427,20 @@ class TGOMMODatabaseHandler:
     def get_total_unique_creatures_available_for_environment(self, environment_dex_no=None, include_variants=False, time_of_day=None, rarity=None, creature_class=None):
         return self.get_total_unique_creatures_available_base(environment_dex_no=environment_dex_no, include_variants=include_variants, time_of_day=time_of_day, rarity=rarity, creature_class=creature_class)
     # endregion
+
+    # region Omnipotent bait queries - TO REMOVE
+    def get_creature_id_lists_for_omnipotent_menu(self, user_id=0, environment_dex_no=0):
+        query = f"{TGOMMO_SELECT_DISTINCT_USER_CREATURE_IDS_BASE}"
+        caught_creatures_by_server_list = list(map(itemgetter(0), self.QueryHandler.execute_query(query, params=())))
+
+        query = f"{query} WHERE {TGOMMO_SELECT_USER_CREATURE_BY_USER_ID_SUFFIX}"
+        caught_creatures_by_user = list(map(itemgetter(0), self.QueryHandler.execute_query(query, params=(user_id,))))
+
+        query = f"{query} AND {TGOMMO_SELECT_USER_CREATURE_BY_ENVIRONMENT_ID_DEX_NO_SUFFIX}"
+        caught_creatures_by_user_in_environment = list(map(itemgetter(0), self.QueryHandler.execute_query(query, params=(user_id, environment_dex_no))))
+
+        return caught_creatures_by_user_in_environment, caught_creatures_by_user, caught_creatures_by_server_list
+
     # endregion
 
     # region MISC CREATURE QUERIES

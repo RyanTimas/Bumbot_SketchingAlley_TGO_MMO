@@ -357,9 +357,7 @@ async def check_if_user_can_interact_with_view(interaction, interaction_lock, ta
 def get_query_connector(query: str):
     return " WHERE " if ('where' in query) else " AND "
 
-#************************************************************************************
-#-------------------------------GENERAL FUNCTIONS------------------------------------
-#************************************************************************************
+'''-------------------------------GENERAL FUNCTIONS------------------------------------'''
 def flip_coin(iteration: int=1, total_iterations: int=1):
     if random.random() > 0.5:
         return flip_coin(iteration=iteration + 1, total_iterations=total_iterations) if iteration < total_iterations else True
@@ -379,9 +377,7 @@ def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-#************************************************************************************
-#------------------------------- DATE FUNCTIONS ------------------------------------
-#************************************************************************************
+'''------------------------------- DATE FUNCTIONS ------------------------------------'''
 def convert_date_format_to_month_name(date_str: str, input_format: str = "%Y-%m-%d %H:%M:%S", include_time: bool = False, split_date_time: bool = False):
     try:
         catch_date = datetime.strptime(date_str, input_format)
@@ -406,7 +402,6 @@ def convert_date_format_to_month_name(date_str: str, input_format: str = "%Y-%m-
         # date_str is None or "Unknown"
         return ("Unknown", "N/A") if split_date_time else "Unknown"
 
-
 def convert_to_datetime(value: Any) -> datetime:
     if isinstance(value, datetime):
         dt = value
@@ -425,9 +420,18 @@ def convert_to_datetime(value: Any) -> datetime:
             raise ValueError("Unsupported datetime string format")
     raise TypeError("Unsupported time type")
 
-#****************************************************************************************
-#---------------------------------------IMAGE FUNCTION--------------------------------------------
-#****************************************************************************************
+def convert_int_to_letter(n: int) -> str:
+    if n < 1:
+        return ""
+    s = ""
+    while n > 0:
+        n -= 1
+        s = chr(ord("a") + (n % 26)) + s
+        n //= 26
+    return s
+
+
+'''---------------------------------------IMAGE FUNCTIONS--------------------------------------------'''
 def place_username_on_image(target_user, image: Image, border_color = (0, 104, 145), font_color = FONT_COLOR_WHITE, max_font_size = 50, max_width = 300):
         draw = ImageDraw.Draw(image)
         font = resize_text_to_fit(text=target_user.nickname, draw=draw, font=ImageFont.truetype(FONT_FOREST_BOLD_FILE_TEMP, max_font_size), max_width=max_width, min_font_size=10)

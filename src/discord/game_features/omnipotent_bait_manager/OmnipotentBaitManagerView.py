@@ -64,12 +64,12 @@ class OmnipotentBaitManagerView(BaseView):
                 await self.discord_bot.creature_spawner_handler.spawn_creature(user=self.message_author, creature=self.selected_creature)
                 return True, f"<@{self.message_author.user_id}> *({self.message_author.nickname})* used the Omnipotent Bait!"
 
-            await interaction.response.send_message(confirmation_message, view=ConfirmationView(original_view=self, original_message=original_trap_manager_message, on_confirm=_on_confirm), ephemeral=True)
+            await interaction.response.send_message(confirmation_message, files=[convert_to_png(image=self.selected_creature.creature_image, file_name="creature_img.png")], view=ConfirmationView(original_view=self, original_message=original_trap_manager_message, on_confirm=_on_confirm), ephemeral=True)
         return callback
 
     # ------ DROPDOWNS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def create_creature_select_dropdown(self, row=2):
-        options = [discord.SelectOption(label=f"{creature.dex_no}. {creature.name}", value=creature.creature_id) for creature in self.image_factory.creatures]
+        options = [discord.SelectOption(label=f"{creature.local_dex_no}{convert_int_to_letter(creature.variant_no) if creature.variant_no != 1 else ""}. {creature.name} {f"({creature.variant_name})"  if creature.variant_no != 1 else ""}", value=creature.creature_id) for creature in self.image_factory.creatures]
         if not options:
             options.append(discord.SelectOption(label="No creatures available.", value="none"))
 
@@ -81,7 +81,7 @@ class OmnipotentBaitManagerView(BaseView):
         @interaction_guard()
         async def callback(interaction):
             await interaction.response.defer()
-            self.selected_creature = get_tgommo_db_handler().get_creature_by_creature_id(interaction.data['values'][0])
+            self.selected_creature = get_tgommo_db_handler().get_environment_creature_by_environment_id_and_creature_id(creature_id=interaction.data['values'][0], environment_id=self.image_factory.active_environment.environment_id)
             self.selected_creature.environment_id = self.image_factory.active_environment.environment_id
         return callback
 

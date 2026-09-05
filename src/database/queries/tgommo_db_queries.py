@@ -233,6 +233,10 @@ TGOMMO_SELECT_TOTAL_UNIQUE_VARIANTS_AVAILABLE_BASE = '''
     WHERE 
 '''
 # endregion
+
+# region creature id queries
+TGOMMO_SELECT_DISTINCT_USER_CREATURE_IDS_BASE = "SELECT DISTINCT uc.creature_id from tgommo_user_creature uc "
+# endregion
 # endregion
 
 

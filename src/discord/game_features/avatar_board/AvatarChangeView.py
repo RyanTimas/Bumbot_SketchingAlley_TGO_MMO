@@ -2,6 +2,7 @@
 from math import ceil
 
 from src.commons.CommonDecorators import interaction_guard
+from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.avatar_board.AvatarChangeImageFactory import AvatarChangeImageFactory
 from src.discord.general.template.BaseView import BaseView
 
@@ -58,7 +59,7 @@ class AvatarChangeView(BaseView):
             self.original_view.refresh_view()
             self.refresh_view()
 
-            await interaction.response.send_message("Avatar changed.", files=new_avatar.avatar_image ,ephemeral=True)
+            await interaction.response.send_message("Avatar changed.", files=[convert_to_png(new_avatar.avatar_image, "avatar.png")] ,ephemeral=True)
         return callback
 
     '''----DROPDOWNS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''

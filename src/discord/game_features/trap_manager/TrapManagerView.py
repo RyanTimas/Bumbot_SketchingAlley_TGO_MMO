@@ -117,7 +117,7 @@ class TrapManagerView(BaseView):
                     # update data
                     new_active_trap = next((trap for trap in self.image_factory.available_traps if trap.item_id == selected_value), None)
                     self.image_factory.active_trap = new_active_trap
-                    TrapHandler.switch_trap(user_id=self.message_author.user_id, new_trap_id=new_active_trap.item_id)
+                    await TrapHandler.switch_trap(user_id=self.message_author.user_id, new_trap_id=new_active_trap.item_id)
 
                     # refresh view image and edit the original trap manager message
                     self.refresh_view()

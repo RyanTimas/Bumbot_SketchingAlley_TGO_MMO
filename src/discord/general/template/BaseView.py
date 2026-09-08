@@ -98,7 +98,7 @@ class BaseView(discord.ui.View):
 
             reloaded_image = self.reload_image(new_page_number=new_page_number, image_factory=self.image_factory)
             self.refresh_view()
-            await interaction.message.edit(attachments=[reloaded_image], view=self)
+            await interaction.message.edit(attachments=[reloaded_image] if reloaded_image else [], view=self)
         return callback
     def update_page_jump_dropdown_options(self, active_img_factory):
         # Clear existing options and add new ones based on active factory

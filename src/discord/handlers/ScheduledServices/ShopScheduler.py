@@ -1,4 +1,7 @@
+import asyncio
+import datetime
 import random
+import pytz
 from PIL import Image
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -16,14 +19,26 @@ from src.resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHAN
 
 class ShopScheduler:
     def __init__(self, discord_bot: Bot, timezone='America/New_York'):
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = None
         self.discord_bot = discord_bot
-
         self.timezone = pytz.timezone(timezone)
 
     def start_scheduler(self, test_interval=None):
-        # by default, schedule the shop refresh to run daily at midnight. If test_interval is provided, schedule it to run at that interval in seconds for testing purposes.
+        # Create the scheduler on a separate event loop (not the bot's main loop)
+        # This prevents blocking the Discord bot's event loop if jobs take time to execute
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        if self.scheduler is None:
+            self.scheduler = AsyncIOScheduler(event_loop=loop)
+        
+        # by default, schedule the shop refresh to run daily at 3pm. If test_interval is provided, schedule it to run at that interval in seconds for testing purposes.
+        # test_interval = 5
         if test_interval:
+            print(f"[SHOP_SCHEDULER] Running in TEST MODE - refreshing every {test_interval} seconds")
             self.scheduler.add_job(
                 func=self.refresh_daily_shop,
                 trigger='interval',
@@ -33,25 +48,32 @@ class ShopScheduler:
             )
         else:
             # Schedule daily shop refresh at 3pm daily
+            print("[SHOP_SCHEDULER] Running in PRODUCTION MODE - refreshing daily at 3:00 PM")
             self.scheduler.add_job(
                 func=self.refresh_daily_shop,
                 trigger=CronTrigger(hour=15, minute=00, timezone=self.timezone),
                 id='daily_shop_refresh',
                 replace_existing=True
             )
-        self.scheduler.start()
+        
+        # Only start the scheduler if it's not already running
+        if not self.scheduler.running:
+            self.scheduler.start()
 
 
     async def refresh_daily_shop(self):
         try:
-            get_game_state_manager().set_shop_date(datetime.datetime.now().strftime('%Y-%m-%d'))
+            current_time = datetime.datetime.now()
+            print(f"[SHOP_SCHEDULER] refresh_daily_shop triggered at {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            get_game_state_manager().set_shop_date(current_time.strftime('%Y-%m-%d'))
             get_game_state_manager().set_current_shop_inventory(item_ids= self.generate_daily_items(), avatar_ids= self.generate_daily_avatars())
 
             message = "# 🚨UPDATE \n🛍️ Morshu's shop has been restocked! Check out the new items and avatars!"
             shop_restock_image = convert_to_png(Image.open(SHOP_UPDATE_RESTOCK_IMAGE), "daily_shop_refresh.png")
             await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(message, files=[shop_restock_image])
         except Exception as e:
-            print(f"Error refreshing shop: {e}")
+            print(f"[SHOP_SCHEDULER] Error refreshing shop: {e}")
 
     def generate_daily_items(self):
         current_shop_level = get_game_state_manager().get_shop_level()

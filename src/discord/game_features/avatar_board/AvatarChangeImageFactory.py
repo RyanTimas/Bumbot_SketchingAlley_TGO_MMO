@@ -22,4 +22,5 @@ class AvatarChangeImageFactory(BaseImageFactory):
         self.page_num = new_page_number if new_page_number else 1
 
     def build_image(self):
-        return Image.open(CREATURE_INVENTORY_RELEASE_SUMMARY_BG_IMAGE)
+        # todo: we will crop avatars to remove blank space then resize them to fit in the grid, but for now we will just use the original images
+        return None

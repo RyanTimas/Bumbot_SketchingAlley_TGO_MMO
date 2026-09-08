@@ -106,6 +106,7 @@ class CreatureReleaseRewardHandler:
 
     def _roll_for_random_item(self, creature):
         reward_pool = []
+        # determine the rarity of the released creature to filter items that are equal or higher in rarity
         creature_rarity_hierarchy_value = get_rarity_hierarchy_value(creature.local_rarity.name)
 
         for item in self.rewardable_items:
@@ -113,8 +114,7 @@ class CreatureReleaseRewardHandler:
                 item_rarity_level = get_rarity_hierarchy_value(item.rarity.name)
 
                 if item_rarity_level >= creature_rarity_hierarchy_value:
-                    rate = (1 * RewardConfig.RARITY_BONUS_RATES[item.rarity.name] *
-                           (RewardConfig.CHARM_RATE_MULTIPLIER if item.item_type == ITEM_TYPE_CHARM else 1))
+                    rate = (1 * RewardConfig.RARITY_BONUS_RATES[item.rarity.name] * (RewardConfig.CHARM_RATE_MULTIPLIER if item.item_type == ITEM_TYPE_CHARM else 1))
 
                     if creature.local_rarity.name == item.rarity.name:
                         rate = RewardConfig.RARITY_MATCH_BONUS_RATE

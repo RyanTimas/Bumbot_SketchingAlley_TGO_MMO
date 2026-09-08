@@ -17,7 +17,10 @@ from src.discord.game_features.player_profile.PlayerProfileView import PlayerPro
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import PlayerProfileImageFactory, PLAYER_PROFILE_TAB_OPEN_TEAM
 from src.discord.game_features.shop.ShopImageFactory import ShopImageFactory
 from src.discord.game_features.shop.ShopView import ShopView
+from src.discord.game_features.trap_manager.TrapManagerImageFactory import TrapManagerImageFactory
+from src.discord.game_features.trap_manager.TrapManagerView import TrapManagerView
 from src.discord.general.template.BaseView import BaseView
+from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP
 from src.resources.constants.file_paths import *
 
 server_encyclopedia_button_name = "server_encyclopedia"
@@ -39,6 +42,7 @@ class TGOMMOMenuView(BaseView):
         self.open_user_encyclopedia_button = self.create_encyclopedia_button(user_encyclopedia_button_name, 1)
         self.open_player_profile_button = self.create_player_profile_button(tab_is_open=False, open_tab=PLAYER_PROFILE_TAB_OPEN_TEAM, row=1)
         self.shop_button = self.create_shop_button(row=1)
+        self.trap_manager_button = self.create_trap_manager_button(row=1)
 
         self.avatar_board_button = self.create_avatar_board_button(row=2)
         self.creature_inventory_button = self.create_creature_inventory_button(row=2)
@@ -124,7 +128,7 @@ class TGOMMOMenuView(BaseView):
         return callback
 
     def create_shop_button(self, row=1):
-        button = discord.ui.Button(label="Morshu's Shop", style=discord.ButtonStyle.blurple, row=row, emoji="🆕")
+        button = discord.ui.Button(label="Morshu's Shop", style=discord.ButtonStyle.blurple, row=row)
         button.callback = self.shop_callback()
         return button
     def shop_callback(self):
@@ -135,6 +139,21 @@ class TGOMMOMenuView(BaseView):
 
             await interaction.message.edit(
                 attachments=[convert_to_png(shop_img_factory.reload_image(), f'shop_img.png')], view=shop_view)
+
+        return callback
+
+    def create_trap_manager_button(self, row=1):
+        button = discord.ui.Button(label="Trap Manager", style=discord.ButtonStyle.blurple, row=row, emoji="🆕")
+        button.callback = self.trap_manager_callback()
+        return button
+    def trap_manager_callback(self):
+        @interaction_guard(self)
+        async def callback(interaction):
+            trap_manager_img_factory = TrapManagerImageFactory(message_author=self.message_author)
+            trap_manager_view = TrapManagerView(message_author=self.message_author, trap_manager_image_factory=trap_manager_img_factory, original_view=self)
+
+            await interaction.message.edit(
+                attachments=[convert_to_png(trap_manager_img_factory.reload_image(), f'trap_manager_img.png')], view=trap_manager_view)
 
         return callback
 
@@ -191,6 +210,9 @@ class TGOMMOMenuView(BaseView):
         self.add_item(self.open_user_encyclopedia_button)
         self.add_item(self.open_player_profile_button)
         self.add_item(self.shop_button)
+
+        if get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.target_user.user_id, item_id=ITEM_ID_BASIC_TRAP).item_quantity > 0:
+            self.add_item(self.trap_manager_button)
 
         self.add_item(self.avatar_board_button)
         self.add_item(self.creature_inventory_button)

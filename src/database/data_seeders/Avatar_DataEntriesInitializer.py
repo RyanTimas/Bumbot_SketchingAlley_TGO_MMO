@@ -71,6 +71,9 @@ def get_secret_avatar_records():
         ('S17', 'Tony the Tiger', AVATAR_TYPE_SECRET, 'TonyTheTiger', 'Kelloggs', ),
         ('S18', 'Hulk', AVATAR_TYPE_SECRET, 'Hulk', 'Marvel', ),
         ('S19', 'Woodstock', AVATAR_TYPE_SECRET, 'Woodstock', 'Peanuts',),
+        # WAVE 5
+        ('S20', 'Dover Demon', AVATAR_TYPE_SECRET, 'Dover Demon', 'DanDaDan',),
+        ('S21', 'Taro', AVATAR_TYPE_SECRET, 'Taro', 'DanDaDan',),
     ]
     return secret_avatars
 def get_event_avatar_records():
@@ -113,6 +116,12 @@ def get_event_avatar_records():
         ('E32', 'Crewmate (Yellow)', AVATAR_TYPE_EVENT, 'CrewmateYellow', 'Among Us', 0, datetime.datetime(2026, 4, 8, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 15, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E33', 'Crewmate (Green)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,  datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGeoff', 'Among Us', 0,datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC)),
+        # WAVE 5
+        ('E35', 'Okarun (Turbo Granny Form)', AVATAR_TYPE_EVENT, 'Okarun(TurboGrannyform)', 'DanDaDan', 0,datetime.datetime(2026, 8, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 16, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E36', 'Momo Ayase (Super Awakening)', AVATAR_TYPE_EVENT, 'MomoAyase(SuperAwakening)', 'DanDaDan', 0,datetime.datetime(2026, 9, 17, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 23, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E36', 'Aira Shiratori (Silky Form)', AVATAR_TYPE_EVENT, 'AiraShiratori(Silky)', 'DanDaDan', 0,datetime.datetime(2026, 9, 24, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 30, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E36', 'Jin Enjoji (Evil Eye)', AVATAR_TYPE_EVENT, 'Jiji(EvilEye)', 'DanDaDan', 0,datetime.datetime(2026, 10, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 10, 7, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E37', 'Charlie Kirk', AVATAR_TYPE_EVENT, 'CharlieKirk', 'Turning Point USA', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
     ]
     return event_avatars
 def get_quest_avatar_records():
@@ -232,6 +241,12 @@ def get_shop_avatar_records():
         ('P47', 'Sonny', AVATAR_TYPE_SHOP, 'Sonny', 'Kelloggs', AVATAR_SHOP_PRICE_COMMON),
         ('P48', 'Toucan Sam', AVATAR_TYPE_SHOP, 'ToucanSam', 'Kelloggs', AVATAR_SHOP_PRICE_COMMON),
         ('P49', 'Moon', AVATAR_TYPE_SHOP, 'Moon', 'Soul Eater', AVATAR_SHOP_PRICE_LEGENDARY),
+
+        ('P50', 'Okarun', AVATAR_TYPE_SHOP, 'Okarun', 'DanDaDan', AVATAR_SHOP_PRICE_COMMON),
+        ('P51', 'Momo Ayase', AVATAR_TYPE_SHOP, 'MomoAyase', 'DanDaDan', AVATAR_SHOP_PRICE_COMMON),
+        ('P52', 'Aira Shiratori', AVATAR_TYPE_SHOP, 'AiraShiratori', 'DanDaDan', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P53', 'Jin Enjoji', AVATAR_TYPE_SHOP, 'Jiji', 'DanDaDan', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P54', 'Seiko Ayase', AVATAR_TYPE_SHOP, 'SeikoAyase', 'DanDaDan', AVATAR_SHOP_PRICE_RARE),
     ]
     return shop_avatars
 def get_transcendant_avatar_records():

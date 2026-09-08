@@ -377,7 +377,8 @@ TRAP_MODE_SCHEDULED = "Scheduled"
 ACTIVE_TRAP_MODES_LIST = [
     TRAP_MODE_OFF,
     TRAP_MODE_ON,
-    TRAP_MODE_SCHEDULED
+    # Uncomment this line after we have this fully implemented and tested
+    # TRAP_MODE_SCHEDULED
 ]
 
 TRAP_MANAGER_OPEN_OPTION_MODE = "Trap Mode"

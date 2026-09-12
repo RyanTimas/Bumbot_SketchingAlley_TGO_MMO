@@ -32,19 +32,15 @@ class EncyclopediaIconFactory:
         shadow_img = Image.open(DEX_ICON_SHADOW_IMAGE)
         dex_icon_img.paste(shadow_img, (0, 0), shadow_img)
 
-        # display a lowered opacity for creatures that have been caught by the user in another environment, but are locked in the current environment
-        if self.creature_is_locked and get_tgommo_db_handler().has_user_caught_creature(user_id=user_id, creature_id=self.creature.creature_id):
-            creature_icon_img = set_image_opacity(to_grayscale(self.creature.dex_icon_image), opacity=0.5)
-        # display a silhouette if the creature is locked and has been caught by the server, but not by the user
-        elif self.creature_is_locked and get_tgommo_db_handler().has_server_caught_creature(creature_id=self.creature.creature_id):
-            creature_icon_img = convert_image_to_silhouette(self.creature.dex_icon_image)
-        else:
-            creature_icon_img = Image.open(DEX_ICON_CREATURE_LOCKED_ICON_IMAGE) if self.creature_is_locked else self.creature.dex_icon_image
+        creature_icon_img = Image.open(DEX_ICON_CREATURE_LOCKED_ICON_IMAGE) if self.creature_is_locked else self.creature.dex_icon_image
+        if self.creature.local_rarity.name != TGOMMO_RARITY_MYTHICAL:
+            # display a lowered opacity for creatures that have been caught by the user in another environment, but are locked in the current environment, but only for non-mythical view
+            if self.creature_is_locked and get_tgommo_db_handler().has_user_caught_creature(user_id=user_id, creature_id=self.creature.creature_id):
+                creature_icon_img = set_image_opacity(to_grayscale(self.creature.dex_icon_image), opacity=0.5)
+            # display a silhouette if the creature is locked and has been caught by the server, but not by the user
+            elif self.creature_is_locked and get_tgommo_db_handler().has_server_caught_creature(creature_id=self.creature.creature_id):
+                creature_icon_img = convert_image_to_silhouette(self.creature.dex_icon_image)
         dex_icon_img.paste(creature_icon_img, (0, 0), creature_icon_img)
-
-        if self.show_stats:
-            icon_stats_overlay = Image.open(DEX_ICON_STATS_BAR_IMAGE)
-            dex_icon_img.paste(icon_stats_overlay, (0, 0), icon_stats_overlay)
 
         # add the final overlay on top
         icon_overlay = Image.open(DEX_ICON_OVERLAY if self.creature.default_rarity.name != TRANSCENDANT.name else DEX_ICON_TRANSCENDANT_OVERLAY)

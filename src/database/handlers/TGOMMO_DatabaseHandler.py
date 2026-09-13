@@ -94,7 +94,7 @@ class TGOMMODatabaseHandler:
                         default_rarity=get_rarity_by_name(creature_details[16]), local_rarity=get_rarity_by_name(creature_details[17])
                     )
                 )
-        return creatures if expect_multiple else creatures[0]
+        return creatures if expect_multiple else creatures[0] if creatures else None
     def get_user_creatures_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -252,6 +252,12 @@ class TGOMMODatabaseHandler:
     def get_environment_creature_by_environment_id_and_creature_id(self, environment_id=-1, creature_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
         return self.get_environment_creatures_from_database(query=query, params=(environment_id, creature_id), convert_to_object=convert_to_object, expect_multiple=False)
+    def get_environment_creature_by_environment_dex_no_and_creature_id(self, environment_dex_no=-1, creature_id=-1, convert_to_object=True):
+        environment_ids = [environment[0] for environment in self.get_environments_by_dex_no(dex_no=environment_dex_no, convert_to_object=False)]
+        query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} AND {TGOMMO_SELECT_CREATURE_BY_CREATURE_ID_SUFFIX};"
+        results = self.get_environment_creatures_from_database(query=query, params=(environment_ids[0], creature_id), convert_to_object=convert_to_object, expect_multiple=False)
+        return results if results else self.get_environment_creatures_from_database(query=query, params=(environment_ids[1], creature_id), convert_to_object=convert_to_object, expect_multiple=False)
+
     def get_creatures_for_environment_by_environment_id(self, environment_id=-1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_CREATURE_BASE} {TGOMMO_SELECT_ENVIRONMENT_CREATURE_BY_ENVIRONMENT_ID_SUFFIX} {TGOMMO_ORDER_BY_CREATURE_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environment_creatures_from_database(query=query, params=(environment_id, ), convert_to_object=convert_to_object, expect_multiple=True)

@@ -178,7 +178,8 @@ class TrapManagerView(BaseView):
             self.add_item(self.swap_tab_button)
             self.add_item(self.battery_charge_button)
             # row 1
-            self.add_item(self.trap_swap_dropdown)
+            # todo: uncomment once more than one trap is available for swapping
+            # self.add_item(self.trap_swap_dropdown)
             # row 2
             self.add_item(self.trap_mode_swap_dropdown)
         elif self.image_factory.open_tab == TRAP_MANAGER_OPEN_TAB_CAPTURES:

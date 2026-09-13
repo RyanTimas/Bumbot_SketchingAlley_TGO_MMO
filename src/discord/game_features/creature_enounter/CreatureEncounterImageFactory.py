@@ -86,11 +86,11 @@ class CreatureEncounterImageFactory:
         bg_overlay_image_path = f"{bg_image_path}_overlay"
 
         if not os.path.exists(f"{bg_image_path}{IMAGE_FILE_EXTENSION}"):
-            default_bg_image_name = f"{sub_environment}_{primary_time_of_day_suffix}_{secondary_time_of_day_suffix}"
-            bg_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, "default", sub_environment, default_bg_image_name)}"
+            default_bg_image_name = f"{sub_environment}_{primary_time_of_day_suffix}{f"_{secondary_time_of_day_suffix}" if secondary_time_of_day_suffix else ""}"
+            bg_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, sub_environment, default_bg_image_name)}"
         if not os.path.exists(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}"):
             default_overlay_image_name = f"{sub_environment}_{primary_time_of_day_suffix}_{secondary_time_of_day_suffix}_overlay"
-            bg_overlay_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, "default", sub_environment, default_overlay_image_name)}"
+            bg_overlay_image_path = f"{os.path.join(FALLBACK_ENVIRONMENT_PATH, sub_environment, default_overlay_image_name)}"
 
         background_img = Image.open(f"{bg_image_path}{IMAGE_FILE_EXTENSION}")
         overlay_img = None if not os.path.exists(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}") else Image.open(f"{bg_overlay_image_path}{IMAGE_FILE_EXTENSION}")

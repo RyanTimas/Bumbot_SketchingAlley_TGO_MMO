@@ -85,7 +85,7 @@ class OmnipotentBaitManagerView(BaseView):
         @interaction_guard()
         async def callback(interaction):
             await interaction.response.defer()
-            self.selected_creature = get_tgommo_db_handler().get_environment_creature_by_environment_id_and_creature_id(creature_id=interaction.data['values'][0], environment_id=self.image_factory.active_environment.environment_id)
+            self.selected_creature = get_tgommo_db_handler().get_environment_creature_by_environment_dex_no_and_creature_id(creature_id=interaction.data['values'][0], environment_dex_no=self.image_factory.active_environment.dex_no)
             self.selected_creature.environment_id = self.image_factory.active_environment.environment_id
         return callback
 

@@ -51,7 +51,7 @@ class OmnipotentBaitManagerCreatureCellImageFactory:
         elif self.creature.caught_type == OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_SERVER:
             creature_img = convert_image_to_silhouette(creature_img)
         elif self.creature.caught_type == OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_UNCAUGHT:
-            creature_img = Image.open(FALLBACK_CREATURE_IMAGE)
+            creature_img = Image.open(MYSTERY_CREATURE_IMAGE)
 
         return creature_img.resize((206, 160), Image.LANCZOS)
 

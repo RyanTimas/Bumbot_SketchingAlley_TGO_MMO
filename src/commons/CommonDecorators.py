@@ -96,3 +96,19 @@ def measure_execution_time(label: Optional[str] = None, logger: Optional[Callabl
             return sync_wrapper
 
     return decorator
+
+def log_cache_reload(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        started_at = time.perf_counter()
+        try:
+            snapshot = func(self, *args, **kwargs)
+        except Exception:
+            self._logger.exception("%s failed to load.", self.cache_name)
+            raise
+
+        elapsed_ms = (time.perf_counter() - started_at) * 1000.0
+        self._logger.info("%s loaded in %.2f ms.", self.cache_name, elapsed_ms)
+        return snapshot
+
+    return wrapper

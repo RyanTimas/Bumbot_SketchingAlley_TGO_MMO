@@ -14,7 +14,7 @@ from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 class EncyclopediaLocationIndexView(BaseView):
     def __init__(self, message_author, target_user, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=encyclopedia_location_index_image_factory, original_view=original_view)
-        self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation()
+        self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
         self.selectable_environments.insert(0, NATIONAL_ENV)
         self.selected_environment = self.selectable_environments[0]
 

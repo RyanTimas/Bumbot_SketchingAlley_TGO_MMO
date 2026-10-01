@@ -226,6 +226,7 @@ OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_PRINT_BASE = OMNIPOTENT_BAIT_MANAGER_CREAT
 """ ----- STATIC IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Object Images
 # region Creature Images
+MYSTERY_CREATURE_IMAGE = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, "MysteryCreature_THUMB" + IMAGE_FILE_EXTENSION)
 FALLBACK_CREATURE_IMAGE = os.path.join(IMAGE_FOLDER_CREATURE_THUMBNAILS_PATH, "NA_THUMB" + IMAGE_FILE_EXTENSION)
 FALLBACK_CREATURE_DEX_ICON_IMAGE = os.path.join(IMAGE_FOLDER_CREATURE_ICONS_PATH, "DexIcon_Creature_NA" + IMAGE_FILE_EXTENSION)
 # endregion

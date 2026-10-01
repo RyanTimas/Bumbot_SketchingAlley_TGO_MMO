@@ -1,12 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerCreatureCellImageFactory import \
-    OmnipotentBaitManagerCreatureCellImageFactory
+from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerCreatureCellImageFactory import OmnipotentBaitManagerCreatureCellImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.resources.constants.TGO_MMO_constants import *
 from src.resources.constants.file_paths import *
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import os
 
 
 class OmnipotentBaitManagerImageFactory(BaseImageFactory):
@@ -91,8 +90,12 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
 
     '''---- SUPPORT FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def get_creatures_for_environment(self):
-        # Fetch creatures for the active environment (use environment_id so variants are respected)
         creatures = [creature for creature in get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=self.active_environment.dex_no, exclude_duplicates=True) if creature.local_rarity.name != TGOMMO_RARITY_TRANSCENDANT]
+
+        # # todo: format this to pull from caching
+        # cache = cast(EnvironmentCreatureCache, resolve_static_content_cache(EnvironmentCreatureCache))
+        # creatures = cache.get_all_environment_creatures()
+
         creatures.sort(key=lambda c: (c.local_dex_no, c.variant_no))
         self.total_pages = (len(creatures) + self.max_icons_per_page - 1) // self.max_icons_per_page  # Calculate total pages
 
@@ -178,7 +181,7 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
 
     def get_environment_icons(self):
         environment_icons = []
-        for environment in get_tgommo_db_handler().get_all_environments_in_rotation():
+        for environment in get_tgommo_db_handler().get_all_environments_in_rotation_by_time():
             is_active = (environment.dex_no == self.active_environment.dex_no)
             key = (environment.dex_no, is_active)
             cached = self._environment_icon_cache.get(key)

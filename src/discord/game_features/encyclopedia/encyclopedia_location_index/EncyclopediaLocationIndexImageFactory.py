@@ -93,7 +93,7 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
     def get_location_icons(self, page_swap = 0):
         if len(self.locations) == 0:
             self.page_num = 1
-            self.locations = get_tgommo_db_handler().get_all_environments_in_rotation()
+            self.locations = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
             self.locations.insert(0, NATIONAL_ENV)
 
         self.page_num += page_swap

@@ -90,7 +90,7 @@ class OmnipotentBaitManagerView(BaseView):
         return callback
 
     def create_environment_select_dropdown(self, row=2):
-        options = [discord.SelectOption(label=f"{environment.dex_no}. {environment.name}", value=environment.environment_id) for environment in get_tgommo_db_handler().get_all_environments_in_rotation()]
+        options = [discord.SelectOption(label=f"{environment.dex_no}. {environment.name}", value=environment.environment_id) for environment in get_tgommo_db_handler().get_all_environments_in_rotation_by_time()]
         if not options:
             options.append(discord.SelectOption(label="No environments available.", value="none"))
 

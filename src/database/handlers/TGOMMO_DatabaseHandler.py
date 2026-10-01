@@ -541,7 +541,12 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region MISC ENVIRONMENT QUERIES
-    def get_all_environments_in_rotation(self, is_day_night=1, convert_to_object=True):
+    def get_all_environments_in_rotation(self, convert_to_object=True):
+        day_environments = self.get_all_environments_in_rotation_by_time(is_day_night=0, convert_to_object=convert_to_object) or []
+        night_environments = self.get_all_environments_in_rotation_by_time(is_day_night=1, convert_to_object=convert_to_object) or []
+        return day_environments + night_environments
+
+    def get_all_environments_in_rotation_by_time(self, is_day_night=1, convert_to_object=True):
         query = f"{TGOMMO_SELECT_ENVIRONMENT_BASE} {TGOMMO_SELECT_ENVIRONMENT_BY_IN_CIRCULATION_SUFFIX} AND {TGOMMO_SELECT_ENVIRONMENT_BY_IS_NIGHT_ENVIRONMENT_SUFFIX} {TGOMMO_ORDER_BY_ENVIRONMENT_DEX_NO_AND_VARIANT_NO_SUFFIX};"
         return self.get_environments_from_database(query=query, params=(1, is_day_night), convert_to_object=convert_to_object, expect_multiple=True)
     def get_random_environment_in_rotation(self, is_night_environment= None, convert_to_object=False):

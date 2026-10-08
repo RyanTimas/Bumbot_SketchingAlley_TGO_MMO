@@ -12,6 +12,7 @@ class StaticContentCacheRegistry(IStaticContentCacheRegistry):
         self._lock = threading.RLock()
         self._caches: list[IStaticContentCache[Any]] = []
 
+    # region static-content cache registry methods
     def register(self, cache: IStaticContentCache[Any]) -> IStaticContentCache[Any]:
         with self._lock:
             for existing in self._caches:
@@ -47,7 +48,7 @@ class StaticContentCacheRegistry(IStaticContentCacheRegistry):
 
     def register_factory(self, factory: Callable[[], IStaticContentCache[Any]]) -> IStaticContentCache[Any]:
         return self.register(factory())
-
+    # endregion
 
 _cache_registry: Optional[StaticContentCacheRegistry] = None
 _cache_registry_lock = threading.RLock()
@@ -60,7 +61,7 @@ def initialize_static_content_cache_registry(logger=None, db_provider= None) -> 
     with _cache_registry_lock:
         registry = StaticContentCacheRegistry()
 
-        # Register eager caches
+        # REGISTER EAGER CACHES HERE - MODIFY THIS LIST AS NEEDED
         registry.register(EnvironmentCreatureCache(db_provider=db_provider, logger=logger))
 
         _cache_registry = registry

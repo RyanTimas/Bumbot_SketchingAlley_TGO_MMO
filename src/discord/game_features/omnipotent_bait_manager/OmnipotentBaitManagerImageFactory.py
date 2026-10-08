@@ -1,5 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
+from typing import cast
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerCreatureCellImageFactory import OmnipotentBaitManagerCreatureCellImageFactory
@@ -90,13 +93,9 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
 
     '''---- SUPPORT FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def get_creatures_for_environment(self):
-        creatures = [creature for creature in get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=self.active_environment.dex_no, exclude_duplicates=True) if creature.local_rarity.name != TGOMMO_RARITY_TRANSCENDANT]
-
-        # # todo: format this to pull from caching
-        # cache = cast(EnvironmentCreatureCache, resolve_static_content_cache(EnvironmentCreatureCache))
-        # creatures = cache.get_all_environment_creatures()
-
+        creatures = list(resolve_static_content_cache(EnvironmentCreatureCache).get_all_creatures_for_environment(self.active_environment))
         creatures.sort(key=lambda c: (c.local_dex_no, c.variant_no))
+
         self.total_pages = (len(creatures) + self.max_icons_per_page - 1) // self.max_icons_per_page  # Calculate total pages
 
         # Assign caught_type using fast set membership checks

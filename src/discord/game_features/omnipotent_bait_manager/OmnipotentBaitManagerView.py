@@ -1,3 +1,5 @@
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonViews import ConfirmationView
 from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerImageFactory import \
@@ -85,8 +87,7 @@ class OmnipotentBaitManagerView(BaseView):
         @interaction_guard()
         async def callback(interaction):
             await interaction.response.defer()
-            self.selected_creature = get_tgommo_db_handler().get_environment_creature_by_environment_dex_no_and_creature_id(creature_id=interaction.data['values'][0], environment_dex_no=self.image_factory.active_environment.dex_no)
-            self.selected_creature.environment_id = self.image_factory.active_environment.environment_id
+            self.selected_creature = resolve_static_content_cache(EnvironmentCreatureCache).get_environment_creature_by_environment_dex_no_and_creature_id(creature_id=int(interaction.data['values'][0]), environment_dex_no=self.image_factory.active_environment.dex_no)
         return callback
 
     def create_environment_select_dropdown(self, row=2):

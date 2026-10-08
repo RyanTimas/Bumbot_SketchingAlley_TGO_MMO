@@ -127,7 +127,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             ('Woodcock', '', 42, 1, 'American Woodcock', 'Scolopax minor', BIRD, '', WOODCOCK_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),
             ('Owl', '', 43, 1, 'Eastern Screech Owl', 'Megascops asio', BIRD, '', SCREECH_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
             ('Owl', '', 44, 1, 'Snowy Owl', 'Bubo scandiacus', BIRD, '', SNOWY_OWL_IMAGE_ROOT, 5, TGOMMO_RARITY_LEGENDARY),
-            ('Bat', '', 45, 1, 'Big Brow Bat', 'Eptesicus fuscus', MAMMAL, '', BAT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
+            ('Bat', '', 45, 1, 'Big Brown Bat', 'Eptesicus fuscus', MAMMAL, '', BAT_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
             ('Flying Squirrel', '', 46, 1, 'Northern Flying Squirrel', 'Glaucomys sabrinus', MAMMAL, '', FLYING_SQUIRREL_IMAGE_ROOT, 5, TGOMMO_RARITY_UNCOMMON),
             ('Skunk', '', 47, 1, 'Striped Skunk', 'Mephitis mephitis', MAMMAL, '', SKUNK_IMAGE_ROOT, 5, TGOMMO_RARITY_COMMON),
             ('Porcupine', '', 48, 1, 'North American Porcupine', 'Erethizon dorsatum', MAMMAL, '', PORCUPINE_IMAGE_ROOT, 5, TGOMMO_RARITY_RARE),

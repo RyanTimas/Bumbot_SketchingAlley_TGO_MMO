@@ -323,7 +323,7 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Gray Matter', ('Q28', AVATAR_TOTAL_AMPHIBIAN_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
 
         ('King K Rool', ('Q29', AVATAR_CROCODILIANS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
-        ('Funky Kong', ('Q30', AVATAR_DISTINCT_FL_QUERY, 500)),
+        ('Funky Kong', ('Q30', AVATAR_TOTAL_FL_QUERY, 500)),
 
         ('Edelgard', ('Q31', AVATAR_TOTAL_BIRD_QUEST_QUERY, 300)),
         ('Dimitri', ('Q32', AVATAR_FELINES_QUEST_QUERY, 300)),

@@ -1,4 +1,5 @@
 import asyncio
+import os
 import discord
 
 from src.commons.CommonDecorators import interaction_guard
@@ -6,6 +7,7 @@ from src.commons.CommonFunctions import convert_to_png
 from src.commons.Modals.ChangeUserModal import ChangeUserModal
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer
+from src.resources.constants.file_paths import get_help_image_path
 
 
 class BaseView(discord.ui.View):
@@ -13,7 +15,7 @@ class BaseView(discord.ui.View):
     DEFAULT_TITLE = "Default"
 
     """Base class for creating views displayed within the game."""
-    def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=None):
+    def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer,  image_factory=None, original_view=None, original_view_files=None, help_view_name= None):
         super().__init__(timeout=None)
 
         # Core attributes
@@ -23,6 +25,7 @@ class BaseView(discord.ui.View):
         self.image_factory = image_factory if image_factory else BaseImageFactory(message_author=message_author, target_user=target_user)
         self.original_view = original_view
         self.original_image_files = original_view_files if original_view_files else []
+        self.help_view_name = help_view_name
 
         self.interaction_lock = asyncio.Lock()
 
@@ -53,6 +56,7 @@ class BaseView(discord.ui.View):
         self.close_button = self.create_close_button(row=4, )
         self.change_user_button = self.create_change_user_button(row=4)
         self.server_view_button = self.create_server_view_button(row=4)
+        self.help_button = self.create_help_button(row=4) if self.help_view_name else None
 
 
     # Proxy property so BaseView.page_num always reflects image_factory.page_num
@@ -160,6 +164,23 @@ class BaseView(discord.ui.View):
             await interaction.message.edit(attachments=[reloaded_image], view=self)
         return callback
     # endregion
+
+    def create_help_button(self, row=4):
+        button = discord.ui.Button(label="❓ Help", style=discord.ButtonStyle.gray, row=row)
+        button.callback = self.help_button_callback()
+        return button
+
+    def help_button_callback(self):
+        @interaction_guard(self, defer_response=False)
+        async def callback(interaction):
+            help_image_path = get_help_image_path(self.help_view_name) if self.help_view_name else None
+
+            if not help_image_path or not os.path.exists(help_image_path):
+                await interaction.response.send_message(f"No help image is available for {self.__class__.__name__}.", ephemeral=True,)
+                return
+
+            await interaction.response.send_message(file=discord.File(help_image_path, filename=os.path.basename(help_image_path)), ephemeral=True,)
+        return callback
 
     # region state control buttons
     def create_exclusive_mode_button(self, row=3):
@@ -278,6 +299,8 @@ class BaseView(discord.ui.View):
         if self.original_view:
             self.add_item(self.go_back_button)
         self.add_item(self.change_user_button)
+        if self.help_button:
+            self.add_item(self.help_button)
 
     # Reload display image
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None):

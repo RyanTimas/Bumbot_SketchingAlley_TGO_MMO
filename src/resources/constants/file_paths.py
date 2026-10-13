@@ -106,7 +106,6 @@ IMAGE_FOLDER_OMNIPOTENT_BAIT_MANAGER_CREATURE_ICONS_PATH = os.path.join(IMAGE_FO
 IMAGE_FOLDER_HELP_IMAGE_PATH = os.path.join(IMAGE_FOLDER_IMAGES_PATH, "help_images")
 # endregion
 # endregion
-# endregion
 
 """ ----- IMAGE ROOTS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region Object Image Roots
@@ -221,6 +220,12 @@ OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_PRINT_BASE = OMNIPOTENT_BAIT_MANAGER_CREAT
 
 # endregion
 
+# endregion
+
+# region Misc Roots
+# region Help Image Roots
+HELP_IMAGE_BASE = os.path.join(IMAGE_FOLDER_HELP_IMAGE_PATH, "help_image_")
+# endregion
 # endregion
 
 """ ----- STATIC IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
@@ -438,7 +443,16 @@ OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_ENVIRONMENT_PRINT_IMAGE = OMNIPOTENT_BAIT_
 OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_CAUGHT_SERVER_IMAGE = OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_PRINT_BASE + "_Caught_Server" + IMAGE_FILE_EXTENSION
 OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_UNCAUGHT_PRINT_IMAGE = OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_PRINT_BASE + "_Uncaught" + IMAGE_FILE_EXTENSION
 # endregion
+# endregion
 
+# region Misc Images
+# region Help Images
+def get_help_image_path(view_name: str) -> str:
+	return os.path.join(IMAGE_FOLDER_HELP_IMAGE_PATH, f"help_image_{view_name}{IMAGE_FILE_EXTENSION}")
+
+HELP_IMAGE_TRAP_MANAGER = HELP_IMAGE_BASE + "TrapManager" + IMAGE_FILE_EXTENSION
+# endregion
+# endregion
 
 """ ----- EXTERNAL IMAGES  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"""
 # region EXTERNAL IMAGES

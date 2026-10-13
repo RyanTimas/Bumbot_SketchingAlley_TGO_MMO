@@ -9,7 +9,7 @@ from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 
 class TrapManagerView(BaseView):
     def __init__(self, message_author, trap_manager_image_factory: TrapManagerImageFactory, original_view=None):
-        super().__init__(message_author=message_author, target_user=message_author, image_factory=trap_manager_image_factory, original_view=original_view)
+        super().__init__(message_author=message_author, target_user=message_author, image_factory=trap_manager_image_factory, original_view=original_view, help_view_name="TrapManager")
 
         # View Variables
         self.active_option = TRAP_MANAGER_OPEN_OPTION_DEFAULT
@@ -93,6 +93,7 @@ class TrapManagerView(BaseView):
         button = discord.ui.Button(label="Open Trap Mode Options", style=discord.ButtonStyle.success, row=row)
         button.callback = self.swap_tab_callback()
         return button
+
 
     # ------ DROPDOWNS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def create_active_trap_swap_dropdown(self, row=2):
@@ -190,6 +191,8 @@ class TrapManagerView(BaseView):
         self.add_item(self.close_button)
         if self.original_view:
             self.add_item(self.go_back_button)
+        if self.help_button:
+            self.add_item(self.help_button)
             
             
     def reload_image(self, target_user= None, new_page_number=None, new_player_trap_link=None):

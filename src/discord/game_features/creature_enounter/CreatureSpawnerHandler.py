@@ -1,13 +1,11 @@
 import asyncio
-import datetime
 import ssl
 import threading
 import time
 import traceback
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
 
-import pytz
 from PIL import Image
 from discord.ext.commands import Bot
 
@@ -180,17 +178,26 @@ class CreatureSpawnerHandler:
     ''' ---- HELPER FUNCTIONS FOR CREATURE SPAWNING LOGIC ------------------------------------------------------------'''
     # Picks a random creature from the spawn pool
     async def creature_picker(self, rarity= None, kingdom= None):
-        # if we got a kingdom bait use a different logic path
+        # kingdom baits take priority; if the region has no creatures for that kingdom, stop immediately
         if kingdom:
-            available_creatures = [creature for creature in self.creature_spawn_pool if creature.kingdom in kingdom]
-            # if we have a rarity from a rarity charm, filter the available creatures by that rarity
-            if rarity:
-                available_creatures = [creature for creature in available_creatures if creature.local_rarity.name == rarity]
-            # if we have no creatures available for the kingdom, fallback to normal spawn logic
-            if available_creatures:
+            kingdom_creatures = [creature for creature in self.creature_spawn_pool if creature.kingdom in kingdom]
+            if not kingdom_creatures:
+                return None
+
+            # failsafe in case rarity object is passed instead of a string, and to ensure that the rarity is prioritized in the selection process
+            rarity_name = rarity.name if hasattr(rarity, "name") else rarity
+            rarity_candidates = [rarity_name]
+            rarity_candidates.extend([candidate.name for candidate in ALL_RARITIES if candidate.name not in rarity_candidates])
+
+            for candidate_rarity in rarity_candidates:
+                available_creatures = [creature for creature in kingdom_creatures if creature.local_rarity.name == candidate_rarity]
+                if not available_creatures:
+                    continue
+
                 selected_creature_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
-                selected_creature = deepcopy(available_creatures[selected_creature_index])
-                return selected_creature
+                return deepcopy(available_creatures[selected_creature_index])
+
+            return None
 
         is_mythical = rarity == TGOMMO_RARITY_MYTHICAL
         rarity = rarity if rarity and rarity != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()

@@ -82,12 +82,13 @@ class ShopScheduler:
         shop_item_pool = [
             # region Shop L1 items
             (ITEM_ID_BAIT, 100, 1),
+            (ITEM_ID_BATTERY, 75, 1),
             (ITEM_ID_COMMON_BAIT, 50, 1),
             (ITEM_ID_UNCOMMON_BAIT, 25, 1),
 
-            (ITEM_ID_MAMMAL_BAIT, 35, 1),
-            (ITEM_ID_BIRD_BAIT, 35, 1),
-            (ITEM_ID_REPTILE_BAIT, 35, 1),
+            (ITEM_ID_MAMMAL_BAIT, 15, 1),
+            (ITEM_ID_BIRD_BAIT, 15, 1),
+            (ITEM_ID_REPTILE_BAIT, 15, 1),
 
             (ITEM_ID_CHARM, 25, 1),
             (ITEM_ID_COMMON_CHARM, 15, 1),
@@ -96,6 +97,7 @@ class ShopScheduler:
             (ITEM_ID_NAMETAG, 75, 1),
             # endregion
 
+            # todo: will need to revamp once shop upgrades are fully implemented
             # region Shop L2 items
             (ITEM_ID_RARE_BAIT, 25, 2),
 

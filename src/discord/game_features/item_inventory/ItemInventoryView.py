@@ -46,24 +46,30 @@ class ItemInventoryView(BaseView):
                 return
 
             self.original_message = interaction.message if not self.original_message else self.original_message
+            locked_item = self.selected_item
 
-            confirmation_view = discord.ui.View(timeout=60).add_item(self.create_use_item_confirm_button())
-            self.refresh_view()
+            confirmation_view = discord.ui.View(timeout=60)
+            confirmation_view.add_item(self.create_use_item_confirm_button(locked_item=locked_item))
 
-            item_img = convert_to_png(Image.open(f"{ITEM_BASE}{self.selected_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
-            await interaction.followup.send(content=f"You have selected {self.selected_item.item_name} to use.\nYou have {self.selected_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=confirmation_view, ephemeral=True)
+            item_img = convert_to_png(Image.open(f"{ITEM_BASE}{locked_item.img_root}{IMAGE_FILE_EXTENSION}"), f'item_img.png')
+            await interaction.followup.send(content=f"You have selected {locked_item.item_name} to use.\nYou have {locked_item.item_quantity} left. Are you sure you want to use one?", files=[item_img], view=confirmation_view, ephemeral=True)
         return callback
 
-    def create_use_item_confirm_button(self, row=1):
+    def create_use_item_confirm_button(self, locked_item=None, row=1):
         button = discord.ui.Button(label="Confirm Use Item", style=discord.ButtonStyle.red, row=row)
 
-        button.callback = self.use_item_confirm_callback()
+        button.callback = self.use_item_confirm_callback(locked_item=locked_item)
         return button
-    def use_item_confirm_callback(self,):
+    def use_item_confirm_callback(self, locked_item=None):
         @interaction_guard(self)
         async def callback(interaction):
             self.item_use_handler.original_message = self.original_message
-            await self.item_use_handler.use_item(user=self.target_user, item=self.selected_item, interaction=interaction)
+            item_to_use = locked_item or self.selected_item
+            if not item_to_use:
+                await interaction.followup.send(content="That item is no longer available.", ephemeral=True)
+                return
+            await self.item_use_handler.use_item(user=self.target_user, item=item_to_use, interaction=interaction)
+            self.refresh_view()
         return callback
 
     def create_inventory_section_toggle_button(self, row=1):

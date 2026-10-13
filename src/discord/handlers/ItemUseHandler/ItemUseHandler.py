@@ -10,6 +10,7 @@ from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerImag
 from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerView import OmnipotentBaitManagerView
 from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
 from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
+from src.discord.objects.CreatureRarity import get_event_rarity, get_rarity
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
@@ -24,7 +25,7 @@ class ItemUseHandler:
         self.original_view = original_view
         self.original_message = original_message
 
-        self.active_effect = {
+        self.active_effect: dict[str, Any] = {
             ITEM_TYPE_NAMETAG: self.use_nametag,
             ITEM_TYPE_CHARM: self.use_creature_charm,
             ITEM_TYPE_BAIT: self.use_bait,
@@ -91,11 +92,17 @@ class ItemUseHandler:
         if capture_percentage < 65:
             return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
 
-        # logic to determine the kingdom and rarity of the creature to spawn based on the bait item used
+        # kingdom bait takes priority; if a kingdom is present, keep rerolling rarity until a valid combo exists.
         kingdom = kingdom_bait_map.get(item.item_id)
-        rarity = rarity_bait_map.get(item.item_id)
+        rarity = rarity_bait_map.get(item.item_id) or get_event_rarity().name if kingdom else get_rarity().name
 
-        await self.discord_bot.creature_spawner_handler.spawn_creature(user=user, rarity=rarity, kingdom=kingdom)
+        creature = await self.discord_bot.creature_spawner_handler.creature_picker(rarity=rarity, kingdom=kingdom)
+        if creature is None:
+            if kingdom:
+                return False, f"There are no {kingdom} creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} right now."
+            return False, f"No creature could be selected for {item.item_name}."
+
+        await self.discord_bot.creature_spawner_handler.spawn_creature(creature=creature, user=user)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"
 
     # Applies the effect of the omnipotent bait item. This item bypasses the 65% capture requirement and allows the user to spawn a creature of their choice. The function calls the creature spawner handler to spawn a creature without specifying rarity or kingdom, allowing for user selection.

@@ -1356,7 +1356,7 @@ class TGOMMODatabase_DataEntriesInitializer:
             # region Miscellaneous Items
             (ITEM_ID_NAMETAG, 'NameTag', ITEM_TYPE_NAMETAG, ITEM_CATEGORY_USE,  'Lets you rename any creature you already caught', TGOMMO_RARITY_COMMON, False, f'{ITEM_TYPE_NAMETAG}_{TGOMMO_RARITY_COMMON}', 1, 35),
             (ITEM_ID_AMULET_COIN, 'Amulet Coin', ITEM_TYPE_AMULET_COIN, ITEM_CATEGORY_USE,  'Doubles the amount of coins you gain from catching creatures for the next 15 minutes.', TGOMMO_RARITY_EPIC, True, f'{ITEM_TYPE_AMULET_COIN}', 1, 375),
-            (ITEM_ID_BATTERY, 'Battery', ITEM_TYPE_BATTERY, ITEM_CATEGORY_USE,  'Powers a trap for 8 captures.', TGOMMO_RARITY_NORMAL, False, f'{ITEM_TYPE_BATTERY}', 1, 1000),
+            (ITEM_ID_BATTERY, 'Battery', ITEM_TYPE_BATTERY, ITEM_CATEGORY_USE,  'Powers a trap for 8 captures.', TGOMMO_RARITY_NORMAL, False, f'{ITEM_TYPE_BATTERY}', 1, 100),
             # endregion
 
             #region Plane Tickets

@@ -15,9 +15,14 @@ AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY = """SELECT COUNT(DISTINCT(c.dex_no))
 # region ENVIRONMENT QUEST QUERIES
 AVATAR_TOTAL_EST_US_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 1 AND uc.user_id = ?;"""
 AVATAR_TOTAL_FL_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 2 AND uc.user_id = ?;"""
+AVATAR_TOTAL_IC_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 3 AND uc.user_id = ?;"""
+AVATAR_TOTAL_WY_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 4 AND uc.user_id = ?;"""
 
 AVATAR_DISTINCT_EST_US_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 1 AND uc.user_id = ?;"""
 AVATAR_DISTINCT_FL_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 2 AND uc.user_id = ?;"""
+AVATAR_DISTINCT_IC_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 3 AND uc.user_id = ?;"""
+AVATAR_DISTINCT_WY_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 4 AND uc.user_id = ?;"""
+
 # endregion
 
 # region KINGDOM QUEST QUERIES

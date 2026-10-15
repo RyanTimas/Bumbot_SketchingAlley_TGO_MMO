@@ -74,6 +74,8 @@ def get_secret_avatar_records():
         # WAVE 5
         ('S20', 'Dover Demon', AVATAR_TYPE_SECRET, 'Dover Demon', 'DanDaDan',),
         ('S21', 'Taro', AVATAR_TYPE_SECRET, 'Taro', 'DanDaDan',),
+        ('S22', 'Wawario', AVATAR_TYPE_SECRET, 'Wawario', 'Super Mario Bros',),
+        ('S23', 'Wawaluigi', AVATAR_TYPE_SECRET, 'Wawaluigi', 'Super Mario Bros',),
     ]
     return secret_avatars
 def get_event_avatar_records():
@@ -122,6 +124,10 @@ def get_event_avatar_records():
         ('E36', 'Aira Shiratori (Silky Form)', AVATAR_TYPE_EVENT, 'AiraShiratori(Silky)', 'DanDaDan', 0,datetime.datetime(2026, 9, 24, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 30, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E36', 'Jin Enjoji (Evil Eye)', AVATAR_TYPE_EVENT, 'Jiji(EvilEye)', 'DanDaDan', 0,datetime.datetime(2026, 10, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 10, 7, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E37', 'Charlie Kirk', AVATAR_TYPE_EVENT, 'CharlieKirk', 'Turning Point USA', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E38', '2D (The Mountain)', AVATAR_TYPE_EVENT, '2D(TheMountain)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E39', 'Noodle (The Now Now)', AVATAR_TYPE_EVENT, 'Noodle(TheNowNow)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E40', 'Murdoc (Converse)', AVATAR_TYPE_EVENT, 'Murdoc(Converse)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E41', 'Russel (Humanz)', AVATAR_TYPE_EVENT, 'Russel(Humanz)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
     ]
     return event_avatars
 def get_quest_avatar_records():
@@ -187,6 +193,12 @@ def get_quest_avatar_records():
         ('Q45', 'Dwayne LaFontant', AVATAR_TYPE_QUEST, 'DwayneLaFontant', 'Over the Hedge',),
         ('Q46', 'Marcus', AVATAR_TYPE_QUEST, 'Marcus', 'Roblox',),
         ('Q47', 'Walter White (Cooking)', AVATAR_TYPE_QUEST, 'WalterWhiteCooking', 'BreakingBad',),
+        # WAVE 5
+        ('Q48', '2D (Demon Days)', AVATAR_TYPE_QUEST, '2D(DemonDays)', 'Gorillaz',),
+        ('Q49', 'Noodle (Plastic Beach)', AVATAR_TYPE_QUEST, 'Noodle(PlasticBeach)', 'Gorillaz',),
+        ('Q50', 'Murdoc (Cracker Island)', AVATAR_TYPE_QUEST, 'Murdoc(CrackerIsland)', 'Gorillaz',),
+        ('Q51', 'Russel (Cracker Island)', AVATAR_TYPE_QUEST, 'Murdoc(CrackerIsland)', 'Gorillaz',),
+        ('Q52', 'Monokuma', AVATAR_TYPE_QUEST, 'Monokuma', 'Danganronpa',),
     ]
     return quest_avatars
 def get_shop_avatar_records():
@@ -241,12 +253,18 @@ def get_shop_avatar_records():
         ('P47', 'Sonny', AVATAR_TYPE_SHOP, 'Sonny', 'Kelloggs', AVATAR_SHOP_PRICE_COMMON),
         ('P48', 'Toucan Sam', AVATAR_TYPE_SHOP, 'ToucanSam', 'Kelloggs', AVATAR_SHOP_PRICE_COMMON),
         ('P49', 'Moon', AVATAR_TYPE_SHOP, 'Moon', 'Soul Eater', AVATAR_SHOP_PRICE_LEGENDARY),
-
+        # WAVE 5
         ('P50', 'Okarun', AVATAR_TYPE_SHOP, 'Okarun', 'DanDaDan', AVATAR_SHOP_PRICE_COMMON),
         ('P51', 'Momo Ayase', AVATAR_TYPE_SHOP, 'MomoAyase', 'DanDaDan', AVATAR_SHOP_PRICE_COMMON),
         ('P52', 'Aira Shiratori', AVATAR_TYPE_SHOP, 'AiraShiratori', 'DanDaDan', AVATAR_SHOP_PRICE_UNCOMMON),
         ('P53', 'Jin Enjoji', AVATAR_TYPE_SHOP, 'Jiji', 'DanDaDan', AVATAR_SHOP_PRICE_UNCOMMON),
         ('P54', 'Seiko Ayase', AVATAR_TYPE_SHOP, 'SeikoAyase', 'DanDaDan', AVATAR_SHOP_PRICE_RARE),
+        ('P55', '2D', AVATAR_TYPE_SHOP, '2D(PhaseOne)', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P56', 'Noodle', AVATAR_TYPE_SHOP, 'Noodle(PhaseOne)', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P57', 'Murdoc', AVATAR_TYPE_SHOP, 'Murdoc(PhaseOne)', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P58', 'Russel', AVATAR_TYPE_SHOP, 'Russel(PhaseOne)', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P59', 'Del', AVATAR_TYPE_SHOP, 'Del', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
+        ('P60', 'Boogieman', AVATAR_TYPE_SHOP, 'Boogieman', 'Gorillaz', AVATAR_SHOP_PRICE_UNCOMMON),
     ]
     return shop_avatars
 def get_transcendant_avatar_records():
@@ -384,7 +402,12 @@ def insert_user_avatar_nickname_unlock_condition_records(queryHandler):
         ('S16', ('plankton', 'sheldon')),
         ('S17', ('tony', 'tiger', 'frosted', 'flakes')),
         ('S18', ('incredible', 'hulk', 'bruce', 'banner')),
-        ('S19', ('woodstock',))
+        ('S19', ('woodstock',)),
+        # WAVE 5
+        ('S20', ('Dover', 'Demon')),
+        ('S21', ('Taro',)),
+        ('S22', ('Wawario',)),
+        ('S23', ('Wawaluigi',)),
     ]
 
     for avatar in avatar_keyword_combos:

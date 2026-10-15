@@ -33,9 +33,9 @@ class TGOMMOMenuView(BaseView):
 
         # Initialize view buttons
         self.welcome_button = self.create_welcome_button()
-        self.help_button = self.create_help_button()
 
         # todo: removed for now and can add back in later if needed, just wanted to test out the look of the menu without it
+        # self.help_button.label = "Help & Commands"
         # self.dummy_encyclopedia_label_button = create_dummy_label_button(label_text="Encyclopedia Page: ", row=1)
         # self.open_server_encyclopedia_button = self.create_encyclopedia_button(server_encyclopedia_button_name, 1)
 

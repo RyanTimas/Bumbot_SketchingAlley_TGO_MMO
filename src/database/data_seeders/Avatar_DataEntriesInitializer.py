@@ -331,7 +331,7 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Bubsy', ('Q20', AVATAR_BUBSY_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
         ('Spider-Man', ('Q21', AVATAR_SPIDERS_QUEST_QUERY, AVATAR_QUEST_UNCOMMON_COUNT)),
         ('Cynthia', ('Q22', AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY, 100)),
-        ('Marceline', ('Q23', AVATAR_MARCELINE_QUEST_QUERY, 20)),
+        ('Marceline', ('Q23', AVATAR_BAT_QUEST_QUERY, 20)),
         # WAVE 4
         ('Mickey Mouse', ('Q24', AVATAR_MICKEY_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Betel Geuse', ('Q25', AVATAR_BEETLES_QUEST_QUERY, 33)),

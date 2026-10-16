@@ -44,7 +44,7 @@ AVATAR_DISTINCT_CRUSTACEAN_QUEST_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FRO
 
 # region ANIMAL TYPE QUEST QUERIES
 # region MAMMAL TYPE QUEST QUERIES
-AVATAR_CANINES_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (27, 32, 59, 169, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 245, 246, 247, 248, 360)  AND user_id = ?;"""
+AVATAR_CANINES_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (27, 32, 59, 169, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 245, 246, 247, 248, 360, 365, 366)  AND user_id = ?;"""
 AVATAR_FOX_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (27, 169, 360)  AND user_id = ?;"""
 AVATAR_FELINES_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (28, 33, 34, 35, 36, 60, 361)  AND user_id = ?;"""
 AVTAR_SQUIRRELS_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 5, 56, 66, 67, 167)  AND user_id = ?;"""
@@ -52,6 +52,7 @@ AVATAR_DEER_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE cre
 AVATAR_RABBITS_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (4, 250, 251)  AND user_id = ?;"""
 AVATAR_BEAR_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (29, 363, 364)  AND user_id = ?;"""
 AVATAR_PRIMATE_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (202, 203)  AND user_id = ?;"""
+AVATAR_BAT_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (55, 368)  AND user_id = ?;"""
 # endregion
 # region BIRD TYPE QUEST QUERIES
 AVATAR_BIRDS_OF_PRAY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (25, 50, 140, 330, 331, 332, 333)  AND user_id = ?;"""
@@ -78,7 +79,6 @@ AVATAR_MORDECAI_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE
 AVATAR_RIGBY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (6)  AND user_id = ?;"""
 # WAVE 3
 AVATAR_BUBSY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (28)  AND user_id = ?;"""
-AVATAR_MARCELINE_QUEST_QUERY =  """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (55)  AND user_id = ?;"""
 # WAVE 4
 AVATAR_MICKEY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (37)  AND user_id = ?;"""
 AVATAR_BUCK_BUMBLE_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (91, 221, 269)  AND user_id = ?;"""

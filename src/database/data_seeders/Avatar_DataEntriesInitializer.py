@@ -72,10 +72,9 @@ def get_secret_avatar_records():
         ('S18', 'Hulk', AVATAR_TYPE_SECRET, 'Hulk', 'Marvel', ),
         ('S19', 'Woodstock', AVATAR_TYPE_SECRET, 'Woodstock', 'Peanuts',),
         # WAVE 5
-        ('S20', 'Dover Demon', AVATAR_TYPE_SECRET, 'Dover Demon', 'DanDaDan',),
-        ('S21', 'Taro', AVATAR_TYPE_SECRET, 'Taro', 'DanDaDan',),
-        ('S22', 'Wawario', AVATAR_TYPE_SECRET, 'Wawario', 'Super Mario Bros',),
-        ('S23', 'Wawaluigi', AVATAR_TYPE_SECRET, 'Wawaluigi', 'Super Mario Bros',),
+        ('S20', 'Taro', AVATAR_TYPE_SECRET, 'Taro', 'DanDaDan',),
+        ('S21', 'Wawario', AVATAR_TYPE_SECRET, 'Wawario', 'Super Mario Bros',),
+        ('S22', 'Wawaluigi', AVATAR_TYPE_SECRET, 'Wawaluigi', 'Super Mario Bros',),
     ]
     return secret_avatars
 def get_event_avatar_records():
@@ -197,8 +196,9 @@ def get_quest_avatar_records():
         ('Q48', '2D (Demon Days)', AVATAR_TYPE_QUEST, '2D(DemonDays)', 'Gorillaz',),
         ('Q49', 'Noodle (Plastic Beach)', AVATAR_TYPE_QUEST, 'Noodle(PlasticBeach)', 'Gorillaz',),
         ('Q50', 'Murdoc (Cracker Island)', AVATAR_TYPE_QUEST, 'Murdoc(CrackerIsland)', 'Gorillaz',),
-        ('Q51', 'Russel (Cracker Island)', AVATAR_TYPE_QUEST, 'Murdoc(CrackerIsland)', 'Gorillaz',),
+        ('Q51', 'Russel (Song Machine)', AVATAR_TYPE_QUEST, 'Russel(SongMachine)', 'Gorillaz',),
         ('Q52', 'Monokuma', AVATAR_TYPE_QUEST, 'Monokuma', 'Danganronpa',),
+        ('Q53', 'Dover Demon', AVATAR_TYPE_QUEST, 'DoverDemon', 'DanDaDan',),
     ]
     return quest_avatars
 def get_shop_avatar_records():
@@ -363,6 +363,13 @@ def insert_user_avatar_unlock_condition_records(queryHandler):
         ('Marcus', ('Q46', AVATAR_MARCUS_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
         ('Walter White (Cooking)', ('Q47', AVATAR_WALTER_WHITE_COOKING_QUEST_QUERY, AVATAR_QUEST_COMMON_COUNT)),
 
+        ('2D (Demon Days)', ('Q48', AVATAR_PRIMATE_QUEST_QUERY, 2)),
+        ('Noodle (Plastic Beach)', ('Q49', AVATAR_PRIMATE_QUEST_QUERY, 5)),
+        ('Murdoc (Cracker Island)', ('Q50', AVATAR_PRIMATE_QUEST_QUERY, 8)),
+        ('Russel (Song Machine)', ('Q51', AVATAR_PRIMATE_QUEST_QUERY, 10)),
+        ('Monokuma', ('Q52', AVATAR_BEAR_QUEST_QUERY, AVATAR_QUEST_RARE_COUNT)),
+        ('Dover Demon', ('Q53', AVATAR_TOTAL_CRUSTACEAN_QUEST_QUERY, 62)),
+
         # Transcendant Avatars
         ('Bigfoot', ('T1', AVATAR_BIGFOOT_QUEST_QUERY, 1, True)),
         ('Mothman', ('T2', AVATAR_MOTHMAN_QUEST_QUERY, 1, True)),
@@ -404,10 +411,9 @@ def insert_user_avatar_nickname_unlock_condition_records(queryHandler):
         ('S18', ('incredible', 'hulk', 'bruce', 'banner')),
         ('S19', ('woodstock',)),
         # WAVE 5
-        ('S20', ('Dover', 'Demon')),
-        ('S21', ('Taro',)),
-        ('S22', ('Wawario',)),
-        ('S23', ('Wawaluigi',)),
+        ('S20', ('Taro',)),
+        ('S21', ('Wawario',)),
+        ('S22', ('Wawaluigi',)),
     ]
 
     for avatar in avatar_keyword_combos:

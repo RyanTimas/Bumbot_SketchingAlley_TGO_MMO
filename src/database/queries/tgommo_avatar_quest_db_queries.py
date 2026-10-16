@@ -50,6 +50,8 @@ AVATAR_FELINES_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE 
 AVTAR_SQUIRRELS_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (3, 5, 56, 66, 67, 167)  AND user_id = ?;"""
 AVATAR_DEER_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (1, 2, 30, 31, 243, 244, 263)  AND user_id = ?;"""
 AVATAR_RABBITS_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (4, 250, 251)  AND user_id = ?;"""
+AVATAR_BEAR_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (29, 363, 364)  AND user_id = ?;"""
+AVATAR_PRIMATE_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (202, 203)  AND user_id = ?;"""
 # endregion
 # region BIRD TYPE QUEST QUERIES
 AVATAR_BIRDS_OF_PRAY_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature WHERE creature_id IN (25, 50, 140, 330, 331, 332, 333)  AND user_id = ?;"""

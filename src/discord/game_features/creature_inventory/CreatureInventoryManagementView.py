@@ -51,7 +51,7 @@ class CreatureInventoryManagementView(discord.ui.View):
     # CREATE BUTTONS
     def create_confirmation_button(self, row=0):
         button = discord.ui.Button(
-            label=f"{self.mode} Creatures",
+            label=f"{self.mode} Selected Creatures",
             style=discord.ButtonStyle.blurple,
             row=row
         )

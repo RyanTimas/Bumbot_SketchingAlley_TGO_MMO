@@ -122,37 +122,15 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         return image
 
     def build_creature_inventory_icons_grid(self):
-        grid_canvas = Image.new('RGBA', (1600, 720), (0, 0, 0, 0))
-
-        icon_width, icon_height = 80, 144
-        icons_per_row = 20
-
-        # Calculate padding
-        horizontal_padding = 0
-        vertical_padding = 0
-        row, col = 0, 0
-
-        for i in range(self.starting_index, self.ending_index):
-            creature_icon = self.filtered_creature_icons[i]
-
+        dex_icons = []
+        for i, creature_icon in enumerate(self.filtered_creature_icons[self.starting_index: self.ending_index]):
             if self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT:
                 icon_is_invisible = str(self.filtered_creatures[i].catch_id) not in self.creature_ids_to_update
                 creature_icon.putalpha(0 if icon_is_invisible else 255)
+            dex_icons.append(creature_icon)
 
-            # Calculate position
-            x = col * (icon_width + horizontal_padding if i != 0 else 0)
-            y = row * (icon_height + vertical_padding if i != 0 else 0)
-
-            # Paste icon onto canvas
-            grid_canvas.paste(creature_icon, (int(x), int(y)), creature_icon)
-
-            # Move to next position
-            col += 1
-            if col >= icons_per_row:
-                col = 0
-                row += 1
-
-        return grid_canvas
+        dex_icon_grid = self.build_grid(icons=dex_icons, grid_size=(1600, 720), icon_size=(80, 144), icons_per_page=100, icons_per_row=20, horizontal_padding=0, vertical_padding=0)
+        return dex_icon_grid
     def build_creature_icons(self):
         imgs = []
         for creature in self.caught_creatures:
@@ -174,18 +152,14 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         return image
 
 
-    # SUPPORT FUNCTIONS
+    ''' ---- SUPPORT FUNCTIONS FOR FILTERING ---------------------------------------------------------------------------------------------------------------------------------------------------- '''
     # return list of caught creatures to display based on filters
     def filter_user_creatures(self):
         filtered_creatures = []
         filtered_creature_icons = []
 
         for i, creature in enumerate(self.caught_creatures):
-            if self.show_mythics_only and (creature.local_rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL):
-                continue
-            if self.show_nicknames_only and (creature.nickname == '' if not self.is_exclusive_mode else creature.nickname != ''):
-                continue
-            if self.show_favorites_only and not (creature.is_favorite if not self.is_exclusive_mode else not creature.is_favorite):
+            if not self._creature_matches_active_filters(creature):
                 continue
             filtered_creatures.append(creature)
             filtered_creature_icons.append(self.caught_creatures_icons[i])
@@ -209,4 +183,13 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         creatures = list(creatures)
         creature_icons = list(creature_icons)
         return creatures, creature_icons
+
+    def _creature_matches_active_filters(self, creature):
+        if self.show_mythics_only and (creature.local_rarity.name != TGOMMO_RARITY_MYTHICAL if not self.is_exclusive_mode else creature.local_rarity.name == TGOMMO_RARITY_MYTHICAL):
+            return False
+        if self.show_nicknames_only and (creature.nickname == '' if not self.is_exclusive_mode else creature.nickname != ''):
+            return False
+        if self.show_favorites_only and not (creature.is_favorite if not self.is_exclusive_mode else not creature.is_favorite):
+            return False
+        return True
 

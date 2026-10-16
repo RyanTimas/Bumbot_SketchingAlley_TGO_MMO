@@ -68,7 +68,7 @@ class AvatarBoardView(BaseView):
 
     '''----BUTTONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def create_change_avatar_button(self, row=4):
-        button = discord.ui.Button(label="Change Avatar", style=discord.ButtonStyle.green, row=row)
+        button = discord.ui.Button(label="Change Avatar", style=discord.ButtonStyle.green, row=row, emoji="👕")
         button.callback = self.change_avatar_callback()
         return button
     def change_avatar_callback(self):

@@ -118,15 +118,15 @@ def get_event_avatar_records():
         ('E33', 'Crewmate (Green)', AVATAR_TYPE_EVENT, 'CrewmateGreen', 'Among Us', 0,  datetime.datetime(2026, 4, 15, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 22, 23, 59, 59, tzinfo=pytz.UTC)),
         ('E34', 'Crewmate (Geoff Keighley)', AVATAR_TYPE_EVENT, 'CrewmateGeoff', 'Among Us', 0,datetime.datetime(2026, 4, 22, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 4, 28, 23, 59, 59, tzinfo=pytz.UTC)),
         # WAVE 5
-        ('E35', 'Okarun (Turbo Granny Form)', AVATAR_TYPE_EVENT, 'Okarun(TurboGrannyform)', 'DanDaDan', 0,datetime.datetime(2026, 8, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 16, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E36', 'Momo Ayase (Super Awakening)', AVATAR_TYPE_EVENT, 'MomoAyase(SuperAwakening)', 'DanDaDan', 0,datetime.datetime(2026, 9, 17, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 23, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E36', 'Aira Shiratori (Silky Form)', AVATAR_TYPE_EVENT, 'AiraShiratori(Silky)', 'DanDaDan', 0,datetime.datetime(2026, 9, 24, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 30, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E36', 'Jin Enjoji (Evil Eye)', AVATAR_TYPE_EVENT, 'Jiji(EvilEye)', 'DanDaDan', 0,datetime.datetime(2026, 10, 1, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 10, 7, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E37', 'Charlie Kirk', AVATAR_TYPE_EVENT, 'CharlieKirk', 'Turning Point USA', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E38', '2D (The Mountain)', AVATAR_TYPE_EVENT, '2D(TheMountain)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E39', 'Noodle (The Now Now)', AVATAR_TYPE_EVENT, 'Noodle(TheNowNow)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E40', 'Murdoc (Converse)', AVATAR_TYPE_EVENT, 'Murdoc(Converse)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
-        ('E41', 'Russel (Humanz)', AVATAR_TYPE_EVENT, 'Russel(Humanz)', 'Gorillaz', 0,datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 9, 11, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E35', 'Okarun (Turbo Granny Form)', AVATAR_TYPE_EVENT, 'Okarun(TurboGrannyform)', 'DanDaDan', 0,datetime.datetime(2026, 10, 16, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 10, 22, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E36', 'Momo Ayase (Super Awakening)', AVATAR_TYPE_EVENT, 'MomoAyase(SuperAwakening)', 'DanDaDan', 0,datetime.datetime(2026, 10, 23, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 10, 29, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E37', 'Aira Shiratori (Silky Form)', AVATAR_TYPE_EVENT, 'AiraShiratori(Silky)', 'DanDaDan', 0,datetime.datetime(2026, 10, 30, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 11, 5, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E38', 'Jin Enjoji (Evil Eye)', AVATAR_TYPE_EVENT, 'Jiji(EvilEye)', 'DanDaDan', 0,datetime.datetime(2026, 11, 6, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 11, 12, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E39', 'Charlie Kirk', AVATAR_TYPE_EVENT, 'CharlieKirk', 'Turning Point USA', 0,datetime.datetime(2026, 11, 13, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 11, 19, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E40', '2D (The Mountain)', AVATAR_TYPE_EVENT, '2D(TheMountain)', 'Gorillaz', 0,datetime.datetime(2026, 11, 20, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 11, 26, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E41', 'Noodle (The Now Now)', AVATAR_TYPE_EVENT, 'Noodle(TheNowNow)', 'Gorillaz', 0,datetime.datetime(2026, 11, 27, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 12, 3, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E42', 'Murdoc (Converse)', AVATAR_TYPE_EVENT, 'Murdoc(Converse)', 'Gorillaz', 0,datetime.datetime(2026, 12, 4, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 12, 10, 23, 59, 59, tzinfo=pytz.UTC)),
+        ('E43', 'Russel (Humanz)', AVATAR_TYPE_EVENT, 'Russel(Humanz)', 'Gorillaz', 0,datetime.datetime(2026, 12, 11, 0, 0, 0, tzinfo=pytz.UTC), datetime.datetime(2026, 12, 17, 23, 59, 59, tzinfo=pytz.UTC)),
     ]
     return event_avatars
 def get_quest_avatar_records():

@@ -93,8 +93,8 @@ class CreatureInventoryView(BaseView):
 
     def create_creature_management_button(self, button_type, row=3, ):
         label = {
-            CREATURE_INVENTORY_MODE_RELEASE: "Release Selected Creatures",
-            CREATURE_INVENTORY_MODE_FAVORITE: "Favorite Selected Creatures"
+            CREATURE_INVENTORY_MODE_RELEASE: "Release Creatures",
+            CREATURE_INVENTORY_MODE_FAVORITE: "Favorite Creatures"
         }
         button = discord.ui.Button(label=label[button_type], style=discord.ButtonStyle.blurple, row=row)
 
@@ -105,7 +105,7 @@ class CreatureInventoryView(BaseView):
         async def callback(interaction):
             view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index], creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames,)
 
-            box_is_empty = len(self.image_factory.caught_creatures[self.image_factory.starting_index:self.image_factory.ending_index]) == 0
+            box_is_empty = len(self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index]) == 0
             await interaction.followup.send(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)
         return callback
 

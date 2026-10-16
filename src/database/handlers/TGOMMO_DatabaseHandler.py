@@ -180,6 +180,24 @@ class TGOMMODatabaseHandler:
                 )
         return avatars if expect_multiple else avatars[0]
 
+    def get_base_items_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
+        results = self.QueryHandler.execute_query(query, params=params)
+
+        base_items = results
+        if convert_to_object:
+            base_items = [
+                TGOPlayerItem(
+                    item_num=base_item_details[0], item_id=base_item_details[1],
+                    item_name=base_item_details[2], item_type=base_item_details[3], item_category=base_item_details[4],
+                    item_description=base_item_details[5],
+                    rarity=get_rarity_by_name(base_item_details[6]), is_rewardable=base_item_details[7],
+                    img_root=base_item_details[8], default_uses=base_item_details[9],
+                    shop_price=base_item_details[10]
+                )
+                for base_item_details in results
+            ]
+        return base_items if expect_multiple else base_items[0]
+
     def get_inventory_items_from_database(self, query, params=(), convert_to_object=False, expect_multiple=False):
         results = self.QueryHandler.execute_query(query, params=params)
 
@@ -648,6 +666,10 @@ class TGOMMODatabaseHandler:
     # endregion
 
     # region INVENTORY ITEM QUERIES
+    def get_all_base_items(self, convert_to_object=True):
+        query = f"{TGOMMO_GET_BASE_ITEM_BASE} True;"
+        return self.get_base_items_from_database(query=query, params=(), convert_to_object=convert_to_object, expect_multiple=True)
+
     def get_inventory_item_by_item_id(self, item_id=-1, convert_to_object=True):
         query = f"{TGOMMO_GET_INVENTORY_ITEM_BASE} {TGOMMO_SELECT_INVENTORY_ITEM_BY_ITEM_ID_SUFFIX};"
         return self.get_inventory_items_from_database(query=query, params=(item_id,), convert_to_object=convert_to_object, expect_multiple=False)

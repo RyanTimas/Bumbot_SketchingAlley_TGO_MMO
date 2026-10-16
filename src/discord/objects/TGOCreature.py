@@ -56,7 +56,7 @@ class TGOCreature:
         self.is_released = is_released
         self.is_afk_catch = is_afk_catch
 
-        # todo: add these as new columns to user creature db
+        # todo: add these as new columns to user creature db - V 2.5.5
         self.gold_earned = random.randint(1, 100)  # Placeholder for gold earned, can be modified based on game logic
         self.xp_earned = random.randint(1, 50)  # Placeholder for XP earned, can be modified based on game logic
 

@@ -45,5 +45,5 @@ class AlertCenterView(BaseView):
         self.megaphone_button.label = "Turn off Megaphone" if discord.utils.get(self.target_user.discord_profile.roles, id=TGOMMO_ROLE_ID) is not None else "Turn on Megaphone"
     def rebuild_view(self):
         super().rebuild_view()
-
+        self.remove_item(self.change_user_button)
         self.add_item(self.megaphone_button)

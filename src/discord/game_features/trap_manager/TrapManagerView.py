@@ -60,8 +60,7 @@ class TrapManagerView(BaseView):
             actual_total = min(proposed_total, self.image_factory.player_trap_link.player_max_trap_charges)
             wasted = max(proposed_total - self.image_factory.player_trap_link.player_max_trap_charges, 0)
 
-            user_battery = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=ITEM_ID_BATTERY)
-            batteries_available = user_battery.item_quantity if user_battery else 0
+            batteries_available = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=ITEM_ID_BATTERY).item_quantity or 0
 
             if wasted > 0:
                 prompt = f"You have {batteries_available} batter{"y" if batteries_available == 1 else "ies"} remaining.\nUse a battery to add {increment-wasted} charges to {self.image_factory.active_trap.item_name}? \nResulting charges: {actual_total}/{self.image_factory.player_trap_link.player_max_trap_charges}.\n\n## ❗{wasted} charges will be wasted because your trap's max capacity is {self.image_factory.player_trap_link.player_max_trap_charges} charges.❗\nUse a battery anyway?"

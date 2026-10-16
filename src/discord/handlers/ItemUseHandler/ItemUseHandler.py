@@ -45,7 +45,7 @@ class ItemUseHandler:
             # remove an item from the user after the effect is applied
             if affect_activated:
                 # remove the item from the user's inventory assuming its not a key item
-                if item.item_type not in UNLIMITED_INVENTORY_ITEM_TYPES:
+                if item.item_type not in UNLIMITED_INVENTORY_ITEM_TYPES and item.item_type != ITEM_TYPE_BATTERY:
                     get_tgommo_db_handler().update_user_profile_available_items(user_id=user.user_id, item_id=item.item_id, new_amount=get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(item_id=item.item_id, user_id=user.user_id, convert_to_object=True).item_quantity - 1)
                 if response_message:
                     await interaction.channel.send(response_message, files=[convert_to_png(item.item_image, "item_img.png")])
@@ -135,7 +135,15 @@ class ItemUseHandler:
 
     '''---- CREATURE TRAP HANDLERS ------------------------------------------------------------------------------------------------------------'''
     async def use_battery(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
+        player_trap_link = get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=user.user_id)
+        if player_trap_link.player_trap_charges >= player_trap_link.player_max_trap_charges:
+            await interaction.followup.send(f"Your Trap is already fully charged! You can check your Trap Manager to see how many charges you have remaining.", ephemeral=True)
+            return False, None
+
         new_charges = TrapHandler.charge_trap(user_id=user.user_id)
+        if new_charges == 0:
+            await interaction.followup.send(f"You don't have any batteries left to charge your Trap! You can find batteries in the Item Inventory.", ephemeral=True)
+            return False, None
         await interaction.followup.send(f"You've successfully charged your Trap! You now have {new_charges} charges remaining.", ephemeral=True)
         return True, None
 
@@ -161,8 +169,8 @@ class ItemUseHandler:
         if not bonus_added:
             return False, failure_msg
 
-        # schedule removal (background) — do NOT await create_task
-        asyncio.create_task(self._schedule_effect_removal(despawn_ts=despawn_timestamp, item=item))
+        # schedule removal (background) — do NOT await; the event loop owns this task
+        asyncio.get_running_loop().create_task(self._schedule_effect_removal(despawn_ts=despawn_timestamp, item=item))
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}. Effects are active for the next {duration_minutes} minutes!"
 
     # Schedules the removal of an active item effect after a specified delay. It calculates the delay based on the current time and the provided despawn timestamp, then sleeps for that duration before removing the effect from the game state manager and sending a message to the channel indicating that the effect has worn off.

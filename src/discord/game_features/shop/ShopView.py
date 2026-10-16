@@ -105,7 +105,9 @@ class ShopView(BaseView):
         self.add_item(self.shop_items_dropdown)
         # row 1
         self.add_item(self.buy_item_button)
-        self.add_item(self.donate_button)
+
+        # todo: removed for 2.5 release; will re-add in future release
+        # self.add_item(self.donate_button)
 
         # row 4
         self.add_item(self.close_button)

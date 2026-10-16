@@ -1,16 +1,11 @@
 import datetime
+import random
 
-import discord
-import pytz
-
-from src.commons.CommonFunctions import convert_to_png, convert_to_datetime
-from src.commons.GameStateManager import get_game_state_manager
+from src.commons.CommonFunctions import convert_to_png
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.static_item_cache import StaticItemCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.handlers.ItemUnlockHandler.ItemUnlockImageFactory import ItemUnlockImageFactory
-from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import TRAP_ID_RARITY_MAP, ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, \
-    ITEM_ID_OMNIPOTENT_BAIT
-from src.resources.constants.file_paths import *
+from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, ITEM_ID_OMNIPOTENT_BAIT
 
 # check if player has unlocked any items from catching creature
 async def check_for_milestone_catch_rewards(user_id, interaction):
@@ -43,3 +38,18 @@ async def check_for_milestone_catch_rewards(user_id, interaction):
         await interaction.followup.send(f"Congratulations! You've unlocked an omnipotent bait to celebrate the one year anniversary of TGOMMO!! You can use this to summon any creature of your choice! Check your item inventory to use your bait!", file=convert_to_png(image=omnipotent_bait.item_unlock_image, file_name="omnipotentbait.png"), ephemeral=True)
 
     return
+
+# check if player should get a random battery reward from catching a creature
+async def check_for_random_item_catch_reward(user_id, interaction):
+    if random.randint(1, 32) != 1:
+        return False
+
+    #todo: we implemented grabbing items from the cache but need to implement player item caching; will use the database for now until we implement player item caching
+    battery_item = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_BATTERY)
+    # battery_item = resolve_static_content_cache(StaticItemCache).get_item_by_id(item_id=ITEM_ID_BATTERY)
+
+    get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=ITEM_ID_BATTERY, new_amount=battery_item.item_quantity + 1,)
+    get_tgommo_db_handler().update_user_avatar_item_last_purchased_date(user_id=user_id, item_id=ITEM_ID_BATTERY, last_purchased_date=int(datetime.datetime.now().timestamp()),)
+
+    await interaction.followup.send("🎉 You found a battery while catching that creature!", file=convert_to_png(image=battery_item.item_unlock_image, file_name="battery_reward.png"), ephemeral=True,)
+    return True

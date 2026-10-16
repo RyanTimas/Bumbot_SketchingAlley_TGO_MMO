@@ -18,11 +18,11 @@ class TrapHandler:
             battery_total = get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=user_id, item_id=ITEM_ID_BATTERY).item_quantity
             if battery_total == 0:
                 return battery_total
-            if battery_total >= 0:
-                user_trap_link = get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=user_id)
-                get_tgommo_db_handler().update_user_trap_link_charges(user_id=user_id, player_trap_charges=min(user_trap_link.player_max_trap_charges, user_trap_link.player_trap_charges + charge_count))
-                get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=ITEM_ID_BATTERY, new_amount=battery_total-1)
-                return user_trap_link.player_trap_charges + charge_count
+            user_trap_link = get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=user_id)
+            new_charge_total = min(user_trap_link.player_max_trap_charges, user_trap_link.player_trap_charges + charge_count)
+            get_tgommo_db_handler().update_user_trap_link_charges(user_id=user_id, player_trap_charges=new_charge_total)
+            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=ITEM_ID_BATTERY, new_amount=battery_total-1)
+            return new_charge_total
 
     @staticmethod
     def select_user_for_trap_capture(creature: TGOCreature):

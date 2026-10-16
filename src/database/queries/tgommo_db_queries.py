@@ -134,6 +134,16 @@ TGOMMO_SELECT_USER_AVATAR_UNLOCK_CONDITION_BASE = '''
     WHERE
 '''
 
+TGOMMO_GET_BASE_ITEM_BASE = '''
+    SELECT
+        ii.item_num, ii.item_id, 
+        ii.item_name, ii.item_type, ii.item_category, ii.item_description, 
+        ii.rarity, ii.is_rewardable, ii.img_root, ii.default_uses,
+        ii.shop_price
+    FROM tgommo_inventory_item ii
+    WHERE
+'''
+
 TGOMMO_GET_INVENTORY_ITEM_BASE = '''
     SELECT  
         ii.item_num, ii.item_id, 

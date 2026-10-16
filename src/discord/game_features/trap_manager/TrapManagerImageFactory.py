@@ -172,12 +172,16 @@ class TrapManagerImageFactory(BaseImageFactory):
             draw.text(get_centered_text_position(text=f"{total_catch_text}", font=font, center_pixel_location=(1496, 720)), f"{total_catch_text}", fill=FONT_COLOR_WHITE, font=font)
 
             # add xp text to image
+            # todo: want to make this  logic work in v 2.5.5, but for now, just sum the xp earned from each creature in the list of creatures caught by trap
             xp_text = sum(creature.xp_earned for creature in self.creatures_caught_by_trap)
+            xp_text = "to be implemented in v2.5.5"
+
             font = resize_text_to_fit(text=f"{xp_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=104, min_font_size=10)
             draw.text(get_centered_text_position(text=f"{xp_text}", font=font, center_pixel_location=(1496, 832)), f"{xp_text}", fill=FONT_COLOR_WHITE, font=font)
 
             # add gold text to image
             gold_text = sum(creature.gold_earned for creature in self.creatures_caught_by_trap)
+            gold_text = "to be implemented in v2.5.5"
             font = resize_text_to_fit(text=f"{gold_text}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 35), max_width=104, min_font_size=10)
             draw.text(get_centered_text_position(text=f"{gold_text}", font=font, center_pixel_location=(1496, 934)), f"{gold_text}", fill=FONT_COLOR_WHITE, font=font)
 

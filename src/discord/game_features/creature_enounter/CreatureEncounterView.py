@@ -12,12 +12,12 @@ from src.discord.game_features.creature_enounter.CreatureCaughtView import Creat
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, \
     check_for_quest_avatars, check_for_special_quest_avatars
-from src.discord.handlers.ItemUnlockHandler.ItemUnlockHandler import check_for_milestone_catch_rewards
+from src.discord.handlers.ItemUnlockHandler.ItemUnlockHandler import check_for_milestone_catch_rewards, check_for_random_item_catch_reward
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import USER_CATCHES_DAILY, USER_CATCHES_HOURLY, BASE_CREATURE_STORAGE_EXPANSIONS, MAX_CREATURE_STORAGE_EXPANSIONS, CREATURE_STORAGE_EXPANSION_BASE_COST, ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION
+from src.resources.constants.TGO_MMO_constants import BASE_CREATURE_STORAGE_EXPANSIONS, MAX_CREATURE_STORAGE_EXPANSIONS, CREATURE_STORAGE_EXPANSION_BASE_COST, ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION
 
 
 class CreatureEncounterView(View):
@@ -86,6 +86,7 @@ class CreatureEncounterView(View):
 
             # check if player has unlocked any items based on their catch and unlock them if they haven't already been unlocked
             await  check_for_milestone_catch_rewards(user_id=interaction.user.id, interaction=interaction)
+            await check_for_random_item_catch_reward(user_id=interaction.user.id, interaction=interaction)
 
             # delete the original spawn message so nobody else can catch it
             try:

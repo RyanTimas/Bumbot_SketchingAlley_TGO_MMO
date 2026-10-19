@@ -40,19 +40,19 @@ class CreatureInventoryImageFactory(BaseImageFactory):
 
 
     # CONSTRUCT IMAGE FUNCTIONS
-    def reload_image(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+    def reload_image(self, target_user=None, new_page_number = None, show_mythics_only= None, show_nicknames_only= None, show_favorites_only= None, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= None, is_exclusive_mode= None):
         self.load_relevant_info(target_user= target_user, new_page_number=new_page_number, show_mythics_only=show_mythics_only, show_nicknames_only=show_nicknames_only, show_favorites_only=show_favorites_only, order_type=order_type, image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, is_ascending_order=is_ascending_order, is_exclusive_mode=is_exclusive_mode)
         return self.build_image()
-    def load_relevant_info(self, target_user=None, new_page_number = None, show_mythics_only= False, show_nicknames_only= False, show_favorites_only= False, order_type= None, image_mode= None, creature_ids_to_update= None, refresh_creatures= False, is_ascending_order= False, is_exclusive_mode= False):
+    def load_relevant_info(self, target_user=None, new_page_number=None, show_mythics_only=None, show_nicknames_only=None, show_favorites_only=None, order_type=None, image_mode=None, creature_ids_to_update=None, refresh_creatures=False, is_ascending_order=None, is_exclusive_mode=None):
         # define filter & order settings
         self.target_user = target_user if target_user else self.target_user
         self.order_type = order_type if order_type else self.order_type
-        self.is_ascending_order = is_ascending_order
+        self.is_ascending_order = is_ascending_order if is_ascending_order is not None else self.is_ascending_order
 
-        self.show_mythics_only = show_mythics_only
-        self.show_nicknames_only = show_nicknames_only
-        self.show_favorites_only = show_favorites_only
-        self.is_exclusive_mode = is_exclusive_mode if is_exclusive_mode else self.is_exclusive_mode
+        self.show_mythics_only = show_mythics_only if show_mythics_only is not None else self.show_mythics_only
+        self.show_nicknames_only = show_nicknames_only if show_nicknames_only is not None else self.show_nicknames_only
+        self.show_favorites_only = show_favorites_only if show_favorites_only is not None else self.show_favorites_only
+        self.is_exclusive_mode = is_exclusive_mode if is_exclusive_mode is not None else self.is_exclusive_mode
 
         # define creature management items
         data_changed = any(param is not None for param in [target_user])
@@ -63,7 +63,7 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         self.active_creatures, self.active_creature_icons = self.get_active_user_creatures()
 
         # define parameters for which icons will appear on page
-        self.page_num = new_page_number if new_page_number else self.page_num
+        self.page_num = new_page_number if new_page_number is not None else self.page_num
         self.starting_index = (self.page_num - 1) * 100
         self.ending_index = min(self.starting_index + 100, len(self.active_creature_icons))
 

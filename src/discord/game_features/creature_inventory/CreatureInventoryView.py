@@ -71,23 +71,24 @@ class CreatureInventoryView(BaseView):
         # row 4
         self.refresh_view()
 
-    '''----DEFINE BUTTON FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    '''----VIEW ITEM FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
+    # region Buttons
     def apply_filter_options(self, button_type):
         self.show_only_mythics = not self.show_only_mythics if button_type == CREATURE_INVENTORY_FILTER_MYTHIC else self.show_only_mythics
         self.show_only_favorites = not self.show_only_favorites if button_type == CREATURE_FAVORITE_FILTER_MYTHIC else self.show_only_favorites
         self.show_only_nicknames = not self.show_only_nicknames if button_type == CREATURE_NICKNAME_FILTER_MYTHIC else self.show_only_nicknames
 
     def create_storage_expansion_button(self, row=0):
-        button = discord.ui.Button(label="Expand Storage ➕", style=discord.ButtonStyle.green, row=row)
+        button = discord.ui.Button(label="Expand Storage", style=discord.ButtonStyle.green, emoji="➕", row=row)
         button.callback = self.storage_expansion_callback()
         return button
     def storage_expansion_callback(self, ):
-        @interaction_guard(self)
+        @interaction_guard(self, defer_response=False)
         async def callback(interaction):
             if self.image_factory.page_num + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
                 await interaction.followup.send("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
             elif self.message_author.user_id == self.target_user.user_id:
-                await interaction.followup.send(self.create_inventory_expansion_confirmation_modal())
+                await interaction.response.send_modal(self.create_inventory_expansion_confirmation_modal())
                 return
         return callback
 
@@ -103,14 +104,14 @@ class CreatureInventoryView(BaseView):
     def creature_management_button_callback(self, button_type):
         @interaction_guard(self)
         async def callback(interaction):
-            view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index], creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames,)
+            view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.active_creatures, creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames,)
 
-            box_is_empty = len(self.image_factory.filtered_creatures[self.image_factory.starting_index:self.image_factory.ending_index]) == 0
+            box_is_empty = len(self.image_factory.active_creatures) == 0
             await interaction.followup.send(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)
         return callback
+    # endregion
 
-
-    # CREATE MODALS
+    # region Modals
     def create_inventory_expansion_confirmation_modal(self):
         user_details_modal = Modal(title=f"You currently have {self.target_user.currency} coins")
         user_details_modal.add_item(discord.ui.TextInput(label=f"Expand Storage? It will cost {self.get_expansion_cost()}. ", placeholder="Type 'confirm' to expand your creature storage", required=True, max_length=8))
@@ -138,9 +139,9 @@ class CreatureInventoryView(BaseView):
         else:
             await interaction.response.send_message("Storage expansion cancelled.", ephemeral=True)
         pass
+    # endregion
 
-
-    # FUNCTIONS FOR UPDATING VIEW STATE
+    ''' ---- VIEW STATE FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def refresh_view(self):
         self.update_view_items()
         self.rebuild_view()
@@ -148,6 +149,7 @@ class CreatureInventoryView(BaseView):
         super().update_view_items()
 
         # UPDATE ENABLED/DISABLED STATES
+        self.update_page_jump_dropdown_options(self.image_factory)
 
         # UPDATE BUTTON LABELS
 
@@ -159,7 +161,6 @@ class CreatureInventoryView(BaseView):
         self.show_only_mythics_button.style = discord.ButtonStyle.green if self.show_only_mythics else discord.ButtonStyle.gray
         self.show_only_favorites_button.style = discord.ButtonStyle.green if self.show_only_favorites else discord.ButtonStyle.gray
         self.show_only_nicknames_button.style = discord.ButtonStyle.green if self.show_only_nicknames else discord.ButtonStyle.gray
-        self.next_button.style = discord.ButtonStyle.blurple if self.image_factory.page_num < self.image_factory.total_pages else discord.ButtonStyle.green if self.message_author.user_id == self.target_user.user_id else discord.ButtonStyle.blurple
 
         self.order_alphabetically_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_ALPHABETICAL else discord.ButtonStyle.gray
         self.order_catch_date_button.style = discord.ButtonStyle.green if self.order_type == CREATURE_NICKNAME_SORT_DEX_NO else discord.ButtonStyle.gray
@@ -167,11 +168,13 @@ class CreatureInventoryView(BaseView):
     def rebuild_view(self):
         self.clear_items()
 
-        # row 1
+        # row 0
         if self.image_factory and self.image_factory.total_pages > 1:
             self.add_item(self.page_jump_dropdown)
-            self.add_item(self.prev_button)
-            self.add_item(self.storage_expansion_button if self.image_factory.page_num == self.image_factory.total_pages and self.message_author.user_id == self.target_user.user_id else self.next_button)
+
+        # row 1
+        if self.message_author.user_id == self.target_user.user_id:
+            self.add_item(self.storage_expansion_button)
 
         # row 2
         self.add_item(self.expand_filter_options_button)
@@ -204,7 +207,7 @@ class CreatureInventoryView(BaseView):
         self.add_item(self.change_user_button)
 
 
-    # SUPPORT FUNCTIONS
+    ''' ---- SUPPORT FUNCTIONS ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def reload_image(self, target_user= None, image_factory= None, new_page_number=None):
         reload_icons = self.image_factory.image_mode == CREATURE_INVENTORY_MODE_RELEASE
         new_image = self.image_factory.reload_image(target_user=target_user, refresh_creatures= reload_icons, order_type=self.order_type, new_page_number=new_page_number, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_ascending_order=self.is_ascending_order, is_exclusive_mode=self.is_exclusive_mode, )

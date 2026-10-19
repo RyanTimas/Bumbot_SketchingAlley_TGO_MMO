@@ -147,7 +147,7 @@ class CreatureEncounterView(View):
         message = "Your creature inventory is full! Please release some creatures before catching more."
 
         expansion_view = View(timeout=None)
-        expansion_button = Button(label="Expand Storage ➕", style=ButtonStyle.green)
+        expansion_button = Button(label="Expand Storage", style=ButtonStyle.green, emoji="➕")
 
         async def expansion_button_callback(interaction):
             # Only allow the user who saw the message to expand their own storage

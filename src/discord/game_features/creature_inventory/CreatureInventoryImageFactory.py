@@ -22,14 +22,13 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         self.is_exclusive_mode = False
 
         # define creature management items
-        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id, )
+        self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)
         self.caught_creatures_icons = self.build_creature_icons()
-        self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
-        self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
+        self.active_creatures, self.active_creature_icons = self.get_active_user_creatures()
 
         # define parameters for which icons will appear on page
         self.starting_index = 0
-        self.ending_index = min(0, len(self.filtered_creatures))
+        self.ending_index = min(0, len(self.active_creatures))
 
         self.total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=target_user.user_id)
 
@@ -53,7 +52,7 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         self.show_mythics_only = show_mythics_only
         self.show_nicknames_only = show_nicknames_only
         self.show_favorites_only = show_favorites_only
-        self.is_exclusive_mode = is_exclusive_mode
+        self.is_exclusive_mode = is_exclusive_mode if is_exclusive_mode else self.is_exclusive_mode
 
         # define creature management items
         data_changed = any(param is not None for param in [target_user])
@@ -61,13 +60,12 @@ class CreatureInventoryImageFactory(BaseImageFactory):
             self.total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=self.target_user.user_id)
             self.caught_creatures = get_tgommo_db_handler().get_user_creatures_by_user_id(user_id=self.target_user.user_id)
             self.caught_creatures_icons = self.build_creature_icons()
-        self.caught_creatures, self.caught_creatures_icons = self.order_creatures_based_on_filter_type()
-        self.filtered_creatures, self.filtered_creature_icons = self.filter_user_creatures()
+        self.active_creatures, self.active_creature_icons = self.get_active_user_creatures()
 
         # define parameters for which icons will appear on page
         self.page_num = new_page_number if new_page_number else self.page_num
         self.starting_index = (self.page_num - 1) * 100
-        self.ending_index = min(self.starting_index + 100, len(self.filtered_creature_icons))
+        self.ending_index = min(self.starting_index + 100, len(self.active_creature_icons))
 
         # define image mode
         self.image_mode = image_mode if image_mode else CREATURE_INVENTORY_MODE_DEFAULT
@@ -88,7 +86,7 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         background_img.paste(menu_bg_img, (0, 0), menu_bg_img)
 
         # place creature icons grid
-        icons_grid = self.build_creature_inventory_icons_grid()
+        icons_grid = self.build_creature_grid()
         background_img.paste(icons_grid, (160, 260), icons_grid)
 
         # place box icons
@@ -102,7 +100,9 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         background_img.paste(corner_overlay_img, (0, 0), corner_overlay_img)
         return background_img
 
-
+    ''' ---- SUPPORT FUNCTIONS FOR IMAGE BUILDING  ---------------------------------------------------------------------------------------------------------------------------------------------------- '''
+    
+    # Place box icons on the image based on the current page number and total pages. Locked icons are shown for unavailable boxes.
     def place_box_icons_on_image(self, image: Image):
         box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON).resize((100, 100))
         selected_box_icon_img = Image.open(CREATURE_INVENTORY_BOX_ICON_SELECTED).resize((100, 100))
@@ -121,15 +121,20 @@ class CreatureInventoryImageFactory(BaseImageFactory):
             current_coordinates = (current_coordinates[0] + x_offset, current_coordinates[1])
         return image
 
-    def build_creature_inventory_icons_grid(self):
+    # Build a grid of creature inventory icons based on the filtered creatures and their corresponding icons. Icons can be made invisible based on the current image mode and the list of creature IDs to update.
+    def build_creature_grid(self):
         dex_icons = []
-        for i, creature_icon in enumerate(self.filtered_creature_icons[self.starting_index: self.ending_index]):
+
+        display_creatures, display_creature_icons = self.get_creatures_currently_displayed_on_page()
+        for i, source_icon in enumerate(display_creature_icons):
+            creature_icon = source_icon.copy()
+
             if self.image_mode != CREATURE_INVENTORY_MODE_DEFAULT:
-                icon_is_invisible = str(self.filtered_creatures[i].catch_id) not in self.creature_ids_to_update
+                icon_is_invisible = str(display_creatures[i].catch_id) not in self.creature_ids_to_update
                 creature_icon.putalpha(0 if icon_is_invisible else 255)
             dex_icons.append(creature_icon)
 
-        dex_icon_grid = self.build_grid(icons=dex_icons, grid_size=(1600, 720), icon_size=(80, 144), icons_per_page=100, icons_per_row=20, horizontal_padding=0, vertical_padding=0)
+        dex_icon_grid = self.build_grid(icons=dex_icons, grid_size=(1600, 720), icon_size=(80, 144), icons_per_page=100, icons_per_row=20, horizontal_padding=0, vertical_padding=0, use_page_number=False, update_page_nums=False)
         return dex_icon_grid
     def build_creature_icons(self):
         imgs = []
@@ -139,7 +144,6 @@ class CreatureInventoryImageFactory(BaseImageFactory):
 
             imgs.append(creature_icon_img)
         return imgs
-
 
     def add_text_to_image(self, image: Image):
         draw = ImageDraw.Draw(image)
@@ -154,17 +158,21 @@ class CreatureInventoryImageFactory(BaseImageFactory):
 
     ''' ---- SUPPORT FUNCTIONS FOR FILTERING ---------------------------------------------------------------------------------------------------------------------------------------------------- '''
     # return list of caught creatures to display based on filters
-    def filter_user_creatures(self):
+    def get_active_user_creatures(self):
+        sorted_creatures, sorted_creature_icons = self.order_creatures_based_on_filter_type()
         filtered_creatures = []
         filtered_creature_icons = []
 
-        for i, creature in enumerate(self.caught_creatures):
+        for i, creature in enumerate(sorted_creatures):
             if not self._creature_matches_active_filters(creature):
                 continue
             filtered_creatures.append(creature)
-            filtered_creature_icons.append(self.caught_creatures_icons[i])
+            filtered_creature_icons.append(sorted_creature_icons[i])
 
         return filtered_creatures, filtered_creature_icons
+
+    def get_creatures_currently_displayed_on_page(self):
+        return self.active_creatures[self.starting_index: self.ending_index], self.active_creature_icons[self.starting_index: self.ending_index]
 
     def order_creatures_based_on_filter_type(self):
         paired_data = list(zip(self.caught_creatures, self.caught_creatures_icons))
@@ -192,4 +200,3 @@ class CreatureInventoryImageFactory(BaseImageFactory):
         if self.show_favorites_only and not (creature.is_favorite if not self.is_exclusive_mode else not creature.is_favorite):
             return False
         return True
-

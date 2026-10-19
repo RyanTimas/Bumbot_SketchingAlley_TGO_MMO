@@ -39,11 +39,11 @@ class BaseImageFactory:
         return img
 
     # Helper function to build a grid of icons with specified parameters, resizing icons as needed and applying padding between them
-    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3, use_page_number=True):
+    def build_grid(self, icons, grid_size=(1920, 1080), icon_size=(500, 70), icons_per_page=10, icons_per_row=3, horizontal_padding=6, vertical_padding=3, use_page_number=True, update_page_nums=True):
         icon_width, icon_height = icon_size
 
         # Use centralized pagination helper to obtain the page icons and update page state
-        page_icons = self.get_page_icons(icons=icons, icons_per_page=icons_per_page, page=self.page_num) if use_page_number else icons
+        page_icons = self.get_page_icons(icons=icons, icons_per_page=icons_per_page, page=self.page_num, update_page_nums=update_page_nums) if use_page_number else icons
 
         grid_canvas = Image.new('RGBA', grid_size, (0, 0, 0, 0))
 
@@ -67,14 +67,21 @@ class BaseImageFactory:
         return grid_canvas
 
     # Return the sublist of icons for open page.
-    def get_page_icons(self, icons=None, icons_per_page=25, page=None):
+    def get_page_icons(self, icons=None, icons_per_page=25, page=None, update_page_nums=True):
         from math import ceil
         icons = icons if icons is not None else self.grid_icons
-        self.total_pages = max(1, ceil(len(icons) / icons_per_page))
 
+        # Calculate total pages and ensure the requested page is within bounds
+        total_pages = max(1, ceil(len(icons) / icons_per_page))
+
+        # If page is None, use the current page number; otherwise, ensure it's within valid bounds
         page = page if page is not None else self.page_num
-        page = max(1, min(page, self.total_pages))
-        self.page_num = page
+        page = max(1, min(page, total_pages))
         start = (page - 1) * icons_per_page
         end = start + icons_per_page
+
+        if update_page_nums:
+            self.page_num = page
+            self.total_pages = total_pages
+
         return icons[start:end]

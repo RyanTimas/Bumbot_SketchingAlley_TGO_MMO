@@ -12,15 +12,15 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryManagementView(discord.ui.View):
-    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False, show_only_mythics=False, show_only_favorites=False, show_only_nicknames=False, exclusive_mode=False):
+    def __init__(self, message_author, mode, creatures, creature_inventory_image_factory: CreatureInventoryImageFactory, original_message=None, original_view=None, view_state= CREATURE_INVENTORY_VIEW_WORKFLOW_STATE_INTERACTION, select_all_enabled=False, show_only_mythics=False, show_only_favorites=False, show_only_nicknames=False, exclusive_mode=None):
         super().__init__(timeout=None)
         self.message_author = message_author
         self.mode = mode
 
-        print("exclusive_mode in CreatureInventoryManagementView: ", exclusive_mode)
-        self.exclusive_mode = exclusive_mode
-
         self.creature_inventory_image_factory:CreatureInventoryImageFactory = creature_inventory_image_factory
+        if exclusive_mode is not None:
+            self.creature_inventory_image_factory.is_exclusive_mode = exclusive_mode
+
         self.release_result_image_factory = ReleaseResultImageFactory(message_author=message_author, target_user= message_author)
         self.original_view = original_view
         self.original_message = original_message
@@ -262,8 +262,7 @@ class CreatureInventoryManagementView(discord.ui.View):
         return f"[{creature.catch_id}] \t ({pad_text(nickname, 20)}) \t {pad_text(creature_name, 20)}{creature_symbols}"
 
     def reload_creature_inventory_image(self, image_mode=None, creature_ids_to_update=None, refresh_creatures=False):
-        print("exclusive_mode in reload_creature_inventory_image: ", self.exclusive_mode)
-        new_image = self.creature_inventory_image_factory.reload_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_exclusive_mode=None)
+        new_image = self.creature_inventory_image_factory.reload_image(image_mode=image_mode, creature_ids_to_update=creature_ids_to_update, refresh_creatures=refresh_creatures, show_mythics_only=self.show_only_mythics, show_favorites_only=self.show_only_favorites, show_nicknames_only=self.show_only_nicknames, is_exclusive_mode=self.creature_inventory_image_factory.is_exclusive_mode)
         return convert_to_png(new_image, f'player_boxes_page.png')
 
     def reload_release_results_image(self, currency_earned=0, earned_items=None, count_released=0):

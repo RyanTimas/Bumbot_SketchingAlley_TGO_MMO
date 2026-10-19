@@ -11,6 +11,14 @@ from src.resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryView(BaseView):
+    @property
+    def is_exclusive_mode(self):
+        return self.image_factory.is_exclusive_mode
+
+    @is_exclusive_mode.setter
+    def is_exclusive_mode(self, value):
+        self.image_factory.is_exclusive_mode = bool(value)
+
     def __init__(self, message_author, target_user, creature_inventory_image_factory: CreatureInventoryImageFactory, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=creature_inventory_image_factory, original_view=original_view)
 
@@ -104,7 +112,7 @@ class CreatureInventoryView(BaseView):
     def creature_management_button_callback(self, button_type):
         @interaction_guard(self)
         async def callback(interaction):
-            view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.active_creatures, creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames,)
+            view = CreatureInventoryManagementView(message_author=self.message_author, mode=button_type, creatures=self.image_factory.active_creatures, creature_inventory_image_factory=self.image_factory,original_message=interaction.message, original_view=self, select_all_enabled=self.select_all_enabled, show_only_mythics=self.show_only_mythics, show_only_favorites=self.show_only_favorites, show_only_nicknames=self.show_only_nicknames, exclusive_mode=self.is_exclusive_mode)
 
             box_is_empty = len(self.image_factory.active_creatures) == 0
             await interaction.followup.send(content=f"Select creatures to {button_type}:" if not box_is_empty else f"you have no creatures to {button_type} in this box.", view=view, ephemeral=True)

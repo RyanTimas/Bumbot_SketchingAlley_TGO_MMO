@@ -94,6 +94,7 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
     '''---- SUPPORT FUNCTIONS------------------------------------------------------------------------------------------------------------------------------------------------------------------------------'''
     def get_creatures_for_environment(self):
         creatures = list(resolve_static_content_cache(EnvironmentCreatureCache).get_all_creatures_for_environment(self.active_environment))
+        creatures = [creature for creature in creatures if creature.local_rarity.name != TGOMMO_RARITY_TRANSCENDANT]
         creatures.sort(key=lambda c: (c.local_dex_no, c.variant_no))
 
         self.total_pages = (len(creatures) + self.max_icons_per_page - 1) // self.max_icons_per_page  # Calculate total pages

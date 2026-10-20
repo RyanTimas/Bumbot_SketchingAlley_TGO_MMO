@@ -10,7 +10,7 @@ from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerImag
 from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerView import OmnipotentBaitManagerView
 from src.discord.handlers.ItemUseHandler.NametagUseView import NametagUseView
 from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
-from src.discord.objects.CreatureRarity import get_event_rarity, get_rarity
+from src.discord.objects.CreatureRarity import get_event_rarity, get_rarity, MYTHICAL
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.resources.constants.TGO_MMO_constants import *
@@ -92,7 +92,7 @@ class ItemUseHandler:
         if capture_percentage < 65:
             return False, f"You can't use bait yet! Only {capture_percentage:.1f}% of creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} have been captured by the server. Baits unlock at 65%."
 
-        # kingdom bait takes priority; if a kingdom is present, keep rerolling rarity until a valid combo exists.
+        # kingdom bait takes priority; if a kingdom is present, keep rerolling rarity until a valid combo exists. kingdom baits have a higher chance to spawn rarer creatures
         kingdom = kingdom_bait_map.get(item.item_id)
         rarity = rarity_bait_map.get(item.item_id) or get_event_rarity().name if kingdom else get_rarity().name
 
@@ -101,6 +101,10 @@ class ItemUseHandler:
             if kingdom:
                 return False, f"There are no {kingdom} creatures in {self.discord_bot.creature_spawner_handler.current_environment.name} right now."
             return False, f"No creature could be selected for {item.item_name}."
+
+        # roll to see if the creature will be a mythical - higher odds for baits
+        if random.randint(1, 50) == 1:
+            creature.set_creature_rarity(new_rarity=MYTHICAL)
 
         await self.discord_bot.creature_spawner_handler.spawn_creature(creature=creature, user=user)
         return True, f"<@{user.user_id}> *({user.nickname})* used the {item.item_name}!"

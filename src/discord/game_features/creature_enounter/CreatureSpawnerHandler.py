@@ -127,7 +127,7 @@ class CreatureSpawnerHandler:
         # select a creature if one was not provided
         creature = creature if creature else await self.creature_picker(rarity= rarity, kingdom= kingdom)
         # determine if this creature will be mythical based on its rarity and any active bonuses
-        creature = self.perform_mythical_check(creature=creature, user_bonus_active=user) if creature.local_rarity.name != MYTHICAL.name else creature
+        creature = creature if creature.local_rarity.name != MYTHICAL.name else self.perform_mythical_check(creature=creature, user_bonus_active=user)
 
         creature_embed, creature_thumb_img, creature_encounter_img = CreatureEmbedHandler(creature=creature, environment=self.current_environment, time_of_day=self.time_of_day, spawn_user=user, active_bonuses=self.active_bonuses).generate_spawn_embed()
         spawn_message = await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(content=TGOMMO_ROLE, view= CreatureEncounterView(discord_bot=self.discord_bot, creature=creature, environment=self.current_environment, spawn_user=user), files=[creature_thumb_img, creature_encounter_img], embed=creature_embed)

@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import os
+import logging
 import certifi
 
 from src.resources.constants.file_paths import OUTPUT_DIR, LOGS_DIR
@@ -9,10 +10,13 @@ from src.resources.constants.file_paths import OUTPUT_DIR, LOGS_DIR
 os.environ['SSL_CERT_FILE'] = certifi.where()
 from src.commons.GameStateManager import initialize_game_state_manager
 from src.database.handlers.DatabaseHandler import initialize_database, get_tgommo_db_handler
-from src.caching.cache_registry import initialize_static_content_cache_registry
+from src.caching.cache_registry import ensure_static_content_cache_registry_initialized
 from src.caching.cache_startup import StartupCacheInitializer
 from src.resources.constants.general_constants import *
 from src.discord.DiscordBot import DiscordBot
+
+
+logger = logging.getLogger(__name__)
 
 
 def initialize_discord_bot():
@@ -32,8 +36,9 @@ def initialize_project_directories():
 
 def initialize_caching():
     # create a registry for keeping database info in memory for faster access and to avoid repeated database calls
-    initialize_static_content_cache_registry(db_provider=get_tgommo_db_handler)
-    StartupCacheInitializer().initialize()
+    registry = ensure_static_content_cache_registry_initialized(logger=logger, db_provider=get_tgommo_db_handler)
+    StartupCacheInitializer(registry=registry, logger=logger).initialize()
+    logger.info("Static content cache registry ready and eager caches preloaded.")
 
 
 async def main():

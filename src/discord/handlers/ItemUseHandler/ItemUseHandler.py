@@ -107,7 +107,13 @@ class ItemUseHandler:
 
     # Applies the effect of the omnipotent bait item. This item bypasses the 65% capture requirement and allows the user to spawn a creature of their choice. The function calls the creature spawner handler to spawn a creature without specifying rarity or kingdom, allowing for user selection.
     async def use_omnipotent_bait(self, user: TGOPlayer, item: TGOPlayerItem, interaction):
-        omnipotent_bait_image_factory = OmnipotentBaitManagerImageFactory(message_author=user, active_environment=self.discord_bot.creature_spawner_handler.current_environment)
+        try:
+            omnipotent_bait_image_factory = OmnipotentBaitManagerImageFactory(message_author=user, active_environment=self.discord_bot.creature_spawner_handler.current_environment)
+        except RuntimeError as e:
+            if "Static content cache registry not initialized." in str(e):
+                return False, "Omnipotent Bait is temporarily unavailable while static content finishes loading. Please try again in a moment."
+            raise
+
         omnipotent_bait_view = OmnipotentBaitManagerView(message_author=user, omnipotent_bait_image_factory=omnipotent_bait_image_factory, original_view=self.original_view, discord_bot=self.discord_bot)
 
         await self.channel.send(f"You used the {item.item_name}! You can now select a creature to spawn.", files=[omnipotent_bait_view.reload_image()], view=omnipotent_bait_view)

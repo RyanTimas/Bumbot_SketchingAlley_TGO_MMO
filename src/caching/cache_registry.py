@@ -1,4 +1,5 @@
 import threading
+import logging
 from typing import Any, Callable, Optional, Type, cast
 
 from src.caching.cache_base import CacheLoadStrategy, IStaticContentCache, IStaticContentCacheRegistry
@@ -60,6 +61,11 @@ def initialize_static_content_cache_registry(logger=None, db_provider= None) -> 
 
     global _cache_registry
     with _cache_registry_lock:
+        if _cache_registry is not None:
+            if logger:
+                logger.info("Static content cache registry already initialized; reusing existing registry.")
+            return _cache_registry
+
         registry = StaticContentCacheRegistry()
 
         # REGISTER EAGER CACHES HERE - MODIFY THIS LIST AS NEEDED
@@ -67,7 +73,23 @@ def initialize_static_content_cache_registry(logger=None, db_provider= None) -> 
         registry.register(StaticItemCache(db_provider=db_provider, logger=logger))
 
         _cache_registry = registry
+
+        if logger:
+            logger.info("Static content cache registry initialized with %s cache type(s).", len(registry.all_caches()))
         return registry
+
+
+def is_static_content_cache_registry_initialized() -> bool:
+    with _cache_registry_lock:
+        return _cache_registry is not None
+
+
+def ensure_static_content_cache_registry_initialized(logger: logging.Logger | None = None, db_provider=None) -> StaticContentCacheRegistry:
+    with _cache_registry_lock:
+        if _cache_registry is not None:
+            return _cache_registry
+
+    return initialize_static_content_cache_registry(logger=logger, db_provider=db_provider)
 
 def get_static_content_cache_registry() -> StaticContentCacheRegistry:
     """Return the initialized cache registry."""
@@ -78,6 +100,7 @@ def get_static_content_cache_registry() -> StaticContentCacheRegistry:
 
 def resolve_static_content_cache(cache_type: Type[Any]) -> IStaticContentCache[Any]:
     """Convenience wrapper for resolving a cache by type."""
-    return get_static_content_cache_registry().resolve(cache_type)
+    registry = ensure_static_content_cache_registry_initialized()
+    return registry.resolve(cache_type)
 
 

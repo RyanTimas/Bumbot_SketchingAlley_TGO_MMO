@@ -1,5 +1,6 @@
 import asyncio
 import sys
+import logging
 
 import aiohttp
 import discord
@@ -10,6 +11,7 @@ from src.commons.CommonDecorators import admin_only
 from src.commons.CommonFunctions import get_user_discord_profile_pic, flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
+from src.caching.cache_registry import ensure_static_content_cache_registry_initialized, is_static_content_cache_registry_initialized
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardView import AvatarBoardView
@@ -45,6 +47,9 @@ class DiscordBot(commands.Bot):
     def __init__(self, token: str,):
         super().__init__(command_prefix='!', intents=discord.Intents.all())
         self.token = token
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+        self._ensure_static_cache_registry_ready()
 
         # Register bot functionality
         self.register_events()
@@ -60,6 +65,15 @@ class DiscordBot(commands.Bot):
 
         self.creature_spawner_handler = CreatureSpawnerHandler(discord_bot=self)
         self.shop_restock_scheduler = ShopScheduler(discord_bot=self)
+
+    def _ensure_static_cache_registry_ready(self):
+        was_initialized = is_static_content_cache_registry_initialized()
+        ensure_static_content_cache_registry_initialized(logger=self._logger, db_provider=get_tgommo_db_handler)
+
+        if was_initialized:
+            self._logger.info("Static content cache registry already initialized before Discord bot startup.")
+        else:
+            self._logger.info("Static content cache registry initialized during Discord bot startup.")
 
 
     '''---- EVENTS ----------------------------------------------------------------------------------------------------'''

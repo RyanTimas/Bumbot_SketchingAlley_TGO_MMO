@@ -41,7 +41,7 @@ async def check_for_milestone_catch_rewards(user_id, interaction):
 
 # check if player should get a random battery reward from catching a creature
 async def check_for_random_item_catch_reward(user_id, interaction):
-    if random.randint(1, 32) != 1:
+    if random.randint(1, 20) != 1:
         return False
 
     #todo: we implemented grabbing items from the cache but need to implement player item caching; will use the database for now until we implement player item caching

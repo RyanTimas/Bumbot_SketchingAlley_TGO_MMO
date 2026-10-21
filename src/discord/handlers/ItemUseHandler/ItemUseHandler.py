@@ -94,8 +94,8 @@ class ItemUseHandler:
 
         # kingdom bait takes priority; if a kingdom is present, keep rerolling rarity until a valid combo exists. kingdom baits have a higher chance to spawn rarer creatures
         kingdom = kingdom_bait_map.get(item.item_id)
-        rarity = rarity_bait_map.get(item.item_id) or get_event_rarity().name if kingdom else get_rarity().name
 
+        rarity = get_event_rarity().name if kingdom else rarity_bait_map.get(item.item_id)
         creature = await self.discord_bot.creature_spawner_handler.creature_picker(rarity=rarity, kingdom=kingdom)
         if creature is None:
             if kingdom:

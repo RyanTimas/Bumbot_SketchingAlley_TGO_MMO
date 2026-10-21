@@ -199,12 +199,13 @@ class CreatureSpawnerHandler:
 
             return None
 
-        is_mythical = rarity == TGOMMO_RARITY_MYTHICAL
+        # if no kingdom is specified, select a creature based on rarity and spawn pool
         rarity = rarity if rarity and rarity != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
         available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity]
         selected_creature = deepcopy(available_creatures[random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0])
 
-        if is_mythical:
+        # if the creature was determined to be mythical, set its rarity to mythical and adjust its spawn/despawn time accordingly
+        if rarity == TGOMMO_RARITY_MYTHICAL:
             selected_creature.set_creature_rarity(MYTHICAL)
 
         selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity == TGOMMO_RARITY_MYTHICAL or rarity == TGOMMO_RARITY_TRANSCENDANT) else 0)

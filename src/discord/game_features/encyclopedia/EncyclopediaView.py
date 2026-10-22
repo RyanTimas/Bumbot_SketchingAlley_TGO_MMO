@@ -4,7 +4,7 @@ from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 next_ = "next"
 previous = "previous"

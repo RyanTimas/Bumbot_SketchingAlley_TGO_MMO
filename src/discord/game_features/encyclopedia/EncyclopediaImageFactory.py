@@ -8,8 +8,8 @@ from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.CreatureRarity import TRANSCENDANT, MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY, NIGHT, DAY, BOTH
+from resources.constants.file_paths import *
 
 
 class EncyclopediaImageFactory(BaseImageFactory):

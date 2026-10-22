@@ -5,8 +5,8 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOEnvironment import NATIONAL_ENV
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
+from resources.constants.file_paths import *
 
 
 class EncyclopediaLocationIndexImageFactory(BaseImageFactory):

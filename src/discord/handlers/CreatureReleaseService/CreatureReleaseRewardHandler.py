@@ -4,8 +4,8 @@ import traceback
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.CreatureRarity import get_rarity_hierarchy_value
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.TGO_MMO_creature_constants import MUSSEL_DEX_NO
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_creature_constants import MUSSEL_DEX_NO
 
 class CreatureReleaseRewardHandler:
     def __init__(self, user_id):

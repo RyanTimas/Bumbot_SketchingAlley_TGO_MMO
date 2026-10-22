@@ -4,7 +4,7 @@ import discord
 
 from src.commons.CommonDecorators import interaction_guard
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.general_constants import TGOMMO_ROLE_ID
+from resources.constants.general_constants import TGOMMO_ROLE_ID
 
 
 class AlertCenterView(BaseView):

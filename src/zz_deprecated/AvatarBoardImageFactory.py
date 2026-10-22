@@ -5,7 +5,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.game_features.avatar_board.AvatarIconFactory import AvatarIconFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 AVATAR_QUESTS = "AVATAR_QUESTS"
 UNLOCKED_AVATARS = "UNLOCKED_AVATARS"

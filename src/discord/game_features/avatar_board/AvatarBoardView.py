@@ -5,7 +5,7 @@ from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.avatar_board import AvatarBoardImageFactory
 from src.discord.game_features.avatar_board.AvatarChangeView import AvatarChangeView
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 
 class AvatarBoardView(BaseView):

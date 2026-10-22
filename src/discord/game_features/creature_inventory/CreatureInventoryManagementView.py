@@ -8,7 +8,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_inventory.CreatureInventoryImageFactory import CreatureInventoryImageFactory
 from src.discord.handlers.CreatureReleaseService.CreatureReleaseService import CreatureReleaseService
 from src.discord.handlers.CreatureReleaseService.ReleaseResultImageFactory import ReleaseResultImageFactory
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 
 class CreatureInventoryManagementView(discord.ui.View):

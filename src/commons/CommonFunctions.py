@@ -8,9 +8,9 @@ import requests
 from PIL import Image, ImageFont, ImageDraw, ImageFilter, ImageChops
 from discord import File
 
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
-from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
+from resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK, FONT_COLOR_WHITE
+from resources.constants.file_paths import *
+from resources.constants.general_constants import IMAGE_FOLDER_BASE_PATH, IMAGE_FOLDER_IMAGES
 
 #************************************************************************************
 #--------------------------------FILE FUNCTIONS--------------------------------------

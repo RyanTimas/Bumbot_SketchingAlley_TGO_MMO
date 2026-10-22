@@ -1,8 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE
+from resources.constants.file_paths import *
 
 
 class AvatarUnlockImageFactory:

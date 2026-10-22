@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from src.resources.constants.file_paths import LOGS_DIR
+from resources.constants.file_paths import LOGS_DIR
 
 
 class LogHandler:

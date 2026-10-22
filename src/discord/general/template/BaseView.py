@@ -7,7 +7,7 @@ from src.commons.CommonFunctions import convert_to_png
 from src.commons.Modals.ChangeUserModal import ChangeUserModal
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.file_paths import get_help_image_path
+from resources.constants.file_paths import get_help_image_path
 
 
 class BaseView(discord.ui.View):

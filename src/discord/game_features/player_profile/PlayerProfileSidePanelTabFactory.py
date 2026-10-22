@@ -4,8 +4,8 @@ from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_po
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects import TGOPlayer
 from src.discord.objects.TGOCollection import TGOCollection
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
+from resources.constants.file_paths import *
 
 
 class PlayerProfileSidePanelTabFactory:

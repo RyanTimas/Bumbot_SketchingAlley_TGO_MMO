@@ -4,8 +4,8 @@ from src.commons.CommonFunctions import resize_text_to_fit, add_border_to_image,
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.item_inventory.ItemInventoryIconImageFactory import ItemInventoryIconImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, ITEM_INVENTORY_EXCLUDED_ITEM_TYPES, ITEM_INVENTORY_TABS
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, ITEM_INVENTORY_EXCLUDED_ITEM_TYPES, ITEM_INVENTORY_TABS
+from resources.constants.file_paths import *
 
 
 class ItemInventoryImageFactory(BaseImageFactory):

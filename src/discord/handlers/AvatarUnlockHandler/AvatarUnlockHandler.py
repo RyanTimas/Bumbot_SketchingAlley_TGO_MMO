@@ -6,7 +6,7 @@ import pytz
 from src.commons.CommonFunctions import convert_to_png, convert_to_datetime
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 # check if player has unlocked any secret avatars based on their creature nicknames and unlock them if they haven't already been unlocked
 async def check_for_secret_avatars(user_id, interaction, nickname):

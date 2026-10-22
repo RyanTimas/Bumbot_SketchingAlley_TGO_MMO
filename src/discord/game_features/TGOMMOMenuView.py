@@ -20,8 +20,8 @@ from src.discord.game_features.shop.ShopView import ShopView
 from src.discord.game_features.trap_manager.TrapManagerImageFactory import TrapManagerImageFactory
 from src.discord.game_features.trap_manager.TrapManagerView import TrapManagerView
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP
+from resources.constants.file_paths import *
 
 server_encyclopedia_button_name = "server_encyclopedia"
 user_encyclopedia_button_name = "user_encyclopedia"

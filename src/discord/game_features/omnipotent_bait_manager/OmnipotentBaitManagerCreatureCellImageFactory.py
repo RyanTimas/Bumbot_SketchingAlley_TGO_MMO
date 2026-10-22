@@ -2,8 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position, get_centered_image_position, convert_int_to_letter, set_image_opacity, convert_image_to_silhouette
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 print_type_map = {
     OMNIPOTENT_BAIT_MANAGER_CREATURE_CATCH_TYPE_CAUGHT: OMNIPOTENT_BAIT_MANAGER_CREATURE_ICON_CAUGHT_PRINT_IMAGE,

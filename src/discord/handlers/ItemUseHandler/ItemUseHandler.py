@@ -13,8 +13,8 @@ from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects.CreatureRarity import get_event_rarity, get_rarity, MYTHICAL
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 
 class ItemUseHandler:

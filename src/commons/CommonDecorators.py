@@ -12,7 +12,7 @@ import asyncio
 from typing import Callable, Optional, Any
 
 from src.commons.CommonFunctions import check_if_user_can_interact_with_view
-from src.resources.constants.general_constants import DISCORD_USER_WHITELIST
+from resources.constants.general_constants import DISCORD_USER_WHITELIST
 
 # Retry decorator for handling SSL errors. Retries the decorated function up to max_retries times with a delay between attempts if an SSL error occurs.
 def retry_on_ssl_error(max_retries=3, delay=1):

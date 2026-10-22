@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import resize_text_to_fit
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 
 class AvatarIconFactory:

@@ -5,7 +5,7 @@ from src.commons.CommonFunctions import convert_to_png
 from src.caching import resolve_static_content_cache
 from src.caching.db_specific_caches.static_item_cache import StaticItemCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, ITEM_ID_OMNIPOTENT_BAIT
+from resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, ITEM_ID_OMNIPOTENT_BAIT
 
 # check if player has unlocked any items from catching creature
 async def check_for_milestone_catch_rewards(user_id, interaction):

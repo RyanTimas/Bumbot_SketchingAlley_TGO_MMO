@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Dict
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, TRAP_ID_RARITY_MAP
+from resources.constants.TGO_MMO_constants import ITEM_ID_BASIC_TRAP, ITEM_ID_BATTERY, TRAP_ID_RARITY_MAP
 
 # Global map storing user_id -> (battery_count, trap_id)
 _TRAP_MAP_LOCK = threading.Lock()

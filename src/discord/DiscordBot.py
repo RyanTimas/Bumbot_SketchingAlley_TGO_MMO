@@ -37,9 +37,9 @@ from src.discord.tests.ShopTests import register_shop_tests
 from src.discord.tests.EncyclopediaTests import register_encyclopedia_tests
 from src.discord.handlers.ScheduledServices.ShopScheduler import ShopScheduler
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
+from resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
     TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
+from resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
     TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 

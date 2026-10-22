@@ -2,8 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import *
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_WHITE, FONT_COLOR_DARK_GRAY
+from resources.constants.file_paths import *
 
 
 class EncyclopediaXLImageFactory(BaseImageFactory):

@@ -17,7 +17,7 @@ from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import BASE_CREATURE_STORAGE_EXPANSIONS, MAX_CREATURE_STORAGE_EXPANSIONS, CREATURE_STORAGE_EXPANSION_BASE_COST, ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION
+from resources.constants.TGO_MMO_constants import BASE_CREATURE_STORAGE_EXPANSIONS, MAX_CREATURE_STORAGE_EXPANSIONS, CREATURE_STORAGE_EXPANSION_BASE_COST, ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION
 
 
 class CreatureEncounterView(View):

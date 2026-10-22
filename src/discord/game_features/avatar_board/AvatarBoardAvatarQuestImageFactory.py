@@ -3,8 +3,8 @@ from PIL import Image
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import AVATAR_BOARD_SORT_AVATAR_TYPE, AVATAR_TYPE_SORT_ORDER
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import AVATAR_BOARD_SORT_AVATAR_TYPE, AVATAR_TYPE_SORT_ORDER
+from resources.constants.file_paths import *
 
 
 class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):

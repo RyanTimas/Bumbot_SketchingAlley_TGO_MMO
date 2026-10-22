@@ -3,8 +3,8 @@ from PIL import Image
 from src.discord.game_features.avatar_board.AvatarBoardAvatarQuestImageFactory import AvatarBoardAvatarQuestImageFactory
 from src.discord.game_features.avatar_board.AvatarBoardUnlockedAvatarImageFactory import AvatarBoardUnlockedAvatarImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import AVATAR_TYPE_SORT_ORDER, AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY
-from src.resources.constants.file_paths import CREATURE_INVENTORY_RELEASE_SUMMARY_BG_IMAGE
+from resources.constants.TGO_MMO_constants import AVATAR_TYPE_SORT_ORDER, AVATAR_INVENTORY_UNLOCKED_AVATARS_TAB_KEY
+from resources.constants.file_paths import CREATURE_INVENTORY_RELEASE_SUMMARY_BG_IMAGE
 
 
 class AvatarChangeImageFactory(BaseImageFactory):

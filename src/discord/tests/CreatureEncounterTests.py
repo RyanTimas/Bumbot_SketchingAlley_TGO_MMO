@@ -4,7 +4,7 @@ from src.commons.logs.LogHandler import LogHandler
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEncounterImageFactory import CreatureEncounterImageFactory
 from src.discord.objects.CreatureRarity import MYTHICAL
-from src.resources.constants.file_paths import PROJECT_ROOT, LOGS_DIR, OUTPUT_DIR
+from resources.constants.file_paths import PROJECT_ROOT, LOGS_DIR, OUTPUT_DIR
 
 
 """Generate encounter images for all environment creatures"""

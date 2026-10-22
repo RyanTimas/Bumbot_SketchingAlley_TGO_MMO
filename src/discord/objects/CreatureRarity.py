@@ -1,6 +1,6 @@
 import random
 import discord
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 
 class CreatureRarity:

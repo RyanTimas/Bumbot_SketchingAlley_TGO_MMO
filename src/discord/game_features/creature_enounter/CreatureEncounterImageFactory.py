@@ -5,8 +5,8 @@ from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit
 from src.discord.objects.CreatureRarity import TRANSCENDANT
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 
 class CreatureEncounterImageFactory:

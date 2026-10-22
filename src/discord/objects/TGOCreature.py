@@ -1,7 +1,7 @@
 from src.discord.objects.CreatureRarity import *
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.TGO_MMO_creature_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_creature_constants import *
+from resources.constants.file_paths import *
 from PIL import Image
 
 class TGOCreature:

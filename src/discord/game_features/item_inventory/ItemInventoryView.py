@@ -5,8 +5,8 @@ from src.commons.CommonFunctions import *
 from src.discord.game_features.item_inventory import ItemInventoryImageFactory
 from src.discord.handlers.ItemUseHandler.ItemUseHandler import ItemUseHandler
 from src.discord.general.template.BaseView import BaseView
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 
 class ItemInventoryView(BaseView):

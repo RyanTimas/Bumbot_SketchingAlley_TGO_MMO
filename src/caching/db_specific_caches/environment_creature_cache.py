@@ -8,7 +8,7 @@ from src.commons.CommonDecorators import measure_execution_time
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
 from src.discord.objects.TGOEnvironment import TGOEnvironment
-from src.resources.constants.TGO_MMO_constants import BOTH, DAY, NIGHT
+from resources.constants.TGO_MMO_constants import BOTH, DAY, NIGHT
 
 
 @dataclass(frozen=True, slots=True)

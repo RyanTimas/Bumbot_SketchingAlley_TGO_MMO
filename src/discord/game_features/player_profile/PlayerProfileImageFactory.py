@@ -2,8 +2,8 @@ from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.player_profile.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 class PlayerProfileImageFactory(BaseImageFactory):
     def __init__(self, message_author, target_user, tab_is_open: bool = False, open_tab: str = None):

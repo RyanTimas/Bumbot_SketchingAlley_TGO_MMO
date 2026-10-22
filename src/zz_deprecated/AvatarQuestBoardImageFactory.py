@@ -5,7 +5,7 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 class AvatarQuestBoardImageFactory(BaseImageFactory):
     def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer):

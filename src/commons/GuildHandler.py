@@ -1,5 +1,5 @@
 import discord
-from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID
+from resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID
 
 _guild_instance = None
 

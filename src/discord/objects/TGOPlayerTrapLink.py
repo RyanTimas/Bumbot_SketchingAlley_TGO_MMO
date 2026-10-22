@@ -4,7 +4,7 @@ from PIL import Image
 from src.discord.handlers.ItemUnlockHandler.ItemUnlockImageFactory import ItemUnlockImageFactory
 from src.discord.objects import TGOPlayerItem
 from src.discord.objects.CreatureRarity import CreatureRarity
-from src.resources.constants.file_paths import ITEM_BASE, IMAGE_FILE_EXTENSION
+from resources.constants.file_paths import ITEM_BASE, IMAGE_FILE_EXTENSION
 
 
 class TGOPlayerTrapLink:

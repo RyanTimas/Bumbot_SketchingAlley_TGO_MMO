@@ -4,8 +4,8 @@ from PIL import Image
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
 
 
 class AvatarBoardUnlockedAvatarImageFactory(BaseImageFactory):

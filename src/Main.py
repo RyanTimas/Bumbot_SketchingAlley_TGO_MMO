@@ -4,7 +4,7 @@ import os
 import logging
 import certifi
 
-from src.resources.constants.file_paths import OUTPUT_DIR, LOGS_DIR
+from resources.constants.file_paths import OUTPUT_DIR, LOGS_DIR
 
 # Point Python's SSL to certifi bundle before any network libs import
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -12,7 +12,7 @@ from src.commons.GameStateManager import initialize_game_state_manager
 from src.database.handlers.DatabaseHandler import initialize_database, get_tgommo_db_handler
 from src.caching.cache_registry import ensure_static_content_cache_registry_initialized
 from src.caching.cache_startup import StartupCacheInitializer
-from src.resources.constants.general_constants import *
+from resources.constants.general_constants import *
 from src.discord.DiscordBot import DiscordBot
 
 

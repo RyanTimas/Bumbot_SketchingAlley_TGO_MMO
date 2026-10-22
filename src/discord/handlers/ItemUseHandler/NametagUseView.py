@@ -8,7 +8,7 @@ from src.commons.CommonViewComponents import create_display_creature_collection_
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_secret_avatars
 from src.discord.objects import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import ITEM_ID_NAMETAG
+from resources.constants.TGO_MMO_constants import ITEM_ID_NAMETAG
 
 
 class NametagUseView(View):

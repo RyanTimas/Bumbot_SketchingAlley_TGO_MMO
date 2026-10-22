@@ -3,7 +3,7 @@ from random import randint
 from PIL import Image
 
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockImageFactory import AvatarUnlockImageFactory
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 
 class TGOAvatar:

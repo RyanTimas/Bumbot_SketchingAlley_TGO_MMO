@@ -11,8 +11,8 @@ from src.discord.objects import TGOCreature
 from src.discord.objects.CreatureRarity import MYTHICAL, TRANSCENDANT
 from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import TGOMMO_CREATURE_EMBED_GRASS_ICON
 
 
 class CreatureEmbedHandler:

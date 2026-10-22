@@ -4,9 +4,9 @@ from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_po
     convert_date_format_to_month_name
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_TRAP_MANAGER_OFF_GREEN, \
+from resources.constants.TGO_MMO_constants import FONT_COLOR_TRAP_MANAGER_OFF_GREEN, \
     FONT_COLOR_TRAP_MANAGER_OFF_BROWN, FONT_COLOR_TRAP_MANAGER_FOREST_GREEN
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 
 class TrapManagerCreatureCellImageFactory:

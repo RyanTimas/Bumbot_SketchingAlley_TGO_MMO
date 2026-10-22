@@ -6,7 +6,7 @@ from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_po
     resize_text_to_fit_newline
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.file_paths import *
+from resources.constants.file_paths import *
 
 
 class ShopItemImageFactory:

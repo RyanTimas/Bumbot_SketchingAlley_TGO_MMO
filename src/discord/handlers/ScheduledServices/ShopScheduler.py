@@ -12,9 +12,9 @@ from discord.ext.commands import Bot
 from src.commons.CommonFunctions import convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import SHOP_UPDATE_RESTOCK_IMAGE
-from src.resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHANNEL_ID
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import SHOP_UPDATE_RESTOCK_IMAGE
+from resources.constants.general_constants import TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
 class ShopScheduler:

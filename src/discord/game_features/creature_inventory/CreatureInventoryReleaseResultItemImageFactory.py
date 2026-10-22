@@ -2,8 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.commons.CommonFunctions import get_centered_text_position, resize_text_to_fit
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
-from src.resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
-from src.resources.constants.file_paths import *
+from resources.constants.TGO_MMO_constants import FONT_COLOR_BLACK
+from resources.constants.file_paths import *
 
 
 class CreatureInventoryReleaseResultItemImageFactory:

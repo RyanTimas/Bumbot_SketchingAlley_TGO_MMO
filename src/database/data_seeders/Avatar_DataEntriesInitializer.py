@@ -1,6 +1,6 @@
 from src.database.queries.tgommo_avatar_quest_db_queries import *
 from src.database.queries.tgommo_db_queries import *
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 
 def insert_avatar_data_entries(queryHandler):

@@ -12,7 +12,7 @@ from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects.TGOPlayer import TGOPlayer
 from src.discord.objects.TGOPlayerItem import TGOPlayerItem
 from src.discord.objects.TGOPlayerTrapLink import TGOPlayerTrapLink
-from src.resources.constants.TGO_MMO_constants import *
+from resources.constants.TGO_MMO_constants import *
 
 
 class TGOMMODatabaseHandler:

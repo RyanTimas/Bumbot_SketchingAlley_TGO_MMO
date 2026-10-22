@@ -7,9 +7,9 @@ from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.CreatureRarity import CreatureRarity, TRANSCENDANT
 from src.discord.objects.TGOAvatar import TGOAvatar
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import *
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
+from resources.constants.general_constants import *
 
 
 class AvatarQuestTabFactory:

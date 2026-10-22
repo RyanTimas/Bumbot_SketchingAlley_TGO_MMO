@@ -19,9 +19,9 @@ from src.discord.handlers.ItemUseHandler.TrapHandler import TrapHandler
 from src.discord.objects import TGOPlayer
 from src.discord.objects.CreatureRarity import *
 from src.discord.objects.TGOCreature import TGOCreature
-from src.resources.constants.TGO_MMO_constants import *
-from src.resources.constants.file_paths import *
-from src.resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
+from resources.constants.TGO_MMO_constants import *
+from resources.constants.file_paths import *
+from resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
 
 class CreatureSpawnerHandler:

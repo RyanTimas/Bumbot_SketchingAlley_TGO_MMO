@@ -3,7 +3,12 @@ import logging
 from typing import Any, Callable, Optional, Type, cast
 
 from src.caching.cache_base import CacheLoadStrategy, IStaticContentCache, IStaticContentCacheRegistry
+from src.caching.db_specific_caches.avatar_cache import AvatarCache
+from src.caching.db_specific_caches.creature_cache import CreatureCache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
+from src.caching.db_specific_caches.player_state_cache import PlayerStateCache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.caching.db_specific_caches.static_item_cache import StaticItemCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 
@@ -69,7 +74,12 @@ def initialize_static_content_cache_registry(logger=None, db_provider= None) -> 
         registry = StaticContentCacheRegistry()
 
         # REGISTER EAGER CACHES HERE - MODIFY THIS LIST AS NEEDED
+        registry.register(CreatureCache(db_provider=db_provider, logger=logger))
+        registry.register(EnvironmentCache(db_provider=db_provider, logger=logger))
+        registry.register(QuestCollectionCache(db_provider=db_provider, logger=logger))
         registry.register(EnvironmentCreatureCache(db_provider=db_provider, logger=logger))
+        registry.register(AvatarCache(db_provider=db_provider, logger=logger))
+        registry.register(PlayerStateCache(db_provider=db_provider, logger=logger))
         registry.register(StaticItemCache(db_provider=db_provider, logger=logger))
 
         _cache_registry = registry

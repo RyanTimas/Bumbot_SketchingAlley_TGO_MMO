@@ -2,13 +2,17 @@ select * from tgommo_creature c;
 select * from tgommo_environment_creature ec order by ec.environment_id;
 select * from tgommo_user_creature tuc;
 
+select * from tgommo_environment e;
+
+select * from tgommo_inventory_item tii;
+
 select * from users;
+
 select * from user_avatar ua;
 select * from tgommo_user_profile_avatar_link ual;
 select * from tgommo_user_avatar_unlock_condition uauc;
 select * from tgommo_user_avatar_nickname_link uanl;
 
-select * from tgommo_inventory_item tii;
 select * from tgommo_user_item_inventory_link tuiil where item_id="Trap_0";
 select * from tgommo_user_trap_link tutl;
 
@@ -36,3 +40,4 @@ DROP TABLE tgommo_user_profile_avatar_link;
 DROP TABLE tgommo_user_avatar_unlock_condition;
 
 
+now I need you to analyze the code base & update all references to get_tgommo_db_handler() where a static object is being called from the database to call from cache instead

@@ -1,3 +1,5 @@
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.avatar_cache import AvatarCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.GameStateManager import get_game_state_manager, game_state_manager
 from src.discord.game_features.player_profile.PlayerProfileImageFactory import *
@@ -125,7 +127,7 @@ class BuyConfirmationView(discord.ui.View):
         super().__init__(timeout=60)
         self.message_author = message_author
         self.is_avatar = is_avatar
-        self.purchased_item = get_tgommo_db_handler().get_avatar_by_id(avatar_id=selected_item.avatar_id) if is_avatar else get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=selected_item.item_id)
+        self.purchased_item = resolve_static_content_cache(AvatarCache).get_avatar_by_id(avatar_id=selected_item.avatar_id) if is_avatar else get_tgommo_db_handler().get_inventory_item_by_user_id_and_item_id(user_id=self.message_author.user_id, item_id=selected_item.item_id)
         self.parent_view = parent_view
         self.original_message = original_message
 

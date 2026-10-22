@@ -1,3 +1,5 @@
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.encyclopedia.EncyclopediaImageFactory import EncyclopediaImageFactory
@@ -12,10 +14,10 @@ def register_encyclopedia_tests(bot):
             message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)
 
             if environment_id:
-                env = get_tgommo_db_handler().get_environment_by_id(environment_id)
+                env = resolve_static_content_cache(EnvironmentCache).get_environment_by_id(environment_id)
                 envs = [env] if env else []
             else:
-                envs = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
+                envs = resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time()
 
             total = len(envs)
             await ctx.send(f"Starting encyclopedia generation for {total} environment(s)...")
@@ -40,8 +42,8 @@ def register_encyclopedia_tests(bot):
             target_user = get_tgommo_db_handler().get_user_profile_by_user_id(target_user_id)
 
             # Determine a default environment (first in rotation) for the encyclopedia page view
-            envs = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
-            env = envs[0] if envs else get_tgommo_db_handler().get_environment_by_id(1)
+            envs = resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time()
+            env = envs[0] if envs else resolve_static_content_cache(EnvironmentCache).get_environment_by_id(1)
             factory = EncyclopediaImageFactory(environment=env, message_author=message_author, target_user=target_user)
             view = factory.get_view() if hasattr(factory, 'get_view') else None
 

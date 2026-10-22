@@ -1,4 +1,5 @@
 from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonViews import ConfirmationView
@@ -91,7 +92,7 @@ class OmnipotentBaitManagerView(BaseView):
         return callback
 
     def create_environment_select_dropdown(self, row=2):
-        options = [discord.SelectOption(label=f"{environment.dex_no}. {environment.name}", value=environment.environment_id) for environment in get_tgommo_db_handler().get_all_environments_in_rotation_by_time()]
+        options = [discord.SelectOption(label=f"{environment.dex_no}. {environment.name}", value=environment.environment_id) for environment in resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time()]
         if not options:
             options.append(discord.SelectOption(label="No environments available.", value="none"))
 
@@ -103,7 +104,7 @@ class OmnipotentBaitManagerView(BaseView):
         async def callback(interaction):
             await interaction.response.defer()
 
-            new_image = self.reload_image(active_environment=get_tgommo_db_handler().get_environment_by_id(interaction.data['values'][0]))
+            new_image = self.reload_image(active_environment=resolve_static_content_cache(EnvironmentCache).get_environment_by_id(interaction.data['values'][0]))
             self.refresh_view()
             await interaction.message.edit(attachments=[new_image], view=self)
         return callback

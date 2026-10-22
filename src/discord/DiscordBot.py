@@ -11,6 +11,10 @@ from src.commons.CommonDecorators import admin_only
 from src.commons.CommonFunctions import get_user_discord_profile_pic, flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.commons.GuildHandler import set_guild
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.creature_cache import CreatureCache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.caching.cache_registry import ensure_static_content_cache_registry_initialized, is_static_content_cache_registry_initialized
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarBoardImageFactory import AvatarBoardImageFactory
@@ -138,7 +142,7 @@ class DiscordBot(commands.Bot):
 
         @self.tree.command(name="bumbot-test", description="A test function. Does whatever I need it to for whenever I need it.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
         async def bumbot_test(interaction: discord.Interaction):
-            get_tgommo_db_handler().get_active_collections(convert_to_object=True)
+            resolve_static_content_cache(QuestCollectionCache).get_active_collections(convert_to_object=True)
 
             await interaction.message.delete()
             return True
@@ -277,7 +281,7 @@ class DiscordBot(commands.Bot):
         @admin_only()
         @self.tree.command(name="spawn_creature_tgommo", description="Manually spawn a creature. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
         async def tgommo_spawn_creature(interaction, creature_id:int = None, environment_id:int=None, is_mythical: str = None):
-            creature = get_tgommo_db_handler().get_environment_creature_by_environment_id_and_creature_id(creature_id=creature_id, environment_id=environment_id) if creature_id else await self.creature_spawner_handler.creature_picker()
+            creature = resolve_static_content_cache(CreatureCache).get_environment_creature_by_environment_id_and_creature_id(creature_id=creature_id, environment_id=environment_id) if creature_id else await self.creature_spawner_handler.creature_picker()
             if creature_id and not creature:
                 await interaction.response.send_message(f"Invalid creature combination: creature_id {creature_id} not found in environment_id {environment_id}", delete_after=10, ephemeral=True)
                 return
@@ -295,8 +299,8 @@ class DiscordBot(commands.Bot):
                 await interaction.response.send_message(f"Please provide either an environment dex number or environment ID to spawn creatures.", delete_after=10, ephemeral=True)
                 return
 
-            environment = get_tgommo_db_handler().get_environments_by_dex_no(dex_no=environment_dex_no)[0] if environment_dex_no else get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id)
-            spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_dex_no(dex_no=environment.dex_no) if environment_dex_no else get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment_id)
+            environment = resolve_static_content_cache(EnvironmentCache).get_environments_by_dex_no(dex_no=environment_dex_no)[0] if environment_dex_no else resolve_static_content_cache(EnvironmentCache).get_environment_by_id(environment_id=environment_id)
+            spawn_pool = resolve_static_content_cache(CreatureCache).get_creatures_for_environment_by_dex_no(dex_no=environment.dex_no) if environment_dex_no else resolve_static_content_cache(CreatureCache).get_creatures_for_environment_by_environment_id(environment_id=environment_id)
 
             await interaction.response.send_message(f"Spawning all creatures for {environment.name}", delete_after=5, ephemeral=True)
             for creature in spawn_pool:

@@ -1,5 +1,7 @@
 from PIL import Image
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
@@ -11,7 +13,7 @@ class AvatarQuestBoardImageFactory(BaseImageFactory):
     def __init__(self, message_author: TGOPlayer, target_user: TGOPlayer):
         super().__init__(message_author, target_user)
 
-        self.avatar_quests = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
+        self.avatar_quests = resolve_static_content_cache(QuestCollectionCache).get_avatars_with_unlock_conditions()
 
         self.page_num = 1
         self.total_pages = len(self.avatar_quests) // 18 + (1 if len(self.avatar_quests) % 18 > 0 else 0)

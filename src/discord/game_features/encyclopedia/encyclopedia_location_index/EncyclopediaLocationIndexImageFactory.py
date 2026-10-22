@@ -1,5 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.CommonFunctions import convert_to_png, resize_text_to_fit, build_user_profile_pic
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.encyclopedia.encyclopedia_location_index.EncyclopediaLocationIndexIconFactory import EncyclopediaLocationIndexIconFactory
@@ -93,7 +95,7 @@ class EncyclopediaLocationIndexImageFactory(BaseImageFactory):
     def get_location_icons(self, page_swap = 0):
         if len(self.locations) == 0:
             self.page_num = 1
-            self.locations = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
+            self.locations = resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time()
             self.locations.insert(0, NATIONAL_ENV)
 
         self.page_num += page_swap

@@ -1,5 +1,8 @@
 import os
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.creature_cache import CreatureCache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.logs.LogHandler import LogHandler
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter.CreatureEncounterImageFactory import CreatureEncounterImageFactory
@@ -15,7 +18,7 @@ def register_creature_encounter_tests(bot):
         message_author = get_tgommo_db_handler().get_user_profile_by_user_id(user_id)
 
         # Filter creatures based on parameters
-        all_creatures = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=environment_id) if environment_id else get_tgommo_db_handler().get_all_environment_creatures()
+        all_creatures = resolve_static_content_cache(CreatureCache).get_creatures_for_environment_by_environment_id(environment_id=environment_id) if environment_id else resolve_static_content_cache(CreatureCache).get_all_environment_creatures()
         rarity_filter = [False, True] if mythical else [False]
 
         status_message = await ctx.send("Starting creature image generation...")
@@ -40,7 +43,7 @@ def register_creature_encounter_tests(bot):
                         if mythical:
                             creature.set_creature_rarity(MYTHICAL)
 
-                        encounter_image_factory = CreatureEncounterImageFactory(creature=creature, environment=get_tgommo_db_handler().get_environment_by_id(creature.environment_id) if creature.environment_id != -1 else None)
+                        encounter_image_factory = CreatureEncounterImageFactory(creature=creature, environment=resolve_static_content_cache(EnvironmentCache).get_environment_by_id(creature.environment_id) if creature.environment_id != -1 else None)
                         encounter_file = encounter_image_factory.create_encounter_image()
 
                         # Save the image to the output directory with a unique filename

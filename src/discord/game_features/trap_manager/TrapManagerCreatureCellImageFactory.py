@@ -1,8 +1,9 @@
 from PIL import Image, ImageDraw, ImageFont
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.CommonFunctions import resize_text_to_fit, get_centered_text_position, get_centered_image_position, \
     convert_date_format_to_month_name
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
 from resources.constants.TGO_MMO_constants import FONT_COLOR_TRAP_MANAGER_OFF_GREEN, \
     FONT_COLOR_TRAP_MANAGER_OFF_BROWN, FONT_COLOR_TRAP_MANAGER_FOREST_GREEN
@@ -44,7 +45,7 @@ class TrapManagerCreatureCellImageFactory:
 
 
         # ADD ENVIRONMENT TO IMAGE
-        environment_name = get_tgommo_db_handler().get_environment_by_id(self.creature.environment_id).name
+        environment_name = resolve_static_content_cache(EnvironmentCache).get_environment_by_id(self.creature.environment_id).name
         font = resize_text_to_fit(text=f"{environment_name}", draw=draw, font=ImageFont.truetype(FONT_FOREST_REGULAR_FILE, 10), max_width=126, min_font_size=8)
         draw.text(get_centered_text_position(text=f"{environment_name}", font=font, center_pixel_location=(70, 140)), f"{environment_name}", fill=FONT_COLOR_TRAP_MANAGER_OFF_BROWN, font=font)
         return base_image

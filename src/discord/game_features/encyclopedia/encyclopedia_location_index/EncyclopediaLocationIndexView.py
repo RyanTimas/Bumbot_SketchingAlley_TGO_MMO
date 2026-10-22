@@ -1,6 +1,8 @@
 import discord
 from discord.ui import Select
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -14,7 +16,7 @@ from src.discord.objects.TGOEnvironment import NATIONAL_ENV
 class EncyclopediaLocationIndexView(BaseView):
     def __init__(self, message_author, target_user, encyclopedia_location_index_image_factory: EncyclopediaLocationIndexImageFactory, original_view=None):
         super().__init__(message_author=message_author, target_user=target_user, image_factory=encyclopedia_location_index_image_factory, original_view=original_view)
-        self.selectable_environments = get_tgommo_db_handler().get_all_environments_in_rotation_by_time()
+        self.selectable_environments = resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time()
         self.selectable_environments.insert(0, NATIONAL_ENV)
         self.selected_environment = self.selectable_environments[0]
 
@@ -57,7 +59,7 @@ class EncyclopediaLocationIndexView(BaseView):
         @interaction_guard(self)
         async def callback(interaction):
             environment_id = int(interaction.data["values"][0]) if interaction.data["values"] else None
-            self.selected_environment = get_tgommo_db_handler().get_environment_by_id(environment_id=environment_id) if environment_id > 0 else NATIONAL_ENV
+            self.selected_environment = resolve_static_content_cache(EnvironmentCache).get_environment_by_id(environment_id=environment_id) if environment_id > 0 else NATIONAL_ENV
         return callback
 
 

@@ -4,7 +4,9 @@ import tempfile
 import threading
 from typing import Optional
 
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.avatar_cache import AvatarCache
+from src.caching.db_specific_caches.static_item_cache import StaticItemCache
 from src.discord.objects import TGOPlayerItem
 # Global instance - initialized as None
 game_state_manager = None
@@ -106,7 +108,7 @@ class GameStateManager:
 
         shop_items = []
         for item_id in state.get("current_shop_item_ids"):
-            item = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=item_id)
+            item = resolve_static_content_cache(StaticItemCache).get_item_by_id(item_id=item_id)
             if item:
                 shop_items.append(item)
         return shop_items
@@ -115,7 +117,7 @@ class GameStateManager:
 
         shop_avatars = []
         for avatar_id in state.get("current_shop_avatar_ids"):
-            avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id=avatar_id)
+            avatar = resolve_static_content_cache(AvatarCache).get_avatar_by_id(avatar_id=avatar_id)
             if avatar:
                 shop_avatars.append(avatar)
         return shop_avatars
@@ -148,7 +150,7 @@ class GameStateManager:
         bonuses: list[TGOPlayerItem] = []
         for b in raw:
             try:
-                active_item = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=b.get("item_id"))
+                active_item = resolve_static_content_cache(StaticItemCache).get_item_by_id(item_id=b.get("item_id"))
                 if active_item:
                     active_item.despawn_timestamp = int(b.get("despawn_ts"))
                     bonuses.append(active_item)

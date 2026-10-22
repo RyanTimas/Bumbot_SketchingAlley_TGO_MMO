@@ -67,9 +67,9 @@ class CreatureSpawnerHandler:
 
     def define_environment_and_spawn_pool(self, current_environment = None, environment_dex_no: int = 0, environment_variant_no: int = 0):
         if not current_environment:
-            self.current_environment = get_tgommo_db_handler().get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
+            self.current_environment = resolve_static_content_cache(EnvironmentCache).get_environment_by_dex_no_and_variant_no(dex_no=environment_dex_no, variant_no=environment_variant_no)
             get_game_state_manager().set_current_environment(environment_dex_no=self.current_environment.dex_no, environment_variant_no=self.current_environment.variant_no)
-        self.creature_spawn_pool = get_tgommo_db_handler().get_creatures_for_environment_by_environment_id(environment_id=self.current_environment.environment_id)
+        self.creature_spawn_pool = resolve_static_content_cache(CreatureCache).get_creatures_for_environment_by_environment_id(environment_id=self.current_environment.environment_id)
         if IS_EVENT:
             self.creature_spawn_pool = get_tgommo_db_handler().get_event_creatures_from_environment(convert_to_object=True)
 

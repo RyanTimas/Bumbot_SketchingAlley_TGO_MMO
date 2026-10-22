@@ -1,6 +1,8 @@
 # python
 from math import ceil
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.avatar_cache import AvatarCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonFunctions import convert_to_png
 from src.discord.game_features.avatar_board.AvatarChangeImageFactory import AvatarChangeImageFactory
@@ -50,11 +52,11 @@ class AvatarChangeView(BaseView):
             # update the user's profile display avatar in the database
             avatar_id = self.selected_avatar_id
             get_tgommo_db_handler().update_user_profile_display_avatar(user_id=self.target_user.user_id, avatar_id=avatar_id)
-            new_avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id)
+            new_avatar = resolve_static_content_cache(AvatarCache).get_avatar_by_id(avatar_id)
 
             self.original_view.message_author.Avatar = new_avatar
             self.original_view.target_user.Avatar = new_avatar
-            self.target_user.Avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id)
+            self.target_user.Avatar = new_avatar
 
             self.original_view.refresh_view()
             self.refresh_view()
@@ -97,7 +99,7 @@ class AvatarChangeView(BaseView):
         self.avatar_dropdown.options = self.get_avatar_dropdown_options()
 
         # keep select default selection in sync
-        self.avatar_dropdown.label = f"Selected Avatar: {get_tgommo_db_handler().get_avatar_by_id(avatar_id=self.selected_avatar_id).name}" if self.selected_avatar_id else "🚻 Select an Avatar"
+        self.avatar_dropdown.label = f"Selected Avatar: {resolve_static_content_cache(AvatarCache).get_avatar_by_id(avatar_id=self.selected_avatar_id).name}" if self.selected_avatar_id else "🚻 Select an Avatar"
 
         if self.selected_avatar_id and any(opt.value == self.selected_avatar_id for opt in self.avatar_dropdown.options):
             self.avatar_dropdown.default_values = [self.selected_avatar_id]

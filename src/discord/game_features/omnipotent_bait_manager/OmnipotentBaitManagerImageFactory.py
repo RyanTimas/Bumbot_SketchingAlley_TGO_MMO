@@ -2,9 +2,9 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import cast
 
 from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonFunctions import *
-from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.omnipotent_bait_manager.OmnipotentBaitManagerCreatureCellImageFactory import OmnipotentBaitManagerCreatureCellImageFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
 from resources.constants.TGO_MMO_constants import *
@@ -181,7 +181,7 @@ class OmnipotentBaitManagerImageFactory(BaseImageFactory):
 
     def get_environment_icons(self):
         environment_icons = []
-        for environment in get_tgommo_db_handler().get_all_environments_in_rotation_by_time():
+        for environment in resolve_static_content_cache(EnvironmentCache).get_all_environments_in_rotation_by_time():
             is_active = (environment.dex_no == self.active_environment.dex_no)
             key = (environment.dex_no, is_active)
             cached = self._environment_icon_cache.get(key)

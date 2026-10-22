@@ -2,6 +2,8 @@ import math
 import random
 import traceback
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.static_item_cache import StaticItemCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.CreatureRarity import get_rarity_hierarchy_value
 from resources.constants.TGO_MMO_constants import *
@@ -45,7 +47,7 @@ class CreatureReleaseRewardHandler:
     # region item drop methods
     def _get_item_by_id(self, item_id):
         if item_id not in self._item_cache:
-            self._item_cache[item_id] = get_tgommo_db_handler().get_inventory_item_by_item_id(item_id=item_id, convert_to_object=True)
+            self._item_cache[item_id] = resolve_static_content_cache(StaticItemCache).get_item_by_id(item_id=item_id)
         return self._item_cache[item_id]
 
     def get_random_items_for_creature(self, creature):

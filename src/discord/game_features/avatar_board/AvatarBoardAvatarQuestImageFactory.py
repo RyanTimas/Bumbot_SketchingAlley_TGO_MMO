@@ -1,5 +1,7 @@
 from PIL import Image
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.avatar_board.AvatarQuestTabFactory import AvatarQuestTabFactory
 from src.discord.general.template.BaseImageFactory import BaseImageFactory
@@ -40,7 +42,7 @@ class AvatarBoardAvatarQuestImageFactory(BaseImageFactory):
         return avatar_quest_img
 
     def get_avatars_with_quests(self):
-        avatars_with_quests = get_tgommo_db_handler().get_avatars_with_unlock_conditions()
+        avatars_with_quests = resolve_static_content_cache(QuestCollectionCache).get_avatars_with_unlock_conditions()
         for avatar_with_quest in avatars_with_quests:
             if not avatar_with_quest.is_secret:
                 avatar_quest_tab_factory = AvatarQuestTabFactory(avatar=avatar_with_quest, user_id=self.target_user.user_id)

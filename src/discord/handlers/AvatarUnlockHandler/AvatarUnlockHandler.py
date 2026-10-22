@@ -3,6 +3,9 @@ import datetime
 import discord
 import pytz
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.avatar_cache import AvatarCache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.commons.CommonFunctions import convert_to_png, convert_to_datetime
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.objects.TGOCreature import TGOCreature
@@ -10,7 +13,7 @@ from resources.constants.file_paths import *
 
 # check if player has unlocked any secret avatars based on their creature nicknames and unlock them if they haven't already been unlocked
 async def check_for_secret_avatars(user_id, interaction, nickname):
-    unlocked_avatars = get_tgommo_db_handler().get_avatars_by_nickname(exclude_unlocked_avatars=True, nickname=nickname.lower())
+    unlocked_avatars = resolve_static_content_cache(QuestCollectionCache).get_avatars_by_nickname(exclude_unlocked_avatars=True, nickname=nickname.lower())
     if unlocked_avatars:
         player = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
         for avatar in unlocked_avatars:
@@ -27,7 +30,7 @@ async def check_for_event_avatars(user_id, interaction):
         await interaction.followup.send(f"You have unlocked the special limited time avatar: {avatar.name}!", file=convert_to_png(image=avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
 # check if player has unlocked any quest avatars
 async def check_for_quest_avatars(user_id, interaction):
-    unlockable_avatars = get_tgommo_db_handler().get_avatars_with_unlock_conditions(exclude_unlocked_avatars=True, user_id=user_id)
+    unlockable_avatars = resolve_static_content_cache(QuestCollectionCache).get_avatars_with_unlock_conditions(exclude_unlocked_avatars=True, user_id=user_id)
     if not unlockable_avatars:
         return
 
@@ -45,7 +48,7 @@ async def check_for_quest_avatars(user_id, interaction):
         for avatar, threshold_met in unlock_results:
             if threshold_met:
                 if avatar.is_parent_entry:
-                    child_avatars = get_tgommo_db_handler().get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id)
+                    child_avatars = resolve_static_content_cache(AvatarCache).get_child_avatars_by_parent_id(parent_avatar_id=avatar.avatar_id)
                     avatars_to_process.extend(child_avatars)
                 else:
                     avatars_to_process.append(avatar)
@@ -76,7 +79,7 @@ async def check_for_special_quest_avatars(user_id, creature: TGOCreature, intera
 
     if diff_seconds < 3.0:
         print("good job")
-        turbo_granny_avatar = get_tgommo_db_handler().get_avatar_by_id(avatar_id='Q9')
+        turbo_granny_avatar = resolve_static_content_cache(AvatarCache).get_avatar_by_id(avatar_id='Q9')
         await interaction.followup.send(f"You have completed a special quest & unlocked the avatar: {turbo_granny_avatar.name}!!", file=convert_to_png(turbo_granny_avatar.avatar_unlock_image, file_name="avatar.png"), ephemeral=True)
         get_tgommo_db_handler().insert_new_user_profile_avatar_link(avatar_id=turbo_granny_avatar.avatar_id, user_id=user_id)
 

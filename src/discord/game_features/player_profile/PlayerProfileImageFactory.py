@@ -1,3 +1,5 @@
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.quest_collection_cache import QuestCollectionCache
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.player_profile.PlayerProfileSidePanelTabFactory import PlayerProfileSidePanelTabFactory
@@ -98,7 +100,7 @@ class PlayerProfileImageFactory(BaseImageFactory):
     def _build_collections_tab(self, background_img: Image):
         current_offset = (1097,70)
 
-        active_collections = get_tgommo_db_handler().get_active_collections(convert_to_object=True)
+        active_collections = resolve_static_content_cache(QuestCollectionCache).get_active_collections(convert_to_object=True)
 
         for collection in active_collections:
             collection.img_path = f'{DEX_ICON_CREATURE_BASE}_{collection.img_path}{IMAGE_FILE_EXTENSION}'

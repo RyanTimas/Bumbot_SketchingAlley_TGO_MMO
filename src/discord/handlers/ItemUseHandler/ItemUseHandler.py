@@ -2,6 +2,8 @@ import asyncio
 import time
 from typing import List, Tuple
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.CommonFunctions import *
 from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -70,7 +72,7 @@ class ItemUseHandler:
 
         # logic to determine the kingdom and rarity of the creature to spawn based on the plane ticket item used
         new_environment_dex_no = item_id_plane_ticket_map.get(item.item_id)
-        new_environment = get_tgommo_db_handler().get_environments_by_dex_no(dex_no=new_environment_dex_no, convert_to_object=True)
+        new_environment = resolve_static_content_cache(EnvironmentCache).get_environments_by_dex_no(dex_no=new_environment_dex_no, convert_to_object=True)
 
         # todo: add a function to creature_spawner_handler to gracefully change the environment and handle any necessary cleanup or state updates
         self.discord_bot.creature_spawner_handler.current_environment = new_environment

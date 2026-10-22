@@ -1267,11 +1267,17 @@ class TGOMMODatabase_DataEntriesInitializer:
 
         for environment in environment_creature_data:
             previous_ec_link = dummy_ec_link
+            local_dex_by_creature_dex_no = {}
             for index, ec_link in enumerate(environment):
                 creature_info = self.db_handler.get_creature_by_dex_and_variant_no(ec_link.creature_dex_no, ec_link.creature_variant_no)
                 environment_info = self.db_handler.get_environments_by_dex_no(dex_no=ec_link.environment_dex_no)
 
-                ec_link.local_dex_no = previous_ec_link.local_dex_no + (1 if not (previous_ec_link and previous_ec_link.creature_dex_no == ec_link.creature_dex_no) else 0)
+                if ec_link.creature_dex_no in local_dex_by_creature_dex_no:
+                    ec_link.local_dex_no = local_dex_by_creature_dex_no[ec_link.creature_dex_no]
+                else:
+                    next_local_dex_no = previous_ec_link.local_dex_no + (1 if not (previous_ec_link and previous_ec_link.creature_dex_no == ec_link.creature_dex_no) else 0)
+                    ec_link.local_dex_no = next_local_dex_no
+                    local_dex_by_creature_dex_no[ec_link.creature_dex_no] = next_local_dex_no
 
                 spawn_times = []
                 if ec_link.spawn_time != NIGHT:

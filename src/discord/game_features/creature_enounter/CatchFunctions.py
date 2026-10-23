@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any
 
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler, get_user_db_handler
+from src.commons.AsyncBlocking import run_serialized_blocking
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.objects.CreatureRarity import MYTHICAL
 from src.discord.objects.TGOCreature import TGOCreature
@@ -8,6 +9,10 @@ from src.discord.objects.TGOEnvironment import TGOEnvironment
 from src.discord.objects import TGOPlayer
 
 def catch_creature(user_id: int, creature: TGOCreature, environment: TGOEnvironment, spawn_user: Optional[TGOPlayer] = None, is_afk_catch = False) -> Dict[str, Any]:
+    return _catch_creature_sync(user_id=user_id, creature=creature, environment=environment, spawn_user=spawn_user, is_afk_catch=is_afk_catch,)
+
+# Handles the synchronous logic for catching a creature, including database updates and embed generation. This function is designed to be called from both synchronous and asynchronous contexts.
+def _catch_creature_sync(user_id: int, creature: TGOCreature, environment: TGOEnvironment, spawn_user: Optional[TGOPlayer] = None, is_afk_catch = False) -> Dict[str, Any]:
     # Ensure we have a user profile object (for display name / nickname)
     catch_user = get_tgommo_db_handler().get_user_profile_by_user_id(user_id, convert_to_object=True)
 
@@ -21,11 +26,8 @@ def catch_creature(user_id: int, creature: TGOCreature, environment: TGOEnvironm
 
     # Optionally run avatar unlock checks (UI callers can await these if they are async; keep them here for shared logic)
     # Note: these are async in your codebase; callers should call them as needed.
-    return {
-        "catch_id": catch_id,
-        "catch_embed": successful_catch_embed,
-        "catch_image": successful_catch_image,
-        "total_xp": total_xp,
-        "user_profile": catch_user,
-        "embed_handler": embed_handler,
-    }
+    return {"catch_id": catch_id, "catch_embed": successful_catch_embed, "catch_image": successful_catch_image, "total_xp": total_xp, "user_profile": catch_user, "embed_handler": embed_handler,}
+
+# Asynchronous wrapper for catching a creature, which runs the synchronous catch logic in a serialized blocking context to avoid blocking the event loop.
+async def catch_creature_async(user_id: int, creature: TGOCreature, environment: TGOEnvironment, spawn_user: Optional[TGOPlayer] = None, is_afk_catch = False) -> Dict[str, Any]:
+    return await run_serialized_blocking(_catch_creature_sync,user_id, creature, environment, spawn_user, is_afk_catch,)

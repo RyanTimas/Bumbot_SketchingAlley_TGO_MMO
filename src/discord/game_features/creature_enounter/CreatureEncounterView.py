@@ -1,13 +1,15 @@
 import asyncio
+import logging
 import time
 
 from discord import errors, ButtonStyle
 from discord.ui import View, Button
 
+from src.commons.AsyncBlocking import run_serialized_blocking
 from src.commons.CommonDecorators import measure_execution_time, retry_on_ssl_error
 from src.commons.CommonFunctions import convert_to_png, check_if_user_can_interact_with_view
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
-from src.discord.game_features.creature_enounter.CatchFunctions import catch_creature
+from src.discord.game_features.creature_enounter.CatchFunctions import catch_creature_async
 from src.discord.game_features.creature_enounter.CreatureCaughtView import CreatureCaughtView
 from src.discord.game_features.creature_enounter.CreatureEmbedHandler import CreatureEmbedHandler
 from src.discord.handlers.AvatarUnlockHandler.AvatarUnlockHandler import check_for_event_avatars, \
@@ -31,19 +33,25 @@ class CreatureEncounterView(View):
 
         self.caught = False
 
+        # region Post Catch Event Handling
         self.interaction_lock = asyncio.Lock()
         self.successful_catch_embed_handler = None
         self.successful_catch_message = None
+        self._post_catch_tasks = set()
+        self._logger = logging.getLogger(__name__)
+        # endregion
 
+        # region Build View
         self.add_item(self.create_catch_button())
         self.add_item(self.is_creature_caught_button())
+        # endregion
 
+    ''' ---- VIEW COMPONENTS ---------------------------------------------------------------------------------------------------------------------------------------- '''
     def create_catch_button(self, row=0):
         button = Button(label="Catch Critter!!", style=ButtonStyle.blurple, row=row)
         button.callback = self.catch_button_callback()
         return button
     def catch_button_callback(self,):
-        @retry_on_ssl_error(max_retries=3, delay=1)
         @measure_execution_time(label="Catch Button Callback Execution Time")
         async def callback(interaction):
             self.creature.catch_time = time.time()
@@ -54,39 +62,42 @@ class CreatureEncounterView(View):
 
             # Double check creature hasn't already been caught while waiting for interaction lock
             async with self.interaction_lock:
+                # check if the creature has already been caught by another user
                 if self.caught:
                     await interaction.followup.send("Someone else already caught this creature...", ephemeral=True)
                     return
 
-                self.caught, catch_message, expansion_view = self._handle_user_catch_limits(interaction.user.id, self.creature.creature_id)
-                if not self.caught:
-                    if expansion_view:
-                        await interaction.followup.send(catch_message, view=expansion_view, ephemeral=True)
-                    else:
-                        await interaction.followup.send(catch_message, ephemeral=True)
+                # check if user has reached their catch limit (storage full) and handle accordingly
+                if await run_serialized_blocking(self._is_user_catch_limit_reached, interaction.user.id):
+                    self.caught = False
+                    catch_message, expansion_view = self.create_storage_expansion_view(interaction.user.id)
+                    await interaction.followup.send(catch_message, view=expansion_view, ephemeral=True)
                     return
+                self.caught = True
 
             # generate the successful catch embed
             await interaction.followup.send(f"Please wait...", ephemeral=True)
 
-            result = catch_creature(interaction.user.id, self.creature, self.environment, spawn_user=self.spawn_user)
+            # attempt to catch the creature and handle any exceptions that may occur during the process
+            try:
+                result = await catch_creature_async(interaction.user.id, self.creature, self.environment, spawn_user=self.spawn_user)
+            except Exception:
+                self.caught = False
+                self._logger.exception("Catch commit failed for creature_id=%s user_id=%s", self.creature.creature_id, interaction.user.id)
+                await interaction.followup.send("The catch could not be completed. Please try again.", ephemeral=True)
+                return
             catch_id = result["catch_id"]
 
             # send a message to the channel announcing the successful catch
-            self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user= self.spawn_user)
-            self.successful_catch_message = await interaction.channel.send(embed=result["catch_embed"], files=[result["catch_image"]])
+            try:
+                self.successful_catch_embed_handler = CreatureEmbedHandler(self.creature, self.environment, spawn_user=self.spawn_user)
+                self.successful_catch_message = await interaction.channel.send(embed=result["catch_embed"], files=[result["catch_image"]])
+            except Exception:
+                self.successful_catch_message = None
+                self._logger.exception("Catch announcement failed for catch_id=%s", catch_id)
 
             # send a personal message to user confirming the catch & seeing if they have unlocked a new avatar
-            nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message)
-
-            # check if player has unlocked any avatars based on their catch and unlock them if they haven't already been unlocked
-            await check_for_event_avatars(user_id=interaction.user.id, interaction=interaction)
-            await check_for_quest_avatars(user_id=interaction.user.id, interaction=interaction)
-            await check_for_special_quest_avatars(user_id=interaction.user.id, creature=self.creature, interaction=interaction)
-
-            # check if player has unlocked any items based on their catch and unlock them if they haven't already been unlocked
-            await  check_for_milestone_catch_rewards(user_id=interaction.user.id, interaction=interaction)
-            await check_for_random_item_catch_reward(user_id=interaction.user.id, interaction=interaction)
+            nickname_view = await run_serialized_blocking(CreatureCaughtView, user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message,)
 
             # delete the original spawn message so nobody else can catch it
             try:
@@ -96,6 +107,11 @@ class CreatureEncounterView(View):
 
             # once all processing is done, send the success message to the user
             await interaction.followup.send(f"Success!! you've successfully caught the {self.creature.name}", view=nickname_view, ephemeral=True)
+
+            # Start the post-catch reward processing in the background
+            post_catch_task = asyncio.create_task(self._process_post_catch_rewards(interaction, catch_id))
+            self._post_catch_tasks.add(post_catch_task)
+            post_catch_task.add_done_callback(self._post_catch_task_completed)
         return callback
 
     def is_creature_caught_button(self, row=0):
@@ -133,6 +149,29 @@ class CreatureEncounterView(View):
         return callback
 
     '''---------------SUPPORTING FUNCTIONS---------------------------------------------------------------------------------------------------------'''
+    # region Post Catch Reward Processing
+    # This function handles the processing of optional rewards after a successful catch. It checks for event avatars, quest avatars, special quest avatars, milestone catch rewards, and random item catch rewards. Any exceptions during this process are logged for debugging purposes.
+    async def _process_post_catch_rewards(self, interaction, catch_id):
+        try:
+            # Check for Avatar Unlocks
+            await check_for_event_avatars(user_id=interaction.user.id, interaction=interaction)
+            await check_for_quest_avatars(user_id=interaction.user.id, interaction=interaction)
+            await check_for_special_quest_avatars(user_id=interaction.user.id, creature=self.creature, interaction=interaction)
+
+            # Check for Item Rewards
+            await check_for_milestone_catch_rewards(user_id=interaction.user.id, interaction=interaction)
+            await check_for_random_item_catch_reward(user_id=interaction.user.id, interaction=interaction)
+        except Exception:
+            self._logger.exception("Post-catch rewards failed for catch_id=%s user_id=%s", catch_id, interaction.user.id)
+
+    # This function is a callback that is called when a post-catch task is completed. It removes the task from the set of post-catch tasks and checks if the task was cancelled. If it was not cancelled, it retrieves any exception that may have occurred during the task's execution.
+    def _post_catch_task_completed(self, task):
+        self._post_catch_tasks.discard(task)
+        if not task.cancelled():
+            task.exception()
+    # endregion
+
+    # region User Catch Limit Handling
     def _handle_user_catch_limits(self, user_id, creature_id):
         # Storage being full always takes precedence
         if get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100:
@@ -140,10 +179,13 @@ class CreatureEncounterView(View):
             return False, message, expansion_view
         return True, None, None
 
+    def _is_user_catch_limit_reached(self, user_id):
+        return get_tgommo_db_handler().get_total_catches_for_user(user_id=user_id, is_released=False) >= get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id) * 100
+    # endregion
+
+    # region Storage Expansion View Creation
+    # This function creates a view asking if a user wants to expand their storage.
     def create_storage_expansion_view(self, user_id):
-        """Builds and returns (message, view) for expanding creature storage for the given user_id.
-        This mirrors the Create Storage Expansion button behavior in CreatureInventoryView.
-        """
         message = "Your creature inventory is full! Please release some creatures before catching more."
 
         expansion_view = View(timeout=None)
@@ -181,3 +223,4 @@ class CreatureEncounterView(View):
         expansion_view.add_item(expansion_button)
 
         return message, expansion_view
+    # endregion

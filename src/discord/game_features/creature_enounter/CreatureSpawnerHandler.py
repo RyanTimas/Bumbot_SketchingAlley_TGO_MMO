@@ -1,7 +1,5 @@
 import asyncio
 import ssl
-import threading
-import time
 import traceback
 from copy import deepcopy
 from datetime import datetime
@@ -9,6 +7,9 @@ from datetime import datetime
 from PIL import Image
 from discord.ext.commands import Bot
 
+from src.caching import resolve_static_content_cache
+from src.caching.db_specific_caches.creature_cache import CreatureCache
+from src.caching.db_specific_caches.environment_cache import EnvironmentCache
 from src.commons.CommonFunctions import flip_coin, convert_to_png
 from src.commons.GameStateManager import get_game_state_manager
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
@@ -43,8 +44,15 @@ class CreatureSpawnerHandler:
         self.time_of_day = None
         self.active_bonuses = get_game_state_manager().get_active_spawn_bonuses()
 
+        # region asyncio event loop and task management
         self.spawn_event = asyncio.Event()
         self._spawner_running = False
+        self._spawner_start_claimed = False
+        self._spawner_task = None
+        self._environment_scheduler_task = None
+        self._environment_change_task = None
+        self._despawn_tasks = set()
+        # endregion
 
         self.define_time_of_day()
         self.define_environment_and_spawn_pool(environment_dex_no=env_dex_no, environment_variant_no=1 if self.is_day else 2)
@@ -75,11 +83,77 @@ class CreatureSpawnerHandler:
 
 
     ''' ---- FUNCTIONS TO HANDLE SPAWNER BEHAVIOR  ------------------------------------------------------------'''
+    # region creature spawner task management
     # kicks off the creature spawner
     def start_creature_spawner(self):
-        if not self._spawner_running:
-            asyncio.create_task(self._creature_spawner())
-            asyncio.create_task(self._environment_change_check_scheduler())
+        # Prevent multiple spawner tasks from being created if one is already running or claimed
+        if self._spawner_start_claimed or self._spawner_running:
+            return
+
+        # Claim the spawner start to prevent race conditions and ensure only one spawner task is created
+        self._spawner_start_claimed = True
+        try:
+            self._spawner_task = asyncio.create_task(self._creature_spawner())
+            self._environment_scheduler_task = asyncio.create_task(self._environment_change_check_scheduler())
+            self._spawner_task.add_done_callback(self._scheduler_task_completed)
+            self._environment_scheduler_task.add_done_callback(self._scheduler_task_completed)
+        except Exception:
+            self._spawner_start_claimed = False
+            for task in (self._spawner_task, self._environment_scheduler_task):
+                if task and not task.done():
+                    task.cancel()
+            self._spawner_task = None
+            self._environment_scheduler_task = None
+            raise
+
+    # Callback to handle completion of scheduler tasks and reset the spawner start claim if all tasks are done
+    def _scheduler_task_completed(self, task):
+        if task is self._spawner_task:
+            self._spawner_task = None
+        if task is self._environment_scheduler_task:
+            self._environment_scheduler_task = None
+        if task is self._environment_change_task:
+            self._environment_change_task = None
+
+        if (
+            self._spawner_task is None
+            and self._environment_scheduler_task is None
+            and self._environment_change_task is None
+        ):
+            self._spawner_start_claimed = False
+
+    # Callback to handle completion of despawn tasks and remove them from the set of active despawn tasks
+    def _despawn_task_completed(self, task):
+        self._despawn_tasks.discard(task)
+
+    # Cleanup function to cancel all handler-owned tasks before the Discord connection closes
+    async def _cleanup_tasks(self):
+        """Cancel handler-owned tasks before the Discord connection closes."""
+        self.are_creatures_spawning = False
+        self.spawn_event.set()
+
+        current_task = asyncio.current_task()
+        tasks = [
+            task for task in (
+                self._spawner_task,
+                self._environment_scheduler_task,
+                self._environment_change_task,
+                *self._despawn_tasks,
+            )
+            if task and task is not current_task and not task.done()
+        ]
+
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        self._spawner_task = None
+        self._environment_scheduler_task = None
+        self._environment_change_task = None
+        self._despawn_tasks.clear()
+        self._spawner_running = False
+        self._spawner_start_claimed = False
 
     # Toggles whether creatures are spawning or not
     def toggle_creature_spawner(self, ctx):
@@ -119,9 +193,11 @@ class CreatureSpawnerHandler:
                     pass
         finally:
             self._spawner_running = False
-
+    # endregion
 
     ''' ---- FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC ------------------------------------------------------------'''
+    # region creature spawning logic
+
     # Spawns a creature and sends a message to the discord channel
     async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None, kingdom = None):
         # select a creature if one was not provided
@@ -134,9 +210,9 @@ class CreatureSpawnerHandler:
 
         # Create separate task for despawn
         if creature.local_rarity.name != TRANSCENDANT.name and creature.local_rarity.name != MYTHICAL.name:
-            thread = threading.Thread(target=self._despawn_creature, args=(creature, spawn_message))
-            thread.daemon = True
-            thread.start()
+            despawn_task = asyncio.create_task(self._despawn_creature(creature, spawn_message))
+            self._despawn_tasks.add(despawn_task)
+            despawn_task.add_done_callback(self._despawn_task_completed)
 
         # see if duplicate creatures should spawn for swarm effect, swarms are not eligible for bait spawns
         if not user:
@@ -160,12 +236,12 @@ class CreatureSpawnerHandler:
         return
 
     # Handles despawning of a creature after its despawn time has elapsed
-    def _despawn_creature(self, creature: TGOCreature, spawn_message):
-        time.sleep(creature.time_to_despawn)
+    async def _despawn_creature(self, creature: TGOCreature, spawn_message):
+        await asyncio.sleep(creature.time_to_despawn)
         try:
             channel = self.discord_bot.get_channel(spawn_message.channel.id)
-            asyncio.run_coroutine_threadsafe(channel.fetch_message(spawn_message.id), self.discord_bot.loop).result()
-            asyncio.run_coroutine_threadsafe(spawn_message.delete(), self.discord_bot.loop)
+            await channel.fetch_message(spawn_message.id)
+            await spawn_message.delete()
         except discord.NotFound:
             return
 
@@ -173,9 +249,13 @@ class CreatureSpawnerHandler:
         caught_by_afk_trap = self.handle_afk_trap_catch(creature=creature)
         if not caught_by_afk_trap:
             creature_embed = CreatureEmbedHandler(creature=creature, environment=self.current_environment).generate_despawn_embed()
-            asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(files=[creature_embed[1]], embed=creature_embed[0]), self.discord_bot.loop)
+            await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(files=[creature_embed[1]], embed=creature_embed[0])
 
-    ''' ---- HELPER FUNCTIONS FOR CREATURE SPAWNING LOGIC ------------------------------------------------------------'''
+    #endregion
+
+    ''' ---- HELPER FUNCTIONS FOR CHOOSING CREATURE TO SPAWN ------------------------------------------------------------'''
+    # region creature selection logic
+
     # Picks a random creature from the spawn pool
     async def creature_picker(self, rarity= None, kingdom= None):
         # kingdom baits take priority; if the region has no creatures for that kingdom, stop immediately
@@ -274,10 +354,13 @@ class CreatureSpawnerHandler:
                 # now catch the creature for the user and send the catch embed to the channel
                 result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
                 if result["user_profile"]:
-                    asyncio.run_coroutine_threadsafe(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]), self.discord_bot.loop)
+                    asyncio.create_task(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]))
         return perform_afk_catch
 
+    # endregion
+
     ''' ---- FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES --------------------------------------------------------------------------------------------'''
+    # Handles post-spawn events such as day/night transitions and user catch limit resets
     async def handle_post_spawn_events(self):
         current_time = datetime.datetime.now(pytz.UTC).astimezone(self.current_environment.timezone)
 
@@ -346,22 +429,24 @@ class CreatureSpawnerHandler:
             new_environment = get_tgommo_db_handler().get_random_environment_in_rotation(is_night_environment=0 if self.is_day else 1, convert_to_object=True)
         self.pending_environment = new_environment
 
-        # Schedule environment change for noon today in a separate thread
-        threading.Thread(target=self._schedule_environment_change, args=(), daemon=True).start()
+        # Schedule environment change for noon today on the bot event loop
+        environment_change_task = asyncio.create_task(self._schedule_environment_change())
+        self._environment_change_task = environment_change_task
+        environment_change_task.add_done_callback(self._scheduler_task_completed)
         self.environment_changed_today = current_time.date()
 
         # Announce the environment change in the spawn channel
         await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(f"\n\n# __⚠️✈️ **Travel Advisory️** ✈️⚠️__ \n The environment will change to: \n## **🌍 {new_environment.name} at noon! 🌍**", files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_BASE}{new_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png"), ])
 
 
-    def _schedule_environment_change(self):
+    async def _schedule_environment_change(self):
         est = pytz.timezone('US/Eastern')
         current_time = datetime.datetime.now(est)
         environment_change_time = current_time.astimezone(est).replace(hour=12, minute=0, second=0, microsecond=0)
 
         # Calculate seconds until environment change
         time_until_environment_change = (environment_change_time - current_time).total_seconds()
-        time.sleep(time_until_environment_change)
+        await asyncio.sleep(time_until_environment_change)
 
         # Execute environment change
         if hasattr(self, 'pending_environment') and self.pending_environment:
@@ -372,11 +457,9 @@ class CreatureSpawnerHandler:
             self.define_environment_and_spawn_pool(current_environment=self.current_environment)
 
             # Send message to channel about environment change
-            asyncio.run_coroutine_threadsafe(
-                self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
-                    f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {self.current_environment.name}** 🌍",
-                    files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{self.current_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")]
-                ), self.discord_bot.loop
+            await self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(
+                f"\n\n# __⚠️✈️ **Travel Advisory** ✈️⚠️__ \nEnvironment Changed! Now exploring:\n## **🌍 {self.current_environment.name}** 🌍",
+                files=[convert_to_png(Image.open(f"{TGOMMO_TRAVEL_ADVISORY_LANDING_BASE}{self.current_environment.dex_no}{IMAGE_FILE_EXTENSION}"), file_name=f"travel_advisory_image.png")]
             )
 
             # Clear the pending environment

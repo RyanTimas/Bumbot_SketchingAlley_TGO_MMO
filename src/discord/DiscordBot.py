@@ -70,6 +70,10 @@ class DiscordBot(commands.Bot):
         self.creature_spawner_handler = CreatureSpawnerHandler(discord_bot=self)
         self.shop_restock_scheduler = ShopScheduler(discord_bot=self)
 
+    async def close(self):
+        await self.creature_spawner_handler._cleanup_tasks()
+        await super().close()
+
     def _ensure_static_cache_registry_ready(self):
         was_initialized = is_static_content_cache_registry_initialized()
         ensure_static_content_cache_registry_initialized(logger=self._logger, db_provider=get_tgommo_db_handler)

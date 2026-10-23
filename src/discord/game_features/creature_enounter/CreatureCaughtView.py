@@ -1,6 +1,7 @@
 import discord
 from discord.ui import Button, Modal, TextInput, Select
 
+from src.commons.AsyncBlocking import run_serialized_blocking
 from src.commons.CommonDecorators import retry_on_ssl_error
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.game_features.creature_enounter import CreatureEmbedHandler
@@ -10,10 +11,10 @@ from src.discord.objects.TGOPlayer import TGOPlayer
 
 
 class CreatureCaughtView(discord.ui.View):
-    def __init__(self, user_id: int, creature_catch_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None):
+    def __init__(self, user_id: int, creature_catch_id: int, successful_catch_embed_handler: CreatureEmbedHandler =None, successful_catch_message: discord.Message= None, message_author: TGOPlayer = None, display_creature_labels: list = None):
         super().__init__(timeout=None)
 
-        self.message_author: TGOPlayer = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
+        self.message_author: TGOPlayer = message_author or get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
         self.creature_catch_id = creature_catch_id
 
         # Keep a reference to the original message and embed handler so we can update the embed with the nickname when it's set
@@ -24,11 +25,11 @@ class CreatureCaughtView(discord.ui.View):
         self.display_index = None
         self.display_creature_ids = [getattr(self.message_author, f'creature_slot_id_{i}') for i in range(1, 7)]
         self.original_display_creature_ids = [getattr(self.message_author, f'creature_slot_id_{i}') for i in range(1, 7)]
+        self.display_creature_labels = display_creature_labels or [f"{index + 1} - [EMPTY]" for index in range(6)]
 
-        # use
         self.view_disabled = False
 
-        # VIEW COMPONENTS
+        # region build view
         # buttons
         self.favorite_button = self.create_favorite_button(row=0)
         self.release_button = self.create_release_button(row=0)
@@ -42,9 +43,12 @@ class CreatureCaughtView(discord.ui.View):
 
         # add items to view
         self.refresh_view()
+        # endregion
 
 
-    # CREATE BUTTONS
+    ''' ---- VIEW ITEM COMPONENTS  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- '''
+    # region VIEW ITEMS
+    # region BUTTONS
     def create_nickname_button(self, row=0):
         button = Button(label="Set Nickname", style=discord.ButtonStyle.red, row=row)
         button.callback = self.nickname_button_callback()
@@ -63,12 +67,16 @@ class CreatureCaughtView(discord.ui.View):
         @retry_on_ssl_error()
         async def callback(interaction):
             await interaction.response.defer()
+
+            # check if the user has selected a display index from the dropdown
             if self.display_index is None:
                 await interaction.followup.send(f"You gotta pick a display index first", ephemeral=True)
                 return
-            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=interaction.user.id)
-            get_tgommo_db_handler().update_creature_display_index(user_id=interaction.user.id, creature_id=self.creature_catch_id, display_index=self.display_index)
+
+            # check if the selected display index is already occupied by another creature, and if so, remove that creature from the display slot
             self.display_creature_ids[self.display_index] = self.creature_catch_id
+            self.display_creature_labels = await run_serialized_blocking(self._set_display_creature, creature_id=self.creature_catch_id, user_id=interaction.user.id, display_index=self.display_index,)
+
             self.refresh_view()
             await interaction.edit_original_response(view=self)
             await interaction.followup.send(f"Display index set to: {self.display_index + 1}", ephemeral=True)
@@ -97,12 +105,12 @@ class CreatureCaughtView(discord.ui.View):
             for item in self.children:
                 item.disabled = True
 
-            # set the user's creature to released in the db
-            self.handle_existing_display_creature_removal(creature_id=self.creature_catch_id, user_id=self.message_author.user_id)
+
             # figure out how much currency the user should earn from releasing the creature and which items they earned, then update the db accordingly
             currency_earned, earned_items = await CreatureReleaseService.release_creatures_with_rewards(user_id=self.message_author.user_id, creature_ids=[self.creature_catch_id], interaction=interaction)
 
-            release_results_file = CreatureReleaseService.create_release_results_file(target_user=get_tgommo_db_handler().get_user_profile_by_user_id(self.message_author.user_id), currency_earned=currency_earned, earned_items=earned_items, count_released=1)
+            # set the user's creature to released in the db
+            release_results_file = await run_serialized_blocking(CreatureReleaseService.create_release_results_file, target_user=self.message_author, currency_earned=currency_earned, earned_items=earned_items, count_released=1,)
 
             await interaction.edit_original_response(view=self)
             await interaction.followup.send("Released creature successfully!", file=release_results_file, ephemeral=True)
@@ -115,14 +123,14 @@ class CreatureCaughtView(discord.ui.View):
     def favorite_button_callback(self):
         async def callback(interaction: discord.Interaction):
             await interaction.response.defer()
-            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(self.creature_catch_id, convert_to_object=True)
-            get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[self.creature_catch_id, ], is_favorite=not creature.is_favorite)
+            is_favorite = await run_serialized_blocking( self._toggle_favorite, self.creature_catch_id,)
             self.refresh_view()
             await interaction.edit_original_response(view=self)
-            await interaction.followup.send(f"Creature {'favorited' if not creature.is_favorite else 'unfavorited'}!", ephemeral=True)
+            await interaction.followup.send(f"Creature {'favorited' if is_favorite else 'unfavorited'}!", ephemeral=True)
         return callback
+    # endregion
 
-    # CREATE MODALS
+    # region MODALS
     def create_nickname_modal(self):
         user_details_modal = Modal(title="Update Profile Details")
         user_details_modal.add_item(self.nickname_input)
@@ -132,22 +140,26 @@ class CreatureCaughtView(discord.ui.View):
     def nickname_modal_on_submit(self):
         async def callback(interaction: discord.Interaction):
             await interaction.response.defer()
-            get_tgommo_db_handler().update_creature_nickname(self.creature_catch_id, self.nickname_input.value)
-            self.nickname_input = TextInput(label="Nickname", default=self.nickname_input.value, placeholder="Enter a nickname for your creature", max_length=50, required=True)
-            await check_for_secret_avatars(user_id=interaction.user.id, nickname=self.nickname_input.value, interaction=interaction)
+
+            # update the nickname in the db and refresh the view
+            nickname = self.nickname_input.value
+            await run_serialized_blocking(self._update_nickname, self.creature_catch_id, nickname,)
+            self.nickname_input = TextInput(label="Nickname", default=nickname, placeholder="Enter a nickname for your creature", max_length=50, required=True)
+            await check_for_secret_avatars(user_id=interaction.user.id, nickname=nickname, interaction=interaction)
 
             # edit original caught creature notif to show nickname
-            await interaction.followup.send(f"Nickname set to: {self.nickname_input.value}", ephemeral=True)
-            await self.successful_catch_message.edit(embed=self.successful_catch_embed_handler.generate_catch_embed(catch_user=get_tgommo_db_handler().get_user_profile_by_user_id(user_id=interaction.user.id),nickname=self.nickname_input.value)[0])
+            await interaction.followup.send(f"Nickname set to: {nickname}", ephemeral=True)
+            if self.successful_catch_message and self.successful_catch_embed_handler:
+                embed = await run_serialized_blocking(self._generate_nickname_embed, user_id=interaction.user.id, nickname=nickname,)
+                await self.successful_catch_message.edit(embed=embed)
         return callback
+    # endregion
 
-    # CREATE DROPDOWNS
+    # region DROPDOWNS
     def create_display_creature_index_dropdown(self, row=1):
         options = []
         for index, display_creature_id in enumerate(self.display_creature_ids):
-            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_creature_id) if display_creature_id and display_creature_id != -1 else None
-
-            label = f"{index+1} - [EMPTY]" if creature is None else f"{index+1} - {creature.nickname} ({creature.name})"
+            label = self.display_creature_labels[index]
             options.append(discord.SelectOption(label=label, value=str(index)))
 
         dropdown = Select(placeholder="Choose Display Slot", options=options, min_values=1, max_values=1, row=row)
@@ -158,8 +170,11 @@ class CreatureCaughtView(discord.ui.View):
             await interaction.response.defer()
             self.display_index = int(interaction.data["values"][0])
         return callback
+    # endregion
+    # endregion
 
-    # FUNCTIONS FOR UPDATING VIEW STATE
+    ''' ---- VIEW STATE FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- '''
+    # region VIEW STATE
     def refresh_view(self):
         self.update_button_states()
         self.rebuild_view()
@@ -174,11 +189,67 @@ class CreatureCaughtView(discord.ui.View):
         self.add_item(self.nickname_button)
         self.add_item(self.display_creature_button)
         self.add_item(self.create_display_creature_index_dropdown(row=2))  # Still create fresh since content changes
+    # endregion
 
-    # MISC FUNCTIONS
+    ''' ---- DB INTERACTIONS FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- '''
+    # region DB INTERACTIONS
+
+    # remove the creature from the display slot if it is currently displayed in any of the slots
     def handle_existing_display_creature_removal(self, creature_id: int, user_id: int):
         for index, id in enumerate(self.display_creature_ids):
             if id == creature_id:
                 get_tgommo_db_handler().update_creature_display_index(user_id=user_id, creature_id=-1, display_index=index)
                 self.display_creature_ids[index] = -1
                 return
+
+    # update the display creature index in the db and return the updated display creature labels
+    def _set_display_creature(self, creature_id: int, user_id: int, display_index: int):
+        # pull the current display creature ids from the db to ensure we have the latest state
+        current_display_ids = [getattr(get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id), f'creature_slot_id_{i}') for i in range(1, 7)]
+
+        # remove the creature from any existing display slot if it is currently displayed in any of the slots
+        for index, current_id in enumerate(current_display_ids):
+            if current_id == creature_id:
+                get_tgommo_db_handler().update_creature_display_index(user_id=user_id, creature_id=-1, display_index=index,)
+
+        # update the db with the new display creature index
+        get_tgommo_db_handler().update_creature_display_index(user_id=user_id, creature_id=creature_id, display_index=display_index,)
+
+        # update the local display_creature_ids list to reflect the new state
+        display_ids = list(current_display_ids)
+        display_ids[display_index] = creature_id
+        labels = []
+        for index, display_id in enumerate(display_ids):
+            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_id) if display_id and display_id != -1 else None
+            labels.append(f"{index + 1} - [EMPTY]" if creature is None else f"{index + 1} - {creature.nickname} ({creature.name})")
+        return labels
+
+    # Update the nickname of a creature in the database
+    @staticmethod
+    def _update_nickname(creature_catch_id: int, nickname: str):
+        return get_tgommo_db_handler().update_creature_nickname(creature_catch_id, nickname)
+
+    # Load the user's profile and display creature labels for the view
+    @staticmethod
+    def load_view_state(user_id: int):
+        profile = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
+        display_ids = [getattr(profile, f'creature_slot_id_{i}') for i in range(1, 7)]
+        labels = []
+        for index, display_id in enumerate(display_ids):
+            creature = get_tgommo_db_handler().get_user_creature_by_catch_id(display_id) if display_id and display_id != -1 else None
+            labels.append(f"{index + 1} - [EMPTY]" if creature is None else f"{index + 1} - {creature.nickname} ({creature.name})")
+        return profile, labels
+
+    # Toggle the favorite status of a creature in the database
+    @staticmethod
+    def _toggle_favorite(creature_catch_id: int):
+        creature = get_tgommo_db_handler().get_user_creature_by_catch_id(creature_catch_id, convert_to_object=True)
+        new_value = not creature.is_favorite
+        get_tgommo_db_handler().update_user_creature_set_is_favorite(creature_ids=[creature_catch_id], is_favorite=new_value,)
+        return new_value
+
+    # Generate a new embed for the successful catch message with the updated nickname
+    def _generate_nickname_embed(self, user_id: int, nickname: str):
+        return self.successful_catch_embed_handler.generate_catch_embed(catch_user=get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id), nickname=nickname,)[0]
+
+    # endregion

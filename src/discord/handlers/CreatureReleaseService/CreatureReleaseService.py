@@ -1,8 +1,7 @@
 # src/discord/game_features/creature_inventory/CreatureReleaseService.py
-import asyncio
-
 import discord
 
+from src.commons.AsyncBlocking import run_serialized_blocking
 from src.commons.CommonFunctions import convert_to_png
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler
 from src.discord.handlers.CreatureReleaseService.CreatureReleaseRewardHandler import CreatureReleaseRewardHandler
@@ -16,14 +15,7 @@ class CreatureReleaseService:
         Release creatures and handle rewards calculation/distribution
         Returns: (currency_earned, earned_items)
         """
-        loop = asyncio.get_event_loop()
-
-        # Run blocking database operations in thread
-        currency_earned, earned_items = await loop.run_in_executor(
-            None,
-            CreatureReleaseService._handle_database_operations,
-            user_id, creature_ids
-        )
+        currency_earned, earned_items = await run_serialized_blocking(CreatureReleaseService._handle_database_operations, user_id, creature_ids,)
 
         # Handle Discord operations on main thread
         if interaction:
@@ -40,6 +32,10 @@ class CreatureReleaseService:
         if not success:
             return None, None
 
+        # Clear released creatures from display slots
+        get_tgommo_db_handler().clear_released_creatures_from_display_slots(creature_ids=creature_ids, user_id=user_id)
+
+        # todo: see if we can handle this asynchronously to speed up release process
         reward_handler = CreatureReleaseRewardHandler(user_id)
         currency_earned, earned_items = reward_handler.get_release_rewards(creature_ids)
 

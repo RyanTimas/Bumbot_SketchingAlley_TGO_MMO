@@ -25,6 +25,8 @@ class CreatureSpawnerHandlerTests(unittest.IsolatedAsyncioTestCase):
         handler._environment_scheduler_task = None
         handler._environment_change_task = None
         handler._despawn_tasks = set()
+        handler._afk_notification_tasks = set()
+        handler._logger = __import__("logging").getLogger("test_creature_spawner_handler")
         return handler
 
     @staticmethod
@@ -258,6 +260,52 @@ class CreatureSpawnerHandlerTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(handler._environment_scheduler_task)
         self.assertIsNone(handler._environment_change_task)
         self.assertFalse(handler._despawn_tasks)
+
+    async def test_scheduler_task_failure_is_consumed_and_logged(self):
+        handler = self.make_handler()
+
+        async def fails():
+            raise RuntimeError("scheduler failure")
+
+        task = asyncio.create_task(fails())
+        handler._spawner_task = task
+        await asyncio.sleep(0)
+
+        with self.assertLogs("test_creature_spawner_handler", level="ERROR") as logs:
+            handler._scheduler_task_completed(task)
+
+        self.assertIn("Spawner task failed", logs.output[0])
+        self.assertIsNone(handler._spawner_task)
+
+    async def test_cancelled_afk_notification_is_not_logged_as_failure(self):
+        handler = self.make_handler()
+
+        async def never_finishes():
+            await asyncio.Event().wait()
+
+        task = asyncio.create_task(never_finishes())
+        handler._afk_notification_tasks.add(task)
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+        with self.assertNoLogs("test_creature_spawner_handler", level="ERROR"):
+            handler._afk_notification_task_completed(task)
+
+        self.assertNotIn(task, handler._afk_notification_tasks)
+
+    async def test_cleanup_cancels_tracked_afk_notification_tasks(self):
+        handler = self.make_handler()
+
+        async def never_finishes():
+            await asyncio.Event().wait()
+
+        task = asyncio.create_task(never_finishes())
+        handler._afk_notification_tasks.add(task)
+
+        await handler._cleanup_tasks()
+
+        self.assertTrue(task.cancelled())
+        self.assertFalse(handler._afk_notification_tasks)
 
 
 if __name__ == "__main__":

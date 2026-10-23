@@ -8,9 +8,9 @@ Method: Updated static review with source evidence, applied decision-pipeline re
 
 `CreatureSpawnerHandler` now uses the intended asyncio concurrency model for scheduler ownership, creature despawn timers, and noon environment changes. The R1–R5 remediation is substantially implemented: sleeping OS threads and cross-thread `.result()` waits were removed, duplicate scheduler starts are claimed synchronously, and a private cleanup path cancels handler-owned tasks. The class still combines lifecycle orchestration, bonus interpretation, creature selection, spawn presentation, duplicate spawning, AFK capture, and environment scheduling, so separation-of-concerns concerns remain. Overall grade: **A- for the remediated timer/lifecycle model, C+ for structure, and C for spawn correctness/readability**.
 
-The catch path is materially improved but not fully non-blocking. The critical catch, capacity checks, and reward preparation now use the serialized blocking boundary, and optional rewards are scheduled after the success response. However, `CreatureCaughtView` still performs synchronous database work during construction and in several button/modal callbacks. Those interactions can still delay acknowledgement when database or image work is slow. The original approximately 15-second event-loop starvation risk is reduced for the main catch flow, but production stage timing and focused caught-view interaction tests are still required.
+The catch path is materially improved but not yet fully proven at A level. The critical catch, capacity checks, reward preparation, caught-view state preload, analyze flow, storage expansion, and caught-view database/image operations now use the serialized blocking boundary after acknowledgement. Discord UI construction and mutation remain on the event-loop thread. Schema-dependent catch/reward idempotency, production stage timing, and broader stale-view/race coverage are still required.
 
-The decision-pipeline remediation is now applied incrementally: bonus resolution is represented by `SpawnBonusContext`, pool selection/preparation has private boundaries, `spawn_creature` safely skips empty selections, and duplicate probability decisions have explicit helpers. `CreatureSpawnerHandler` remains the lifecycle coordinator and still owns environment, AFK, presentation, and policy responsibilities, so this is a partial architectural improvement rather than a complete service extraction. The highest-value remaining work is to finish the `CreatureCaughtView` callback boundary and add task-exception observability.
+The decision-pipeline remediation is now applied incrementally: bonus resolution is represented by `SpawnBonusContext`, pool selection/preparation has private boundaries, `spawn_creature` safely skips empty selections, and duplicate probability decisions have explicit helpers. `CreatureSpawnerHandler` remains the lifecycle coordinator and still owns environment, AFK, presentation, and policy responsibilities, so this is a partial architectural improvement rather than a complete service extraction. The highest-value remaining work is durable catch/reward idempotency, AFK/environment blocking isolation, production measurement, and broader stale-view/race coverage. The caught-view blocking boundary and task-exception observability are now partially implemented.
 
 ### Remediation status
 
@@ -20,7 +20,8 @@ The decision-pipeline remediation is now applied incrementally: bonus resolution
 | R3 — noon environment scheduling | Implemented | `_schedule_environment_change` calculates the existing US/Eastern noon offset and awaits it on the bot loop. |
 | R4 — cross-thread Discord submission and `.result()` | Implemented for the remediated paths | Fetch, delete, and despawn notification are awaited in order; AFK notification uses same-loop task creation. |
 | R5 — duplicate scheduler start window | Implemented | `_spawner_start_claimed` is set before task creation and private `_cleanup_tasks` cancels owned tasks. |
-| Catch critical path | Implemented with residual risk | `catch_creature_async`, capacity checks, and reward preparation use `run_serialized_blocking`; caught-view callbacks still contain direct blocking work. |
+| Catch critical path | Implemented with residual risk | `catch_creature_async`, capacity checks, reward preparation, and caught-view state preload use `run_serialized_blocking`; durable idempotency is not established. |
+| Caught-view blocking boundary | Partially implemented | Analyze, storage, favorite, display, nickname, release, and release-image work is serialized after acknowledgement; compatibility constructor fallback and broader race tests remain. |
 | Whole-callback retry removal | Implemented | The catch callback no longer retries the complete non-idempotent orchestration. |
 | Quest-avatar batching | Implemented | Quest candidates are collected and batch-processed outside the per-avatar evaluation loop. |
 | Decision-pipeline boundaries | Partially implemented | `SpawnBonusContext`, `SpawnCandidate`, pool-selection/preparation helpers, duplicate-policy helpers, and the no-candidate guard are implemented; the handler remains a broad coordinator. |
@@ -30,15 +31,15 @@ The decision-pipeline remediation is now applied incrementally: bonus resolution
 
 | Area | Grade | Reason |
 |---|---:|---|
-| Spawner lifecycle/task ownership | A- | Synchronous start claim, task handles, tracked despawns, and private cancellation cleanup address the prior duplicate-start and sleeping-thread risks; task exception inspection remains incomplete. |
+| Spawner lifecycle/task ownership | A- | Synchronous start claim, task handles, tracked despawns, private cleanup, and failure consumption address the prior duplicate-start and sleeping-thread risks; production task metrics remain incomplete. |
 | Spawner separation of concerns | B- | Private decision and duplicate-policy boundaries improve readability, but one class still owns lifecycle, environment, AFK, presentation, and selection responsibilities. |
 | Active-bonus handling | B- | `SpawnBonusContext` centralizes kingdom/rarity activation, normal-charm interval state, source IDs, and first mythical-charm lookup while preserving one-time loading and iteration-order behavior; user truthiness remains a separate compatibility input. |
 | Creature selection | B | Pool filtering, rarity fallback, deep-copying, timing preparation, and no-candidate handling are separated and tested; the public picker still returns a creature rather than a full candidate object for compatibility. |
 | Despawn/environment coordination | A- | Despawn and environment waits no longer consume sleeping OS threads, and same-loop Discord operations preserve ordering; AFK/database/image work can still block the loop. |
-| Catch callback responsiveness | B- | Critical catch/capacity/reward preparation is serialized off-loop and optional rewards run after the success response, but caught-view construction and later component callbacks still do synchronous DB/PIL work. |
-| Catch concurrency isolation | C+ | The per-view lock still protects one creature and the main catch path no longer monopolizes the loop for all DB/PIL work; caught-view callback blocking can still affect unrelated interactions. |
+| Catch callback responsiveness | B+ | Critical catch, caught-view preload, analyze, storage, favorite, display, nickname, release, and image preparation are serialized off-loop after acknowledgement; production thresholds and full callback race coverage remain unmeasured. |
+| Catch concurrency isolation | B- | Blocking work is isolated and the per-view lock remains in place, but stale views, duplicate reward workers, ownership races, and durable state predicates still need explicit coverage. |
 | Catch/reward reliability | B- | Whole-callback retry was removed and post-catch failures are logged, but reward writes/notifications remain independently partial and idempotency is not established. |
-| Observability | D+ | Decision boundaries make no-candidate and selected-rarity behavior testable, but no production stage timing or task-exception logging has been added. |
+| Observability | C | Scheduler/despawn/AFK task failures are now consumed and logged, but stage timing, event-loop lag, reward replay, and production metrics are not yet available. |
 
 ## 3. Current Runtime Flow
 
@@ -58,11 +59,11 @@ The decision-pipeline remediation is now applied incrementally: bonus resolution
 1. Defers the interaction and checks the per-view interaction lock (`:49-67`).
 2. Performs the capacity check through `run_serialized_blocking` (`:70-75`).
 3. Sends a short pending response, then calls `catch_creature_async`, which serializes the synchronous catch/profile/image/DB work off the event-loop thread (`:78-89`, `CatchFunctions.py`).
-4. Sends the public catch message and constructs `CreatureCaughtView` on the event-loop thread (`:91-104`). The constructor still performs a synchronous profile lookup and view-state DB reads.
+4. Sends the public catch message, preloads profile/display state through `run_serialized_blocking`, and constructs `CreatureCaughtView` with plain state on the event-loop thread (`:91-113`). The compatibility constructor fallback can still perform a synchronous profile lookup only when called without preloaded state.
 5. Deletes the original spawn message and sends the final private success response before optional rewards (`:106-113`).
 6. Runs avatar and item reward checks in a tracked background task after the critical response (`:115-119`, `:158-169`).
 
-The main callback no longer performs all blocking database/image work inline, but it still mixes network waits with event-loop-thread view construction and retains a serial reward worker. `CreatureCaughtView` component callbacks remain a separate responsiveness boundary.
+The main callback no longer performs the caught-view profile/display database reads inline. Component callbacks acknowledge first and move their database/image/release work through the serialized boundary; the remaining risks are idempotency, stale-state races, and unmeasured production latency.
 
 ## 4. CreatureSpawnerHandler Findings
 
@@ -156,33 +157,25 @@ The timer redesign removes thread-per-creature waits, and the interactive catch 
 
 **Evidence:** `CreatureSpawnerHandler.py:104-127`, `:130-159`, `:213-216`.
 
-Task callbacks now remove completed scheduler and despawn task references, and `_cleanup_tasks` cancels handler-owned scheduler/despawn tasks. The callbacks still do not inspect task exceptions. AFK notification tasks created at `:357` are detached from `_despawn_tasks`, so shutdown cleanup does not wait for or cancel them. A failed detached notification can therefore still become an unobserved task exception.
+Task callbacks now remove completed scheduler and despawn task references, consume and log non-cancellation exceptions, and `_cleanup_tasks` cancels handler-owned scheduler/despawn/AFK notification tasks. Remaining work is to add production task-failure metrics and safe correlation identifiers to the structured logs.
 
-**Recommendation:** Extend the existing completion callbacks to call `task.exception()` for non-cancelled tasks and log failures with creature/message identifiers. Either track AFK notification tasks in the private cleanup set or explicitly register a best-effort completion callback that logs failures.
+**Status:** Task exception consumption and tracked AFK notification cleanup are implemented. Add production metrics and broader failure-injection coverage before awarding an A grade.
 
 ## 5. CreatureEncounterView Findings
 
-### E1 — Blocking work remains in caught-view interactions (B-)
+### E1 — Blocking work remains in caught-view interactions (B+; partially resolved)
 
-**Evidence:** `CreatureEncounterView.py:45-99`, `CatchFunctions.py:10-20`.
+**Evidence:** `CreatureCaughtView.py`, `CreatureEncounterView.py`, `AsyncBlocking.py`.
 
-The original catch callback starvation was reduced by the implementation, but the callback and the view it creates still have synchronous sections:
+The caught-view path now preloads profile/display state before UI construction and moves analyze, storage expansion, favorite, display, nickname, release, and release-image database/PIL work behind the serialized boundary after interaction acknowledgement. Discord `View` and component mutation remain on the event-loop thread.
 
-- `catch_creature_async` delegates the synchronous profile/embed/image/catch/XP operation through `run_serialized_blocking` (`CatchFunctions.py`).
-- Capacity checks and reward preparation use the same serialized boundary (`CreatureEncounterView.py`, `AvatarUnlockHandler.py`, `ItemUnlockHandler.py`).
-- `CreatureCaughtView.__init__` performs a synchronous profile lookup and builds display-slot state on the event-loop thread (`CreatureCaughtView.py:13-45`).
-- Caught-view buttons and modal callbacks still call synchronous database and image/release methods after acknowledgement (`CreatureCaughtView.py:64-142`, `:179-184`).
-- Optional avatar/item rewards are scheduled after the success response, but remain serial within `_process_post_catch_rewards` (`CreatureEncounterView.py:158-169`).
-
-The critical catch operation is no longer expected to monopolize the event loop for its full DB/PIL duration. Nevertheless, a slow caught-view constructor or component callback can still delay unrelated interactions. The previous F grade is therefore no longer accurate for the main catch path, but the full interaction experience is not yet fully non-blocking.
-
-**Remaining action:** Move caught-view database reads and release/favorite/nickname/display operations behind the serialized blocking boundary while keeping Discord `View` and component mutation on the event-loop thread. Add interaction tests that assert acknowledgement occurs before blocking work completes.
+**Remaining action:** Add focused tests for every callback, stale/unauthorized interactions, duplicate callbacks, and Discord failures after durable database success. The constructor’s compatibility fallback can still perform a synchronous profile lookup when called directly without preloaded state.
 
 ### E2 — The per-view interaction lock does not provide global responsiveness (D)
 
 **Evidence:** `CreatureEncounterView.py:34`, `:52-67`.
 
-The lock correctly serializes competing interactions for one creature and `self.caught` provides a second check (`:64-76`). The lock is released before the catch commit and reward chain begins, which avoids a long lock hold. It does not prevent event-loop blocking from caught-view callbacks or detached reward work; a lock change alone is not a substitute for the serialized blocking boundary.
+The lock correctly serializes competing interactions for one creature and `self.caught` provides a second check (`:64-76`). The lock is released before the catch commit and reward chain begins, which avoids a long lock hold. It does not provide durable cross-view idempotency or protect against stale ownership state; a lock change alone is not a substitute for conflict-safe database transitions.
 
 ### E3 — Post-catch operations remain serial within a background task (B-)
 
@@ -290,12 +283,20 @@ The target is not to make every function asynchronous. The target is to keep blo
 
 - **RESOLVED:** Optional avatar/item unlock notifications may complete after the final success response; the background reward task is the accepted ordering tradeoff.
 - **RESOLVED:** No eligible creature is a normal skipped spawn: `creature_picker` returns `None`, and `spawn_creature` performs no presentation, Discord send, despawn registration, or duplicate spawning.
+
 - **NEEDS REVIEW:** Can catch and reward writes be made idempotent using existing catch IDs/user-creature uniqueness rules?
+- **ANSWER:** Yes, but it requires a separate product decision and careful review of all reward paths. The current implementation does not guarantee idempotency for all reward writes.
+
 - **REQUIRES TRADEOFF:** Offloading synchronous database work to threads improves event-loop responsiveness but requires safe connection ownership; the current shared `QueryHandler` is not a safe arbitrary-concurrency boundary.
+- **ANSWER:** Use a serialized database worker or transaction boundary to isolate synchronous work from the event loop. Arbitrary `asyncio.to_thread` calls are not safe with the current shared connection/cursor.
+
 - **RESOLVED:** Multiple active kingdom/rarity bonuses preserve existing iteration-order overwrite behavior, including failed activation resets; changing precedence requires a separate product decision.
-- **RESOLVED:** A private `_cleanup_tasks` path cancels handler-owned scheduler/despawn tasks on shutdown; detached AFK notification tasks still need either registration in that cleanup set or explicit best-effort exception logging.
-- **NEEDS REVIEW:** Should caught-view database and image work be moved behind the same serialized boundary before the responsiveness remediation is considered complete?
-- **IMPLEMENTATION EVIDENCE:** `python -m unittest src.discord.tests.test_creature_spawner_handler -v` — 11 tests passed.
-- **IMPLEMENTATION EVIDENCE:** `python -m unittest discover -s src\\discord\\tests -p "test_*.py" -v` — 17 tests ran; 16 passed and 1 unrelated item-reward test errored because `StaticItemCache` attempted to initialize without an initialized database handler (`RuntimeError: Database handler not initialized. Call initialize_database() first.`). The 11 spawner tests and 3 catch-responsiveness tests passed.
+- **RESOLVED:** A private `_cleanup_tasks` path cancels handler-owned scheduler/despawn/AFK notification tasks on shutdown; completion callbacks consume and classify non-cancellation failures.
+
+- **PARTIALLY RESOLVED:** Caught-view database and image work in the interactive catch path uses the same serialized boundary after prompt acknowledgement. The compatibility constructor fallback, stale-view/race tests, and production measurements remain required.
+
+- **IMPLEMENTATION EVIDENCE:** `python -m unittest src.discord.tests.test_creature_spawner_handler src.discord.tests.test_catch_callback_responsiveness -v` — 17 focused tests passed, including task failure/cancellation/cleanup coverage and catch responsiveness coverage.
+- **IMPLEMENTATION EVIDENCE:** `python -m py_compile src\\discord\\game_features\\creature_enounter\\CreatureSpawnerHandler.py src\\discord\\game_features\\creature_enounter\\CreatureCaughtView.py src\\discord\\game_features\\creature_enounter\\CreatureEncounterView.py src\\discord\\handlers\\CreatureReleaseService\\CreatureReleaseService.py src\\discord\\tests\\test_creature_spawner_handler.py` — passed.
+- **DEFERRED:** Full catch/reward idempotency requires a durable operation/ reward-stage ledger or an approved schema migration. Existing `catch_id` is only an autoincrement key and random reward results are not persisted, so no idempotency claim is made here.
 - **Residual limitation:** This review remains static with respect to production latency. The exact remaining split among SQLite, PIL, Discord, AFK handling, and caught-view/reward work requires stage timing in a representative runtime.
 

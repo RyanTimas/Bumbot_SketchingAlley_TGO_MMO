@@ -762,6 +762,27 @@ class TGOMMODatabaseHandler:
     def update_user_profile_display_creature_slots(self, params = (-1, -1, -1, -1, -1, -1, -1)):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_CREATURES, params=params)
         return response
+
+    # update the display slots to remove any released creatures
+    def clear_released_creatures_from_display_slots(self, user_id, creature_ids):
+        # check if user profile exists
+        profile_rows = self.QueryHandler.execute_query(TGOMMO_SELECT_USER_PROFILE_BY_ID, params=(user_id,),)
+        if not profile_rows:
+            return True
+
+        # check if any of the released creature IDs are in the display slots
+        released_ids = set(creature_ids)
+        current_slots = list(profile_rows[0][5:11])
+        updated_slots = [slot_id if slot_id not in released_ids else -1 for slot_id in current_slots]
+
+        # if the updated slots are the same as the current slots, no update is needed
+        if updated_slots == current_slots:
+            return True
+
+        # update the display slots with the new values
+        self.update_user_profile_display_creature_slots(params=tuple(updated_slots) + (user_id,))
+        return True
+
     def update_user_profile_display_avatar(self, user_id, avatar_id):
         response = self.QueryHandler.execute_query(TGOMMO_UPDATE_USER_PROFILE_DISPLAY_AVATAR, params=(avatar_id, user_id))
         return response

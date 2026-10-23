@@ -43,10 +43,12 @@ class CreatureEncounterView(View):
 
         # region Build View
         self.add_item(self.create_catch_button())
-        self.add_item(self.is_creature_caught_button())
+        self.add_item(self.creature_analyze_button())
         # endregion
 
     ''' ---- VIEW COMPONENTS ---------------------------------------------------------------------------------------------------------------------------------------- '''
+    # region VIEW ITEMS
+    # region BUTTONS
     def create_catch_button(self, row=0):
         button = Button(label="Catch Critter!!", style=ButtonStyle.blurple, row=row)
         button.callback = self.catch_button_callback()
@@ -97,7 +99,8 @@ class CreatureEncounterView(View):
                 self._logger.exception("Catch announcement failed for catch_id=%s", catch_id)
 
             # send a personal message to user confirming the catch & allowing them to update nickname / display creature
-            nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message,)
+            caught_view_state = await run_serialized_blocking(CreatureCaughtView.load_view_state, interaction.user.id,)
+            nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message, message_author=caught_view_state[0], display_creature_labels=caught_view_state[1],)
 
             # delete the original spawn message so nobody else can catch it
             try:
@@ -114,39 +117,48 @@ class CreatureEncounterView(View):
             post_catch_task.add_done_callback(self._post_catch_task_completed)
         return callback
 
-    def is_creature_caught_button(self, row=0):
+    def creature_analyze_button(self, row=0):
         button = Button(label="Analyze Creature", style=ButtonStyle.gray, emoji="🔎", row=row)
         button.callback = self.creature_analyze_button_callback()
         return button
     def creature_analyze_button_callback(self):
         @retry_on_ssl_error(max_retries=3, delay=1)
         async def callback(interaction):
-            # Get user's creatures and count this species
-            total_catches_for_species = get_tgommo_db_handler().get_total_catches_for_creature_by_user(user_id=interaction.user.id, dex_no=self.creature.dex_no)
-            total_catches_for_variant = get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
-            total_catches_for_variant_in_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=interaction.user.id, creature_id=self.creature.creature_id, environment_dex_no=self.environment.dex_no)
-            total_mythical_catches_for_variant = get_tgommo_db_handler().get_total_mythical_catches_for_creature_variant_by_user(user_id=interaction.user.id, creature_id=self.creature.creature_id)
-
-            # Check for complete message overrides first
-            if total_catches_for_species == 0:
-                message = f"# ‼️You've never caught this creature before!‼️"
-            elif total_mythical_catches_for_variant == 0 and self.creature.local_rarity == MYTHICAL:
-                message = f"# ⭐You've never caught the Mythical form of this creature before!⭐"
-            else:
-                # Build the detailed message with conditional formatting
-                creature_name = f"{self.creature.full_name}" + (f" ({self.creature.variant_name})" if self.creature.variant_name else "")
-                variant_line = "‼️You never caught this form for this creature before!🔥" if total_catches_for_variant == 0 else f"🔥Catches For Variant: **{total_catches_for_variant}**"
-                environment_line = "‼️You've never caught this creature in this environment before!🌎" if total_catches_for_variant_in_environment == 0 else f"🌎 Catches For Variant in Environment: **{total_catches_for_variant_in_environment}**"
-
-                message = (
-                    f"# 🔍 {creature_name} - Total Catches: **{total_catches_for_species}**\n"
-                    f"### * {variant_line}\n"
-                    f"### * {environment_line}\n"
-                    f"### * ⭐ Mythical catches For Variant: **{total_mythical_catches_for_variant}**"
-                )
-
-            await interaction.response.send_message(message, files=[convert_to_png(self.creature.creature_image, file_name="creature_img.png")], ephemeral=True)
+            await interaction.response.defer()
+            analysis = await run_serialized_blocking(self._prepare_analysis, interaction.user.id,)
+            await interaction.followup.send(analysis[0], files=[analysis[1]], ephemeral=True,)
         return callback
+    # retrieve the user's catch statistics for this creature and prepare an analysis message and image to send back to the user. This function queries the database for the total catches of the species, variant, and environment, as well as any mythical catches. It then constructs a message summarizing these statistics and generates an image of the creature to accompany the message.
+    def _prepare_analysis(self, user_id):
+        # Get user's creatures and count this species
+        total_catches_for_species = get_tgommo_db_handler().get_total_catches_for_creature_by_user(user_id=user_id, dex_no=self.creature.dex_no)
+        total_catches_for_variant = get_tgommo_db_handler().get_total_catches_for_creature_variant_by_user(user_id=user_id, creature_id=self.creature.creature_id)
+        total_catches_for_variant_in_environment = get_tgommo_db_handler().get_total_catches_for_species_for_environment(user_id=user_id, creature_id=self.creature.creature_id, environment_dex_no=self.environment.dex_no)
+        total_mythical_catches_for_variant = get_tgommo_db_handler().get_total_mythical_catches_for_creature_variant_by_user(user_id=user_id, creature_id=self.creature.creature_id)
+
+        # Check for complete message overrides first
+        if total_catches_for_species == 0:
+            message = f"# ‼️You've never caught this creature before!‼️"
+        elif total_mythical_catches_for_variant == 0 and self.creature.local_rarity == MYTHICAL:
+            message = f"# ⭐You've never caught the Mythical form of this creature before!⭐"
+        else:
+            # Build the detailed message with conditional formatting
+            creature_name = f"{self.creature.full_name}" + (f" ({self.creature.variant_name})" if self.creature.variant_name else "")
+            variant_line = "‼️You never caught this form for this creature before!🔥" if total_catches_for_variant == 0 else f"🔥Catches For Variant: **{total_catches_for_variant}**"
+            environment_line = "‼️You've never caught this creature in this environment before!🌎" if total_catches_for_variant_in_environment == 0 else f"🌎 Catches For Variant in Environment: **{total_catches_for_variant_in_environment}**"
+
+            message = (
+                f"# 🔍 {creature_name} - Total Catches: **{total_catches_for_species}**\n"
+                f"### * {variant_line}\n"
+                f"### * {environment_line}\n"
+                f"### * ⭐ Mythical catches For Variant: **{total_mythical_catches_for_variant}**"
+            )
+
+        return message, convert_to_png(self.creature.creature_image, file_name="creature_img.png")
+    # endregion
+    # endregion
+
+
 
     '''---------------SUPPORTING FUNCTIONS---------------------------------------------------------------------------------------------------------'''
     # region Post Catch Reward Processing
@@ -197,30 +209,34 @@ class CreatureEncounterView(View):
                 await interaction.response.send_message("You cannot expand someone else's storage.", ephemeral=True)
                 return
 
-            # Determine current pages and cost
-            total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id)
-            if total_pages + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
-                await interaction.response.send_message("Your Storage is maxed out. It cannot be expanded any further.", ephemeral=True)
-                return
-
-            already_purchased_expansions = total_pages - BASE_CREATURE_STORAGE_EXPANSIONS
-            expansion_cost = (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_BASE_COST
-
-            # Process payment and expansion using consistent DB API
-            user_profile = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
-            if user_profile.currency < expansion_cost:
-                await interaction.response.send_message("❌ You do not have enough coins to expand your creature storage.", ephemeral=True)
-                return
-
-            # Update DB: increment expansion item and deduct currency
-            get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id, item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, new_amount=total_pages + 1)
-            get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=expansion_cost * -1)
-
-            await interaction.response.send_message("✅ Your creature storage has been expanded by 100 slots!", ephemeral=True)
+            await interaction.response.defer()
+            result = await run_serialized_blocking(self._expand_storage, user_id)
+            await interaction.followup.send(result, ephemeral=True)
             return
 
         expansion_button.callback = expansion_button_callback
         expansion_view.add_item(expansion_button)
 
         return message, expansion_view
+
+    @staticmethod
+    def _expand_storage(user_id):
+        # Check if the user has already reached the maximum number of expansions
+        total_pages = get_tgommo_db_handler().get_creature_inventory_expansions_by_user_id(user_id=user_id)
+        if total_pages + 1 > MAX_CREATURE_STORAGE_EXPANSIONS:
+            return "Your Storage is maxed out. It cannot be expanded any further."
+
+        # Calculate the cost of the next expansion based on how many expansions the user has already purchased
+        already_purchased_expansions = total_pages - BASE_CREATURE_STORAGE_EXPANSIONS
+        expansion_cost = (already_purchased_expansions + 1) * CREATURE_STORAGE_EXPANSION_BASE_COST
+
+        # Check if the user has enough currency to afford the expansion
+        user_profile = get_tgommo_db_handler().get_user_profile_by_user_id(user_id=user_id)
+        if user_profile.currency < expansion_cost:
+            return "❌ You do not have enough coins to expand your creature storage."
+
+        # If the user can afford it, update their available items and currency in the database
+        get_tgommo_db_handler().update_user_profile_available_items(user_id=user_id,  item_id=ITEM_ID_CREATURE_INVENTORY_STORAGE_EXPANSION, new_amount=total_pages + 1,)
+        get_tgommo_db_handler().update_user_profile_currency(user_id=user_id, new_currency=expansion_cost * -1,)
+        return "✅ Your creature storage has been expanded by 100 slots!"
     # endregion

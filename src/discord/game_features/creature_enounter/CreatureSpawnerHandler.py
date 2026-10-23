@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import ssl
 import traceback
 from copy import deepcopy
@@ -74,6 +75,8 @@ class CreatureSpawnerHandler:
         self._environment_scheduler_task = None
         self._environment_change_task = None
         self._despawn_tasks = set()
+        self._afk_notification_tasks = set()
+        self._logger = logging.getLogger(__name__)
         # endregion
 
         self.define_time_of_day()
@@ -128,55 +131,6 @@ class CreatureSpawnerHandler:
             self._environment_scheduler_task = None
             raise
 
-    # Callback to handle completion of scheduler tasks and reset the spawner start claim if all tasks are done
-    def _scheduler_task_completed(self, task):
-        if task is self._spawner_task:
-            self._spawner_task = None
-        if task is self._environment_scheduler_task:
-            self._environment_scheduler_task = None
-        if task is self._environment_change_task:
-            self._environment_change_task = None
-
-        if (
-            self._spawner_task is None
-            and self._environment_scheduler_task is None
-            and self._environment_change_task is None
-        ):
-            self._spawner_start_claimed = False
-
-    # Callback to handle completion of despawn tasks and remove them from the set of active despawn tasks
-    def _despawn_task_completed(self, task):
-        self._despawn_tasks.discard(task)
-
-    # Cleanup function to cancel all handler-owned tasks before the Discord connection closes
-    async def _cleanup_tasks(self):
-        """Cancel handler-owned tasks before the Discord connection closes."""
-        self.are_creatures_spawning = False
-        self.spawn_event.set()
-
-        current_task = asyncio.current_task()
-        tasks = [
-            task for task in (
-                self._spawner_task,
-                self._environment_scheduler_task,
-                self._environment_change_task,
-                *self._despawn_tasks,
-            )
-            if task and task is not current_task and not task.done()
-        ]
-
-        for task in tasks:
-            task.cancel()
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
-
-        self._spawner_task = None
-        self._environment_scheduler_task = None
-        self._environment_change_task = None
-        self._despawn_tasks.clear()
-        self._spawner_running = False
-        self._spawner_start_claimed = False
-
     # Toggles whether creatures are spawning or not
     def toggle_creature_spawner(self, ctx):
         self.are_creatures_spawning = not self.are_creatures_spawning
@@ -218,6 +172,77 @@ class CreatureSpawnerHandler:
                     pass
         finally:
             self._spawner_running = False
+    # endregion
+
+    # region Task Management Callbacks
+    # Callback to handle completion of scheduler tasks and reset the spawner start claim if all tasks are done
+    def _scheduler_task_completed(self, task):
+        self._consume_task_exception(task, task_type="scheduler")
+        if task is self._spawner_task:
+            self._spawner_task = None
+        if task is self._environment_scheduler_task:
+            self._environment_scheduler_task = None
+        if task is self._environment_change_task:
+            self._environment_change_task = None
+
+        if (
+            self._spawner_task is None
+            and self._environment_scheduler_task is None
+            and self._environment_change_task is None
+        ):
+            self._spawner_start_claimed = False
+
+    # Callback to handle completion of despawn tasks and remove them from the set of active despawn tasks
+    def _despawn_task_completed(self, task):
+        self._despawn_tasks.discard(task)
+        self._consume_task_exception(task, task_type="despawn")
+
+    # Callback to handle completion of AFK notification tasks and remove them from the set of active AFK notification tasks
+    def _afk_notification_task_completed(self, task):
+        self._afk_notification_tasks.discard(task)
+        self._consume_task_exception(task, task_type="afk_notification")
+
+    # Consumes exceptions from tasks and logs them without raising, to prevent unhandled exceptions from crashing the bot
+    def _consume_task_exception(self, task, task_type):
+        if task.cancelled():
+            return
+        try:
+            exception = task.exception()
+        except asyncio.CancelledError:
+            return
+        if exception is not None:
+            self._logger.error("Spawner task failed", extra={"task_type": task_type, "failure_class": type(exception).__name__}, exc_info=(type(exception), exception, exception.__traceback__),)
+
+    # Cleanup function to cancel all handler-owned tasks before the Discord connection closes
+    async def _cleanup_tasks(self):
+        """Cancel handler-owned tasks before the Discord connection closes."""
+        self.are_creatures_spawning = False
+        self.spawn_event.set()
+
+        current_task = asyncio.current_task()
+        tasks = [
+            task for task in (
+                self._spawner_task,
+                self._environment_scheduler_task,
+                self._environment_change_task,
+                *self._despawn_tasks,
+                *self._afk_notification_tasks,
+            )
+            if task and task is not current_task and not task.done()
+        ]
+
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        self._spawner_task = None
+        self._environment_scheduler_task = None
+        self._environment_change_task = None
+        self._despawn_tasks.clear()
+        self._afk_notification_tasks.clear()
+        self._spawner_running = False
+        self._spawner_start_claimed = False
     # endregion
 
     ''' ---- FUNCTIONS TO HANDLE CREATURE SPAWNING LOGIC ------------------------------------------------------------'''
@@ -420,16 +445,22 @@ class CreatureSpawnerHandler:
     # region AFK Trap Catch Logic
     # Handles AFK Trap catch logic
     def handle_afk_trap_catch(self, creature: TGOCreature):
+        # Determine if an AFK trap catch should be performed (75% chance)
         perform_afk_catch = random.randint(1, 4) != 4
+
         if perform_afk_catch:
+            # Select a user for the trap capture based on the creature and active traps
             afk_user_id = TrapHandler.select_user_for_trap_capture(creature=creature)
             if afk_user_id:
                 # remove one charge from the user trap link
                 get_tgommo_db_handler().update_user_trap_link_charges(user_id=afk_user_id, player_trap_charges=max(0, get_tgommo_db_handler().get_player_trap_link_by_user_id(user_id=afk_user_id).player_trap_charges - 1))
+
                 # now catch the creature for the user and send the catch embed to the channel
                 result = catch_creature(afk_user_id, creature, self.current_environment, is_afk_catch=True)
                 if result["user_profile"]:
-                    asyncio.create_task(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]))
+                    notification_task = asyncio.create_task(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]],))
+                    self._afk_notification_tasks.add(notification_task)
+                    notification_task.add_done_callback(self._afk_notification_task_completed)
         return perform_afk_catch
     # endregion
 

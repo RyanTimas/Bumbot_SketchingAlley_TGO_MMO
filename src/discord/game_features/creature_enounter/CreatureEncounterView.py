@@ -96,8 +96,8 @@ class CreatureEncounterView(View):
                 self.successful_catch_message = None
                 self._logger.exception("Catch announcement failed for catch_id=%s", catch_id)
 
-            # send a personal message to user confirming the catch & seeing if they have unlocked a new avatar
-            nickname_view = await run_serialized_blocking(CreatureCaughtView, user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message,)
+            # send a personal message to user confirming the catch & allowing them to update nickname / display creature
+            nickname_view = CreatureCaughtView(user_id=interaction.user.id, creature_catch_id=catch_id, successful_catch_embed_handler=self.successful_catch_embed_handler, successful_catch_message=self.successful_catch_message,)
 
             # delete the original spawn message so nobody else can catch it
             try:

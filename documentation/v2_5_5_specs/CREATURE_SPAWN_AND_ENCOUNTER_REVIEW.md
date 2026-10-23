@@ -2,7 +2,7 @@
 
 Date: 2026-10-23
 Scope: `CreatureSpawnerHandler`, `CreatureEncounterView.catch_button_callback`, and directly called catch/unlock/reward paths.  
-Method: Updated static review with source evidence, remediation-spec reconciliation, and the added regression tests. No production latency profile was available.
+Method: Updated static review with source evidence, applied decision-pipeline remediation, and regression-test evidence. No production latency profile was available.
 
 ## 1. Executive Summary
 
@@ -10,7 +10,7 @@ Method: Updated static review with source evidence, remediation-spec reconciliat
 
 The catch path is materially improved but not fully non-blocking. The critical catch, capacity checks, and reward preparation now use the serialized blocking boundary, and optional rewards are scheduled after the success response. However, `CreatureCaughtView` still performs synchronous database work during construction and in several button/modal callbacks. Those interactions can still delay acknowledgement when database or image work is slow. The original approximately 15-second event-loop starvation risk is reduced for the main catch flow, but production stage timing and focused caught-view interaction tests are still required.
 
-The highest-value remaining work is to finish the `CreatureCaughtView` callback boundary and add task-exception observability. For the spawner, introduce explicit bonus-resolution and creature-selection boundaries while retaining `CreatureSpawnerHandler` as the lifecycle coordinator.
+The decision-pipeline remediation is now applied incrementally: bonus resolution is represented by `SpawnBonusContext`, pool selection/preparation has private boundaries, `spawn_creature` safely skips empty selections, and duplicate probability decisions have explicit helpers. `CreatureSpawnerHandler` remains the lifecycle coordinator and still owns environment, AFK, presentation, and policy responsibilities, so this is a partial architectural improvement rather than a complete service extraction. The highest-value remaining work is to finish the `CreatureCaughtView` callback boundary and add task-exception observability.
 
 ### Remediation status
 
@@ -23,20 +23,22 @@ The highest-value remaining work is to finish the `CreatureCaughtView` callback 
 | Catch critical path | Implemented with residual risk | `catch_creature_async`, capacity checks, and reward preparation use `run_serialized_blocking`; caught-view callbacks still contain direct blocking work. |
 | Whole-callback retry removal | Implemented | The catch callback no longer retries the complete non-idempotent orchestration. |
 | Quest-avatar batching | Implemented | Quest candidates are collected and batch-processed outside the per-avatar evaluation loop. |
+| Decision-pipeline boundaries | Partially implemented | `SpawnBonusContext`, `SpawnCandidate`, pool-selection/preparation helpers, duplicate-policy helpers, and the no-candidate guard are implemented; the handler remains a broad coordinator. |
+| No-candidate contract | Implemented | Empty pool/rarity selection returns `None`; `spawn_creature` performs no presentation, task registration, or duplicate spawning for `None`. |
 
 ## 2. Grades
 
 | Area | Grade | Reason |
 |---|---:|---|
 | Spawner lifecycle/task ownership | A- | Synchronous start claim, task handles, tracked despawns, and private cancellation cleanup address the prior duplicate-start and sleeping-thread risks; task exception inspection remains incomplete. |
-| Spawner separation of concerns | C+ | One class owns startup, scheduling, bonus policy, selection, presentation, duplicates, AFK capture, and environment changes. |
-| Active-bonus handling | C | Bonuses are loaded once and interpreted in several methods with implicit precedence and mixed responsibilities. |
-| Creature selection | C+ | Selection supports kingdom/rarity fallback, but selection, rarity mutation, and spawn-time calculation are coupled and `None` handling is unsafe. |
+| Spawner separation of concerns | B- | Private decision and duplicate-policy boundaries improve readability, but one class still owns lifecycle, environment, AFK, presentation, and selection responsibilities. |
+| Active-bonus handling | B- | `SpawnBonusContext` centralizes kingdom/rarity activation, normal-charm interval state, source IDs, and first mythical-charm lookup while preserving one-time loading and iteration-order behavior; user truthiness remains a separate compatibility input. |
+| Creature selection | B | Pool filtering, rarity fallback, deep-copying, timing preparation, and no-candidate handling are separated and tested; the public picker still returns a creature rather than a full candidate object for compatibility. |
 | Despawn/environment coordination | A- | Despawn and environment waits no longer consume sleeping OS threads, and same-loop Discord operations preserve ordering; AFK/database/image work can still block the loop. |
 | Catch callback responsiveness | B- | Critical catch/capacity/reward preparation is serialized off-loop and optional rewards run after the success response, but caught-view construction and later component callbacks still do synchronous DB/PIL work. |
 | Catch concurrency isolation | C+ | The per-view lock still protects one creature and the main catch path no longer monopolizes the loop for all DB/PIL work; caught-view callback blocking can still affect unrelated interactions. |
 | Catch/reward reliability | B- | Whole-callback retry was removed and post-catch failures are logged, but reward writes/notifications remain independently partial and idempotency is not established. |
-| Observability | D+ | No stage timing exists around catch DB, image, unlock, reward, and Discord operations; a generic execution timer cannot identify the bottleneck. |
+| Observability | D+ | Decision boundaries make no-candidate and selected-rarity behavior testable, but no production stage timing or task-exception logging has been added. |
 
 ## 3. Current Runtime Flow
 
@@ -44,9 +46,9 @@ The highest-value remaining work is to finish the `CreatureCaughtView` callback 
 
 1. `DiscordBot.on_ready` calls `start_creature_spawner` (`src/discord/DiscordBot.py:88-101`).
 2. `start_creature_spawner` synchronously claims lifecycle ownership before creating the spawn loop plus environment scheduler; repeated calls before the tasks yield are no-ops (`CreatureSpawnerHandler.py:88-107`).
-3. `_creature_spawner` resolves bonus effects, calls `spawn_creature`, processes post-spawn events, and waits on the existing event/timeout (`CreatureSpawnerHandler.py:164-197`).
+3. `_creature_spawner` resolves one `SpawnBonusContext` per spawn attempt, calls `spawn_creature` with its public kingdom/rarity values, processes post-spawn events, and waits on the existing event/timeout (`CreatureSpawnerHandler.py:164-197`, `:328-360`).
 4. `spawn_creature` selects or accepts a creature, applies the mythical check, builds/sends the encounter, schedules an asyncio despawn task for eligible rarities, and may recursively create swarm duplicates (`CreatureSpawnerHandler.py:202-219`, `:222-235`).
-5. `creature_picker` filters the pool, applies rarity fallback, deep-copies the selection, changes mythical rarity when needed, and calculates despawn timing (`CreatureSpawnerHandler.py:263-298`).
+5. `creature_picker` delegates filtering/deep-copying to `_select_creature_from_pool` and rarity/timing mutation to `_prepare_spawn_candidate`, while preserving its creature-or-`None` public result (`CreatureSpawnerHandler.py:286-359`).
 6. The handler also owns AFK trap capture, day/night changes, environment polling, and noon environment application. The environment transition is now an asyncio task and wakes the spawn loop through the existing `spawn_event` (`CreatureSpawnerHandler.py:396-471`).
 
 ### 3.2 Catch flow
@@ -64,11 +66,13 @@ The main callback no longer performs all blocking database/image work inline, bu
 
 ## 4. CreatureSpawnerHandler Findings
 
-### S1 — Lifecycle orchestration is too broad (C+)
+### S1 — Lifecycle orchestration remains broad (B-; partially resolved)
 
 **Evidence:** `CreatureSpawnerHandler.py:85-159`, `:164-197`, `:378-471`.
 
-`start_creature_spawner`, `_scheduler_task_completed`, `_cleanup_tasks`, and `_creature_spawner` are lifecycle responsibilities, but the same class also implements selection, bonus policy, presentation, AFK capture, day/night state, and environment transitions. This makes changes difficult to reason about because a change to selection can affect task ownership, and a change to environment state can affect despawn presentation.
+Private decision boundaries now separate bonus resolution, pool selection/preparation, and duplicate policy from the main presentation flow. However, `CreatureSpawnerHandler` still implements lifecycle, selection, presentation, AFK capture, day/night state, and environment transitions. The class is more readable, but it is not yet a thin coordinator and changes to environment or presentation can still interact with handler state.
+
+**Current status:** The private-boundary portion is implemented; separate collaborators remain future work if the class continues to grow. Keep `CreatureSpawnerHandler` as the lifecycle coordinator and avoid splitting classes merely to move lines.
 
 **Recommended boundary:** Keep `CreatureSpawnerHandler` as a thin coordinator with these explicit collaborators or private service boundaries:
 
@@ -84,20 +88,20 @@ The main callback no longer performs all blocking database/image work inline, bu
 
 Do not split into classes merely to move lines. Each boundary should have a small input/output contract and be testable without constructing the Discord bot.
 
-### S2 — Active bonuses are loaded once and interpreted in multiple places (C)
+### S2 — Active bonuses are loaded once with centralized resolution (B-; partially resolved)
 
 **Evidence:** `CreatureSpawnerHandler.py:45`, `:172-176`, `:263-298`, `:313-330`.
 
-`active_bonuses` is loaded once during initialization (`:45`). It is then consumed by the spawn loop for charm interval selection (`:172-176`), by `get_spawn_bonus_effects` for kingdom/rarity selection (`:313-330`), and by `perform_mythical_check` (`:290-311`). The same spawn decision is therefore distributed across multiple methods.
+`active_bonuses` remains loaded once during initialization (`:45`). `_resolve_spawn_bonus_context` now centralizes kingdom/rarity activation, normal-charm state, source IDs, and first mythical-charm lookup. `get_spawn_bonus_effects` remains a compatibility wrapper, while `perform_mythical_check` uses the side-effect-free mythical-charm lookup and retains its separate user-truthiness input.
 
 Specific readability/correctness concerns:
 
 - `get_spawn_bonus_effects` overwrites `kingdom` and `rarity` as it iterates bonuses. If multiple bonuses are present, precedence is implicit in collection order rather than expressed as policy (`:318-330`).
 - `perform_mythical_check` treats `user_bonus_active` as truthy rather than representing a specific user bonus decision (`:290-306`); `spawn_creature` passes the entire `user` object (`:206`).
-- Charm effects, mythical odds, rarity fallback, and interval shortening are not represented by one inspectable spawn decision.
+- Charm effects, mythical odds, rarity fallback, and interval shortening are not all represented by one object passed through every public path; the context is used by the main spawn loop while public compatibility methods remain available.
 - The one-time load is intentional according to the remediation decisions, but it means bonus changes after handler initialization are not reflected.
 
-**Recommended design:** Resolve an immutable `SpawnBonusContext` once per spawn attempt containing:
+**Implemented design:** `_resolve_spawn_bonus_context` returns an immutable `SpawnBonusContext` once per main-loop spawn attempt containing:
 
 - selected kingdom, if any;
 - requested/preferred rarity, if any;
@@ -105,15 +109,15 @@ Specific readability/correctness concerns:
 - interval modifier;
 - source bonus IDs for diagnostics.
 
-Then pass that context into selection and mythical evaluation. Keep active-bonus freshness unchanged unless separately approved; the improvement is centralization and explicit precedence, not a silent refresh.
+The context is used for main-loop kingdom/rarity inputs and interval selection. Active-bonus freshness remains unchanged; the improvement centralizes interpretation without silently refreshing state or changing precedence.
 
-### S3 — Selection and spawning are coupled (C+)
+### S3 — Selection and spawning are partially separated (B; partially resolved)
 
 **Evidence:** `CreatureSpawnerHandler.py:202-218`, `:263-298`.
 
-`creature_picker` does more than choose a candidate: it applies fallback rarity policy, deep-copies the object, mutates mythical rarity, and refreshes spawn/despawn time (`:263-298`). `spawn_creature` then applies another mythical check, creates embeds/views, sends Discord files, starts despawn, and recursively starts duplicates (`:202-218`).
+`creature_picker` remains the public creature-or-`None` compatibility method, but it now delegates filtering/deep-copying to `_select_creature_from_pool` and rarity/timing preparation to `_prepare_spawn_candidate`. `spawn_creature` handles the no-candidate result before mythical checks, embed/view construction, Discord send, despawn registration, or duplicate spawning (`:202-235`, `:286-359`).
 
-This makes it difficult to answer a basic question such as “what will spawn?” without also considering message side effects and task creation.
+The decision work can now be tested without Discord I/O. A `SpawnCandidate` is an internal preparation result, while the public picker continues returning the creature to avoid changing existing callers.
 
 **Recommended design:** Use a pure-ish selection contract:
 
@@ -130,15 +134,15 @@ SpawnCandidate = {
 
 Selection should not send Discord messages or create tasks. Presentation should receive the candidate and perform only rendering/send work. Preserve current fallback ordering and rarity probabilities in regression tests.
 
-**Correctness edge case:** `creature_picker` can return `None` when a requested kingdom has no candidates (`:185-188`), while `spawn_creature` immediately dereferences `creature.local_rarity` (`:204-206`). Callers currently try to guard some bait cases, but the handler itself should define a safe no-candidate contract rather than relying on every caller.
+**Status:** The no-candidate edge case is resolved. Empty kingdom or rarity selections return `None`; `spawn_creature` returns without constructing presentation objects, sending Discord output, registering despawn, or entering duplicate spawning. Regression coverage exists in `test_creature_spawner_handler.py`.
 
-### S4 — Duplicate spawning is recursive and can multiply work (C+)
+### S4 — Duplicate policy is explicit but recursion remains (C+; partially resolved)
 
 **Evidence:** `CreatureSpawnerHandler.py:220-234`.
 
-`_duplicate_creature_spawner` recursively calls `spawn_creature`, and each duplicate can perform embed construction, Discord sends, task creation, and another duplicate decision. The probability is bounded in normal conditions, but the work is not represented as a batch or explicit cap.
+`_duplicate_creature_spawner` remains recursive, but initial and continuation decisions now use `_should_spawn_duplicate` and `_should_continue_duplicate_chain`. The existing 12%/6% behavior, eligible rarity set, chain multiplier, and user/bait exclusion remain unchanged. No gameplay-changing maximum chain cap was introduced.
 
-**Recommendation:** Preserve probability and observable swarm behavior, but add a configured maximum chain safety bound and expose duplicate count in diagnostics. If the cap would change gameplay, mark it as a product decision rather than silently adding it.
+**Remaining action:** If a maximum chain safety bound or duplicate diagnostics are desired, define them as a separate product decision. This remediation intentionally isolates policy without changing swarm probability or recursion semantics.
 
 ### S5 — Remaining synchronous work inside async paths (C)
 
@@ -249,11 +253,11 @@ The critical callback's response time is now separated from optional reward proc
 
 ### P2 — Improve spawner readability and correctness
 
-1. Introduce an explicit immutable bonus decision/context used by interval selection, rarity selection, and mythical evaluation.
-2. Separate candidate selection from Discord presentation and task registration.
-3. Define and test the no-candidate contract for `creature_picker`/`spawn_creature`.
+1. **Implemented:** Introduce an explicit immutable bonus decision/context used by interval and kingdom/rarity selection, with a side-effect-free mythical-charm lookup.
+2. **Partially implemented:** Separate candidate selection/preparation from Discord presentation and task registration; the public picker remains a compatibility wrapper.
+3. **Implemented:** Define and test the no-candidate contract for `creature_picker`/`spawn_creature`.
 4. Add task exception logging and track detached AFK notification tasks in private cleanup.
-5. Add a bounded/observable swarm policy without changing probability unless approved.
+5. Keep duplicate policy isolated without adding a gameplay-changing cap; add a cap or diagnostics only through a separate approved change.
 
 ### P3 — Measure and tune
 
@@ -285,11 +289,13 @@ The target is not to make every function asynchronous. The target is to keep blo
 ## 9. Open Questions and Tradeoffs
 
 - **RESOLVED:** Optional avatar/item unlock notifications may complete after the final success response; the background reward task is the accepted ordering tradeoff.
+- **RESOLVED:** No eligible creature is a normal skipped spawn: `creature_picker` returns `None`, and `spawn_creature` performs no presentation, Discord send, despawn registration, or duplicate spawning.
 - **NEEDS REVIEW:** Can catch and reward writes be made idempotent using existing catch IDs/user-creature uniqueness rules?
 - **REQUIRES TRADEOFF:** Offloading synchronous database work to threads improves event-loop responsiveness but requires safe connection ownership; the current shared `QueryHandler` is not a safe arbitrary-concurrency boundary.
-- **NEEDS REVIEW:** Should the spawner treat no eligible creature as a normal skipped spawn or a logged operational error?
-- **NEEDS REVIEW:** Should multiple active kingdom/rarity bonuses stack, choose highest priority, or use current iteration-order behavior?
+- **RESOLVED:** Multiple active kingdom/rarity bonuses preserve existing iteration-order overwrite behavior, including failed activation resets; changing precedence requires a separate product decision.
 - **RESOLVED:** A private `_cleanup_tasks` path cancels handler-owned scheduler/despawn tasks on shutdown; detached AFK notification tasks still need either registration in that cleanup set or explicit best-effort exception logging.
 - **NEEDS REVIEW:** Should caught-view database and image work be moved behind the same serialized boundary before the responsiveness remediation is considered complete?
+- **IMPLEMENTATION EVIDENCE:** `python -m unittest src.discord.tests.test_creature_spawner_handler -v` — 11 tests passed.
+- **IMPLEMENTATION EVIDENCE:** `python -m unittest discover -s src\\discord\\tests -p "test_*.py" -v` — 17 tests ran; 16 passed and 1 unrelated item-reward test errored because `StaticItemCache` attempted to initialize without an initialized database handler (`RuntimeError: Database handler not initialized. Call initialize_database() first.`). The 11 spawner tests and 3 catch-responsiveness tests passed.
 - **Residual limitation:** This review remains static with respect to production latency. The exact remaining split among SQLite, PIL, Discord, AFK handling, and caught-view/reward work requires stage timing in a representative runtime.
 

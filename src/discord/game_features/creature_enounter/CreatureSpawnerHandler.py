@@ -2,6 +2,7 @@ import asyncio
 import ssl
 import traceback
 from copy import deepcopy
+from dataclasses import dataclass
 from datetime import datetime
 
 from PIL import Image
@@ -24,6 +25,27 @@ from resources.constants.TGO_MMO_constants import *
 from resources.constants.file_paths import *
 from resources.constants.general_constants import TGOMMO_ROLE, TGOMMO_CREATURE_SPAWN_CHANNEL_ID
 
+# region Data Classes
+
+# Data class to hold context for spawn bonuses, including kingdom, rarity, and active bonuses
+@dataclass(frozen=True)
+class SpawnBonusContext:
+    kingdom: object = None
+    rarity: object = None
+    normal_charm_active: bool = False
+    mythical_bonus_item_id: object = None
+    source_bonus_ids: tuple = ()
+
+# Data class to hold information about a spawn candidate, including the creature, requested rarity, selected rarity, whether it was mythical, despawn delay, and bonus context
+@dataclass(frozen=True)
+class SpawnCandidate:
+    creature: TGOCreature
+    requested_rarity: object = None
+    selected_rarity: object = None
+    was_mythical: bool = False
+    despawn_delay: object = None
+    bonus_context: SpawnBonusContext = None
+# endregion
 
 class CreatureSpawnerHandler:
     def __init__(self, discord_bot: Bot):
@@ -162,15 +184,17 @@ class CreatureSpawnerHandler:
 
     # Main loop that determines when to spawn creatures at random intervals
     async def _creature_spawner(self):
+        # Prevent multiple spawners from running concurrently
         if self._spawner_running:
-            return  # Prevent multiple spawners
+            return
         self._spawner_running = True
 
         try:
             while self.are_creatures_spawning:
+                bonus_context = None
                 try:
-                    kingdom, rarity = self.get_spawn_bonus_effects()
-                    await self.spawn_creature(kingdom=kingdom, rarity=rarity)
+                    bonus_context = self._resolve_spawn_bonus_context()
+                    await self.spawn_creature(kingdom=bonus_context.kingdom, rarity=bonus_context.rarity)
                 except (ssl.SSLError, Exception) as e:
                     print(f"{"SSL Error" if isinstance(e, ssl.SSLError) else "Error"} occurred during creature spawning - skipping to next creature - {e}")
                     traceback.print_exc()
@@ -181,7 +205,8 @@ class CreatureSpawnerHandler:
 
                 # cooldown for the next creature spawn. wait between 3 and 5 minutes before spawning another creature - will spawn 288 - 480 creatures a day
                 try:
-                    normal_charm_active = any(bonus.item_id in CHARM_IDS for bonus in self.active_bonuses)
+                    # determine if a normal charm is active, if so, spawn creatures more frequently (1-3 minutes), otherwise spawn every 3-5 minutes
+                    normal_charm_active = (bonus_context.normal_charm_active if bonus_context else any(bonus.item_id in CHARM_IDS for bonus in self.active_bonuses))
 
                     min_spawn_interval = 1 if normal_charm_active else 3
                     max_spawn_interval = 3 if normal_charm_active else 5
@@ -202,6 +227,11 @@ class CreatureSpawnerHandler:
     async def spawn_creature(self, creature: TGOCreature = None, user: TGOPlayer = None, rarity = None, kingdom = None):
         # select a creature if one was not provided
         creature = creature if creature else await self.creature_picker(rarity= rarity, kingdom= kingdom)
+
+        # if no creature was selected, exit the function
+        if creature is None:
+            return
+
         # determine if this creature will be mythical based on its rarity and any active bonuses
         creature = creature if creature.local_rarity.name != MYTHICAL.name else self.perform_mythical_check(creature=creature, user_bonus_active=user)
 
@@ -218,12 +248,14 @@ class CreatureSpawnerHandler:
         if not user:
             await self._duplicate_creature_spawner(creature=creature)
 
+    # region Duplicate Spawn Logic
+
     # Spawns a duplicate creature to give illusion of a swarm
     async def _duplicate_creature_spawner(self, creature: TGOCreature):
         critter_chain_multiplier = 1
 
         # 12% chance to spawn a duplicate
-        spawn_duplicate = flip_coin(total_iterations=3) and creature.local_rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
+        spawn_duplicate = self._should_spawn_duplicate(creature)
         while spawn_duplicate:
             duplicate_creature = self.perform_mythical_check(creature=deepcopy(creature), chain_multiplier=critter_chain_multiplier)
             await self.spawn_creature(duplicate_creature)
@@ -232,8 +264,16 @@ class CreatureSpawnerHandler:
             critter_chain_multiplier += 1
 
             # 6% chance to spawn another duplicate
-            spawn_duplicate = flip_coin(total_iterations=1)
+            spawn_duplicate = self._should_continue_duplicate_chain()
         return
+
+    def _should_spawn_duplicate(self, creature: TGOCreature):
+        return flip_coin(total_iterations=3) and creature.local_rarity.name in (COMMON.name, UNCOMMON.name, RARE.name)
+
+    @staticmethod
+    def _should_continue_duplicate_chain():
+        return flip_coin(total_iterations=1)
+    # endregion
 
     # Handles despawning of a creature after its despawn time has elapsed
     async def _despawn_creature(self, creature: TGOCreature, spawn_message):
@@ -253,7 +293,7 @@ class CreatureSpawnerHandler:
 
     #endregion
 
-    ''' ---- HELPER FUNCTIONS FOR CHOOSING CREATURE TO SPAWN ------------------------------------------------------------'''
+    ''' ---- HELPER FUNCTIONS FOR CHOOSING CREATURES TO SPAWN ------------------------------------------------------------'''
     # region creature selection logic
 
     # Picks a random creature from the spawn pool
@@ -269,27 +309,43 @@ class CreatureSpawnerHandler:
             rarity_candidates = [rarity_name]
             rarity_candidates.extend([candidate.name for candidate in ALL_RARITIES if candidate.name not in rarity_candidates])
 
+            # iterate through the rarity candidates and select the first available creature from the kingdom-specific pool
             for candidate_rarity in rarity_candidates:
-                available_creatures = [creature for creature in kingdom_creatures if creature.local_rarity.name == candidate_rarity]
-                if not available_creatures:
-                    continue
-
-                selected_creature_index = random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0
-                return deepcopy(available_creatures[selected_creature_index])
-
+                selected_creature = self._select_creature_from_pool(creatures=kingdom_creatures, rarity=candidate_rarity,)
+                if selected_creature is not None:
+                    # Preserve the existing kingdom-bait path, which does not refresh timing here.
+                    return self._prepare_spawn_candidate(selected_creature=selected_creature, rarity=candidate_rarity, refresh_timing=False,).creature
             return None
 
-        # if no kingdom is specified, select a creature based on rarity and spawn pool
-        rarity = rarity if rarity and rarity != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
-        available_creatures = [creature for creature in self.creature_spawn_pool if creature.local_rarity.name == rarity]
-        selected_creature = deepcopy(available_creatures[random.randint(0, len(available_creatures)-1) if len(available_creatures) > 1 else 0])
+        selected_rarity = rarity if rarity and rarity != TGOMMO_RARITY_MYTHICAL else self.get_creature_rarity()
+        selected_creature = self._select_creature_from_pool(creatures=self.creature_spawn_pool, rarity=selected_rarity,)
 
-        # if the creature was determined to be mythical, set its rarity to mythical and adjust its spawn/despawn time accordingly
+        if selected_creature is None:
+            return None
+
+        return self._prepare_spawn_candidate(selected_creature=selected_creature, rarity=selected_rarity, refresh_timing=True,).creature
+
+    # narrow down the creature pool to those that match the selected rarity and randomly select one of them, returning a deep copy of the selected creature
+    @staticmethod
+    def _select_creature_from_pool(creatures, rarity):
+        available_creatures = [creature for creature in creatures if creature.local_rarity.name == rarity]
+        if not available_creatures:
+            return None
+
+        selected_creature_index = random.randint(0, len(available_creatures) - 1) if len(available_creatures) > 1 else 0
+        return deepcopy(available_creatures[selected_creature_index])
+
+    # Prepares a SpawnCandidate object for the selected creature, setting its rarity and refreshing its spawn/despawn times if necessary
+    def _prepare_spawn_candidate(self, selected_creature, rarity, refresh_timing):
+        # If the selected rarity is mythical, set the creature's rarity to mythical
         if rarity == TGOMMO_RARITY_MYTHICAL:
             selected_creature.set_creature_rarity(MYTHICAL)
 
-        selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity == TGOMMO_RARITY_MYTHICAL or rarity == TGOMMO_RARITY_TRANSCENDANT) else 0)
-        return selected_creature
+        # Refresh the spawn and despawn times for the selected creature based on its rarity and the current environment's timezone
+        if refresh_timing:
+            selected_creature.refresh_spawn_and_despawn_time(timezone=self.current_environment.timezone, minute_offset=720 if (rarity == TGOMMO_RARITY_MYTHICAL or rarity == TGOMMO_RARITY_TRANSCENDANT) else 0,)
+
+        return SpawnCandidate(creature=selected_creature,  requested_rarity=rarity, selected_rarity=selected_creature.local_rarity.name, was_mythical=selected_creature.local_rarity.name == MYTHICAL.name, despawn_delay=selected_creature.time_to_despawn,)
 
     # Determines the rarity of the creature to spawn based on active bonuses and time of day
     def get_creature_rarity(self):
@@ -305,11 +361,7 @@ class CreatureSpawnerHandler:
         if creature.local_rarity.name == TGOMMO_RARITY_TRANSCENDANT:
             return creature
 
-        mythical_bonus_active = None
-        for bonus in self.active_bonuses:
-            if bonus.item_id in MYTHICAL_CHARM_IDS:
-                mythical_bonus_active = bonus.item_id
-                break
+        mythical_bonus_active = self._get_mythical_bonus_item_id()
 
         # if the user has a mythical ultra charm, they have a 25% chance to spawn a mythical creature, otherwise the odds are reduced based on the active bonuses and chain multiplier
         is_mythical = mythical_bonus_active == ITEM_ID_MYTHICAL_ULTRA_CHARM and flip_coin(total_iterations=2)
@@ -324,13 +376,32 @@ class CreatureSpawnerHandler:
             creature.set_creature_rarity(MYTHICAL)
         return creature
 
+    # endregion
+
+
+    # region Spawn Bonus Effects
+
     # Handles spawn bonus effects from active items, returning the kingdom and rarity to use for the next spawn
     def get_spawn_bonus_effects(self):
-        kingdom = None
-        rarity = None
+        context = self._resolve_spawn_bonus_context()
+        return context.kingdom, context.rarity
 
-        # Derive kingdom/rarity from any active charm items. RARITY_CHARM_MAP and KINGDOM_CHARM_MAP
+    # Returns the item ID of any active mythical bonus, or None if no such bonus is active
+    def _get_mythical_bonus_item_id(self):
         for bonus in self.active_bonuses:
+            if bonus.item_id in MYTHICAL_CHARM_IDS:
+                return bonus.item_id
+        return None
+
+    def _resolve_spawn_bonus_context(self):
+        kingdom, rarity, source_bonus_ids = None, None, []
+
+        normal_charm_active = any(bonus.item_id in CHARM_IDS for bonus in self.active_bonuses)
+
+        # Iterate through active bonuses to determine kingdom and rarity effects, as well as to collect source bonus IDs
+        for bonus in self.active_bonuses:
+            source_bonus_ids.append(bonus.item_id)
+
             # kingdom charms
             if bonus.item_id in KINGDOM_CHARM_MAP:
                 activation_chance_ceiling = 1 if  bonus.item_type == ITEM_TYPE_ULTRA_CHARM else 3
@@ -341,8 +412,12 @@ class CreatureSpawnerHandler:
                 selected_rarity = RARITY_CHARM_MAP.get(bonus.item_id)
                 activation_chance_ceiling = 1 if  bonus.item_type == ITEM_TYPE_ULTRA_CHARM else get_rarity_hierarchy_value(selected_rarity)
                 rarity = selected_rarity if selected_rarity and random.randint(1, activation_chance_ceiling) == 1 else None
-        return kingdom, rarity
 
+        return SpawnBonusContext(kingdom=kingdom, rarity=rarity, normal_charm_active=normal_charm_active, mythical_bonus_item_id=self._get_mythical_bonus_item_id(), source_bonus_ids=tuple(source_bonus_ids),)
+
+    # endregion
+
+    # region AFK Trap Catch Logic
     # Handles AFK Trap catch logic
     def handle_afk_trap_catch(self, creature: TGOCreature):
         perform_afk_catch = random.randint(1, 4) != 4
@@ -356,8 +431,8 @@ class CreatureSpawnerHandler:
                 if result["user_profile"]:
                     asyncio.create_task(self.discord_bot.get_channel(TGOMMO_CREATURE_SPAWN_CHANNEL_ID).send(embed=result["catch_embed"], files=[result["catch_image"]]))
         return perform_afk_catch
-
     # endregion
+
 
     ''' ---- FUNCTIONS TO HANDLE TIME / ENVIRONMENT / CREATURE POOL CHANGES --------------------------------------------------------------------------------------------'''
     # Handles post-spawn events such as day/night transitions and user catch limit resets

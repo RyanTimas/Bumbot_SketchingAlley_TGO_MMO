@@ -13,6 +13,7 @@ AVATAR_TOTAL_EPIC_QUEST_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc 
 
 AVATAR_TOTAL_UNIQUE_CREATURES_CAUGHT_QUERY = """SELECT COUNT(DISTINCT(c.dex_no)) FROM tgommo_user_creature uc LEFT JOIN tgommo_creature c ON uc.creature_id = c.creature_id LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id WHERE uc.user_id = ?;"""
 # region ENVIRONMENT QUEST QUERIES
+# todo: bugs with these queries, they are not returning the correct counts for some reason. Need to investigate further.
 AVATAR_TOTAL_EST_US_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 1 AND uc.user_id = ?;"""
 AVATAR_TOTAL_FL_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 2 AND uc.user_id = ?;"""
 AVATAR_TOTAL_IC_QUERY = """SELECT COUNT(*) FROM tgommo_user_creature uc LEFT JOIN tgommo_environment_creature ec ON uc.creature_id = ec.creature_id LEFT JOIN tgommo_environment e ON ec.environment_id = e.environment_id WHERE e.dex_no = 3 AND uc.user_id = ?;"""

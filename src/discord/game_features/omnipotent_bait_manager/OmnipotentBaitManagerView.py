@@ -1,4 +1,4 @@
-from src.caching import resolve_static_content_cache
+from src.caching.cache_registry import resolve_static_content_cache
 from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonDecorators import interaction_guard
 from src.commons.CommonViews import ConfirmationView

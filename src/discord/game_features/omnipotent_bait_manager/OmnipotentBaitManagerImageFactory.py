@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import cast
 
-from src.caching import resolve_static_content_cache
+from src.caching.cache_registry import resolve_static_content_cache
 from src.caching.db_specific_caches.environment_creature_cache import EnvironmentCreatureCache
 from src.commons.CommonFunctions import *
 from src.database.handlers.DatabaseHandler import get_tgommo_db_handler

@@ -1,7 +1,8 @@
 import asyncio
+import os
+import random
 import sys
 import logging
-
 import aiohttp
 import discord
 from PIL import Image
@@ -41,6 +42,7 @@ from src.resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
     TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
     TGOMMO_CREATURE_SPAWN_CHANNEL_ID
+from src.resources.constants.spooky_toggle_constants import halloween_keywords, spooky_collections, smiling_friends_videos
 
 
 class DiscordBot(commands.Bot):
@@ -65,6 +67,8 @@ class DiscordBot(commands.Bot):
 
         self.creature_spawner_handler = CreatureSpawnerHandler(discord_bot=self)
         self.shop_restock_scheduler = ShopScheduler(discord_bot=self)
+
+        self.spooky_mode_enabled = True  # Default value for spooky mode
 
     def _ensure_static_cache_registry_ready(self):
         was_initialized = is_static_content_cache_registry_initialized()
@@ -97,14 +101,9 @@ class DiscordBot(commands.Bot):
             if message.author.id in DISCORD_USER_BLACKLIST:
                 return
 
-            # SHINY CHECK
-            if flip_coin(total_iterations=13):
-                shiny_msg = await message.reply(f"```fix\n✨THIS MESSAGE IS A CERTIFIED SHINY!!✨\n```")
-                await shiny_msg.reply(f"Took {get_game_state_manager().get_shiny_message_count()} messages to get a shiny")
-                get_game_state_manager().set_shiny_message_count(new_count=0)
-            else:
-                shiny_message_count = get_game_state_manager().get_shiny_message_count()
-                get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
+            # perform message checks
+            await self.perform_shiny_check(message)
+            await self.perform_spooky_msg_check(message)
 
             await self.process_commands(message)
 
@@ -355,6 +354,12 @@ class DiscordBot(commands.Bot):
             except Exception as e:
                 await interaction.followup.send(f"Error refreshing shop: {str(e)}", ephemeral=True)
 
+        @admin_only()
+        @self.tree.command(name="toggle_spooky_mode_tgommo", description="Toggle spooky mode on or off. Admins Only.", guild=discord.Object(id=TGOMMO_ACTIVE_SERVER_ID))
+        async def toggle_spooky_mode(interaction):
+            self.spooky_mode_enabled = not self.spooky_mode_enabled
+            await interaction.response.send_message(f"Spooky mode has been {"enabled" if self.spooky_mode_enabled else "disabled"}.", delete_after=10)
+
 
     '''---- TEST COMMANDS ----------------------------------------------------------------------------------------------------'''
     def register_test_commands(self):
@@ -367,3 +372,58 @@ class DiscordBot(commands.Bot):
 
     def start_bot(self):
         self.run(self.token)
+
+
+    '''---- ON MESSAGE SUPPORT FUNCTIONS ----------------------------------------------------------------------------------------------------'''
+    # Perform a shiny check on a message and update the shiny message count.
+    async def perform_shiny_check(self, message):
+        if flip_coin(total_iterations=13):
+            shiny_msg = await message.reply(f"```fix\n✨THIS MESSAGE IS A CERTIFIED SHINY!!✨\n```" )
+            await shiny_msg.reply(f"Took {get_game_state_manager().get_shiny_message_count()} messages to get a shiny")
+            get_game_state_manager().set_shiny_message_count(new_count=0)
+        else:
+            shiny_message_count = get_game_state_manager().get_shiny_message_count()
+            get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
+
+    async def perform_spooky_msg_check(self, message):
+        if self.spooky_mode_enabled:
+            nuclear_option = any(keyword in message.content.lower() for keyword in ["fright night"])
+
+            if random.randint(1,50) == 1 or any(keyword in message.content.lower() for keyword in halloween_keywords) and message.author.id != self.user.id:
+                selected_collection = random.choice(spooky_collections)
+                selected_lyrics = selected_collection["lyrics"]
+                selected_url = selected_collection["url"]
+                gif_sources = selected_collection["gif_sources"]
+
+                # 50% chance to send a random spooky URL,
+                if False and random.random() < 0.5 and not nuclear_option:
+                    await message.reply(f"Bro FUUUUUUUCK check this out: {selected_url}")
+                # 38% chance to send a random lyric
+                elif False and random.random() < 0.88 and not nuclear_option:
+                    selected_gif = random.choice(gif_sources)
+                    # New option to send a random Christmas lyric
+                    gif_file = discord.File(selected_gif, filename=os.path.basename(selected_gif))
+                    reply_kwargs = {"file": gif_file} if gif_file else {}
+                    await message.reply(random.choice(selected_lyrics), **reply_kwargs)
+                # 10% chance to send the smiling friends video
+                elif True or random.random() < 0.98 and not nuclear_option:
+                    chosen_smiling_friends_video_url = random.choice(smiling_friends_videos)
+                    await message.reply(f"Bro FUUUUUUUCK check this out: {chosen_smiling_friends_video_url}",)
+                # 2% chance to send the entire lyrics
+                else:
+                    for line in selected_lyrics:
+                        await message.reply(line)
+                        await asyncio.sleep(.5)
+
+    def _build_spooky_gif_file(self, gif_path):
+        """Build a Discord attachment from a local spooky GIF path."""
+        if not os.path.isfile(gif_path):
+            self._logger.warning("Spooky GIF file not found", extra={"path": gif_path})
+            return None
+
+        try:
+            return
+        except OSError as error:
+            self._logger.warning("Unable to open spooky GIF file", extra={"path": gif_path, "failure_class": type(error).__name__},)
+            return None
+

@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import os
 import random
 import sys
@@ -42,6 +43,7 @@ from src.resources.constants.file_paths import IMAGE_FILE_EXTENSION, \
     TGOMMO_TRAVEL_ADVISORY_LANDING_BASE
 from src.resources.constants.general_constants import TGOMMO_ACTIVE_SERVER_ID, DISCORD_USER_BLACKLIST, \
     TGOMMO_CREATURE_SPAWN_CHANNEL_ID
+from src.resources.constants.TGO_MMO_constants import BASE_TIMEZONE
 from src.resources.constants.spooky_toggle_constants import halloween_keywords, spooky_collections, smiling_friends_videos
 
 
@@ -50,6 +52,7 @@ class DiscordBot(commands.Bot):
         super().__init__(command_prefix='!', intents=discord.Intents.all())
         self.token = token
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._spooky_tasks = set()
 
         self._ensure_static_cache_registry_ready()
 
@@ -101,9 +104,13 @@ class DiscordBot(commands.Bot):
             if message.author.id in DISCORD_USER_BLACKLIST:
                 return
 
-            # perform message checks
+            # perform spooky checks only during the Halloween season (Oct 30 - Nov 1)
+            current_date = datetime.datetime.now(BASE_TIMEZONE)
+            if (current_date.month, current_date.day) in {(10, 30), (10, 31), (11, 1)}:
+                self._schedule_spooky_check(message)
+
+            # Perform the regular message checks without waiting for spooky processing.
             await self.perform_shiny_check(message)
-            await self.perform_spooky_msg_check(message)
 
             await self.process_commands(message)
 
@@ -373,6 +380,26 @@ class DiscordBot(commands.Bot):
     def start_bot(self):
         self.run(self.token)
 
+    async def close(self):
+        """Cancel outstanding spooky tasks before closing the Discord client."""
+        pending_tasks = tuple(self._spooky_tasks)
+        for task in pending_tasks:
+            task.cancel()
+        if pending_tasks:
+            await asyncio.gather(*pending_tasks, return_exceptions=True)
+        await super().close()
+
+    def _schedule_spooky_check(self, message):
+        """Schedule spooky processing without blocking normal message handling."""
+        if not self.spooky_mode_enabled:
+            return
+        if self.user is not None and message.author.id == self.user.id:
+            return
+
+        spooky_task = asyncio.create_task(self.perform_spooky_msg_check(message))
+        self._spooky_tasks.add(spooky_task)
+        spooky_task.add_done_callback(self._spooky_task_completed)
+
 
     '''---- ON MESSAGE SUPPORT FUNCTIONS ----------------------------------------------------------------------------------------------------'''
     # Perform a shiny check on a message and update the shiny message count.
@@ -385,45 +412,65 @@ class DiscordBot(commands.Bot):
             shiny_message_count = get_game_state_manager().get_shiny_message_count()
             get_game_state_manager().set_shiny_message_count(new_count=shiny_message_count + 1)
 
+    def _spooky_task_completed(self, task):
+        self._spooky_tasks.discard(task)
+        if task.cancelled():
+            return
+
+        exception = task.exception()
+        if exception is not None:
+            self._logger.error("Spooky message task failed", extra={"failure_class": type(exception).__name__}, exc_info=(type(exception), exception, exception.__traceback__),)
+
     async def perform_spooky_msg_check(self, message):
-        if self.spooky_mode_enabled:
-            nuclear_option = any(keyword in message.content.lower() for keyword in ["fright night"])
+        if not self.spooky_mode_enabled:
+            return
+        if self.user is not None and message.author.id == self.user.id:
+            return
 
-            if random.randint(1,50) == 1 or any(keyword in message.content.lower() for keyword in halloween_keywords) and message.author.id != self.user.id:
-                selected_collection = random.choice(spooky_collections)
-                selected_lyrics = selected_collection["lyrics"]
-                selected_url = selected_collection["url"]
-                gif_sources = selected_collection["gif_sources"]
+        nuclear_option = "fright night" in message.content.lower()
+        if random.randint(1, 50) != 1 and not any(keyword in message.content.lower() for keyword in halloween_keywords):
+            return
 
-                # 50% chance to send a random spooky URL,
-                if False and random.random() < 0.5 and not nuclear_option:
-                    await message.reply(f"Bro FUUUUUUUCK check this out: {selected_url}")
-                # 38% chance to send a random lyric
-                elif False and random.random() < 0.88 and not nuclear_option:
-                    selected_gif = random.choice(gif_sources)
-                    # New option to send a random Christmas lyric
-                    gif_file = discord.File(selected_gif, filename=os.path.basename(selected_gif))
-                    reply_kwargs = {"file": gif_file} if gif_file else {}
-                    await message.reply(random.choice(selected_lyrics), **reply_kwargs)
-                # 10% chance to send the smiling friends video
-                elif True or random.random() < 0.98 and not nuclear_option:
-                    chosen_smiling_friends_video_url = random.choice(smiling_friends_videos)
-                    await message.reply(f"Bro FUUUUUUUCK check this out: {chosen_smiling_friends_video_url}",)
-                # 2% chance to send the entire lyrics
-                else:
-                    for line in selected_lyrics:
-                        await message.reply(line)
-                        await asyncio.sleep(.5)
+        selected_collection = random.choice(spooky_collections)
+        selected_lyrics = selected_collection["lyrics"]
+        selected_url = selected_collection["url"]
+        gif_sources = selected_collection["gif_sources"]
 
-    def _build_spooky_gif_file(self, gif_path):
-        """Build a Discord attachment from a local spooky GIF path."""
-        if not os.path.isfile(gif_path):
-            self._logger.warning("Spooky GIF file not found", extra={"path": gif_path})
+        # 50% chance to send a random spooky URL.
+        if random.random() < 0.5 and not nuclear_option:
+            await message.reply(f"Bro FUUUUUUUCK check this out: {selected_url}")
+        # 38% chance to send a random lyric with a local GIF.
+        elif random.random() < 0.88 and not nuclear_option:
+            selected_gif = random.choice(gif_sources)
+            gif_file = await asyncio.to_thread(self._build_spooky_file, selected_gif)
+            reply_kwargs = {"file": gif_file} if gif_file else {}
+            await message.reply(random.choice(selected_lyrics), **reply_kwargs)
+        # 10% chance to send the local Smiling Friends video.
+        elif random.random() < 0.98 and not nuclear_option:
+            selected_video = random.choice(smiling_friends_videos)
+            video_file = await asyncio.to_thread(self._build_spooky_file, selected_video)
+            reply_kwargs = {"file": video_file} if video_file else {}
+            await message.reply("Bro FUUUUUUUCK check this out:", **reply_kwargs)
+        # 2% chance to send the entire lyrics.
+        else:
+            for line in selected_lyrics:
+                # get a random gif from the collection for each line of lyrics
+                selected_gif = random.choice(gif_sources)
+                gif_file = await asyncio.to_thread(self._build_spooky_file, selected_gif)
+                reply_kwargs = {"file": gif_file} if gif_file else {}
+
+                await message.reply(line, **reply_kwargs)
+                await asyncio.sleep(.5)
+
+    def _build_spooky_file(self, file_path):
+        """Build a Discord attachment from a local spooky media path."""
+        if not os.path.isfile(file_path):
+            self._logger.warning("Spooky media file not found", extra={"path": file_path})
             return None
 
         try:
-            return
+            return discord.File(file_path, filename=os.path.basename(file_path))
         except OSError as error:
-            self._logger.warning("Unable to open spooky GIF file", extra={"path": gif_path, "failure_class": type(error).__name__},)
+            self._logger.warning("Unable to open spooky media file", extra={"path": file_path, "failure_class": type(error).__name__},)
             return None
 
